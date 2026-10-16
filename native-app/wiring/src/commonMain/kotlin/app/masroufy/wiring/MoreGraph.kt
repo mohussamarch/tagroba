@@ -91,6 +91,8 @@ class MoreGraph(private val c: AreaContext) : MoreDeps {
 
         override suspend fun profileGender(): String? = c.shell.profile.load().gender
 
+        override val draft = c.env.characterDraft
+
         override suspend fun save(look: CharacterLook) {
             val r = c.shell.profile.saveCharacter(look)
             if (r is app.masroufy.core.ProfileCheck.Invalid) throw IllegalArgumentException(r.message)
@@ -139,6 +141,9 @@ class MoreGraph(private val c: AreaContext) : MoreDeps {
 
     /** «حدّث الرصيد» لأي محفظة — بيوم البلد (مش يوم الجوال) عشان «مش في المستقبل». */
     override val updateBalance = UpdateBalance(r.wallets, r.transactions, r.categories, c.env.ids, c.env.clock, countryPack(c.space.countryCode).timeZone)
+
+    // «صلّح رصيدي» (2026-10-16): نفس الأدوات اللي فوق بالترتيب
+    override val fixBalance = app.masroufy.usecase.FixMyBalance(app.masroufy.usecase.FixMyBalanceDeps(smsRepair, mergeDuplicates, balanceWhy, updateBalance, r.wallets))
 
     /** «أضف محفظة» و«رصيد البداية» (`ManageWallets` — الغلط رسالة بترجع للوحة بدل ما توقع). */
     override val walletEditor: WalletEditor = object : WalletEditor {

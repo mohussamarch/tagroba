@@ -79,7 +79,7 @@ class TransfersModelTest {
         assertTrue(person.first.startsWith("رُبط بـسالم، "))
         assertTrue(person.second.startsWith("أُضيف سالم إلى أشخاصك. أي تحويل من حساب ينتهي بـ 4821"))
         assertEquals("تحويل بين محافظك" to "ليس دخلًا ولا مصروفًا. وصُحّحت عمليتان من الطرف نفسه.", decisionTexts(PartyDecision.OwnAccount(2), salem))
-        assertEquals("تم" to "لن نسألك عن هذا الحساب مجددًا.", decisionTexts(PartyDecision.NotThis, salem))
+        assertEquals("تم" to "لن نسألك عنه مجددًا. تستعيده من «إعداد القراءة» › «حسابات متجاهَلة».", decisionTexts(PartyDecision.NotThis, salem))
         assertEquals("سالم", partyNewName(salem, "  "), "الاسم الفاضي ⇒ الاسم زي ما جه")
         assertEquals("سالم العتيبي", partyNewName(salem, " سالم العتيبي "))
     }

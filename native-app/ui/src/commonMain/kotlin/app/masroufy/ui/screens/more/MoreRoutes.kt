@@ -67,6 +67,9 @@ interface MoreDeps : MoreHooks {
     /** «صلّح رسايل البنك القديمة» (r04-sms-fix): معاينة ⇒ نسخة ⇒ تصحيح ⇒ تراجع. null ⇒ الزرار في «تفاصيل المحفظة» مش ظاهر. */
     val smsRepair: app.masroufy.usecase.RepairOldSms? get() = null
 
+    /** «صلّح رصيدي» خطوة بخطوة (2026-10-16): نفس الأدوات بالترتيب و«طبّق» و«تراجع» واحد. null ⇒ الزرار مش ظاهر. */
+    val fixBalance: app.masroufy.usecase.FixMyBalance? get() = null
+
     /** وقت الجهاز ISO كامل (`exportedAt` في النسخة). */
     fun nowIso(): String
 }
@@ -142,6 +145,7 @@ fun RouteRegistry.registerMore() {
     screen<WalletDetailRoute> { r -> WalletDetailScreen(r.walletId) }
     screen<BalanceWhyRoute> { r -> BalanceWhyScreen(r.walletId) }
     screen<SmsRepairRoute> { r -> SmsRepairScreen(r.walletId) }
+    screen<FixMyBalanceRoute> { r -> FixMyBalanceScreen(r.walletId) }
     screen<IncomeSourcesRoute> { IncomeSourcesScreen() }
     screen<EmployersRoute> { EmployersScreen() }
     screen<IncomeSourceDetailRoute> { r -> IncomeSourceDetailScreen(r.sourceId) }

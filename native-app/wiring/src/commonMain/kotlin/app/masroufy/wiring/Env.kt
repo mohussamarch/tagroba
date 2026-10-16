@@ -47,6 +47,8 @@ class DeviceEnv(
     val repairBackup: app.masroufy.port.RepairBackupPort? = null,
     /** r041b P2: مسودة «أول تشغيل» على الجهاز (لكل حساب) — الفتح الجاي بيكمّل من نفس الكارت. null (الاختبار · الآيفون لحد ما يتجمّع) ⇒ الذاكرة بس. */
     val onboardingDraft: app.masroufy.ui.screens.onboarding.OnbDraftStore? = null,
+    /** 2026-10-16: مسودة «ابنِ/عدّل شخصيتك» على الجهاز (لكل حساب) — لو البرنامج اتقفل قبل الحفظ. null ⇒ من غير مسودة. */
+    val characterDraft: app.masroufy.ui.screens.character.CharacterDraftStore? = null,
 )
 
 /**

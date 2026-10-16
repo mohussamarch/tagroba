@@ -23,12 +23,15 @@ object TransferCodecs {
                 opt("personId", p.personId); req("decidedAt", p.decidedAt)
                 // «سجّل تحويلاته لوحده» (r05) — بيتكتبوا لو موجودين بس ⇒ المستندات القديمة زي ما هي
                 opt("autoMeaning", p.autoMeaning?.wire); opt("autoSince", p.autoSince)
+                // 2026-10-16: «شركة أو جهة» · «حاجة تانية» · «مستحقات دايمًا» — بتتكتب بس لو ليها قيمة (المستند القديم زي ما هو)
+                opt("kind", p.kind?.wire); opt("note", p.note); opt("dues", p.dues.takeIf { it })
             }
         },
         { d ->
             TransferParty(
                 d.str("key"), d.str("label"), d.strOrNull("accountLast4"), d.wire("verdict", TransferVerdict::fromWire), d.strOrNull("personId"),
                 d.str("decidedAt"), d.strOrNull("autoMeaning")?.let(AutoMeaning::fromWire), d.strOrNull("autoSince"),
+                kind = d.strOrNull("kind")?.let(EconomicKind::fromWire), note = d.strOrNull("note"), dues = d.boolOrNull("dues") ?: false,
             )
         },
     )

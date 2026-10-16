@@ -16,8 +16,14 @@ enum class TransferVerdict(val wire: String) {
     /** شخص ⇒ الصادر ليه بيتسأل «سلفة ولا دعم؟» كل مرة (§75-5)، والوارد منه بيتسأل عن نوعه (§39.1) أو «ده سداد السلفة؟» (§75-9). */
     PERSON("person"),
 
-    /** «مش ده» ⇒ ما يتسألش عنه تاني. */
-    DISMISSED("dismissed");
+    /** «تجاهل الحساب ده» (كان «مش ده») ⇒ ما يتسألش عنه تاني — ويرجع من «حسابات متجاهَلة» في إعداد رسائل البنك (طلب المالك 2026-10-16). */
+    DISMISSED("dismissed"),
+
+    /** «شركة أو جهة» (2026-10-16): الطرف جهة مش شخص — نوع كل مبلغ بيتسأل لوحده ([TransferParty.kind] = آخر اختيار). */
+    COMPANY("company"),
+
+    /** «حاجة تانية (أكتبها)» (2026-10-16): اسم حر ([TransferParty.note]) بيتحط على كل وارد من الحساب، ونوعه [TransferParty.kind]. */
+    LABEL("label");
 
     companion object {
         fun fromWire(wire: String): TransferVerdict = entries.firstOrNull { it.wire == wire } ?: throw IllegalArgumentException("unknown transfer verdict: $wire")
@@ -36,6 +42,27 @@ data class TransferParty(
     val autoMeaning: AutoMeaning? = null,
     /** من إمتى التسجيل التلقائي شغال (التحويلات اللي يومها من هنا ولقدام بس). */
     val autoSince: String? = null,
+    /** [TransferVerdict.COMPANY] · [TransferVerdict.LABEL]: النوع اللي اختاره المالك (null في «حاجة تانية» = [LABEL_DEFAULT_KIND]). */
+    val kind: EconomicKind? = null,
+    /** [TransferVerdict.LABEL]: الاسم اللي المالك كتبه (لحد [PARTY_NOTE_MAX] حرف). */
+    val note: String? = null,
+    /** «بيحوّلي مستحقات دايمًا» (2026-10-16): مع [TransferVerdict.PERSON] — كل وارد من الحساب بيسدّد اللي الشخص عليه (لو عليه حاجة). */
+    val dues: Boolean = false,
+)
+
+/** أطول اسم حر في «حاجة تانية». */
+const val PARTY_NOTE_MAX = 40
+
+/**
+ * نوع «حاجة تانية» لو المالك ما اختارش: مفيش نوع «دخل آخر» في الأنواع ⇒ «دعم أو تعويض» (دخل · مالوش أثر على شخص) — ❓ سؤال مفتوح للمالك
+ * (HANDOVER): نضيف نوع «دخل آخر»؟
+ */
+val LABEL_DEFAULT_KIND: EconomicKind = EconomicKind.BENEFIT_RECEIVED
+
+/** أنواع «شركة أو جهة» (استرداد · تعويض · دخل تاني) — من غير «متجر جديد» ومن غير أنواع الأشخاص. */
+val COMPANY_INCOMING_KINDS: List<EconomicKind> = listOf(
+    EconomicKind.REFUND_RECEIVED, EconomicKind.BENEFIT_RECEIVED, EconomicKind.BONUS, EconomicKind.FREELANCE,
+    EconomicKind.INVESTMENT_INCOME, EconomicKind.PERSONAL_SALE,
 )
 
 /**
@@ -226,6 +253,13 @@ fun applyTransferVerdict(t: Transaction, party: TransferParty?, nowIso: String):
             t.reviewState == ReviewState.NEEDS_REVIEW -> t
             else -> t.copy(reviewState = ReviewState.NEEDS_REVIEW, updatedAt = nowIso)
         }
-        TransferVerdict.DISMISSED -> t
+        TransferVerdict.DISMISSED, TransferVerdict.COMPANY -> t
+        // «حاجة تانية»: الوارد اللي نوعه لسه ما اتأكدش ⇒ النوع المختار مؤكد والاسم في الملاحظة (ملاحظة المالك ما بتتلمسش)
+        TransferVerdict.LABEL ->
+            if (t.observedDirection != Direction.IN || t.economicKindConfirmed) t
+            else t.copy(
+                economicKind = party.kind ?: LABEL_DEFAULT_KIND, economicKindConfirmed = true, reviewState = ReviewState.CONFIRMED,
+                note = t.note?.takeIf { it.isNotBlank() } ?: party.note, suggestedKind = null, updatedAt = nowIso,
+            )
     }
 }

@@ -39,7 +39,7 @@ data class CategoryField(val name: String?, val status: CategoryStatus, val cate
 
 /** سطر في كارت الحقول: العنوان الصغير · القيمة · شارة اختيارية · سطر شرح اختياري. */
 /** [logo] = لوجو بنك المحفظة جنب اسمها (خانة «المحفظة» — §81). */
-data class DetailField(val label: String, val value: String, val chip: FieldChip? = null, val hint: String? = null, val logo: FieldLogo? = null)
+data class DetailField(val label: String, val value: String, val chip: FieldChip? = null, val hint: String? = null, val logo: FieldLogo? = null, val kindRow: Boolean = false)
 
 /** لوجو جنب قيمة الخانة: البنك من دليل البنوك (null ⇒ أول حرف من [name]). */
 data class FieldLogo(val bank: Bank?, val name: String)
@@ -111,9 +111,9 @@ fun detailView(
     val walletName = wallet?.name ?: t(TextKey.NOT_AVAILABLE)
     val walletLogo = wallet?.takeIf { it.kind != "cash" }?.let { FieldLogo(bankForWallet(it, country), it.name) }
     val kindField = if (tx.economicKind == EconomicKind.UNCLASSIFIED) {
-        DetailField(t(UiKey.OPERATION_DETAIL_KIND), t(UiKey.OPERATION_DETAIL_KIND_WAITING), FieldChip(t(UiKey.OPERATION_DETAIL_WAITING_CHIP), ChipInk.amber, ChipInk.amberBg))
+        DetailField(t(UiKey.OPERATION_DETAIL_KIND), t(UiKey.OPERATION_DETAIL_KIND_WAITING), FieldChip(t(UiKey.OPERATION_DETAIL_WAITING_CHIP), ChipInk.amber, ChipInk.amberBg), kindRow = true)
     } else {
-        DetailField(t(UiKey.OPERATION_DETAIL_KIND), rule.label, hint = if (tx.economicKindConfirmed) null else t(UiKey.OPERATION_DETAIL_KIND_ESTIMATED))
+        DetailField(t(UiKey.OPERATION_DETAIL_KIND), rule.label, hint = if (tx.economicKindConfirmed) null else t(UiKey.OPERATION_DETAIL_KIND_ESTIMATED), kindRow = true)
     }
     val party = if (flow == LinkFlow.TRANSFER_IN) transferPartyOf(tx)?.takeIf { it.key !in decidedParties } else null
     return DetailView(

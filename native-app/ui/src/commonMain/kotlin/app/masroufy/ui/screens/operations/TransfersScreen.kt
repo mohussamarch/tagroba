@@ -75,6 +75,7 @@ fun TransfersScreen() {
     var personFor by remember { mutableStateOf<TransferPartyRef?>(null) }
     LaunchedEffect(deps, reload) {
         people = attempt { deps.people.listWithBalances().map { it.person } }.orEmpty()
+        attempt { deps.partyAnswers?.sweepDues() }
         val zone = attempt { deps.transfers.zone() }
         failed = zone == null
         view = zone?.let { z -> transfersView(z, people.associate { it.id to it.name }) }

@@ -70,13 +70,19 @@ fun ReviewQueueScreen() {
     var loadFailed by remember(deps) { mutableStateOf(false) }
     var done by remember(deps) { mutableStateOf<Map<Id, EconomicKind>>(emptyMap()) }
     var error by remember { mutableStateOf<String?>(null) }
+    // «شراء» ⇒ «إيه الصنف؟» (2026-10-16)
+    var purchase by remember { mutableStateOf<app.masroufy.ui.screens.operations.PurchaseAsk?>(null) }
+    app.masroufy.ui.screens.operations.PurchaseCategorySheet(purchase) { purchase = null }
     LaunchedEffect(deps) {
         runCatching { loadReview(deps) }.onSuccess { data = it }.onFailure { loadFailed = true }
     }
     fun confirm(item: ReviewItem, kind: EconomicKind) {
         scope.launch {
             runCatching { deps.home.kinds.setOne(item.id, kind) }
-                .onSuccess { done = done + (item.id to kind); error = null }
+                .onSuccess {
+                    done = done + (item.id to kind); error = null
+                    purchase = app.masroufy.ui.screens.operations.purchaseAskAfter(kind, listOf(item.id))
+                }
                 .onFailure { error = failureText(it, UiKey.REVIEW_QUEUE_SAVE_FAILED_BODY) }
         }
     }

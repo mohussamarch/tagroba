@@ -49,6 +49,9 @@ internal fun BulkSheets(open: BulkAction?, deps: OperationsDeps, ids: List<Id>, 
     val scope = rememberCoroutineScope()
     val toaster = LocalToaster.current
     var busy by remember { mutableStateOf(false) }
+    // «شراء» ⇒ «إيه الصنف؟» على نفس العمليات (2026-10-16) — المعرّفات بتتحفظ هنا لأن التحديد بيتمسح بعد الفعل
+    var purchase by remember { mutableStateOf<PurchaseAsk?>(null) }
+    PurchaseCategorySheet(purchase) { purchase = null }
     fun launchBulk(deleting: Boolean = false, op: suspend () -> BulkResult) {
         if (busy) return
         busy = true
@@ -91,7 +94,10 @@ internal fun BulkSheets(open: BulkAction?, deps: OperationsDeps, ids: List<Id>, 
         BasicText(t(UiKey.OPS_BULK_KIND_NOTE), style = Type.of(13).copy(color = Ink.muted))
         for (line in BULK_KINDS.chunked(3)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                for (k in line) SelectChip(kindLabel(k), false, { launchBulk { bulk.setKind(ids, k) } }, enabled = !busy)
+                for (k in line) SelectChip(kindLabel(k), false, {
+                    val chosen = ids.toList()
+                    launchBulk { bulk.setKind(chosen, k).also { purchase = purchaseAskAfter(k, chosen) } }
+                }, enabled = !busy)
             }
         }
     }
