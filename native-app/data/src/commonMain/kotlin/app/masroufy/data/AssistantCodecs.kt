@@ -49,6 +49,10 @@ object AssistantCodecs {
                     is UserSetting.SmsReadPoint -> { req("type", "smsRead"); req("spaceId", s.spaceId); req("point", s.point); req("asked", s.asked) }
                     // صف «أهم 5» بترتيبك (§84) — القايمة بتتكتب حتى لو فاضية (شال الكل = ترتيب بإيده، مش «لسه ما رتبش»)
                     is UserSetting.PeopleRow -> { req("type", "peopleRow"); req("personIds", s.personIds) }
+                    // كروت الرئيسية بترتيبك — القايمتين بيتكتبوا حتى لو فاضيين
+                    is UserSetting.HomeCards -> { req("type", "homeCards"); req("order", s.order); req("hidden", s.hidden) }
+                    // كارت النصيحة و«ملفك» المقفولين بـ«×» — بصمات بس
+                    is UserSetting.HomeTips -> { req("type", "homeTips"); opt("advisorKey", s.advisorKey); opt("profileKey", s.profileKey); opt("profileClosedOn", s.profileClosedOn) }
                 }
             }
         },
@@ -58,6 +62,8 @@ object AssistantCodecs {
                 "assistant" -> UserSetting.Assistant(d.boolOrNull("learningOn") ?: true, d.str("updatedAt"))
                 "smsRead" -> UserSetting.SmsReadPoint(d.str("spaceId"), d.str("point"), d.strings("asked").orEmpty(), d.str("updatedAt"))
                 "peopleRow" -> UserSetting.PeopleRow(d.strings("personIds") ?: emptyList(), d.str("updatedAt"))
+                "homeCards" -> UserSetting.HomeCards(d.strings("order").orEmpty(), d.strings("hidden").orEmpty(), d.str("updatedAt"))
+                "homeTips" -> UserSetting.HomeTips(d.strOrNull("advisorKey"), d.strOrNull("profileKey"), d.strOrNull("profileClosedOn"), d.str("updatedAt"))
                 else -> throw DocumentError(uiText(TextKey.DOC_FIELD_VALUE, USER_SETTINGS_GROUP, "type", type))
             }
         },

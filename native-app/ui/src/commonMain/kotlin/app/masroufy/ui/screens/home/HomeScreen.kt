@@ -93,8 +93,8 @@ fun HomeScreen() {
                     item(key = "hero") { WithYouHero(s.now, s.month, shell.today(), onCash = { cashOpen = true }) }
                     if (isQuietMonth(s.now, s.month)) item(key = "quiet") { QuietMonthCard() }
                     else s.inbox?.let { advisorCardOf(it, gone) }?.let { card -> item(key = "advisor") { AdvisorCardView(card) } }
-                    item(key = "upcoming") { UpcomingSection() }
                     if (s.profileCard) item(key = "profile") { ProfileCardView() }
+                    item(key = "cards") { app.masroufy.ui.screens.home.cards.HomeCards() }
                 }
             }
         }
