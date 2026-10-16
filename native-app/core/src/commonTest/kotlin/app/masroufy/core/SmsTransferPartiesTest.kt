@@ -38,6 +38,14 @@ class SmsTransferPartiesTest {
         )
     }
 
+    @Test fun anIncomingTransferPutsThePartyNameInTheMerchantFieldAndTheOutgoingLeavesItEmpty() {
+        // فحص المحاكي بند 8: «سُجّلت تلقائيًا» بيعرف الشخص من إن التاجر فاضي **أو** هو اسم الطرف نفسه (`BankSmsModel.isPartyTransfer`)
+        val incoming = recorded("حوالة محلية واردة\nمن:TEST PERSON\nبـSR 300\nإلى:1111\n26/9/18")
+        assertEquals(transferPartyOf(incoming)!!.key.substringBefore('#'), normalizeCompact(incoming.rawMerchantName.orEmpty()))
+        val outgoing = recorded("حوالة داخلية صادرة\nمن:1111\nإلى:TEST PERSON\nبـSR 500\n26/9/18 09:35")
+        assertTrue(outgoing.rawMerchantName.isNullOrBlank())
+    }
+
     @Test fun accountNumbersBecomeLastFourOnly() {
         val toAccount = transferPartyOf(recorded("حوالة داخلية صادرة\nالرصيد: 1500 SAR\nمبلغ:SAR 35.62\nإلى: 9999\n26/9/18 09:35"))!!
         assertEquals(TransferPartyRef("#9999", "••••9999", "9999"), toAccount)
