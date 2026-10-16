@@ -1,9 +1,14 @@
 package app.masroufy.ui.character
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -22,6 +27,7 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.Dp
 import app.masroufy.core.CharacterColorKey
 import app.masroufy.core.CharacterLayer
 import app.masroufy.core.CharacterLook
@@ -38,6 +44,18 @@ import kotlin.math.sqrt
 fun CharacterArt(look: CharacterLook, layer: CharacterLayer, modifier: Modifier = Modifier, label: String? = null) {
     val scene = remember(look, layer) { characterScene(look, layer) }
     Canvas(if (label != null) modifier.semantics { contentDescription = label } else modifier) { drawCharacter(scene) }
+}
+
+/**
+ * الجسم كله بمقاسه الكامل [width]×[height]، متثبّت **من فوق** وفي النص، والزيادة تحت بتتقص على حدود المساحة (كارت «الأشخاص» ومربّع
+ * «في الأشخاص» — `overflow: hidden` + `justify-content: center` في النموذج). `requiredSize` لوحده وهو أطول من المساحة كان بيتحط في
+ * **نصها** (Compose بيوسّط اللي أكبر من القيود) فالراس بتطلع برّه من فوق وتتقص (r041b).
+ */
+@Composable
+fun CharacterFromTop(look: CharacterLook, width: Dp, height: Dp, modifier: Modifier = Modifier, label: String? = null) {
+    Box(modifier.clipToBounds(), contentAlignment = Alignment.TopCenter) {
+        CharacterArt(look, CharacterLayer.FULL, Modifier.wrapContentSize(Alignment.TopCenter, unbounded = true).size(width, height), label)
+    }
 }
 
 /** الشكل المحايد (لسه ما اتبنتش): راس ودايرة كتاف، 84% من العرض وتحت في النص (`MeAvatar.dc.html`). */
