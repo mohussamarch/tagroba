@@ -136,9 +136,21 @@ internal fun BnplSwitch(on: Boolean, label: String, onToggle: () -> Unit) {
         contentAlignment = Alignment.Center,
     ) {
         Box(Modifier.size(44.dp, 26.dp).clip(RoundedCornerShape(13.dp)).then(if (on) Modifier.background(BnplGreen) else Modifier.background(Color(0x29193D33)))) {
-            Box(Modifier.padding(2.dp).size(22.dp).align(if (on) Alignment.CenterStart else Alignment.CenterEnd).clip(RoundedCornerShape(11.dp)).background(Color.White))
+            // التصميم: شغال ⇒ الدايرة على الشمال في العربي (`right: 20px`)
+            Box(Modifier.padding(2.dp).size(22.dp).align(if (on) Alignment.CenterEnd else Alignment.CenterStart).clip(RoundedCornerShape(11.dp)).background(Color.White))
         }
     }
+}
+
+/** الزرار التاني اللازق تحت («تخطّي» · «بعدين»): رمادي فاتح 7% بنص غامق عريض — ارتفاع 52 وحواف 18. */
+@Composable
+internal fun BnplQuietButton(label: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val press = rememberPress()
+    Box(
+        modifier.height(52.dp).pressScale(press).clip(RoundedCornerShape(18.dp)).background(Color(0x12193D33))
+            .tap(press, onClick = onClick).semantics { role = Role.Button },
+        contentAlignment = Alignment.Center,
+    ) { BasicText(label, style = Type.of(15, FontWeight.Bold).copy(color = Ink.text), maxLines = 1) }
 }
 
 /** وسم «اتدفعت» (أخضر) و«الجاية» (أصفر) — الباقي من غير وسم. */

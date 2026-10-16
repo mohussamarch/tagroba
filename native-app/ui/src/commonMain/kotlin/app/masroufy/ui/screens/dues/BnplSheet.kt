@@ -40,7 +40,7 @@ import app.masroufy.core.sentenceNumber
 import app.masroufy.ui.components.AmountText
 import app.masroufy.ui.components.PrimaryButton
 import app.masroufy.ui.components.TextInput
-import app.masroufy.ui.components.TonalButton
+
 import app.masroufy.ui.components.amountLabel
 import app.masroufy.ui.text.BasicText
 import app.masroufy.ui.text.t
@@ -121,7 +121,7 @@ internal fun ColumnScope.BnplSheetContent(
         val off = !s.setup && s.pick == null
         PrimaryButton(t(if (s.setup) UiKey.BNPL2_MAKE_PLAN else UiKey.BNPL2_CONFIRM), { s.answer(name)?.let(onAnswer) }, Modifier.weight(2f), enabled = !off, height = 52.dp)
         val later = if (s.setup) t(UiKey.BNPL2_SKIP) else t(UiKey.BNPL2_LATER)
-        TonalButton(later, { if (s.setup) onAnswer(BnplAnswer.Skip(t0.id)) else onLater() }, Modifier.weight(1f), height = 52.dp, muted = true)
+        BnplQuietButton(later, { if (s.setup) onAnswer(BnplAnswer.Skip(t0.id)) else onLater() }, Modifier.weight(1f))
     }
 }
 
