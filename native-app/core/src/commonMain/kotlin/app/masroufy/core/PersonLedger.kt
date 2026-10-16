@@ -118,13 +118,7 @@ fun personLedger(
             titleOf(t), false, 0L, 0L,
         )
     }
-    // بالترتيب الزمني (اللي من غير تاريخ الأول — أقدم حاجة) عشان الصافي يتراكم صح، وبعدين الأحدث الأول للعرض
-    val running = HashMap<Currency, Halalas>()
-    val chrono = raw.sortedWith(compareBy<PersonEntry>({ it.date }, { it.transactionId.orEmpty() }, { it.obligationId.orEmpty() })).map { e ->
-        val net = addMoney(running[e.currency] ?: 0L, e.effectMinor)
-        running[e.currency] = net
-        e.copy(netAfterMinor = net)
-    }
+    val chrono = withRunningNet(raw)
     val lines = obligations.map { o ->
         PersonDebtLine(o, remainingOfObligation(o, settlements), o.originTransactionId?.let(txns::get)?.occurredAt?.take(10).orEmpty())
     }.sortedWith(compareByDescending<PersonDebtLine> { it.date }.thenBy { it.obligation.id })
@@ -134,6 +128,34 @@ fun personLedger(
         PersonTotals(currency, owed, owe, subtractMoney(owed, owe))
     }
     return PersonLedger(chrono.reversed(), lines.filter { it.remainingMinor > 0 }, lines.filter { it.remainingMinor <= 0 }, totals)
+}
+
+/** بالترتيب الزمني (اللي من غير تاريخ الأول — أقدم حاجة) عشان الصافي يتراكم صح **لكل عملة لوحدها**؛ الشاشة بتعرض الأحدث الأول. */
+private fun withRunningNet(raw: List<PersonEntry>): List<PersonEntry> {
+    val running = HashMap<Currency, Halalas>()
+    return raw.sortedWith(compareBy<PersonEntry>({ it.date }, { it.transactionId.orEmpty() }, { it.obligationId.orEmpty() })).map { e ->
+        val net = addMoney(running[e.currency] ?: 0L, e.effectMinor)
+        running[e.currency] = net
+        e.copy(netAfterMinor = net)
+    }
+}
+
+/**
+ * صفحة الشخص في **كل البلاد** (رد المالك 2026-10-16 — A3): السجل كله مع بعض، والصافي بيتراكم لكل عملة لوحدها، والأرصدة لكل عملة لوحدها —
+ * عمر مبلغين بعملتين ما بيتجمعوا.
+ */
+fun mergePersonLedgers(ledgers: List<PersonLedger>): PersonLedger {
+    if (ledgers.size == 1) return ledgers.single()
+    val byDate = compareByDescending<PersonDebtLine> { it.date }.thenBy { it.obligation.id }
+    val totals = ledgers.flatMap { it.totals }.groupBy { it.currency }.map { (currency, list) ->
+        val owed = sumMoney(list.map { it.owedToYouMinor })
+        val owe = sumMoney(list.map { it.youOweMinor })
+        PersonTotals(currency, owed, owe, subtractMoney(owed, owe))
+    }
+    return PersonLedger(
+        withRunningNet(ledgers.flatMap { it.entries }).reversed(), ledgers.flatMap { it.open }.sortedWith(byDate),
+        ledgers.flatMap { it.settled }.sortedWith(byDate), totals,
+    )
 }
 
 /** ليه العملية دي متقترحة للشخص: نفس الحساب · نفس الاسم · نفس مبلغ دين مفتوح (بالترتيب ده في القوة). */
@@ -188,6 +210,8 @@ fun autoLinkTargets(parties: List<TransferParty>, txns: List<Transaction>, linke
         if (t.id in linked) return@mapNotNull null
         val ref = transferPartyOf(t) ?: return@mapNotNull null
         val party = autos.firstOrNull { partyMatches(it, ref) && t.occurredAt.take(10) >= it.autoSince.orEmpty().take(10) } ?: return@mapNotNull null
+        // A2/F3: المالك فك ربطها أو غيّر معناها ⇒ القاعدة عمرها ما ترجع عليها
+        if (autos.any { partyMatches(it, ref) && it.skips(t.id) }) return@mapNotNull null
         t to party
     }
 }

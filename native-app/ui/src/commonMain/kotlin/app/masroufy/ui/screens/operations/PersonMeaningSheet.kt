@@ -56,6 +56,8 @@ data class MeaningTarget(
     val amountMinor: Halalas,
     val currency: Currency,
     val personId: Id? = null,
+    /** شراء (F7): المعاني «دفعت عنه» · «هدية له» · «مع الشخص ده بس» ومعاها نصيب الشخص من المبلغ. */
+    val purchase: Boolean = false,
 )
 
 /** بعد الربط: الرسالة اللي تتعرض جنب «تراجع». */
@@ -114,8 +116,10 @@ internal fun PersonMeaningSheet(
     var meaning by remember { mutableStateOf<PersonMeaning?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
     var saving by remember { mutableStateOf(false) }
+    var amountText by remember { mutableStateOf("") }
     LaunchedEffect(target) {
         person = null; newName = null; query = ""; meaning = null; error = null; saving = false
+        amountText = target?.let { app.masroufy.ui.screens.budgets.inputText(it.amountMinor, it.currency) }.orEmpty()
         if (target == null) return@LaunchedEffect
         all = attempt { people.listWithBalances().map { it.person } }.orEmpty()
         target.personId?.let { id -> person = all.firstOrNull { it.id == id } }
@@ -141,9 +145,13 @@ internal fun PersonMeaningSheet(
             } else person?.let { BasicText(it.name, style = Type.of(15, FontWeight.Bold)) }
             FieldLabel(t(UiKey.PLINK_SHEET_MEANING))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                for (m in meaningsFor(tg.direction)) SelectChip(meaningLabel(m), meaning == m, { meaning = m; error = null }, height = 44.dp)
+                for (m in if (tg.purchase) app.masroufy.core.PURCHASE_MEANINGS else meaningsFor(tg.direction)) SelectChip(meaningLabel(m), meaning == m, { meaning = m; error = null }, height = 44.dp)
             }
             BasicText(t(UiKey.PLINK_SHEET_NOTE), style = Type.of(12).copy(color = Ink.muted))
+            if (tg.purchase) TextInput(
+                amountText, { amountText = it; error = null }, label = t(UiKey.LINK_PERSON_AMOUNT), placeholder = "0.00", ltr = true,
+                keyboard = androidx.compose.ui.text.input.KeyboardType.Decimal, unit = app.masroufy.core.currencySymbol(tg.currency),
+            )
             error?.let { FieldError(it) }
             PrimaryButton(t(UiKey.PLINK_SHEET_SAVE), loading = saving, height = 52.dp, modifier = Modifier.fillMaxWidth(), onClick = {
                 val m = meaning
@@ -152,9 +160,12 @@ internal fun PersonMeaningSheet(
                 saving = true
                 scope.launch {
                     var text = ""
+                    val share = if (tg.purchase) app.masroufy.core.tryParseMoney(amountText, tg.currency) else null
                     val err = failureOf {
-                        val p = person ?: people.addPerson(newName.orEmpty())
-                        text = linkedText(links.link(tg.transactionId, p.id, m), tg.currency)
+                        if (tg.purchase && share == null) throw IllegalArgumentException(t(UiKey.PLINK_ERR_AMOUNT))
+                        // F10: الشخص الجديد بيتضاف مرة واحدة — لو الربط فشل، المحاولة الجاية بتستعمله (مش «الاسم موجود»)
+                        val p = person ?: people.addPerson(newName.orEmpty()).also { created -> person = created; newName = null; all = all + created }
+                        text = linkedText(links.link(tg.transactionId, p.id, m, amountMinor = share), tg.currency)
                     }
                     saving = false
                     if (err != null) error = err else onLinked(PersonLinked(tg.transactionId, text))

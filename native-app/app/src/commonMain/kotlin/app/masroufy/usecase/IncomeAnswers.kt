@@ -127,7 +127,7 @@ class IncomeAnswers(private val deps: IncomeAnswersDeps) {
         /** «نوع آخر» في لوحة تغيير النوع — أنواع داخلة مالهاش أثر على شخص (السلفة والسداد ليهم «شخص أعرفه»). */
         val OTHER_KINDS: List<EconomicKind> = listOf(
             EconomicKind.BONUS, EconomicKind.GIFT_RECEIVED, EconomicKind.SUPPORT_RECEIVED, EconomicKind.REFUND_RECEIVED,
-            EconomicKind.BENEFIT_RECEIVED, EconomicKind.INVESTMENT_INCOME,
+            EconomicKind.BENEFIT_RECEIVED, EconomicKind.INVESTMENT_INCOME, EconomicKind.OTHER_INCOME,
         )
     }
 }

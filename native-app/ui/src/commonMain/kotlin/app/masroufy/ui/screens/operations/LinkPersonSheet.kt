@@ -58,15 +58,16 @@ fun LinkPersonCard(v: DetailView, locked: Boolean, openInitially: Boolean, flow:
     val deps = LocalSpace.current.operations
     val scope = rememberCoroutineScope()
     // r05: الحوالة والاسترداد ورسايل البنك بتتربط بـ«مع مين؟» (`ManagePersonLinks`) — الشراء بيفضل يتقسم هنا
-    val meaningFlow = v.flow != LinkFlow.PURCHASE && flow != null && deps.personLinks != null
+    // F7: الشراء كمان بيعدّي من «مع مين؟» (نفس `ManagePersonLinks`) — اللوحة القديمة بس لو الربط مش متوصل
+    val meaningFlow = flow != null && deps.personLinks != null
     val linked = flow?.status?.link
-    val blocked = locked || (v.flow != LinkFlow.PURCHASE && !meaningFlow) || (meaningFlow && linked != null)
-    var open by remember { mutableStateOf(openInitially && !blocked && v.flow == LinkFlow.PURCHASE) }
+    val blocked = locked || (v.flow != LinkFlow.PURCHASE && !meaningFlow) || (meaningFlow && (linked != null || flow?.status?.ledgerLinked == true))
+    var open by remember { mutableStateOf(openInitially && !blocked && v.flow == LinkFlow.PURCHASE && !meaningFlow) }
     var rows by remember(v.id) { mutableStateOf<List<PersonRow>>(emptyList()) }
     var added by remember(v.id) { mutableStateOf<List<PersonLinkLine>>(emptyList()) }
     var reload by remember { mutableStateOf(0) }
     LaunchedEffect(v.id, reload) { rows = attempt { deps.people.listWithBalances() }.orEmpty() }
-    val links = existingPersonLinks(rows, v.id) + added
+    val links = existingPersonLinks(rows, v.id, skipObligation = linked?.obligationId) + added
     val sub = when {
         locked -> t(UiKey.LINK_PERSON_LOCKED)
         meaningFlow -> t(UiKey.PLINK_CARD_SUB_TRANSFER)

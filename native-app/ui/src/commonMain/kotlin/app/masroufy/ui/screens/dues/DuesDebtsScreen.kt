@@ -102,6 +102,8 @@ fun DuesDebtsScreen(initialSide: DebtSide) {
                 val d = s.value
                 val ui = duesDebtsUi(d.people, d.totals, d.dues, d.today, space.space.currency, side, query)
                 if (ui.empty) {
+                    // F6: مفيش ديون لسه (المالك علّم بالتصنيف بس) ⇒ الكارت قبل الحالة الفاضية عشان يربطها
+                    item(key = "needs-person") { app.masroufy.ui.screens.people.NeedsPersonCard() }
                     item {
                         EmptyState(t(UiKey.DEBTS_EMPTY_TITLE), t(UiKey.DEBTS_EMPTY_BODY), action = {
                             PrimaryButton(t(UiKey.DEBTS_EMPTY_GO), { nav.switchTab(Tab.PEOPLE) })

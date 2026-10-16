@@ -43,14 +43,19 @@ internal const val NEEDS_PERSON_SHOWN = 5
  * «الديون» و«لك/عليك» — ضغطة على أي واحدة ⇒ «مع مين؟» ⇒ ربط بـ«تراجع». مفيش ⇒ الكارت ما بيظهرش.
  */
 @Composable
-internal fun NeedsPersonCard(modifier: Modifier = Modifier, personId: String? = null) {
+internal fun NeedsPersonCard(modifier: Modifier = Modifier, personId: String? = null, onDemand: Boolean = false) {
     val space = LocalSpace.current
     val links = space.people.links ?: return
     val scope = rememberCoroutineScope()
     val toaster = LocalToaster.current
     val version = PeopleChanges.version
     var rows by remember { mutableStateOf<List<NeedsPersonRow>>(emptyList()) }
-    LaunchedEffect(links, version) { rows = runCatching { links.needsPerson() }.getOrDefault(emptyList()) }
+    // صفحة الشخص (السرعة): القايمة دي بتقرا كل العمليات ⇒ بتتحمّل لما المالك يطلبها بس، وبرّه الخيط الرئيسي
+    var wanted by remember { mutableStateOf(!onDemand) }
+    var expanded by remember { mutableStateOf(false) }
+    LaunchedEffect(links, version, wanted) {
+        if (wanted) rows = runCatching { kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) { links.needsPerson() } }.getOrDefault(emptyList())
+    }
     var target by remember { mutableStateOf<MeaningTarget?>(null) }
     var undo by remember { mutableStateOf<PersonLinked?>(null) }
     val window = undoWindowFor(undo) { undo = null }
@@ -65,6 +70,9 @@ internal fun NeedsPersonCard(modifier: Modifier = Modifier, personId: String? = 
                 }
             }
         }
+        if (!wanted) {
+            app.masroufy.ui.components.SecondaryButton(t(UiKey.PLINK_NEEDS_CHECK), onClick = { wanted = true }, modifier = Modifier.fillMaxWidth())
+        }
         if (rows.isNotEmpty()) FloatingCard(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)) {
             Row(Modifier.padding(top = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 LucideIcon(Lucide.USERS, size = 18.dp, tint = Ink.focus)
@@ -72,12 +80,16 @@ internal fun NeedsPersonCard(modifier: Modifier = Modifier, personId: String? = 
                 Pill(sentenceNumber(rows.size), Ink.focus, Ink.alertBg)
             }
             BasicText(t(UiKey.PLINK_NEEDS_LIST_BODY), Modifier.padding(vertical = 4.dp), style = Type.caption().copy(color = Ink.muted))
-            val shown = rows.take(NEEDS_PERSON_SHOWN)
+            val shown = if (expanded) rows else rows.take(NEEDS_PERSON_SHOWN)
             shown.forEachIndexed { i, r ->
-                OpRow(r.transaction, r.categoryName, today, i == shown.lastIndex && rows.size <= NEEDS_PERSON_SHOWN) { target = targetOf(r.transaction, personId) }
+                OpRow(r.transaction, r.categoryName, today, i == shown.lastIndex && shown.size == rows.size) { target = targetOf(r.transaction, personId) }
             }
-            if (rows.size > NEEDS_PERSON_SHOWN) {
-                BasicText(t(UiKey.PLINK_NEEDS_MORE, sentenceNumber(rows.size - NEEDS_PERSON_SHOWN)), Modifier.padding(vertical = 10.dp), style = Type.caption().copy(color = Ink.muted))
+            // F8: «و{N} كمان» بيفتح الباقي كله في نفس الكارت (كل سطر بضغطة واحدة)
+            if (shown.size < rows.size) {
+                app.masroufy.ui.components.SecondaryButton(
+                    t(UiKey.PLINK_NEEDS_MORE, sentenceNumber(rows.size - shown.size)), onClick = { expanded = true },
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                )
             }
         }
     }

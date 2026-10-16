@@ -59,7 +59,8 @@ internal fun whyLabel(w: SuggestWhy): String = t(
     },
 )
 
-internal fun targetOf(t: Transaction, personId: Id?): MeaningTarget = MeaningTarget(t.id, t.observedDirection, opTitle(t), t.amountMinor, t.currency, personId)
+internal fun targetOf(t: Transaction, personId: Id?): MeaningTarget =
+    MeaningTarget(t.id, t.observedDirection, opTitle(t), t.amountMinor, t.currency, personId, purchase = app.masroufy.core.isPurchaseShaped(t))
 
 /**
  * «اربط عمليات موجودة» في صفحة الشخص (المالك 2026-10-16): اقتراحات (نفس الحساب · نفس الاسم · نفس مبلغ دين مفتوح) بضغطة ⇒ «معناها إيه؟» ⇒ ربط
@@ -72,7 +73,11 @@ internal fun PersonLinkOpsCard(personId: Id, personName: String, links: ManagePe
     val toaster = LocalToaster.current
     val version = PeopleChanges.version
     var suggestions by remember(personId) { mutableStateOf<List<PersonSuggestion>?>(null) }
-    LaunchedEffect(personId, version) { suggestions = runCatching { links.page.suggestions(personId) }.getOrNull() }
+    // السرعة: الاقتراحات بتقرا كل العمليات ⇒ لما المالك يطلبها بس، وبرّه الخيط الرئيسي
+    var wanted by remember(personId) { mutableStateOf(false) }
+    LaunchedEffect(personId, version, wanted) {
+        if (wanted) suggestions = runCatching { kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) { links.page.suggestions(personId) } }.getOrNull()
+    }
     var target by remember { mutableStateOf<MeaningTarget?>(null) }
     var undo by remember { mutableStateOf<PersonLinked?>(null) }
     val window = undoWindowFor(undo) { undo = null }
@@ -103,6 +108,7 @@ internal fun PersonLinkOpsCard(personId: Id, personName: String, links: ManagePe
         FloatingCard(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)) {
             BasicText(t(UiKey.PLINK_SUG_BODY), Modifier.padding(top = 10.dp), style = Type.caption().copy(color = Ink.muted))
             val list = suggestions.orEmpty()
+            if (!wanted) SecondaryButton(t(UiKey.PLINK_SUG_SHOW), onClick = { wanted = true }, modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp))
             if (suggestions != null && list.isEmpty()) BasicText(t(UiKey.PLINK_SUG_EMPTY), Modifier.padding(vertical = 12.dp), style = Type.body().copy(color = Ink.muted))
             list.forEachIndexed { i, s -> OpRow(s.transaction, whyLabel(s.why), today, i == list.lastIndex) { target = targetOf(s.transaction, personId) } }
         }

@@ -123,7 +123,7 @@ class OperationsGraph(private val c: AreaContext) : OperationsDeps {
     override val recentCategories = app.masroufy.usecase.RecentCategories(r.transactions, r.categories, clock)
     override val quickLinks = app.masroufy.usecase.QuickLinks(app.masroufy.usecase.QuickLinksDeps(r.transactions, linkedInflows, r.incomeSources, incomeAnswers))
     override val partyAnswers = app.masroufy.usecase.TransferPartyAnswers(
-        app.masroufy.usecase.TransferPartyAnswersDeps(r.transactions, r.transferParties, transfers, transferAsks, kinds, personLedger, r.uow, clock),
+        app.masroufy.usecase.TransferPartyAnswersDeps(r.transactions, r.transferParties, transfers, transferAsks, kinds, personLedger, r.uow, clock, rules = personLinks.rules),
     )
 
     override suspend fun payday(): Int = c.shell.profile.load().payday

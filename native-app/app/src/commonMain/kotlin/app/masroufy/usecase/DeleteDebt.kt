@@ -6,14 +6,19 @@ import app.masroufy.core.Halalas
 import app.masroufy.core.Id
 import app.masroufy.core.Obligation
 import app.masroufy.core.PersonAllocation
+import app.masroufy.core.PersonLink
 import app.masroufy.core.Settlement
+import app.masroufy.core.Transaction
 import app.masroufy.core.UiKey
 import app.masroufy.core.sumMoney
 import app.masroufy.core.uiText
 import app.masroufy.port.AllocationRepository
+import app.masroufy.port.Clock
 import app.masroufy.port.DebtTermsRepository
 import app.masroufy.port.ObligationRepository
+import app.masroufy.port.PersonLinkRepository
 import app.masroufy.port.SettlementRepository
+import app.masroufy.port.TransactionRepository
 import app.masroufy.port.UnitOfWork
 
 /**
@@ -23,6 +28,8 @@ import app.masroufy.port.UnitOfWork
  *   قصاد `obl-X`، أو (معرّفات قديمة عشوائية) نفس العملية والشخص والمبلغ. من غيره المصروف كان هيفضل ناقص نصيبه.
  * - **التسويات** (سداد/تحصيل) على الدين ⇒ بتتشال معاه، و**العمليات نفسها بتفضل** زي ما هي (الفلوس اتحركت فعلًا).
  * - **ميعاد الدين** (`DebtTerms`).
+ * - **ربط العملية بالشخص** (`PersonLink` — r05 · F1): الربط اللي عمل الدين أو النصيب بيتشال ونوع العملية بيرجع زي ما كان قبل الربط؛ الربط
+ *   اللي سدّد من الدين ده بس بيفضل من غير السدادات دي. من غيره النسخة الشاملة كانت بترفض (`BACKUP_RELATION_MISSING`).
  * قاعدة Claude المحافظة (سؤال مفتوح للمالك): التسويات بتتشال مع الدين **بعد تأكيد بيعدّها** ([DebtRemoval.settlements]) بدل ما المسح
  * يترفض — مفيش شاشة تمسح تسوية لوحدها، فالرفض كان هيقفل الدين للأبد. العملية اللي الدين اتعمل منها ما بتتلمسش (نوعها قرار لوحده).
  * [restore] = «تراجع»: بيرجّع نفس المستندات بنفس معرّفاتها بالظبط.
@@ -32,6 +39,10 @@ data class DebtRemoval(
     val settlements: List<Settlement>,
     val allocations: List<PersonAllocation>,
     val terms: DebtTerms?,
+    /** روابط الأشخاص زي ما كانت قبل المسح ([DeleteDebt.restore] بيرجّعها بالظبط). */
+    val links: List<PersonLink> = emptyList(),
+    /** العمليات اللي نوعها رجع لما ربطها اتشال — زي ما كانت قبل المسح. */
+    val transactionsBefore: List<Transaction> = emptyList(),
 ) {
     /** مجموع التسويات اللي هتتشال مع الدين (للتأكيد). */
     val settledMinor: Halalas get() = sumMoney(settlements.map { it.amountMinor })
@@ -47,6 +58,10 @@ data class DeleteDebtDeps(
     val uow: UnitOfWork,
     /** مواعيد الديون — null (اختبارات قديمة) ⇒ مفيش مواعيد تتشال. */
     val terms: DebtTermsRepository? = null,
+    /** روابط الأشخاص (r05 · F1) — null (اختبارات قديمة) ⇒ مفيش روابط. */
+    val links: PersonLinkRepository? = null,
+    val txns: TransactionRepository? = null,
+    val clock: Clock? = null,
 )
 
 class DeleteDebt(private val deps: DeleteDebtDeps) {
@@ -56,7 +71,14 @@ class DeleteDebt(private val deps: DeleteDebtDeps) {
         val obligation = mine.firstOrNull { it.id == obligationId } ?: throw IllegalStateException(uiText(UiKey.ERASE_DEBT_GONE))
         val settlements = deps.settlements.listByObligations(listOf(obligation.id))
         val terms = deps.terms?.listAll()?.firstOrNull { it.obligationId == obligation.id }
-        return DebtRemoval(obligation, settlements, pairedAllocations(obligation, mine), terms)
+        val paired = pairedAllocations(obligation, mine)
+        val links = linksTouching(obligation, settlements, paired)
+        // النصيب اللي ربط الشراء كتبه مع الدين بيتشال معاه حتى لو معرّفه مش متزاوج
+        val linkAllocations = links.filter { it.obligationId == obligation.id }.mapNotNull { it.allocationId }.filter { id -> paired.none { it.id == id } }
+        val allocations = paired + if (linkAllocations.isEmpty()) emptyList() else deps.allocations.listByTransactionIds(links.map { it.transactionId }).filter { it.id in linkAllocations }
+        val reverted = links.filter { owns(it, obligation, allocations) && it.kindBefore != null }.map { it.transactionId }
+        val before = if (reverted.isEmpty()) emptyList() else deps.txns?.findByIds(reverted).orEmpty()
+        return DebtRemoval(obligation, settlements, allocations, terms, links, before)
     }
 
     /** بيمسح الدين واللي معاه ذرّيًا (نفس وحدة العمل) وبيرجّع اللي اتشال عشان «تراجع». */
@@ -67,6 +89,13 @@ class DeleteDebt(private val deps: DeleteDebtDeps) {
             if (removal.allocations.isNotEmpty()) deps.allocations.deleteMany(removal.allocations.map { it.id })
             if (removal.terms != null) deps.terms?.remove(removal.obligation.id)
             deps.obligations.deleteMany(listOf(removal.obligation.id))
+            val gone = removal.settlements.map { it.id }.toSet()
+            for (l in removal.links) {
+                if (owns(l, removal.obligation, removal.allocations)) {
+                    deps.links?.deleteMany(listOf(l.transactionId))
+                    deps.txns?.let { revertLinkKind(it, l, deps.clock?.nowIso()) }
+                } else deps.links?.saveMany(listOf(l.copy(settlementIds = l.settlementIds.filter { it !in gone })))
+            }
         }
         return removal
     }
@@ -78,8 +107,26 @@ class DeleteDebt(private val deps: DeleteDebtDeps) {
             if (removal.allocations.isNotEmpty()) deps.allocations.saveMany(removal.allocations)
             if (removal.settlements.isNotEmpty()) deps.settlements.saveMany(removal.settlements)
             removal.terms?.let { deps.terms?.save(it) }
+            if (removal.links.isNotEmpty()) deps.links?.saveMany(removal.links)
+            if (removal.transactionsBefore.isNotEmpty()) deps.txns?.saveMany(removal.transactionsBefore)
         }
     }
+
+    /** روابط الأشخاص اللي بتشاور على الدين ده أو نصيبه أو سداداته. */
+    private suspend fun linksTouching(obligation: Obligation, settlements: List<Settlement>, allocations: List<PersonAllocation>): List<PersonLink> {
+        val repo = deps.links ?: return emptyList()
+        val txnIds = (listOfNotNull(obligation.originTransactionId) + settlements.map { it.transactionId } + allocations.map { it.transactionId })
+            .filter { it.isNotEmpty() }.distinct()
+        if (txnIds.isEmpty()) return emptyList()
+        val stl = settlements.map { it.id }.toSet()
+        return repo.listByTransactionIds(txnIds).filter { l ->
+            l.obligationId == obligation.id || allocations.any { it.id == l.allocationId } || l.settlementIds.any { it in stl }
+        }
+    }
+
+    /** الربط ده هو اللي عمل الدين أو النصيب ⇒ بيتشال كله (مش بس سداداته). */
+    private fun owns(l: PersonLink, obligation: Obligation, allocations: List<PersonAllocation>): Boolean =
+        l.obligationId == obligation.id || allocations.any { it.id == l.allocationId }
 
     /**
      * نصيب الشخص اللي اتكتب مع الدين: بالمعرّف المتزاوج (`obl-X` ⇒ `alloc-X`) لو موجود، وإلا (معرّفات عشوائية) تخصيص «لك عنده» على نفس

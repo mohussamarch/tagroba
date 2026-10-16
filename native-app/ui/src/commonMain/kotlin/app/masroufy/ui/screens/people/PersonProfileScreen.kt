@@ -73,10 +73,12 @@ internal fun PersonProfileScreen(personId: String) {
     // r05: «السجل بينا» والحسابات المربوطة (`ManagePersonLinks`) — فشلها ما بيوقعش الصفحة (بيرجع للسجل القديم)
     var ledger by remember(deps, personId) { mutableStateOf<Pair<LedgerUi, app.masroufy.usecase.PersonPageData>?>(null) }
     LaunchedEffect(deps, personId, version, retry) {
+        // A2: القواعد بتشتغل لحظة التسجيل (مش هنا) · A3: كل البلاد · السرعة: بالفهرس وبرّه الخيط الرئيسي
         ledger = deps.people.links?.let { l ->
             runCatching {
-                runCatching { l.accounts.applyAuto() }
-                l.page.load(personId)?.let { d -> ledgerUi(d.ledger, d.accounts.size, deps.shell.today()) to d }
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
+                    l.page.load(personId, deps.people.otherSpaceLinks())?.let { d -> ledgerUi(d.ledger, d.accounts.size, deps.shell.today()) to d }
+                }
             }.getOrNull()
         }
         load = loadOf {
@@ -105,7 +107,7 @@ internal fun PersonProfileScreen(personId: String) {
             is Load.Ready -> {
                 val ui = l.value
                 if (ui == null) item { Head(null, top) { nav.pop() }; EmptyState(t(UiKey.PERSON_PAGE_NOT_FOUND)) }
-                else personBody(ui, top, ledger, deps.shell.today(), { nav.push(app.masroufy.ui.screens.operations.OperationDetailRoute(it)) }, { nav.push(DebtDetailRoute(it)) }) { nav.pop() }
+                else personBody(ui, top, ledger, deps.shell.today(), { nav.push(app.masroufy.ui.screens.operations.OperationDetailRoute(it)) }, { if (!it.startsWith(app.masroufy.usecase.ABROAD_ID_PREFIX)) nav.push(DebtDetailRoute(it)) }) { nav.pop() }
             }
         }
     }
@@ -149,7 +151,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.personBody(
             if (links != null) PersonAccountsCard(ui.id, ui.name, ledger.second.accounts, links, section)
         }
         // العمليات اللي اتعلّمت بتصنيف «فلوس مع شخص» ومش مربوطة ⇒ ضغطة ⇒ «معناها إيه؟» على الشخص ده
-        item(key = "needs-person") { NeedsPersonCard(section, personId = ui.id) }
+        item(key = "needs-person") { NeedsPersonCard(section, personId = ui.id, onDemand = true) }
         item(key = "link-ops") {
             val links = app.masroufy.ui.app.LocalSpace.current.people.links
             if (links != null) PersonLinkOpsCard(ui.id, ui.name, links, today, section)

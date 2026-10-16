@@ -23,8 +23,8 @@ data class PersonLinkLine(val label: String, val amountMinor: Halalas, val curre
 data class EffectLine(val label: String, val value: String, val tone: AmountTone?)
 
 /** الديون اللي اتعملت من العملية دي قبل كده (`ManagePeople.listWithBalances` ⇒ التزامات أصلها العملية). الهدايا ما بتبانش هنا (مالهاش التزام). */
-fun existingPersonLinks(rows: List<PersonRow>, transactionId: Id): List<PersonLinkLine> = rows.flatMap { row ->
-    row.obligations.filter { it.obligation.originTransactionId == transactionId && it.obligation.kind == ObligationKind.RECEIVABLE }.map {
+fun existingPersonLinks(rows: List<PersonRow>, transactionId: Id, skipObligation: Id? = null): List<PersonLinkLine> = rows.flatMap { row ->
+    row.obligations.filter { it.obligation.originTransactionId == transactionId && it.obligation.kind == ObligationKind.RECEIVABLE && it.obligation.id != skipObligation }.map {
         PersonLinkLine(t(UiKey.LINK_PERSON_LINE, row.person.name, t(UiKey.LINK_PERSON_KIND_RECEIVABLE)), it.obligation.originalMinor, it.obligation.currency, AmountTone.INCOME)
     }
 }

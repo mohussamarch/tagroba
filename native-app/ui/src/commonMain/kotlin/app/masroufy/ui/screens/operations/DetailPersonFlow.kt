@@ -46,7 +46,7 @@ class DetailPersonFlow {
     var undo by mutableStateOf<PersonLinked?>(null)
 
     fun ask(v: DetailView) {
-        target = MeaningTarget(v.id, v.transaction.observedDirection, v.title, v.amountMinor, v.currency)
+        target = MeaningTarget(v.id, v.transaction.observedDirection, v.title, v.amountMinor, v.currency, purchase = app.masroufy.core.isPurchaseShaped(v.transaction))
     }
 
     /** بعد ما التصنيف يتحفظ: لو بقى «فلوس مع شخص» والعملية مش مربوطة ⇒ «مع مين؟» على طول (طريق المالك نفسه). */

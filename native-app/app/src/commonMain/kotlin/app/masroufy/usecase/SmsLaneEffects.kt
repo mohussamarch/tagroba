@@ -28,6 +28,8 @@ fun smsRecordEffects(
     /** §82-10: رسالة الرسوم اللي اتسجلت قبل التحويل بتتلاقى (`SmsFeeTwins`) — من غيرهم الدفعة نفسها بس. */
     txns: TransactionRepository? = null,
     sources: SourceRecordRepository? = null,
+    /** A2: قواعد الحسابات المربوطة بشخص لحظة التسجيل ([PersonRulesEffect]) — آخر واحد، بعد ما كل الآثار التانية خلصت. */
+    personRules: RecordEffect? = null,
 ): List<RecordEffect> = buildList {
     add(OwnAccountByLast4Effect(wallets))
     add(SmsSalaryEffect(inbox, spaceId))
@@ -37,4 +39,5 @@ fun smsRecordEffects(
     add(RefundConfirmEffect())
     remember?.let(::add)
     subscriptions?.let { add(SubscriptionChargeEffect(it)) }
+    personRules?.let(::add)
 }

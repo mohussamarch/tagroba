@@ -26,6 +26,9 @@ interface PeopleDeps {
     /** صفحة الشخص (r05): «السجل بينا» · الحسابات المربوطة · اربط عمليات · أضف عملية · «محتاجة تربطها بشخص». null ⇒ الأقسام دي ما بتظهرش. */
     val links: app.masroufy.usecase.ManagePersonLinks? get() = null
 
+    /** A3: نفس [links] في البلاد التانية المفتوحة (صفحة الشخص بكل العملات). */
+    suspend fun otherSpaceLinks(): List<app.masroufy.usecase.ManagePersonLinks> = emptyList()
+
     /** الدواير والقايمة بالأرصدة — `forSpace(النهارده، البلد الشغالة)` (سطر لكل بلد وعملة، من غير جمع). */
     val overview: LoadPeopleOverview
 

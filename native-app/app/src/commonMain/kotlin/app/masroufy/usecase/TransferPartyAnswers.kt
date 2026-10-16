@@ -39,6 +39,11 @@ data class TransferPartyAnswersDeps(
     val ledger: PersonLedgerRepos,
     val uow: UnitOfWork,
     val clock: Clock,
+    /**
+     * A2 (OVERRIDES §98): «مستحقات دايمًا» بيسجّل السداد كربط بالشخص (`PersonRules.dues`) ⇒ «فك الربط» على العملية والمالك لو فكّه ما بيرجعش.
+     * null (اختبارات قديمة) ⇒ نفس طريق «ده سداد؟» القديم.
+     */
+    val rules: PersonRules? = null,
 )
 
 /** تراجع عن رد واحد: القرار قبله (null = ما كانش فيه) · العمليات قبله · العمليات اللي اتسجل عليها سداد. */
@@ -125,7 +130,8 @@ class TransferPartyAnswers(private val deps: TransferPartyAnswersDeps) {
 
     /** «تراجع»: السداد اللي الرد سجّله بيتشال · العمليات زي ما كانت · القرار القديم (أو مفيش). */
     suspend fun undo(u: PartyUndo) {
-        val writes = if (u.settledIds.isEmpty()) null else deps.ledger.askWrites(deps.ledger.linksOf(u.settledIds).values, withLoans = false)
+        deps.rules?.let { r -> u.settledIds.forEach { r.undo(it) } }
+        val writes = if (u.settledIds.isEmpty() || deps.rules != null) null else deps.ledger.askWrites(deps.ledger.linksOf(u.settledIds).values, withLoans = false)
         deps.uow.run {
             writes?.let { deps.ledger.remove(it) }
             if (u.transactions.isNotEmpty()) deps.txns.saveMany(u.transactions.map { it.copy(updatedAt = deps.clock.nowIso()) })
@@ -168,7 +174,7 @@ class TransferPartyAnswers(private val deps: TransferPartyAnswersDeps) {
     }
 
     private suspend fun settleAll(incoming: List<Transaction>): List<Id> =
-        incoming
+        deps.rules?.let { r -> incoming.sortedWith(compareBy({ it.occurredAt }, { it.id })).filter { r.dues(it) }.map { it.id } } ?: incoming
             .sortedWith(compareBy({ it.occurredAt }, { it.id }))
             .mapNotNull { t ->
                 val pending = runCatching { deps.asks.askOf(t.id) }.getOrNull() == AskKind.DEBT_REPAYMENT

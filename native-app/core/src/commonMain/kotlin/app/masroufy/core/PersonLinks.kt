@@ -90,11 +90,31 @@ fun obligationKindFor(meaning: PersonMeaning): ObligationKind? = when (meaning) 
     else -> null
 }
 
-/** التصنيفات اللي معناها «فلوس مع شخص» ([isPersonCategory] على الاسم) ومعاها فروعها. */
+/**
+ * التصنيفات اللي معناها «فلوس مع شخص» ومعاها فروعها (رد المالك 2026-10-16 — OVERRIDES §98 · A1): **سلف · ديون · قروض · مستحقات · تحويل
+ * لأشخاص** بس. المزروعة بمعرّفها ([PERSON_SEED_CATEGORY_IDS])، واللي المالك عملها بنفسه بكلمة كاملة من [PERSON_CATEGORY_WORDS] — عمرها ما
+ * تبقى «العناية الشخصية» ولا أي تصنيف مزروع تاني. فروع «المستحقات» اللي النظام بيحطها لوحده (جمعيات · تمويل · تقسيط مشتريات — مع جهة مش
+ * شخص) برّه (اختيار Claude — HANDOVER §6).
+ */
 fun personCategoryIds(categories: List<Category>): Set<Id> {
     val roots = categories.filter(::isPersonCategory).map { it.id }.toSet()
-    return roots + categories.filter { it.parentId in roots }.map { it.id }
+    return roots + categories.filter { it.parentId in roots && it.id !in DUES_SYSTEM_SUBS }.map { it.id }
 }
+
+/** «تحويلات › تحويل لأشخاص» (البذرة) و«المستحقات» (`DuesCategories`). */
+val PERSON_SEED_CATEGORY_IDS: Set<Id> = setOf(seedCategoryId("تحويلات", "تحويل لأشخاص"), DuesCategories.ROOT)
+
+private val DUES_SYSTEM_SUBS: Set<Id> = setOf(DuesCategories.ROSCAS, DuesCategories.FINANCING, DuesCategories.PURCHASE_PLANS)
+
+/** الكلمات (بعد التطبيع وشيل «ال» و«و» و«ل» و«ب») اللي بتخلّي تصنيف عمله المالك «فلوس مع شخص» — كلمة كاملة بالظبط، مش جزء من كلمة. */
+val PERSON_CATEGORY_WORDS: Set<String> =
+    setOf("سلف", "سلفه", "سلفيات", "دين", "ديون", "قرض", "قروض", "مستحق", "مستحقات", "مستحقه", "اشخاص", "شخص", "تحويل لاشخاص")
+
+/** المعاني اللي تنفع لشراء (نصيب شخص فيه): «دفعت عنه» · «هدية له» · «مع الشخص ده بس». */
+val PURCHASE_MEANINGS: List<PersonMeaning> = listOf(PersonMeaning.LENT, PersonMeaning.GAVE, PersonMeaning.WITH)
+
+/** قواعد الحساب ده اتمنعت على العملية دي؟ (المالك فك ربطها أو غيّر معناها — A2). */
+fun TransferParty.skips(transactionId: Id): Boolean = transactionId in autoSkip
 
 /** المعنى اللي بيتحط لوحده على تحويلات حساب مربوط بشخص («سجّل تحويلاته لوحده»): مستحقات · سلفة · هدية · دعم · حاجة تانية. */
 enum class AutoMeaning(val wire: String) {
@@ -145,14 +165,22 @@ fun isLast4(text: String): Boolean = text.length == 4 && text.all { it in '0'..'
 fun partyMatches(party: TransferParty, ref: TransferPartyRef): Boolean =
     ref.key == party.key || (party.key.startsWith("#") && party.last4 != null && ref.last4 == party.last4)
 
-private val PERSON_CATEGORY_ROOTS = listOf("سلف", "دين", "ديون", "قرض", "قروض", "اشخاص", "شخص")
 private val ARTICLE_PREFIXES = listOf("وال", "بال", "لل", "ال", "و", "ل", "ب")
 
 /**
- * التصنيف ده معناه «فلوس مع شخص»؟ (طريق المالك نفسه — اختار تصنيف زي «تحويل لأشخاص» أو سلفة أو دين). بالاسم المطبّع: أي كلمة أصلها سلف ·
- * دين · ديون · قرض · أشخاص (بعد «ال» و«ل» و«و»). ⚠️ القايمة دي اختيار Claude — مستنية تأكيد المالك (HANDOVER §6).
+ * التصنيف ده معناه «فلوس مع شخص»؟ المزروع بمعرّفه بس ([PERSON_SEED_CATEGORY_IDS]) — الاسم ما بيتبصلوش (عشان «العناية الشخصية»). اللي المالك
+ * عمله: كلمة كاملة من [PERSON_CATEGORY_WORDS] بعد التطبيع (أو الاسم كله زي «تحويل لأشخاص»).
  */
-fun isPersonCategory(category: Category): Boolean = normalizeText(category.name).split(' ').any { word ->
-    val bare = ARTICLE_PREFIXES.firstOrNull { word.startsWith(it) && word.length - it.length >= 3 }?.let { word.removePrefix(it) } ?: word
-    PERSON_CATEGORY_ROOTS.any { bare.startsWith(it) || word.startsWith(it) }
+fun isPersonCategory(category: Category): Boolean {
+    if (category.id in PERSON_SEED_CATEGORY_IDS) return true
+    if (category.id.startsWith(SEED_CATEGORY_PREFIX)) return false
+    val name = normalizeText(category.name)
+    if (name in PERSON_CATEGORY_WORDS) return true
+    return name.split(' ').any { word ->
+        val bare = ARTICLE_PREFIXES.firstOrNull { word.startsWith(it) && word.length - it.length >= 3 }?.let { word.removePrefix(it) } ?: word
+        bare in PERSON_CATEGORY_WORDS || word in PERSON_CATEGORY_WORDS
+    }
 }
+
+/** معرّفات التصنيفات المزروعة (`seedCategoryId` · المستحقات · الدخل · رسوم البنك) — اللي المالك بيعمله `category-…`. */
+private const val SEED_CATEGORY_PREFIX = "cat-"

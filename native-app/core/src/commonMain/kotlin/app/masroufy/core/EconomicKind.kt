@@ -30,6 +30,8 @@ enum class EconomicKind(val wire: String) {
     ROSCA_CONTRIBUTION("rosca_contribution"), INSTALLMENT_PAID("installment_paid"), FINANCING_RECEIVED("financing_received"),
     // مكافأة نهاية الخدمة — رد المالك §64-٧ (اختيار Claude: نوع لوحده، دخل مرة واحدة)
     END_OF_SERVICE("end_of_service"),
+    // «دخل تاني» — رد المالك 2026-10-16 (OVERRIDES §98 · A4): «حاجة تانية (أكتبها)» في «مَن هذا؟» = دخل باسم المالك كتبه
+    OTHER_INCOME("other_income"),
     // لسه ما اتحددش
     UNCLASSIFIED("unclassified");
 
@@ -131,6 +133,8 @@ private val RULES: Map<EconomicKind, EconomicKindRule> =
         // مكافأة نهاية الخدمة (رد المالك §64-٧): دخل، بس **مرة واحدة** زي النقوط ⇒ برا متوسطات الدخل ([NOT_IN_INCOME_AVERAGES]).
         // وارد بس — الصادر بيترفض بفحص الاتجاه
         rule(END_OF_SERVICE, TextKey.KIND_END_OF_SERVICE, Liquidity.IN, true, false, PersonEffect.NONE),
+        // «دخل تاني» (A4): دخل عادي في شهره · مالوش أثر على شخص · الاسم اللي المالك كتبه بيتعرض عنوان العملية
+        rule(OTHER_INCOME, TextKey.KIND_OTHER_INCOME, Liquidity.IN, true, false, PersonEffect.NONE),
     )
 
 fun ruleFor(kind: EconomicKind): EconomicKindRule = RULES.getValue(kind)

@@ -15,6 +15,7 @@ import app.masroufy.core.TransferVerdict
 import app.masroufy.core.UiKey
 import app.masroufy.core.Wallet
 import app.masroufy.core.autoLinkTargets
+import app.masroufy.core.mergePersonLedgers
 import app.masroufy.core.manualPartyKey
 import app.masroufy.core.meaningForAuto
 import app.masroufy.core.operationKindFor
@@ -27,25 +28,48 @@ import app.masroufy.core.transferPartyOf
 import app.masroufy.core.typedLast4
 import app.masroufy.core.uiText
 
-/** صفحة الشخص: هو · «السجل بينا» بالديون والأرصدة · حساباته المربوطة. */
+/** صفحة الشخص: هو · «السجل بينا» بالديون والأرصدة (كل البلاد — A3) · حساباته المربوطة (البلد الشغالة). */
 data class PersonPageData(val person: Person, val ledger: PersonLedger, val accounts: List<TransferParty>)
+
+/** دين من بلد تانية في صفحة الشخص (A3): معرّفه بيبدأ بده ⇒ الشاشة ما بتفتحوش (صفحة الدين بتقرا البلد الشغالة بس). */
+const val ABROAD_ID_PREFIX = "abroad:"
 
 /**
  * صفحة الشخص (المالك 2026-10-16: «إيه اللي بيني وبينه؟ وإيه الحساب المربوط بيه؟»): «السجل بينا» من الروابط والديون والسدادات وتحويلات حساباته
  * (`personLedger` في `core`) · «اربط عمليات موجودة» (اقتراحات + بحث في اللي **مش مربوط** بحد).
  */
 class LoadPersonPage internal constructor(private val deps: PersonLinksDeps, private val owner: ManagePersonLinks) {
-    suspend fun load(personId: Id): PersonPageData? {
+    /**
+     * [others] = نفس الحالة في البلاد التانية (A3): سجلها وأرصدتها بتتضاف — كل عملة لوحدها (`mergePersonLedgers`)، وسطورها ما بتتفتحش من هنا.
+     * السرعة: بالشخص (الروابط والديون بمعرّفه) وبمفتاح الحساب (`PartyTxnIndex`) — من غير قراية كل العمليات في كل فتحة.
+     */
+    suspend fun load(personId: Id, others: List<ManagePersonLinks> = emptyList()): PersonPageData? {
         val person = deps.people.listAll().firstOrNull { it.id == personId } ?: return null
+        val accounts = owner.accounts.of(personId)
+        val abroad = others.mapNotNull { o -> runCatching { o.page.ledgerHere(personId).abroad() }.getOrNull() }
+        return PersonPageData(person, mergePersonLedgers(listOf(ledgerOf(personId, accounts)) + abroad), accounts)
+    }
+
+    /** سجل الشخص في البلد دي بس (للبلاد التانية في صفحته). */
+    internal suspend fun ledgerHere(personId: Id): PersonLedger = ledgerOf(personId, owner.accounts.of(personId))
+
+    private suspend fun ledgerOf(personId: Id, accounts: List<TransferParty>): PersonLedger {
         val links = deps.links.listByPerson(personId)
         val obligations = deps.obligations.listByPerson(personId)
         val settlements = deps.settlements.listByObligations(obligations.map { it.id })
-        val accounts = owner.accounts.of(personId)
-        val ids = (links.map { it.transactionId } + obligations.mapNotNull { it.originTransactionId } + settlements.map { it.transactionId }.filter { it.isNotEmpty() }).distinct()
+        val accountIds = if (accounts.isEmpty()) emptySet() else owner.partyIndex.idsFor(accounts)
+        val ids = (links.map { it.transactionId } + obligations.mapNotNull { it.originTransactionId } + settlements.map { it.transactionId }.filter { it.isNotEmpty() } + accountIds).distinct()
         val txns = if (ids.isEmpty()) emptyMap() else deps.txns.findByIds(ids).associateBy { it.id }
-        val accountTxns = if (accounts.isEmpty()) emptyList() else owner.everything().filter { t -> !t.id.endsWith(OWN_LEG_SUFFIX) && matchesAny(t, accounts) }
-        return PersonPageData(person, personLedger(links, obligations, settlements, txns, accountTxns), accounts)
+        val accountTxns = accountIds.mapNotNull(txns::get).filter { t -> !t.id.endsWith(OWN_LEG_SUFFIX) && matchesAny(t, accounts) }
+        return personLedger(links, obligations, settlements, txns, accountTxns)
     }
+
+    private fun PersonLedger.abroad(): PersonLedger = PersonLedger(
+        entries.map { it.copy(transactionId = null, obligationId = null) },
+        open.map { it.copy(obligation = it.obligation.copy(id = ABROAD_ID_PREFIX + it.obligation.id)) },
+        settled.map { it.copy(obligation = it.obligation.copy(id = ABROAD_ID_PREFIX + it.obligation.id)) },
+        totals,
+    )
 
     /** «اربط عمليات موجودة»: عمليات شكلها معاه ومش مربوطة بحد — نفس الحساب · نفس الاسم · نفس مبلغ دين مفتوح. أول 20. */
     suspend fun suggestions(personId: Id): List<PersonSuggestion> {
@@ -87,8 +111,11 @@ class PersonAccounts internal constructor(private val deps: PersonLinksDeps, pri
         if (existing != null && existing.verdict == TransferVerdict.PERSON && existing.personId != personId) {
             throw PersonLinkError(uiText(UiKey.PLINK_ACC_ERR_TAKEN, people.firstOrNull { it.id == existing.personId }?.name.orEmpty()))
         }
+        // F13: الحساب ده متقرر قبل كده إنه حاجة تانية (حسابك التاني · متجاهَل · جهة …) ⇒ ما بنكتبش فوق قرار المالك
+        if (existing != null && existing.verdict != TransferVerdict.PERSON) throw PersonLinkError(uiText(UiKey.PLINK_ACC_ERR_DECIDED))
         val label = bank?.trim()?.take(40)?.takeIf { it.isNotEmpty() }?.let { "$it ••••$digits" } ?: "••••$digits"
-        val party = TransferParty(key, label, digits, TransferVerdict.PERSON, personId, deps.clock.nowIso())
+        // نفس الشخص ⇒ قواعده (التسجيل لوحده · المستحقات · الممنوع) بتفضل زي ما هي
+        val party = existing?.copy(label = label, last4 = digits) ?: TransferParty(key, label, digits, TransferVerdict.PERSON, personId, deps.clock.nowIso())
         deps.parties.save(party)
         return party
     }
