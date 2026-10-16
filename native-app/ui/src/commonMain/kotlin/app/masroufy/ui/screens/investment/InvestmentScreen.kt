@@ -58,72 +58,100 @@ import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
 import kotlinx.coroutines.launch
+import app.masroufy.core.HoldingsSnapshot
+import app.masroufy.core.InvestInsightKey
+import app.masroufy.core.InvestRatesState
+import app.masroufy.core.uiText
+import app.masroufy.ui.screens.investment.future.InvestFutureOverlays
+import app.masroufy.ui.screens.investment.future.investFutureBody
+import app.masroufy.ui.screens.investment.future.investFutureHero
+import app.masroufy.ui.screens.investment.future.rememberInvestFuture
+import app.masroufy.ui.screens.investment.holdings.HoldingsOverlays
+import app.masroufy.ui.screens.investment.holdings.holdingsSection
+import app.masroufy.ui.screens.investment.holdings.rememberHoldings
+import app.masroufy.ui.screens.investment.insights.InvestTipsRoute
+import app.masroufy.ui.screens.investment.insights.incomeRopeItem
+import app.masroufy.ui.screens.investment.insights.investReturnsItem
+import app.masroufy.ui.screens.investment.insights.investTipItem
+import app.masroufy.ui.screens.investment.insights.rememberInsights
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
-/** تبويب «الاستثمار» (لوحة `Investment`): البطل · العقار و«كم ستساوي» · الأصول · الزكاة والتحليلات والخطط · الحاسبات. */
+
+/**
+ * تبويب «الاستثمار» الجديد (مواصفة r05 §1 — بالترتيب من فوق لتحت): «إنت كمان» · «حاجاتي» · «اختار طريقك» · التشارت · الكروت التلاتة ·
+ * نصيحة واحدة · «حبل مصادر دخلك» · «اللي رجعلك» · الأدوات · الحاسبات. «حاجاتي» والمعدلات بيتحمّلوا **مرة** هنا برّه خيط الواجهة وبيتدّوا
+ * للأقسام التلاتة (§1.0 الأداء)، والأرقام القديمة بتفضل لحد ما الجديدة تيجي. البطل القديم وكروت العقار والأصول اتشالوا (رد المالك Q14) —
+ * «العقار هيبقى بكام» بيفضل من صفحة الأصل نفسه.
+ */
 @Composable
 fun InvestmentScreen() {
     val quick = rememberQuickMenu()
     val space = LocalSpace.current
     val deps = space.investment
-    val nav = LocalNavigator.current
     val toaster = LocalToaster.current
     val scope = rememberCoroutineScope()
     var load by remember(space) { mutableStateOf<InvestmentLoad?>(null) }
-    var addOpen by remember { mutableStateOf(false) }
+    var snapshot by remember(space) { mutableStateOf<HoldingsSnapshot?>(null) }
+    var rates by remember(space) { mutableStateOf<InvestRatesState?>(null) }
     var refreshing by remember { mutableStateOf(false) }
-    // الأرشفة من القايمة السريعة (§6.5-13) — نفس فعل تفاصيل الأصل (archiveAsset)، وبعدها تحميل من جديد
-    fun setArchived(id: Id, archived: Boolean) {
-        scope.launch {
-            val ok = runCatching { deps.assets.archiveAsset(id, archived) }.isSuccess
-            toaster.show(if (!ok) t(UiKey.SHELL_LOAD_FAILED) else if (archived) t(UiKey.ASSET_DETAIL_ARCHIVED_TOAST) else t(UiKey.ASSET_DETAIL_UNARCHIVED))
-            if (ok) load = loadInvestment(deps, space.space)
+    suspend fun loadShared() {
+        val today = deps.today()
+        val (s, r) = withContext(Dispatchers.Default) {
+            runCatching { deps.holdingsSnapshot.load(today) }.getOrNull() to runCatching { deps.investRates.load(space.space, today) }.getOrNull()
         }
+        if (s != null) snapshot = s
+        rates = r ?: InvestRatesState.Unavailable(emptyList())
     }
-    LaunchedEffect(space) { load = loadInvestment(deps, space.space) }
+    LaunchedEffect(space) {
+        launch { loadShared() }
+        load = loadInvestment(deps, space.space)
+    }
     fun refresh() {
         if (refreshing) return
         refreshing = true
         scope.launch {
             val next = loadInvestment(deps, space.space, force = true)
             load = next
+            loadShared()
             refreshing = false
             if (next.feedProblem == null) toaster.show(refreshedText(next.skipped))
         }
     }
+    val future = rememberInvestFuture(deps.future, space.space.id, snapshot, rates)
+    val holdings = rememberHoldings(deps.holdings, snapshot) { scope.launch { loadShared() } }
+    val insights = rememberInsights(deps.insights, snapshot, rates)
     val title = t(UiKey.TAB_INVESTMENT)
     TabScaffold(title, header = {
-        TabHeader(title, actions = {
-            // «تحديث الأسعار» و«إضافة أصل» (أفعال `Investment` في SCREENS.md) — بين العنوان والترس، والترس آخر حاجة على الشمال
-            SurfaceIconButton(Lucide.REFRESH_CW, t(UiKey.INVEST_REFRESH), ::refresh)
-            SurfaceIconButton(Lucide.PLUS, t(UiKey.INVEST_ADD_ASSET), { addOpen = true })
-        })
+        // «تحديث الأسعار» بس — «ضيف حاجة» بقت جوه «حاجاتي» (مواصفة §1.0 — اختيار Claude ❓)
+        TabHeader(title, actions = { SurfaceIconButton(Lucide.REFRESH_CW, t(UiKey.INVEST_REFRESH), ::refresh) })
     }) {
         val l = load
-        if (l == null) {
+        if (l == null && snapshot == null) {
             item(key = "loading") { LoadingBlocks() }
             return@TabScaffold
         }
-        // الأصول ما اتحمّلتش ⇒ «تعذّر التحميل» · الملف ما نزلش ⇒ «تعذّر تحديث الأسعار» والمعروض بآخر نسخة (حالة «خطأ» في النموذج)
-        if (l.failed) item(key = "failed") { AlertBanner(t(UiKey.SHELL_LOAD_FAILED), null, t(UiKey.SHELL_RETRY), ::refresh) }
-        l.feedProblem?.let { problem -> item(key = "error") { AlertBanner(t(UiKey.INVEST_ERROR_TITLE), problem, t(UiKey.SHELL_RETRY), ::refresh) } }
-        val ui = l.ui
-        if (ui != null && ui.empty) {
-            item(key = "empty") {
-                EmptyState(t(UiKey.INVEST_EMPTY_TITLE), t(UiKey.INVEST_EMPTY_BODY), action = {
-                    PrimaryButton(t(UiKey.INVEST_ADD_ASSET), { addOpen = true }, Modifier.padding(top = 10.dp))
-                })
-            }
-        } else if (ui != null) {
-            item(key = "hero") { PortfolioHero(ui) }
-            for (e in ui.estates) item(key = "estate-${e.assetId}") { QuickTarget(quick, e.name, { assetQuickItems(false, { nav.push(AssetDetailRoute(e.assetId)) }, { setArchived(e.assetId, it) }) }) { long ->
-                    EstateCardView(e, ui, long, quick.guardTap { nav.push(AssetDetailRoute(e.assetId)) })
-                } }
-            if (ui.others.isNotEmpty()) item(key = "assets") { AssetsCard(ui, quick, { id, a -> setArchived(id, a) }) { nav.push(AssetDetailRoute(it)) } }
+        // الأصول ما اتحمّلتش ⇒ «تعذّر التحميل» · الملف ما نزلش ⇒ «تعذّر تحديث الأسعار» والمعروض بآخر نسخة (حالة «خطأ»)
+        if (l?.failed == true) item(key = "failed") { AlertBanner(t(UiKey.SHELL_LOAD_FAILED), null, t(UiKey.SHELL_RETRY), ::refresh) }
+        l?.feedProblem?.let { problem -> item(key = "error") { AlertBanner(t(UiKey.INVEST_ERROR_TITLE), problem, t(UiKey.SHELL_RETRY), ::refresh) } }
+        // «فاضي» (§1.0): مفيش حاجات ولا فلوس معاك ولا متوسط تحويش ⇒ «حاجاتي» الفاضية + الأدوات بس
+        val i = future.inputs
+        val empty = snapshot?.items?.isEmpty() == true && i != null && i.cashMinor <= 0 && i.saveMinor == null
+        if (empty) {
+            holdingsSection(holdings)
+        } else {
+            investFutureHero(future)
+            holdingsSection(holdings)
+            investFutureBody(future)
+            investTipItem(insights)
+            incomeRopeItem(insights)
+            investReturnsItem(insights)
         }
-        item(key = "tools") { ToolsCard(l.zakatHint, l.goals) }
+        item(key = "tools") { ToolsCard(l?.zakatHint, l?.goals) }
         item(key = "calcs") { CalculatorsGrid() }
     }
-    AssetTradeSheet(addOpen, TradeMode.ADD, null, onDismiss = { addOpen = false }) { id -> nav.push(AssetDetailRoute(id)) }
+    InvestFutureOverlays(future)
+    HoldingsOverlays(holdings)
     QuickMenuHost(quick)
 }
 
@@ -137,70 +165,6 @@ private fun LoadingBlocks() {
         Skeleton(Modifier.fillMaxWidth().height(132.dp), radius = 28.dp, strong = true)
         Skeleton(Modifier.fillMaxWidth().height(210.dp))
         Skeleton(Modifier.fillMaxWidth().height(112.dp))
-    }
-}
-
-@Composable
-private fun PortfolioHero(ui: InvestmentUi) {
-    HeroCard(Modifier.fillMaxWidth()) {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            BasicText(t(UiKey.INVEST_TOTAL_LABEL), style = Type.body().copy(color = Ink.onHeroMuted))
-            HeroAmount(ui.totalMinor, ui.currency, Modifier.fillMaxWidth(), size = 34)
-            ui.totalNa?.let { BasicText(it, style = Type.caption().copy(color = Ink.onHeroMuted)) }
-            HeroDivider(Modifier.padding(top = 2.dp))
-            AmountLine(t(UiKey.INVEST_COST), ui.costMinor, ui.currency, ink = Color.White, labelInk = Ink.onHeroMuted)
-            HeroSigned(t(UiKey.INVEST_UNREALIZED), ui.unrealizedMinor, ui)
-            ui.realizedMinor?.let { HeroSigned(t(UiKey.INVEST_REALIZED), it, ui) }
-        }
-    }
-}
-
-/** سطر مكسب على البطل: «+1,200.00» (من غير لون — النص أبيض على البترولي). */
-@Composable
-private fun HeroSigned(label: String, minor: app.masroufy.core.Halalas?, ui: InvestmentUi) {
-    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        BasicText(label, Modifier.weight(1f), style = Type.of(13).copy(color = Ink.onHeroMuted))
-        AmountText(minor, ui.currency, tone = if (minor != null && minor < 0) AmountTone.EXPENSE else AmountTone.INCOME, size = 13, showCurrency = false, color = Color.White)
-    }
-}
-
-@Composable
-private fun EstateCardView(e: EstateCard, ui: InvestmentUi, onLongClick: () -> Unit, onOpen: () -> Unit) {
-    FloatingCard(Modifier.fillMaxWidth(), onClick = onOpen, onLongClick = onLongClick, clickLabel = e.name) {
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                KindTile("realEstate", size = 40)
-                Column(Modifier.weight(1f)) {
-                    BasicText(e.name, style = Type.of(15, FontWeight.Bold), maxLines = 1)
-                    BasicText(e.subtitle, style = Type.caption().copy(color = Ink.muted), maxLines = 1)
-                }
-                AmountText(e.valueMinor, ui.currency, size = 16, showCurrency = false)
-            }
-            Column(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Ink.selected).padding(12.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                BasicText(e.ask, style = Type.of(13, FontWeight.Bold).copy(color = Ink.primary))
-                AmountLine(t(UiKey.INVEST_RE_PRICE_THEN), e.saleMinor, ui.currency)
-                AmountLine(e.rentLabel, e.rentMinor, ui.currency)
-                AmountLine(t(UiKey.INVEST_RE_GAIN), e.gainMinor, ui.currency, bold = true)
-                BasicText(e.rateLine, style = Type.caption().copy(color = Ink.soft))
-            }
-        }
-    }
-}
-
-@Composable
-private fun AssetsCard(ui: InvestmentUi, quick: QuickMenu, setArchived: (Id, Boolean) -> Unit, onOpen: (Id) -> Unit) {
-    FloatingCard(Modifier.fillMaxWidth(), contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 4.dp)) {
-        ui.others.forEachIndexed { i, line ->
-            if (i > 0) RowGap()
-            QuickTarget(quick, line.name, { assetQuickItems(line.archived, { onOpen(line.assetId) }, { setArchived(line.assetId, it) }) }, subtitle = line.subtitle) { long ->
-                ToolRow(line.name, line.subtitle, onClick = quick.guardTap { onOpen(line.assetId) }, leading = { KindTile(line.kind) }, trailing = {
-                    AmountText(line.valueMinor, ui.currency, showCurrency = false, color = if (line.valueMinor == null || line.archived) Ink.muted else null)
-                }, onLongClick = long)
-            }
-        }
     }
 }
 
@@ -219,6 +183,9 @@ private fun ToolsCard(zakatHint: String?, goals: Int?) {
         ToolRow(t(UiKey.INVEST_TOOL_ADVISOR), t(UiKey.INVEST_TOOL_ADVISOR_HINT), { nav.push(AdvisorRoute) }, trailing = chevron)
         RowGap()
         ToolRow(t(UiKey.INVEST_TOOL_GOALS), goals?.let(::goalsHint), { nav.push(SavingsGoalsRoute) }, trailing = chevron)
+        RowGap()
+        // «النصايح» (مواصفة §1.10b) — من جهات رسمية بس (رد المالك ٢ج)
+        ToolRow(uiText(InvestInsightKey.TIPS_TITLE), uiText(InvestInsightKey.TIPS_TOOL_HINT), { nav.push(InvestTipsRoute) }, trailing = chevron)
     }
 }
 
