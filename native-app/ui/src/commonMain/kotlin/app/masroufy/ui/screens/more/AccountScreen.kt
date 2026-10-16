@@ -225,7 +225,8 @@ private fun AccountHead(p: UserProfile, me: MeInfo?, email: String?, onBuild: ()
             val percent = me?.profilePercent
             if (percent != null) Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 BasicText(t(UiKey.ACC_PERCENT_LABEL), style = Type.of(13, FontWeight.Bold))
-                BasicText(app.masroufy.core.sentenceNumber(percent) + "%", style = Type.of(13, FontWeight.Bold))
+                // عزل من الشمال لليمين (U+2066…U+2069) عشان «60%» ما تتقلبش «%60» جوه سطر عربي
+                BasicText("⁦" + app.masroufy.core.sentenceNumber(percent) + "%⁩",style = Type.of(13, FontWeight.Bold))
             }
             // «ابنِ شخصيتك» قبل أول حفظ ⇒ «عدّل شخصيتك» بعده
             PrimaryButton(builderTitle(me?.character != null), onClick = onBuild, height = 48.dp, modifier = Modifier.fillMaxWidth())

@@ -2,6 +2,7 @@ package app.masroufy.ui.screens.more
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -23,24 +24,26 @@ import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
 
 /**
- * المرتب **مبلغ بالظبط** (قرار المالك 2026-10-16 — «انا محتاج اكتبه ونخلي الناس تكتبه»). القراية بالهللة بـ`tryParseMoney` (قراية مش حساب).
- * فاضي ⇒ null (مش غلط) · مكتوب ومش مبلغ صالح (صفر أو سالب أو حروف) ⇒ [SalaryText.bad].
+ * المرتب **مبلغ بالظبط** (قرار المالك 2026-10-16 — «انا محتاج اكتبه ونخلي الناس تكتبه»). القراية بالهللة بـ`tryParseMoney` (قراية مش حساب —
+ * بتقبل الأرقام العربية وخانتين عشريتين بالكتير). فاضي ⇒ من غير غلط · حروف أو أكتر من خانتين ⇒ «اكتب المرتب بالأرقام» · صفر أو سالب ⇒
+ * «لازم يكون أكبر من صفر» (نموذج التصميم 85388ca7).
  */
-data class SalaryText(val minor: Halalas?, val bad: Boolean)
+data class SalaryText(val minor: Halalas?, val error: UiKey?)
 
 fun readSalaryText(text: String, currency: Currency): SalaryText {
     val raw = text.trim()
-    if (raw.isEmpty()) return SalaryText(null, false)
-    val minor = tryParseMoney(raw, currency)
-    return if (validSalaryAmount(minor)) SalaryText(minor, false) else SalaryText(null, true)
+    if (raw.isEmpty()) return SalaryText(null, null)
+    val minor = tryParseMoney(raw, currency) ?: return SalaryText(null, UiKey.ACC_SALARY_NOT_NUMBER)
+    return if (validSalaryAmount(minor)) SalaryText(minor, null) else SalaryText(null, UiKey.ACC_SALARY_BAD)
 }
 
 /** المسودة اللي الخانة بتبدأ بيها: المبلغ المعروف من غير فواصل ولا رمز (عشان يتعدل)، والمجهول فاضي. */
 fun salaryDraft(salary: SalaryState?): String = salary?.amountMinor?.let { formatAmount(it, salary.currency, grouping = false) }.orEmpty()
 
 /**
- * خانة المرتب (لوحة «ملفك» وكارت «كمّل ملفك»): نفس خانة المبلغ بتاعة التطبيق (`MoneyField` — رمز العملة والأرقام من الشمال) ·
- * «كنت مختار نطاق» لو كان فيه نطاق قديم · لو المبلغ هيتحفظ على جهة الشغل اسمها مكتوب · «حفظ» + «أفضّل ألا أقول».
+ * خانة المرتب (لوحة «ملفك» وكارت «كمّل ملفك»): نفس خانة المبلغ بتاعة التطبيق (`MoneyField` زي رصيد البداية في `WalletAddSheet` — الرقم يمين
+ * والعملة شمال) · سطر أصفر لو الإجابة القديمة كانت نطاق · [hint] (الكارت: «ممكن تغيّره بعدين من ملفك») · اسم جهة الشغل لو المبلغ هيتحفظ عليها ·
+ * «احفظ» و«أفضّل ما أقولش» جنب بعض — «احفظ» مقفول لحد ما المبلغ يبقى صالح.
  */
 @Composable
 fun SalaryInput(
@@ -52,14 +55,18 @@ fun SalaryInput(
     enabled: Boolean,
     onSave: (Halalas) -> Unit,
     onDecline: () -> Unit,
+    hint: String? = null,
 ) {
     val read = readSalaryText(text, currency)
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        if (salary?.wasRange == true) BasicText(t(UiKey.ACC_SALARY_WAS_RANGE), style = Type.bodyBold().copy(color = Ink.primary))
-        MoneyField(text, onText, label = null, currency = currency, error = if (read.bad) t(UiKey.ACC_SALARY_BAD) else null, big = true)
+        if (salary?.wasRange == true) WarnBox(null, t(UiKey.ACC_SALARY_WAS_RANGE_LONG), Modifier.fillMaxWidth())
+        MoneyField(text, onText, label = null, currency = currency, error = read.error?.let { t(it) }, big = true)
+        if (hint != null) BasicText(hint, style = Type.caption().copy(color = Ink.muted))
         salary?.employer?.let { BasicText(t(UiKey.ACC_SALARY_ON_EMPLOYER, it.name), style = Type.caption().copy(color = Ink.muted)) }
         if (error != null) FieldError(error)
-        PrimaryButton(t(UiKey.MORE_SAVE), onClick = { read.minor?.let(onSave) }, enabled = enabled && read.minor != null, modifier = Modifier.fillMaxWidth())
-        TonalButton(t(UiKey.ACC_SAL_SKIP), onClick = onDecline, modifier = Modifier.fillMaxWidth(), muted = true, enabled = enabled)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            PrimaryButton(t(UiKey.ACC_SALARY_SAVE), onClick = { read.minor?.let(onSave) }, enabled = enabled && read.minor != null, modifier = Modifier.weight(1f))
+            TonalButton(t(UiKey.ACC_SAL_SKIP), onClick = onDecline, modifier = Modifier.weight(1f), muted = true, enabled = enabled)
+        }
     }
 }

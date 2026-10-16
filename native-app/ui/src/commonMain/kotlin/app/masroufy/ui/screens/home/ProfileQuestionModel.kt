@@ -25,9 +25,9 @@ enum class ProfileCard(val title: TextRef, val sub: TextRef?, val icon: Lucide) 
 
     /**
      * «مرتبك في الشهر كام؟» — **مبلغ بالظبط بيتكتب** (قرار المالك 2026-10-16، بدل النطاقات) أو «أفضّل ما أقولش» (`ProfileSalary`).
-     * مالوش اختيارات ([optionsOf] فاضية) — الشاشة بترسم خانة المبلغ.
+     * مالوش اختيارات ([optionsOf] فاضية) — الشاشة بترسم خانة المبلغ وتحتها «ممكن تغيّره بعدين من ملفك» (`PROFILE_QUESTION_SALARY_SUB`).
      */
-    SALARY(UiKey.PROFILE_QUESTION_SALARY, UiKey.PROFILE_QUESTION_SALARY_SUB, Lucide.BANKNOTE),
+    SALARY(UiKey.PROFILE_QUESTION_SALARY, null, Lucide.BANKNOTE),
 }
 
 /** اختيار في البطاقة: [reply] الجملة اللي بتطلع بعد الحفظ (بتقول اللي اتغير فعلًا — التصنيفات المشروطة من `presentCategories`). */

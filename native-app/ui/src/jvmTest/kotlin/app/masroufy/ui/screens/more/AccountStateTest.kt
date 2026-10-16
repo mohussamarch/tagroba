@@ -92,9 +92,12 @@ class AccountStateTest {
         assertNull(salaryValue(blank, Currency.SAR, null))
         assertNull(salaryValue(blank.copy(salaryMinor = 500_000, salaryCurrency = Currency.SAR), Currency.EGP, null), "ريال ما يتعرضش بالجنيه")
         assertEquals(1_250_050L, readSalaryText(salaryDraft(sar), Currency.SAR).minor, "المسودة بتتقري هي هي")
-        assertEquals(SalaryText(1_250_050, false), readSalaryText(" 12500.50 ", Currency.SAR))
-        assertEquals(SalaryText(null, true), readSalaryText("0", Currency.SAR))
-        assertEquals(SalaryText(null, false), readSalaryText("  ", Currency.SAR))
+        assertEquals(SalaryText(1_250_050, null), readSalaryText(" 12500.50 ", Currency.SAR))
+        assertEquals(SalaryText(850_050, null), readSalaryText("٨٥٠٠٫٥٠", Currency.SAR), "الأرقام العربية مقبولة")
+        assertEquals(SalaryText(null, UiKey.ACC_SALARY_BAD), readSalaryText("0", Currency.SAR))
+        assertEquals(SalaryText(null, UiKey.ACC_SALARY_NOT_NUMBER), readSalaryText("ثمانية آلاف", Currency.SAR))
+        assertEquals(SalaryText(null, UiKey.ACC_SALARY_NOT_NUMBER), readSalaryText("8500.505", Currency.SAR), "خانتين عشريتين بالكتير")
+        assertEquals(SalaryText(null, null), readSalaryText("  ", Currency.SAR))
     }
 
     @Test

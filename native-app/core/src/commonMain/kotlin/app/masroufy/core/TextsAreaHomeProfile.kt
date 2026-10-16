@@ -38,8 +38,8 @@ internal val MSA_AREA_HOME_PROFILE_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.PROFILE_QUESTION_BIZ_YES to "ظهرت لك تصنيفات العمل الخاص.",
     UiKey.PROFILE_QUESTION_BIZ_NO to "لن نعرض لك تصنيفات العمل الخاص.",
     UiKey.PROFILE_QUESTION_SALARY to "كم راتبك الشهري؟",
-    UiKey.PROFILE_QUESTION_SALARY_SUB to "اكتب المبلغ بالضبط — اختياري، ويجعل أرقامك أدق.",
-    UiKey.PROFILE_QUESTION_SALARY_REPLY to "حفظنا راتبك، وسنحسب به أرقامك.",
+    UiKey.PROFILE_QUESTION_SALARY_SUB to "يمكنك تغييره لاحقًا من «ملفك»",
+    UiKey.PROFILE_QUESTION_SALARY_REPLY to "أصبح التوقع والمتاح يوميًا أدق — راتبك {0}.",
     UiKey.PROFILE_QUESTION_SALARY_SKIP_REPLY to "حسنًا، لن نسألك عنه مرة أخرى.",
 )
 
@@ -77,8 +77,8 @@ internal val EGYPTIAN_AREA_HOME_PROFILE_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.PROFILE_QUESTION_BIZ_YES to "ظهرتلك تصنيفات الشغل الخاص.",
     UiKey.PROFILE_QUESTION_BIZ_NO to "مش هنوريك تصنيفات الشغل الخاص.",
     UiKey.PROFILE_QUESTION_SALARY to "مرتبك في الشهر كام؟",
-    UiKey.PROFILE_QUESTION_SALARY_SUB to "اكتب المبلغ بالظبط — اختياري، وبيخلّي أرقامك أدق.",
-    UiKey.PROFILE_QUESTION_SALARY_REPLY to "حفظنا مرتبك، وهنحسب بيه أرقامك.",
+    UiKey.PROFILE_QUESTION_SALARY_SUB to "ممكن تغيّره بعدين من «ملفك»",
+    UiKey.PROFILE_QUESTION_SALARY_REPLY to "التوقع والمتاح يوميًا بقوا أدق — مرتبك {0}.",
     UiKey.PROFILE_QUESTION_SALARY_SKIP_REPLY to "تمام، مش هنسألك عليه تاني.",
 )
 
@@ -116,7 +116,7 @@ internal val ENGLISH_AREA_HOME_PROFILE_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.PROFILE_QUESTION_BIZ_YES to "Business categories are now shown.",
     UiKey.PROFILE_QUESTION_BIZ_NO to "Business categories stay hidden.",
     UiKey.PROFILE_QUESTION_SALARY to "What's your monthly salary?",
-    UiKey.PROFILE_QUESTION_SALARY_SUB to "Type the exact amount — optional, and it makes your numbers sharper.",
-    UiKey.PROFILE_QUESTION_SALARY_REPLY to "Saved your salary; your numbers will use it.",
+    UiKey.PROFILE_QUESTION_SALARY_SUB to "You can change it later from \"Your profile\"",
+    UiKey.PROFILE_QUESTION_SALARY_REPLY to "Your forecast and daily allowance are now sharper — salary {0}.",
     UiKey.PROFILE_QUESTION_SALARY_SKIP_REPLY to "Okay, we won't ask about it again.",
 )

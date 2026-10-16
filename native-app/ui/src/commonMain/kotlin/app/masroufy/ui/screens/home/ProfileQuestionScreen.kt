@@ -31,6 +31,7 @@ import app.masroufy.core.Halalas
 import app.masroufy.core.IncomeFollowUp
 import app.masroufy.core.ProfileCheck
 import app.masroufy.core.SalaryState
+import app.masroufy.ui.components.amountLabel
 import app.masroufy.ui.screens.more.SalaryInput
 import app.masroufy.ui.screens.more.salaryDraft
 import app.masroufy.usecase.SalarySaved
@@ -93,7 +94,10 @@ fun ProfileQuestionScreen() {
             when (val r = runCatching { if (declined) use.decline() else use.save(amount) }.getOrNull()) {
                 is SalarySaved.Ok -> {
                     salary = r.state
-                    reply = t(if (declined) UiKey.PROFILE_QUESTION_SALARY_SKIP_REPLY else UiKey.PROFILE_QUESTION_SALARY_REPLY)
+                    // «التوقع والمتاح يوميًا بقوا أدق — مرتبك ⃁ 12,000.» — المبلغ اللي اتحفظ نفسه (من حالة الاستخدام، مش من الخانة)
+                    val saved = r.state.amountMinor
+                    reply = if (declined || saved == null) t(UiKey.PROFILE_QUESTION_SALARY_SKIP_REPLY)
+                    else t(UiKey.PROFILE_QUESTION_SALARY_REPLY, amountLabel(saved, r.state.currency))
                 }
                 is SalarySaved.Invalid -> error = r.message
                 null -> error = t(UiKey.PROFILE_QUESTION_SAVE_FAILED)
@@ -146,6 +150,7 @@ fun ProfileQuestionScreen() {
                     SalaryInput(
                         salaryText, { salaryText = it; error = null }, deps.space.currency, salary, error, enabled = !saving,
                         onSave = { salaryAnswer(declined = false, amount = it) }, onDecline = { salaryAnswer(declined = true, amount = null) },
+                        hint = t(UiKey.PROFILE_QUESTION_SALARY_SUB),
                     )
                 } else error?.let { msg -> item(key = "error") { FieldError(msg) } }
                 val r = reply
