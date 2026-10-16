@@ -36,6 +36,7 @@ import app.masroufy.ui.icons.Lucide
 import app.masroufy.ui.nav.LocalNavigator
 import app.masroufy.ui.screens.more.MoreRoute
 import app.masroufy.ui.text.t
+import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Space
 import app.masroufy.ui.theme.Type
 
@@ -90,6 +91,7 @@ fun InnerScaffold(
     modifier: Modifier = Modifier,
     onBack: (() -> Unit)? = null,
     actions: (@Composable () -> Unit)? = null,
+    subtitle: String? = null,
     content: LazyListScope.() -> Unit,
 ) {
     val nav = LocalNavigator.current
@@ -99,19 +101,25 @@ fun InnerScaffold(
         contentPadding = PaddingValues(start = Space.gutter, end = Space.gutter, top = Space.gutter + statusTop, bottom = 48.dp),
         verticalArrangement = Arrangement.spacedBy(Space.block),
     ) {
-        item(key = "header") { ScreenHeader(title, onBack = onBack ?: { nav.pop(); Unit }, actions = actions) }
+        item(key = "header") { ScreenHeader(title, onBack = onBack ?: { nav.pop(); Unit }, actions = actions, subtitle = subtitle) }
         content()
     }
 }
 
-/** رأس شاشة داخلية: رجوع (سهم لليمين في العربي) + العنوان 24 عريض + أفعال على الشمال (أزرار 48 بزاوية 18 — `SurfaceIconButton`). */
+/**
+ * رأس شاشة داخلية: رجوع (سهم لليمين في العربي) + العنوان 24 عريض + أفعال على الشمال (أزرار 48 بزاوية 18 — `SurfaceIconButton`).
+ * [subtitle] سطر صغير باهت تحت العنوان (مكان الشاشة — «العمليات» في «أكتر ما صرفت عليه»).
+ */
 @Composable
-fun ScreenHeader(title: String, onBack: (() -> Unit)?, modifier: Modifier = Modifier, actions: (@Composable () -> Unit)? = null) {
+fun ScreenHeader(title: String, onBack: (() -> Unit)?, modifier: Modifier = Modifier, actions: (@Composable () -> Unit)? = null, subtitle: String? = null) {
     Row(modifier.fillMaxWidth().heightIn(min = 48.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
         if (onBack != null) {
             Box(Modifier.mirrorInLtr()) { SurfaceIconButton(Lucide.CHEVRON_RIGHT, t(UiKey.SHELL_BACK), onBack) }
         }
-        BasicText(title, Modifier.weight(1f).semantics { heading() }, style = Type.title(), maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Column(Modifier.weight(1f)) {
+            BasicText(title, Modifier.semantics { heading() }, style = Type.title(), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            if (subtitle != null) BasicText(subtitle, style = Type.caption().copy(color = Ink.muted), maxLines = 1)
+        }
         actions?.invoke()
     }
 }

@@ -102,13 +102,19 @@ class LoadTopCategories(private val homeScreen: LoadHomeScreen) {
         TopCategoriesView(rankSpend(data).rows.take(TOP_CATEGORIES_COUNT).map { TopCategoryRow(it.categoryId, it.name, it.amountMinor, it.barPercent) }, data.period)
 
     /**
-     * الترتيب كامل لشاشة «أكثر ما صرفت عليه»: الشهر المالي اللي فيه [today] (من يوم الراتب [payday]) أو اللي قبله بـ[monthsBack] —
-     * قراية واحدة للفترة بنفس `LoadHomeScreen` اللي الكارت بيقرا منه (من غير آخر ست فترات).
+     * الترتيب كامل لشاشة «أكثر ما صرفت عليه»: [months] شهور مالية بتنتهي بالشهر اللي قبل الشهر الحالي (اللي فيه [today]، من يوم الراتب
+     * [payday]) بـ[monthsBack] — «الشهر ده» (0، 1) · «الشهر اللي فات» (1، 1) · «آخر 3 شهور» (0، 3). كل شهر قراية بنفس `LoadHomeScreen`
+     * اللي الكارت بيقرا منه (من غير آخر ست فترات)، والشهور بتتجمع. «الشهر ده» بس بيقرا الشهر اللي قبله كمان عشان الفرق (التصميم).
      */
-    suspend fun loadAll(today: IsoDate, payday: Int, monthsBack: Int = 0): TopSpendView {
+    suspend fun loadAll(today: IsoDate, payday: Int, monthsBack: Int = 0, months: Int = 1): TopSpendView {
+        require(monthsBack >= 0 && months >= 1) { "monthsBack=$monthsBack months=$months" }
         val current = periodForDate(today, payday)
-        val period = if (monthsBack == 0) current else shiftPeriod(current, -monthsBack, payday)
-        return rankSpend(homeScreen.load(LoadHomeScreenRequest(period, today, payday, includeHistory = false)))
+        val at = { back: Int -> if (back == 0) current else shiftPeriod(current, -back, payday) }
+        val read = { back: Int -> LoadHomeScreenRequest(at(back), today, payday, includeHistory = false) }
+        val data = (monthsBack until monthsBack + months).map { homeScreen.load(read(it)) }
+        val now = monthsBack == 0 && months == 1
+        val previous = if (now) homeScreen.load(read(1)) else null
+        return rankSpendOver(data, previous, current = now)
     }
 }
 
