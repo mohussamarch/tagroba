@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.investment
 
+import app.masroufy.ui.screens.investment.insights.registerInsights
 import app.masroufy.core.GoalProgress
 import app.masroufy.core.Id
 import app.masroufy.core.IsoDate
@@ -69,6 +70,9 @@ interface InvestmentDeps {
 
     /** الحاسبات (الادخار · التقاعد · الورث) — ملفاتها في `investment/calc/` (`CalcRoutes.kt`). */
     val calculators: CalculatorsDeps
+
+    /** «الاستثمار» الجديد — حزمة INSIGHTS (مواصفة النقل §4.3): النصيحة · الحبل · اللي رجعلك (`investment/insights/`). */
+    val insights: app.masroufy.ui.screens.investment.insights.InvestInsightsDeps
 }
 
 /** تفاصيل أصل (من «الاستثمار»). */
@@ -108,4 +112,5 @@ fun RouteRegistry.registerInvestment() {
     screen<ZakatPayRoute> { r -> ZakatPayScreen(r.yearId) }
     screen<AdvisorRoute> { AdvisorScreen() }
     registerCalculators()
+    registerInsights()
 }

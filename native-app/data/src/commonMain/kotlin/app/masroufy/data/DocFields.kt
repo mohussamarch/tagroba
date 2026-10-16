@@ -65,6 +65,13 @@ class DocReader(private val group: String, private val doc: Doc) {
         else -> wrongType(name)
     }
 
+    /** قايمة أعداد صحيحة (مبالغ بالهللة) — مش موجودة = فاضية. الكسر مرفوض زي [longOrNull]. */
+    fun longs(name: String): List<Long> = when (val v = doc[name]) {
+        null -> emptyList()
+        is List<*> -> v.map { (it as? Long) ?: (it as? Int)?.toLong() ?: (it as? Double)?.takeIf { d -> d % 1.0 == 0.0 }?.toLong() ?: wrongType(name) }
+        else -> wrongType(name)
+    }
+
     fun strings(name: String): List<String>? = when (val v = doc[name]) {
         null -> null
         is List<*> -> v.map { it as? String ?: wrongType(name) }

@@ -1,5 +1,7 @@
 package app.masroufy.ui.screens.more
 
+import app.masroufy.core.InvestInsightKey
+import app.masroufy.ui.screens.investment.insights.FaqRoute
 import app.masroufy.core.TextRef
 import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
@@ -134,6 +136,8 @@ fun moreGroups(view: MoreView): List<MoreGroup> = listOf(
             MoreItem(Lucide.LOCK, UiKey.MORE_ITEM_LOCK, null, AppSettingsRoute),
             MoreItem(Lucide.LANGUAGES, UiKey.MORE_ITEM_LANGUAGE, null, AppSettingsRoute),
             MoreItem(Lucide.MOON, UiKey.MORE_ITEM_ISLAMIC, null, AppSettingsRoute),
+            // «الأسئلة الشائعة» (مواصفة النقل §1.13 — آخر سطر في «الإعدادات»)
+            MoreItem(app.masroufy.ui.screens.investment.insights.InsightIcons.HELP, InvestInsightKey.FAQ_TITLE, t(InvestInsightKey.FAQ_MORE_SUB), FaqRoute),
         ),
     ),
 )

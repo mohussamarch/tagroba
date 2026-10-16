@@ -1,0 +1,110 @@
+package app.masroufy.usecase
+
+import app.masroufy.core.ACTUAL_SAVING_MONTHS
+import app.masroufy.core.Currency
+import app.masroufy.core.DEFAULT_PAYDAY
+import app.masroufy.core.EconomicKind
+import app.masroufy.core.Halalas
+import app.masroufy.core.HoldingsSnapshot
+import app.masroufy.core.INVEST_TIPS
+import app.masroufy.core.InvestInsightKey
+import app.masroufy.core.IsoDate
+import app.masroufy.core.Space
+import app.masroufy.core.TipFacts
+import app.masroufy.core.TipGroup
+import app.masroufy.core.UserSetting
+import app.masroufy.core.averageSavingMinor
+import app.masroufy.core.closeTip
+import app.masroufy.core.investableSplit
+import app.masroufy.core.isInvestReturn
+import app.masroufy.core.monthSavingMinor
+import app.masroufy.core.monthSpendMinor
+import app.masroufy.core.periodForDate
+import app.masroufy.core.shiftMonths
+import app.masroufy.core.situationsOf
+import app.masroufy.core.sumMoney
+import app.masroufy.core.tipQueue
+import app.masroufy.core.uiText
+import app.masroufy.core.withEstimatedKinds
+import app.masroufy.port.AllocationRepository
+import app.masroufy.port.CategoryRepository
+import app.masroufy.port.Clock
+import app.masroufy.port.ProfileRepository
+import app.masroufy.port.TransactionRepository
+import app.masroufy.port.UserSettingsStore
+
+/** كارت النصيحة: [why] سطر «ليه دي» · [text] النصيحة · [source] «المصدر: …» جاهزة للعرض. */
+data class TipView(val id: String, val why: String, val text: String, val source: String)
+
+data class TipLine(val id: String, val text: String, val source: String)
+
+data class TipGroupView(val title: String, val tips: List<TipLine>)
+
+data class LoadInvestTipDeps(
+    val settings: UserSettingsStore,
+    val txns: TransactionRepository,
+    val allocations: AllocationRepository,
+    val categories: CategoryRepository,
+    val withYouNow: LoadWithYouNow,
+    val profile: ProfileRepository?,
+    val currency: Currency,
+    val countryCode: String,
+    val clock: Clock,
+)
+
+/**
+ * نصيحة «الاستثمار» (مواصفة النقل §1.7 · §1.8 · §2.7): [current] = أول نصيحة في الطابور (حالتك ⇒ العامة ⇒ من غير المقفولة) أو null ·
+ * [close] = «×» (بتتحفظ في الحساب وعمرها ما ترجع) · [all] = صفحة «النصايح» (كلها، المقفولة كمان). الأرقام كلها من بياناتك (القاعدة 10).
+ */
+class LoadInvestTip(private val deps: LoadInvestTipDeps) {
+    suspend fun current(today: IsoDate, holdings: HoldingsSnapshot?): TipView? {
+        val closed = closedIds().toSet()
+        val queue = tipQueue(situationsOf(facts(today, holdings)), closed)
+        val tip = queue.firstOrNull() ?: return null
+        return TipView(tip.id, uiText(tip.why), uiText(tip.text), uiText(InvestInsightKey.TIP_SOURCE, uiText(tip.sourceFor(deps.countryCode))))
+    }
+
+    suspend fun close(tipId: String) {
+        if (INVEST_TIPS.none { it.id == tipId }) return
+        deps.settings.save(UserSetting.InvestTips(closeTip(closedIds(), tipId), deps.clock.nowIso()))
+    }
+
+    fun all(space: Space): List<TipGroupView> = TipGroup.entries.map { g ->
+        TipGroupView(uiText(g.title), INVEST_TIPS.filter { it.group == g }.map { TipLine(it.id, uiText(it.text), uiText(it.sourceFor(space.countryCode))) })
+    }
+
+    private suspend fun closedIds(): List<String> =
+        deps.settings.listAll().filterIsInstance<UserSetting.InvestTips>().firstOrNull()?.closed.orEmpty()
+
+    /** الحقايق: آخر 3 شهور كاملة (تحويش وصرف بنفس قواعد «حاسبة الادخار») · أرصدة المحافظ · «حاجاتي» · شراء أصل · عائد السنة. */
+    internal suspend fun facts(today: IsoDate, holdings: HoldingsSnapshot?): TipFacts {
+        val payday = deps.profile?.load()?.payday ?: DEFAULT_PAYDAY
+        val names = deps.categories.listAll().associate { it.id to it.name }
+        val current = periodForDate(today, payday)
+        val saved = mutableListOf<Halalas?>()
+        val spent = mutableListOf<Halalas?>()
+        for (back in ACTUAL_SAVING_MONTHS downTo 1) {
+            val rows = loadPeriodRows(deps.txns, shiftPeriod(current, -back, payday), payday, names).rows.filter { it.currency == deps.currency }
+            val counted = withEstimatedKinds(rows, names).withoutPendingIncoming
+            val alloc = deps.allocations.listByTransactionIds(counted.map { it.id })
+            saved += monthSavingMinor(counted, alloc)
+            spent += monthSpendMinor(counted, alloc)
+        }
+        val wallets = runCatching { deps.withYouNow.load(today).wallets.mapNotNull { it.balanceMinor } }.getOrNull()
+        val cash = wallets?.takeIf { it.isNotEmpty() }?.let { sumMoney(it) }
+        val from = minOf(shiftMonths(today, -ACTUAL_SAVING_MONTHS), today.take(4) + "-01-01")
+        val recent = deps.txns.listByDateRange(from, today)
+        val bought = recent.any {
+            it.currency == deps.currency && it.economicKind == EconomicKind.ASSET_BUY && it.occurredAt.take(10) > shiftMonths(today, -ACTUAL_SAVING_MONTHS)
+        }
+        val returns = sumMoney(recent.filter { isInvestReturn(it, deps.currency, today) }.map { it.amountMinor })
+        return TipFacts(
+            cashMinor = cash,
+            avgSpendMinor = averageSavingMinor(spent),
+            split = holdings?.let { investableSplit(it.items) },
+            saveMinor = averageSavingMinor(saved),
+            boughtAssetLately = bought,
+            investIncomeThisYearMinor = returns,
+        )
+    }
+}

@@ -76,7 +76,33 @@ sealed interface UserSetting {
     data class HomeTips(val advisorKey: String?, val profileKey: String?, val profileClosedOn: String?, override val updatedAt: String) : UserSetting {
         override val key: String get() = HOME_TIPS_KEY
     }
+
+    /** نصايح «الاستثمار» اللي اتقفلت بـ«×» (مواصفة النقل §3.2 — `core/InvestTips.kt`): معرّفات النصايح بس، وعمرها ما ترجع. */
+    data class InvestTips(val closed: List<String>, override val updatedAt: String) : UserSetting {
+        override val key: String get() = INVEST_TIPS_KEY
+    }
+
+    /**
+     * كارت الرئيسية «استثماراتك النهارده» (§3.2 — `core/InvestToday.kt`): قيمة كل حاجة (غير الشخصي، القيمة معروفة) آخر يوم اتشاف [date]
+     * واليوم اللي قبله [prevDate] — قوايم متوازية (معرّف ↔ قيمة بالهللة) لكل بلد (`investDaily.<spaceId>`).
+     */
+    data class InvestDaily(
+        val spaceId: String,
+        val date: IsoDate,
+        val ids: List<Id>,
+        val values: List<Halalas>,
+        val prevDate: IsoDate?,
+        val prevIds: List<Id>,
+        val prevValues: List<Halalas>,
+        override val updatedAt: String,
+    ) : UserSetting {
+        override val key: String get() = investDailyKey(spaceId)
+    }
 }
+
+const val INVEST_TIPS_KEY = "investTips"
+
+fun investDailyKey(spaceId: String) = "investDaily.$spaceId"
 
 const val ASSISTANT_SETTINGS_KEY = "assistant"
 

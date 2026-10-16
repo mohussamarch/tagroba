@@ -53,6 +53,12 @@ object AssistantCodecs {
                     is UserSetting.HomeCards -> { req("type", "homeCards"); req("order", s.order); req("hidden", s.hidden) }
                     // كارت النصيحة و«ملفك» المقفولين بـ«×» — بصمات بس
                     is UserSetting.HomeTips -> { req("type", "homeTips"); opt("advisorKey", s.advisorKey); opt("profileKey", s.profileKey); opt("profileClosedOn", s.profileClosedOn) }
+                    // «الاستثمار» (r05 INSIGHTS): النصايح المقفولة · قيم «استثماراتك النهارده» (قوايم متوازية)
+                    is UserSetting.InvestTips -> { req("type", "investTips"); req("closed", s.closed) }
+                    is UserSetting.InvestDaily -> {
+                        req("type", "investDaily"); req("spaceId", s.spaceId); req("date", s.date); req("ids", s.ids); req("values", s.values)
+                        opt("prevDate", s.prevDate); req("prevIds", s.prevIds); req("prevValues", s.prevValues)
+                    }
                 }
             }
         },
@@ -64,6 +70,11 @@ object AssistantCodecs {
                 "peopleRow" -> UserSetting.PeopleRow(d.strings("personIds") ?: emptyList(), d.str("updatedAt"))
                 "homeCards" -> UserSetting.HomeCards(d.strings("order").orEmpty(), d.strings("hidden").orEmpty(), d.str("updatedAt"))
                 "homeTips" -> UserSetting.HomeTips(d.strOrNull("advisorKey"), d.strOrNull("profileKey"), d.strOrNull("profileClosedOn"), d.str("updatedAt"))
+                "investTips" -> UserSetting.InvestTips(d.strings("closed").orEmpty(), d.str("updatedAt"))
+                "investDaily" -> UserSetting.InvestDaily(
+                    d.str("spaceId"), d.str("date"), d.strings("ids").orEmpty(), d.longs("values"), d.strOrNull("prevDate"),
+                    d.strings("prevIds").orEmpty(), d.longs("prevValues"), d.str("updatedAt"),
+                )
                 else -> throw DocumentError(uiText(TextKey.DOC_FIELD_VALUE, USER_SETTINGS_GROUP, "type", type))
             }
         },
