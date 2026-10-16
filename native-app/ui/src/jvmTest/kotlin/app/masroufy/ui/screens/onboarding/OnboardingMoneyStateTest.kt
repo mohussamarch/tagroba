@@ -29,18 +29,19 @@ class OnboardingMoneyStateTest {
     private val fresh = OnbState(OnbStep.COUNTRY, fresh = true, home = "SA")
 
     @Test fun onlyANewAccountGetsTheTwoCardsRightAfterTheCountry() {
-        assertEquals(listOf(OnbStep.COUNTRY, OnbStep.CASH, OnbStep.BANK, OnbStep.PAYDAY, OnbStep.SOURCE, OnbStep.READY), steps(fresh))
+        assertEquals(listOf(OnbStep.NAME, OnbStep.COUNTRY, OnbStep.CASH, OnbStep.BANK, OnbStep.PAYDAY, OnbStep.SOURCE, OnbStep.READY), steps(fresh))
         assertTrue(OnbStep.CASH !in steps(OnbState(OnbStep.COUNTRY)), "حساب قديم ما بيتسألش")
         val country = pickCountry(fresh, "SA")
         assertEquals(OnbStep.CASH, next(country).step, "بعد البلد على طول: الكاش")
         assertEquals(OnbStep.BANK, next(addCash(next(country), 10_000)).step, "وبعد الكاش: البنك")
-        // قرار المالك 2026-10-15 مساءً: «اختر شكلك» خرج من الرحلة والعدّاد بيبدأ من 1 («1 من 6» — مش «2 من 8»)
-        assertEquals(6, segmentCount(fresh), "6 كروت — الدخول مش جزء")
-        assertEquals(1, stepNumber(fresh), "أول كارت = 1")
-        assertEquals(0, filledSegments(fresh))
-        assertEquals(6, filledSegments(fresh.copy(step = OnbStep.READY)))
-        assertEquals(2, stepNumber(fresh.copy(step = OnbStep.CASH)))
-        assertEquals(6, stepNumber(fresh.copy(step = OnbStep.READY)), "جاهز = 6 من 6")
+        // الاسم أول كارت (r041) ⇒ «1 من 7» على الاسم و«7 من 7» على جاهز — الدخول مش جزء
+        assertEquals(7, segmentCount(fresh), "7 كروت — الدخول مش جزء")
+        assertEquals(1, stepNumber(fresh.copy(step = OnbStep.NAME)), "أول كارت = 1")
+        assertEquals(2, stepNumber(fresh), "البلد = 2")
+        assertEquals(1, filledSegments(fresh), "الاسم خلص")
+        assertEquals(7, filledSegments(fresh.copy(step = OnbStep.READY)))
+        assertEquals(3, stepNumber(fresh.copy(step = OnbStep.CASH)))
+        assertEquals(7, stepNumber(fresh.copy(step = OnbStep.READY)), "جاهز = 7 من 7")
     }
 
     @Test fun anotherCountryHidesTheCards() {

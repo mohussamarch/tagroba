@@ -50,7 +50,7 @@ import app.masroufy.ui.icons.Lucide
 import app.masroufy.ui.nav.LocalNavigator
 import app.masroufy.ui.screens.imports.SmsHandoff
 import app.masroufy.ui.screens.more.DayGrid
-import app.masroufy.ui.screens.more.AccountLookRoute
+import app.masroufy.ui.screens.more.AccountCharacterRoute
 import app.masroufy.ui.screens.more.WalletsRoute
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
@@ -78,7 +78,7 @@ fun OnboardingScreen() {
     var start by remember(deps) { mutableStateOf<OnboardingStart?>(null) }
     var loadFailed by remember(deps) { mutableStateOf(false) }
     var open by remember(deps) { mutableStateOf(listOf(deps.space)) }
-    var s by rememberSaveable(stateSaver = OnbStateSaver) { mutableStateOf(OnbState(OnbStep.COUNTRY)) }
+    var s by rememberSaveable(stateSaver = OnbStateSaver) { mutableStateOf(OnbState(OnbStep.NAME)) }
     // اختار مصر ⇒ الكروت اللي بعدها بالمصري على طول (قبل ما أي نص تحت يتكتب — والحالة المحفوظة بترجّعها كمان)
     remember(s.answers.countryCode) { followChosenCountry(s.answers); s.answers.countryCode }
     var saving by remember { mutableStateOf<OnbExit?>(null) }
@@ -86,6 +86,8 @@ fun OnboardingScreen() {
     LaunchedEffect(deps, reload) {
         loadFailed = false
         val r = runCatching { onb.onboard.start() }
+        // حساب قديم فيه اسم ونوع ⇒ «بماذا نناديك؟» بيبدأ بيهم (قبل ما الكارت يترسم)
+        r.getOrNull()?.profile?.let { p -> s = prefillName(s, p.displayName, p.gender) }
         start = r.getOrNull()
         // حساب جديد خالص ⇒ كارتين الفلوس (§81) بعملة وبنوك البلد المختارة (مصر كمان لو الفلوس تقدر تتكتب هناك)
         if (start?.freshAccount == true && !s.fresh) s = s.copy(fresh = true, home = deps.space.countryCode, otherCountryMoney = onb.countryMoney != null)
@@ -123,8 +125,8 @@ fun OnboardingScreen() {
                     if (s.answers.source == OnbSource.SMS && bankSmsReadable()) SmsHandoff.start()
                     // حساب جديد خالص من غير كارتين الفلوس (بلد تانية من غير طريق للفلوس — المعاينة) ⇒ «المحافظ» عشان يضيف محافظه هناك
                     if (st.freshAccount && !money(s)) nav.push(WalletsRoute)
-                    // «كمّل بروفايلك» ⇒ «حسابك» ولوحة الشكل مفتوحة (الرجوع منها ⇒ الرئيسية)
-                    if (exit == OnbExit.PROFILE) nav.push(AccountLookRoute)
+                    // «كمّل بروفايلك» ⇒ «ملفك» و«ابنِ شخصيتك» فوقها بعد شرح رسايل البنك وإذنها لو اختارها (`SmsHandoff.gateOpen`)
+                    if (exit == OnbExit.PROFILE) nav.push(AccountCharacterRoute)
                     changes.changed()
                 }
                 is OnboardingResult.Failed -> failure = r.message
@@ -183,6 +185,7 @@ private fun StepBody(s: OnbState, open: List<Space>, onChange: (OnbState) -> Uni
     val onb = LocalSpace.current.onboarding
     val scope = rememberCoroutineScope()
     when (s.step) {
+        OnbStep.NAME -> NameCard(s, onChange)
         OnbStep.COUNTRY -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             for (o in countryOptions(open, onb.spacesAdmin != null)) {
                 OnbOptionRow(o, s.answers.countryCode == o.id, null) { onChange(pickCountry(s, o.id)) }
@@ -242,7 +245,7 @@ private val OnbStateSaver = listSaver<OnbState, Any?>(
     save = { st ->
         val a = st.answers
         listOf(st.step.name, null, a.countryCode, a.day, a.dayLater, a.source?.name, st.reply?.name, st.fresh, st.home, a.cashMinor,
-            a.bank?.bankKey, a.bank?.last4, a.bank?.openingMinor, st.otherCountryMoney)
+            a.bank?.bankKey, a.bank?.last4, a.bank?.openingMinor, st.otherCountryMoney, a.name, a.gender)
     },
     restore = { v ->
         OnbState(
@@ -250,6 +253,7 @@ private val OnbStateSaver = listSaver<OnbState, Any?>(
             OnbAnswers(
                 v[2] as String?, v[3] as Int?, v[4] as Boolean, restoreSource(v[5]), v[9] as Long?,
                 (v[10] as String?)?.let { OnbBank(it, v[11] as String?, v[12] as Long?) },
+                name = v.getOrNull(14) as String?, gender = v.getOrNull(15) as String?,
             ),
             restoreReply(v[6]),
             fresh = v[7] as Boolean,

@@ -34,13 +34,16 @@ class OnboardingStateTest {
     )
 
     @Test
-    fun progressStartsAtOneOnTheCountryAndFillsWhenAnswered() {
+    fun progressStartsAtOneOnTheNameAndFillsWhenAnswered() {
+        val name = OnbState(OnbStep.NAME)
+        assertEquals(OnbStep.NAME, steps(name).first(), "أول كارت = «بماذا نناديك؟» (r041)")
+        assertEquals(1, stepNumber(name))
+        assertEquals(5, ONB_SEGMENTS)
+        assertEquals(ONB_SEGMENTS, segmentCount(name))
+        assertEquals(0, filledSegments(name))
         val country = OnbState(OnbStep.COUNTRY)
-        assertEquals(OnbStep.COUNTRY, steps(country).first(), "أول كارت = البلد (الشكل خرج من الرحلة)")
-        assertEquals(1, stepNumber(country))
-        assertEquals(ONB_SEGMENTS, segmentCount(country))
-        assertEquals(0, filledSegments(country))
-        assertEquals(1, filledSegments(pickCountry(country, "SA")))
+        assertEquals(2, stepNumber(country), "البلد = 2 من 5")
+        assertEquals(2, filledSegments(pickCountry(country, "SA")))
         assertEquals(ONB_SEGMENTS, filledSegments(OnbState(OnbStep.READY)))
         assertEquals(ONB_SEGMENTS, stepNumber(OnbState(OnbStep.READY)))
     }
@@ -62,14 +65,16 @@ class OnboardingStateTest {
 
     @Test
     fun savedStateFromOldBuildsComesBackSafely() {
-        // النسخ القديمة كانت بتحفظ الترتيب: 0 = «اختر شكلك» ⇒ البلد · 1 = البلد · 4 = يوم الراتب
-        assertEquals(OnbStep.COUNTRY, restoreStep(0))
-        assertEquals(OnbStep.COUNTRY, restoreStep("LOOK"))
+        // النسخ القديمة كانت بتحفظ الترتيب: 0 = «اختر شكلك» ⇒ أول كارت (الاسم — r041) · 1 = البلد · 4 = يوم الراتب
+        assertEquals(OnbStep.NAME, restoreStep(0))
+        assertEquals(OnbStep.NAME, restoreStep("LOOK"))
         assertEquals(OnbStep.COUNTRY, restoreStep(1))
+        assertEquals(OnbStep.COUNTRY, restoreStep("COUNTRY"), "حالة قبل التحديث على البلد بتكمّل مكانها")
         assertEquals(OnbStep.PAYDAY, restoreStep(4))
         assertEquals(OnbStep.READY, restoreStep("READY"))
-        assertEquals(OnbStep.COUNTRY, restoreStep(null))
-        assertEquals(OnbStep.COUNTRY, restoreStep(99))
+        assertEquals(OnbStep.NAME, restoreStep(null))
+        assertEquals(OnbStep.NAME, restoreStep(99))
+        assertEquals(OnbReply.NAMED, restoreReply("NAMED"))
         assertNull(restoreReply(0), "رد الشكل القديم ⇒ مفيش رد")
         assertEquals(OnbReply.COUNTRY_EG, restoreReply(2))
         assertEquals(OnbReply.SMS, restoreReply("SMS"))
@@ -80,7 +85,7 @@ class OnboardingStateTest {
 
     @Test
     fun backAndSkipOnlyWhereThePrototypeAllowsThem() {
-        assertFalse(canBack(OnbState(OnbStep.COUNTRY)))
+        assertTrue(canBack(OnbState(OnbStep.COUNTRY)), "البلد ⇒ رجوع للاسم (r041)")
         assertTrue(canBack(OnbState(OnbStep.PAYDAY)))
         assertFalse(canSkip(OnbState(OnbStep.COUNTRY)))
         assertTrue(canSkip(OnbState(OnbStep.PAYDAY)))
