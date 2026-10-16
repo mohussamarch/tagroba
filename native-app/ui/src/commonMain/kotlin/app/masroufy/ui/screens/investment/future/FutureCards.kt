@@ -31,6 +31,7 @@ import app.masroufy.core.formatBp
 import app.masroufy.core.monthYear
 import app.masroufy.ui.components.Divider
 import app.masroufy.ui.components.FloatingCard
+import app.masroufy.ui.screens.investment.calc.fullDate
 import app.masroufy.ui.components.tabular
 import app.masroufy.ui.text.BasicText
 import app.masroufy.ui.text.t
@@ -133,7 +134,7 @@ private fun CountriesCard(c: CountriesView, todayMoney: Boolean) {
             CountryLine(t(FUT_COUNTRIES_TOTAL), c.totalMinor?.let { approx(it, c.currency) }, true)
             val fx = c.fx
             BasicText(
-                if (fx == null) t(FUT_FX_MISSING) else t(FUT_FX_LINE, fxText(fx.egpPerSar4), fx.source, fx.asOf),
+                if (fx == null) t(FUT_FX_MISSING) else t(FUT_FX_LINE, fxText(fx.egpPerSar4), fx.source, fullDate(fx.asOf)),
                 style = Type.of(12).copy(color = Ink.muted),
             )
             if (!todayMoney && fx != null) BasicText(t(FUT_FX_WARN), style = Type.of(12, FontWeight.Bold).copy(color = WARN))

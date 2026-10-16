@@ -65,6 +65,7 @@ class InvestFutureGraph(private val c: AreaContext) : InvestFutureDeps {
             mine = FutureSpaceSource(
                 c.space.id, c.space.countryCode, currency, LoadWithYouNow(r.wallets, r.transactions, currency),
                 saving = FutureSavingSource { today -> saving.load(currency, today).averageMinor },
+                // المُجمِّع بعد دمج r05-salary: UserProfile.salaryMinor لو salaryCurrency = عملة البلد، وإلا null (النطاق القديم عمره ما يتحول لرقم)
                 income = FutureIncomeSource { null },
                 debts = debts,
                 incomeSources = r.incomeSources,

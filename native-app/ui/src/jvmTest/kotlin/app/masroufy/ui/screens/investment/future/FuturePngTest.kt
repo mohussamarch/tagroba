@@ -19,6 +19,8 @@ import androidx.compose.ui.unit.dp
 import app.masroufy.core.AverageEntry
 import app.masroufy.core.Currency
 import app.masroufy.core.DebtLine
+import app.masroufy.core.FeedPrice
+import app.masroufy.core.PriceFeed
 import app.masroufy.core.FutureChoice
 import app.masroufy.core.FutureGoal
 import app.masroufy.core.GrowthBucket
@@ -36,6 +38,8 @@ import app.masroufy.memory.MemoryTransactionRepository
 import app.masroufy.memory.MemoryUserSettingsStore
 import app.masroufy.memory.MemoryWalletRepository
 import app.masroufy.ui.theme.LocalReduceMotion
+import app.masroufy.usecase.FX_USD_EGP
+import app.masroufy.usecase.FX_USD_SAR
 import app.masroufy.usecase.FutureSpaceSource
 import app.masroufy.usecase.LoadFutureInputs
 import app.masroufy.usecase.LoadFutureInputsDeps
@@ -73,7 +77,7 @@ class FuturePngTest {
         goldPriceMissing = false,
     )
 
-    private fun deps(save: Long?): InvestFutureDeps {
+    private fun deps(save: Long?, withEgypt: Boolean = false): InvestFutureDeps {
         val settings = MemoryUserSettingsStore(listOf(UserSetting.BirthDate("1990-04-12", "x")))
         val view = ManageInvestView(settings, clock)
         val birth = ManageBirthDate(settings, clock)
@@ -84,7 +88,21 @@ class FuturePngTest {
             debts = { listOf(DebtLine(3_480_000, 145_000), DebtLine(100_000, 25_000), DebtLine(245_000, 0)) },
             incomeSources = MemoryIncomeSourceRepository(), goals = { listOf(FutureGoal("السفر", "2026-12-28"), FutureGoal("الطوارئ", "2027-06-30")) },
         )
-        val inputs = LoadFutureInputs(LoadFutureInputsDeps(src, emptyList(), birth))
+        val others = if (!withEgypt) emptyList() else listOf(
+            FutureSpaceSource(
+                "eg", "EG", Currency.EGP,
+                LoadWithYouNow(MemoryWalletRepository(listOf(Wallet("egb", "بنك", Currency.EGP, "bank", 30_000_000, "2026-01-01"))), MemoryTransactionRepository(), Currency.EGP),
+                saving = { 600_000 }, income = { null }, debts = { emptyList() }, incomeSources = MemoryIncomeSourceRepository(), goals = { emptyList() },
+                holdings = { HoldingsSnapshot(Currency.EGP, listOf(HoldingValue("egf", "شقة", HoldingGroup.PROPERTY, HoldingPurpose.INVEST, GrowthBucket.PROPERTY, 250_000_000)), false) },
+                rates = { InvestRatesState.Ready(InvestRates(1_500, 2_000, 1_800, entry("CPI_EG", 1_500), entry("GOLD_EGP", 2_000), entry("STOCKS_EG", 1_800))) },
+            ),
+        )
+        val feed = PriceFeed(
+            "2026-10-15T00:00:00Z", "SAR",
+            listOf(FeedPrice(FX_USD_SAR, "دولار", "1", 375, "2026-10-15", "مصدر تجريبي"), FeedPrice(FX_USD_EGP, "دولار", "1", 5_000, "2026-10-15", "مصدر تجريبي", "EGP")),
+            emptyList(), emptyList(),
+        )
+        val inputs = LoadFutureInputs(LoadFutureInputsDeps(src, others, birth, prices = { feed }))
         return object : InvestFutureDeps {
             override val inputs = inputs
             override val project = ProjectInvestFuture()
@@ -94,8 +112,10 @@ class FuturePngTest {
         }
     }
 
-    private suspend fun state(scope: CoroutineScope, save: Long?, r: InvestRatesState = rates, marks: List<Int> = emptyList()): InvestFutureState {
-        val s = InvestFutureState(deps(save), "sa", scope)
+    private suspend fun state(
+        scope: CoroutineScope, save: Long?, r: InvestRatesState = rates, marks: List<Int> = emptyList(), withEgypt: Boolean = false,
+    ): InvestFutureState {
+        val s = InvestFutureState(deps(save, withEgypt), "sa", scope)
         s.load(snapshot, r)
         if (marks.isNotEmpty()) for (y in marks) s.addMark(y.toString())
         var waited = 0
@@ -137,5 +157,19 @@ class FuturePngTest {
         png("future-na", 350, 260) { Column(Modifier.padding(16.dp)) { FutureHero(na) } }
         normal.openWheel()
         png("future-wheel", 390, 844) { YearWheel(normal) }
+    }
+
+    @Test fun rendersTheTwoCountriesCard() = runBlocking<Unit> {
+        val both = state(this, save = 180_000, withEgypt = true)
+        var waited = 0
+        while (both.countries == null && waited < 300) { delay(10); waited++ }
+        val c = assertNotNull(both.countries, "بلدين ومعاهم سعر الصرف ⇒ الكارت ظاهر")
+        assertEquals(2, c.rows.size)
+        assertNotNull(c.totalMinor, "سعر الصرف موجود ⇒ المجموع محسوب")
+        png("future-countries", 350, 1000) { Column(Modifier.padding(16.dp)) { FutureCards(both) } }
+        both.setTodayMoney(false)
+        waited = 0
+        while (both.projection?.choice?.todayMoney != false && waited < 300) { delay(10); waited++ }
+        png("future-countries-then", 350, 1000) { Column(Modifier.padding(16.dp)) { FutureCards(both) } }
     }
 }
