@@ -203,7 +203,7 @@ internal class SmsGraph(
 internal fun autoRecordSms(c: AreaContext, inbox: SmsInboxPort): AutoRecordSms {
     val spaces = c.session.spaces().ifEmpty { listOf(c.space to c.repos) }
     val lanes = spaces.mapNotNull { (s, repos) -> smsLaneOf(s, repos, c.env, inbox) }
-    return AutoRecordSms(AutoRecordSmsDeps(inbox, lanes))
+    return AutoRecordSms(AutoRecordSmsDeps(inbox, lanes, work = c.env.work))
 }
 
 /** نفس هدف التشغيلة (`AutoRecordSms.walletFor`): المحفظة وعملتها وآخر ٤ أرقامها + آخر ٤ أرقام حسابات المالك التانية في البلد (الجولة السادسة). */

@@ -101,7 +101,9 @@ class SmsDeviceScriptTest {
             clock = FixedClock("${today}T11:00:00.000Z"), transferParties = parties,
             effects = listOf(OwnAccountByLast4Effect(wallets), SmsSalaryEffect(inbox, "sa")),
         )
-        val auto = AutoRecordSms(AutoRecordSmsDeps(inbox, listOf(SmsLane.of("sa", importDeps, ManageSmsInbox(inbox, ::parseBankSms), wallets))))
+        // r041c: `AutoRecordSms` بيروح لسياق شغله — [blocking] هنا ما بيستناش خيط تاني ⇒ نفس الخيط
+        val lane = SmsLane.of("sa", importDeps, ManageSmsInbox(inbox, ::parseBankSms), wallets)
+        val auto = AutoRecordSms(AutoRecordSmsDeps(inbox, listOf(lane), work = kotlin.coroutines.EmptyCoroutineContext))
         val first = auto.run()
         assertEquals(0, first.recorded, "§77-A: أول رسالة من الشكل ده بتستنى")
         assertEquals(listOf("m0", "m1", "m2"), first.waiting)

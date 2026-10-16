@@ -61,8 +61,10 @@ class Review03FixesTest {
         val w = HistoryWorld()
         val spy = ThreadSpy(w.memory)
         val caller = Thread.currentThread().name
-        SmsHistory(SmsHistoryDeps(w.deps().copy(inbox = spy), w.settings, w.clock, work = EmptyCoroutineContext)).report()
-        RunBackgroundCycle(BackgroundCycleDeps(sms = AutoRecordSms(w.deps().copy(inbox = spy)), work = EmptyCoroutineContext)).run(LocalMoment("2026-07-05", 10))
+        // r041c: `AutoRecordSms` نفسه بقى بيروح لسياقه (`AutoRecordSmsDeps.work`) ⇒ الاختبار بيحقنه هناك كمان
+        val here = w.deps().copy(inbox = spy, work = EmptyCoroutineContext)
+        SmsHistory(SmsHistoryDeps(here, w.settings, w.clock, work = EmptyCoroutineContext)).report()
+        RunBackgroundCycle(BackgroundCycleDeps(sms = AutoRecordSms(here), work = EmptyCoroutineContext)).run(LocalMoment("2026-07-05", 10))
         assertTrue(spy.threads.isNotEmpty() && spy.threads.all { it == caller }, "${spy.threads} vs $caller")
     }
 

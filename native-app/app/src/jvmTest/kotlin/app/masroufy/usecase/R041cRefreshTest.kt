@@ -77,6 +77,25 @@ class R041cRefreshTest {
         assertEquals(listOf("m1", "m2"), w.queued().sorted(), "قراية بس — مفيش تسجيل ولا شيل")
     }
 
+    /** بيسجّل اسم الخيط اللي الصندوق اتقرا عليه. */
+    private class InboxThreads(private val inner: app.masroufy.port.SmsInboxPort) : app.masroufy.port.SmsInboxPort by inner {
+        val threads: MutableList<String> = Collections.synchronizedList(mutableListOf())
+        override suspend fun sync(): app.masroufy.port.SmsInboxState {
+            threads += Thread.currentThread().name
+            return inner.sync()
+        }
+    }
+
+    @Test fun everyEntryReadsTheInboxOnTheWorkContextWhoeverCallsIt() = runBlocking<Unit> {
+        val w = HistoryWorld()
+        val spy = InboxThreads(w.memory)
+        val auto = AutoRecordSms(w.deps().copy(inbox = spy)) // المساعد («رسايل مستنية») بيناديه من الشاشة
+        SmsAskSource(auto).pending("2026-07-01", "2026-07-31")
+        auto.unmappedQuick()
+        auto.runNew(SmsRunMemo())
+        assertTrue(spy.threads.isNotEmpty() && spy.threads.all { it.startsWith("DefaultDispatcher-worker") }, "${spy.threads}")
+    }
+
     private fun money(all: List<Transaction>) =
         all.map { listOf(it.amountMinor, it.observedDirection, it.economicKind, it.occurredAt, it.rawMerchantName, it.reviewState, it.categoryConfirmed) }
             .sortedBy { it.toString() }

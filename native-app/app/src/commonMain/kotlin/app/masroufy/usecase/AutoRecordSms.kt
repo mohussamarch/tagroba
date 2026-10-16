@@ -11,7 +11,10 @@ import app.masroufy.core.Wallet
 import app.masroufy.core.uiText
 import app.masroufy.port.SmsInboxPort
 import app.masroufy.port.smsSenderKey
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
+import kotlin.coroutines.CoroutineContext
 
 /**
  * رسايل البنك بتتسجل لوحدها (OVERRIDES §72 — قرار المالك 2026-10-08): الرسالة المفهومة **الجديدة** بتتسجل وتتصنف لوحدها في الخلفية،
@@ -32,6 +35,8 @@ data class AutoRecordSmsDeps(
     val inbox: SmsInboxPort,
     /** البلاد بالترتيب. رسالة بلد بتترفض من قارئ البلد التانية (العملة) فبتتسجل في بلدها بس. */
     val lanes: List<SmsLane>,
+    /** r041c: قراية الصندوق وفهمه ومطابقته وتسجيله برّه خيط الواجهة مهما مين ناداه (الشاشة · المساعد · الخلفية). الاختبار بيدّي سياقه. */
+    val work: CoroutineContext = Dispatchers.Default,
 )
 
 enum class AutoRecordStatus {
@@ -61,6 +66,9 @@ class AutoRecordSms(private val deps: AutoRecordSmsDeps) {
 
     private fun laneOf(spaceId: String): SmsLane =
         deps.lanes.firstOrNull { it.spaceId == spaceId } ?: throw IllegalArgumentException(uiText(TextKey.SMS_AUTO_WALLET_UNKNOWN))
+
+    /** r041c: على [AutoRecordSmsDeps.work] وجوه [SMS_RECORD_LOCK]. */
+    private suspend fun <T> locked(block: suspend () -> T): T = withContext(deps.work) { SMS_RECORD_LOCK.withLock { block() } }
 
     private suspend fun off(): Boolean = !deps.inbox.available || !deps.inbox.sync().enabled
 
@@ -126,11 +134,11 @@ class AutoRecordSms(private val deps: AutoRecordSmsDeps) {
         senderWallet(laneOf(spaceId).wallets.listAll(), smsSenderKey(sender), deps.inbox.senderWallets(spaceId))?.id
 
     /** البنوك اللي محتاجة المالك يختار محفظتها دلوقتي (للشاشة) — من غير كتابة. */
-    suspend fun unmappedSenders(): List<UnmappedSender> = SMS_RECORD_LOCK.withLock { if (off()) emptyList() else waitingLocked().unmapped }
+    suspend fun unmappedSenders(): List<UnmappedSender> = locked { if (off()) emptyList() else waitingLocked().unmapped }
 
     /** التشغيلة: كل بلد وكل بنك وكل محفظة بالدور يسجّل الجديد **اللي شكله اتعلّم** ويشيل المكرر، وبعدين حساب «مستنية» على اللي فاضل. */
-    suspend fun run(): AutoRecordResult = SMS_RECORD_LOCK.withLock {
-        if (off()) return@withLock AutoRecordResult(AutoRecordStatus.OFF)
+    suspend fun run(): AutoRecordResult = locked {
+        if (off()) return@locked AutoRecordResult(AutoRecordStatus.OFF)
         val (recorded, duplicates, ids) = recordPages(null)
         val state = waitingLocked()
         val w = state.waiting
@@ -142,9 +150,9 @@ class AutoRecordSms(private val deps: AutoRecordSmsDeps) {
      * (الشاشة ما بتعرضهوش). حاجة اتغيرت من آخر مرة (`smsMarkOf`) ⇒ لفة كاملة زي [run] عشان المستنية اللي بقت تتسجل تتسجل؛ غير كده المستنية
      * بتفضل لتشغيلة الخلفية الكاملة ([run]). مفيش جديد ⇒ قراية الصندوق مرة وخلاص (ولا فهم ولا معاينة).
      */
-    suspend fun runNew(memo: SmsRunMemo): AutoRecordResult = SMS_RECORD_LOCK.withLock {
+    suspend fun runNew(memo: SmsRunMemo): AutoRecordResult = locked {
         val box = if (deps.inbox.available) deps.inbox.sync() else null
-        if (box == null || !box.enabled) return@withLock AutoRecordResult(AutoRecordStatus.OFF)
+        if (box == null || !box.enabled) return@locked AutoRecordResult(AutoRecordStatus.OFF)
         val mark = smsMarkOf(deps.inbox, deps.lanes, box)
         val (recorded, duplicates, ids) = recordPages(memo, newOnly = mark == memo.mark)
         memo.mark = mark
@@ -155,12 +163,14 @@ class AutoRecordSms(private val deps: AutoRecordSmsDeps) {
      * r041c — نفس [unmappedSenders] (نفس التوزيع `routeSender` على نفس الرسايل) **من غير معاينة ولا تسجيل**: «إعداد القراءة» كانت بتستنى معاينة
      * كل محفظة — وتستنى التشغيلة كلها لو شغالة — فالصفحة تفضل بيضا. التشغيلة شغالة ⇒ ما بنستناهاش (قراية بس، مفيش كتابة).
      */
-    suspend fun unmappedQuick(): List<UnmappedSender> {
-        val locked = SMS_RECORD_LOCK.tryLock()
+    suspend fun unmappedQuick(): List<UnmappedSender> = withContext(deps.work) { unmappedQuickNow() }
+
+    private suspend fun unmappedQuickNow(): List<UnmappedSender> {
+        val held = SMS_RECORD_LOCK.tryLock()
         try {
             return if (off()) emptyList() else forEachRoute({ true }, previews = false) { _, _, _ -> }
         } finally {
-            if (locked) SMS_RECORD_LOCK.unlock()
+            if (held) SMS_RECORD_LOCK.unlock()
         }
     }
 
@@ -203,8 +213,8 @@ class AutoRecordSms(private val deps: AutoRecordSmsDeps) {
      * §75-2 (مراجعة S1): الرسالة اللي عليها «ده راتبك؟» محتاجة الرد [isSalary] (بيتحفظ لمرسلها ويتطبق عليها وهي بتتسجل)؛ من غيره **ما
      * بتتسجلش** وبتفضل مستنية بسؤالها — كانت بتتسجل «مش متصنف» والسؤال يرجع للرسالة الجاية، والنص بيقول «أكّد مرة إنه راتبك».
      */
-    suspend fun confirm(messageIds: List<String>, isSalary: Boolean? = null, similarToo: Boolean = true): Int = SMS_RECORD_LOCK.withLock {
-        if (off()) return@withLock 0
+    suspend fun confirm(messageIds: List<String>, isSalary: Boolean? = null, similarToo: Boolean = true): Int = locked {
+        if (off()) return@locked 0
         val wanted = messageIds.toSet()
         var recorded = 0
         forEachRoute({ it.id in wanted }) { lane, view, done ->
@@ -230,15 +240,15 @@ class AutoRecordSms(private val deps: AutoRecordSmsDeps) {
      * اللي مستني قرار المالك دلوقتي — من غير ما يكتب حاجة: كل رسالة في الصندوق **ما عدا** اللي هتتسجل لوحدها (جديدة وشكلها معروف
      * واتعلّم) أو هتتشال (مكررة). يعني رسالة هتتسجل لوحدها **مش** مستنية ⇒ مفيش إشعار ليها؛ وأول رسالة من شكل **مستنية**.
      */
-    suspend fun waiting(): SmsWaiting = SMS_RECORD_LOCK.withLock { if (off()) SmsWaiting(emptyList()) else waitingLocked().waiting }
+    suspend fun waiting(): SmsWaiting = locked { if (off()) SmsWaiting(emptyList()) else waitingLocked().waiting }
 
     /**
      * سؤال لكل رسالة مستنية (`SmsAskSource`): «ده راتبك؟» لو عليها، وإلا «مستنية تأكيدك» — بلدها ويومها لو اتقرت. الرسالة اللي ولا قارئ
      * فهمها: بلدها = البلد اللي المالك ربط فيها البنك ده بمحفظة (لو بلد واحدة)، أو البلد الوحيدة؛ غير كده **مش معروفة** (`spaceId` فاضي)
      * — مراجعة S1: كانت بتتحسب على أول بلد، فرسالة مصرية مش مقروءة كانت بتتعد في السعودية.
      */
-    internal suspend fun waitingAsks(): List<PendingAsk> = SMS_RECORD_LOCK.withLock {
-        if (off()) return@withLock emptyList()
+    internal suspend fun waitingAsks(): List<PendingAsk> = locked {
+        if (off()) return@locked emptyList()
         val state = waitingLocked()
         val senderOf = deps.inbox.sync().messages.associate { it.id to smsSenderKey(it.sender) }
         val mapped = deps.lanes.associate { it.spaceId to deps.inbox.senderWallets(it.spaceId).keys }
