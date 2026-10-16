@@ -32,6 +32,9 @@ class CalculatorsGraph(private val c: AreaContext, private val rates: LoadDefaul
 
     override fun today() = c.env.today()
 
+    // تاريخ الميلاد على الحساب (§87-8) — نفس اللي «هتبقى معاك كام» بتقرا منه (InvestFutureGraph)
+    override val birth = app.masroufy.usecase.ManageBirthDate(r.assistant.settings, c.env.clock)
+
     private val goals = ManageSavingsGoals(ManageSavingsGoalsDeps(r.savingsGoals, r.goalContributions, c.env.ids, c.env.clock))
 
     override val savings = SavingsCalculator(

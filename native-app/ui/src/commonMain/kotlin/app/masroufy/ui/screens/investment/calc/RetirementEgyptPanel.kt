@@ -33,6 +33,7 @@ fun RetirementEgyptPanel() {
     val currency = space.space.currency
     val today = remember(deps) { deps.today() }
     val f = rememberFields()
+    PrefillBirth(f, deps, EgyptFields.BIRTH)
     var categoryName by rememberSaveable { mutableStateOf(EgyptInsuredCategory.EMPLOYEE.name) }
     val category = EgyptInsuredCategory.valueOf(categoryName)
     val check = checkEgypt(f.snapshot(), category, currency, today)

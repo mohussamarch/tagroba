@@ -38,6 +38,7 @@ fun RetirementSaudiPanel() {
     val currency = space.space.currency
     val today = remember(deps) { deps.today() }
     val f = rememberFields()
+    PrefillBirth(f, deps, SaudiFields.BIRTH)
     var old by rememberSaveable { mutableStateOf(true) }
     var endName by rememberSaveable { mutableStateOf<String?>(null) }
     val end = endName?.let { EosEnd.valueOf(it) }

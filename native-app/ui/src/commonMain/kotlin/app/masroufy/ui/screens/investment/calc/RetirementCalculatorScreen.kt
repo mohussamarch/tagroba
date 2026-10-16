@@ -86,7 +86,7 @@ internal fun rememberRetirement(check: RetirementCheck, countryCode: String): Re
         delay(250)
         try {
             result = try {
-                RetirementResult(deps.retirement.calculate(req, today), check.eosChosen)
+                RetirementResult(deps.retirement.calculate(req, today), check.eosChosen).also { saveBirth(deps, req.saudi?.birthDate ?: req.egypt?.birthDate) }
             } catch (e: EndOfServiceError) {
                 // بيانات المكافأة غلط (مثلًا بداية العمل بعد يوم التقاعد): المعاش يتحسب من غيرها، والمكافأة «غير متاح» بالسبب
                 RetirementResult(deps.retirement.calculate(req.copy(noCurrentJob = true, desiredMonthlyMinor = null), today), check.eosChosen, e.message)
