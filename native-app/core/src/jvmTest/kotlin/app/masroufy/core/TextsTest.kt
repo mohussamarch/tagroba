@@ -70,6 +70,8 @@ class TextsTest {
             EGYPTIAN_INVEST_FUTURE_TEXTS.keys +
             // «حاجاتي» في الاستثمار (r05 HOLDINGS — `TextsInvestHold.kt`)
             EGYPTIAN_INVEST_HOLD_TEXTS.keys +
+            // «الاستثمار» الجديد — حزمة INSIGHTS (r05): النصايح · الحبل · اللي رجعلك · الأسئلة الشائعة (`TextsInvestInsight.kt`)
+            EGYPTIAN_INVEST_INSIGHT_TEXTS.keys +
             // مراجعة 0.3: «حساب البلد في الأرشيف» (`TextsSpaces.kt`)
             setOf(TextKey.SPACE_COUNTRY_ARCHIVED).filter { it in EGYPTIAN_SPACE_TEXTS } +
             // «ر.س» للنص الطالع برا التطبيق بس (علامة الريال الرسمية — قرار المالك 2026-10-15)

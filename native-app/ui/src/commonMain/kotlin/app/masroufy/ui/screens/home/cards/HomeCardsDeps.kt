@@ -2,6 +2,7 @@ package app.masroufy.ui.screens.home.cards
 
 import app.masroufy.usecase.LoadDailyAllowance
 import app.masroufy.usecase.LoadGoalsProgress
+import app.masroufy.usecase.LoadInvestToday
 import app.masroufy.usecase.LoadTopCategories
 import app.masroufy.usecase.ManageHomeCards
 
@@ -21,4 +22,7 @@ interface HomeCardsDeps {
 
     /** «أهدافك». */
     val goals: LoadGoalsProgress
+
+    /** «استثماراتك النهارده» (مواصفة النقل §1.14): `load(spaceId, today)` — null = «غير متاح» (مفيش يوم قبل كده). */
+    val investToday: LoadInvestToday
 }

@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.investment
 
+import app.masroufy.ui.screens.investment.insights.registerInsights
 import app.masroufy.core.GoalProgress
 import app.masroufy.core.Id
 import app.masroufy.core.IsoDate
@@ -81,6 +82,8 @@ interface InvestmentDeps {
     val holdingsSnapshot: app.masroufy.usecase.LoadHoldings
     /** «حاجاتي» · «ضيف حاجة» · صفحة النوع (`investment/holdings/`). */
     val holdings: app.masroufy.ui.screens.investment.holdings.InvestHoldingsDeps
+    /** «الاستثمار» الجديد — حزمة INSIGHTS (مواصفة النقل §4.3): النصيحة · الحبل · اللي رجعلك (`investment/insights/`). */
+    val insights: app.masroufy.ui.screens.investment.insights.InvestInsightsDeps
 }
 
 /** تفاصيل أصل (من «الاستثمار»). */
@@ -121,4 +124,5 @@ fun RouteRegistry.registerInvestment() {
     screen<AdvisorRoute> { AdvisorScreen() }
     registerCalculators()
     registerHoldings()
+    registerInsights()
 }

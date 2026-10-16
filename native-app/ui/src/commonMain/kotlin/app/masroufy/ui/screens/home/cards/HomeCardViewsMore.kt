@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -125,14 +127,52 @@ private fun Side(label: String, minor: Long, currency: app.masroufy.core.Currenc
     }
 }
 
-/** «استثماراتك»: ⚠️ تغيّر اليوم مالوش حالة استخدام في كوتلن لسه ⇒ «غير متاح» (مش رقم مخترع) والضغط بيفتح الاستثمار. */
+/**
+ * «استثماراتك النهارده» (مواصفة النقل §1.14 — `LoadInvestToday`): التغيّر عن آخر يوم اتشاف لنفس الحاجات (+1.2% و«+M منذ أمس» أو «منذ
+ * تاريخ»). مفيش يوم قبل كده أو القراية فشلت ⇒ «غير متاح» (مش رقم مخترع). الضغط بيفتح الاستثمار. بيقرا لوحده (الكارت مخفي افتراضيًا §96-2).
+ */
 @Composable
 internal fun InvestCard() {
     val nav = LocalNavigator.current
+    val deps = LocalSpace.current
+    val changes = app.masroufy.ui.app.LocalDataChanges.current
+    var view by androidx.compose.runtime.remember(deps) { androidx.compose.runtime.mutableStateOf<ReadState<app.masroufy.usecase.InvestTodayView?>>(ReadState.Loading) }
+    androidx.compose.runtime.LaunchedEffect(deps, changes.version) {
+        view = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
+            runCatching { deps.home.cards.investToday.load(deps.space.id, deps.shell.today()) }.fold({ ReadState.Ready(it) }, { ReadState.Failed })
+        }
+    }
     FloatingCard(Modifier.fillMaxWidth(), onClick = { nav.switchTab(Tab.INVESTMENT) }, clickLabel = t(UiKey.HOME_CARD_INVEST)) {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             CardHead(Lucide.TRENDING_UP, Ink.income, t(UiKey.HOME_CARD_INVEST), t(UiKey.HOME_INVEST_SUB))
-            BasicText(t(UiKey.HOME_INVEST_NA), style = Type.of(13, FontWeight.Bold).copy(color = Ink.muted))
+            val v = (view as? ReadState.Ready)?.value
+            if (v == null) {
+                if (view != ReadState.Loading) BasicText(t(UiKey.HOME_INVEST_NA), style = Type.of(13, FontWeight.Bold).copy(color = Ink.muted))
+            } else {
+                InvestTodayLine(v)
+            }
         }
     }
+}
+
+/** سطر «+1.2%  +M من امبارح» (`HomeQuick` kind=invest) — منفصل عشان اختبار الرسم. */
+@Composable
+internal fun InvestTodayLine(v: app.masroufy.usecase.InvestTodayView) {
+    val ink = if (v.gainMinor < 0) Ink.expense else Ink.income
+    val sign = if (v.gainMinor > 0) "+" else ""
+    val amount = sign + amountLabel(v.gainMinor, v.currency, AmountTone.PLAIN, true)
+    val since = v.sinceDate?.let { t(app.masroufy.core.InvestInsightKey.HOME_SINCE_DATE, amount, app.masroufy.core.dayMonth(it)) }
+        ?: t(app.masroufy.core.InvestInsightKey.HOME_SINCE_YESTERDAY, amount)
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Bottom) { // `HomeQuick` kind=invest: 28 عريض + 13
+        BasicText("⁦" + pctTenths(v.pctBp) + "⁩", style = Type.of(28, FontWeight.Bold, 1.2).copy(color = ink))
+        BasicText(since, Modifier.padding(bottom = 5.dp), style = Type.of(13).copy(color = Ink.soft))
+    }
+}
+
+/** «+1.2%» من نقاط الأساس (عرض بس: عُشر بالتقريب النص لبعيد عن الصفر). */
+internal fun pctTenths(bp: Int): String {
+    val abs = if (bp < 0) -bp else bp
+    val tenths = (abs + 5) / 10
+    val sign = if (bp > 0) "+" else if (bp < 0) "−" else ""
+    return "$sign${tenths / 10}.${tenths % 10}%"
 }

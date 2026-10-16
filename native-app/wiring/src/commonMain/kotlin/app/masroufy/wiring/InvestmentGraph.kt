@@ -63,6 +63,7 @@ class InvestmentGraph(private val c: AreaContext) : InvestmentDeps {
     // «حاجاتي» (مواصفة r05 §4.0 بند 6 · §4.2) — الصورة بتتحمّل مرة في الشاشة (المعدلات فوق — نسخة واحدة)؛ القسم نفسه في InvestHoldingsGraph.kt
     override val holdingsSnapshot = app.masroufy.usecase.LoadHoldings(app.masroufy.usecase.LoadHoldingsDeps(assets, r.zakatFacts, c.space.currency, r.assistant.settings))
     override val holdings = InvestHoldingsGraph(c, assets, growth, zakat)
+    override val insights = InvestInsightsGraph(c) // «الاستثمار» الجديد — حزمة INSIGHTS (ملف لوحده)
 
     private val operations = LoadTransactionsScreen(
         LoadTransactionsScreenDeps(r.transactions, r.categories, r.allocations, r.merchants, r.tags, r.transactionTags),

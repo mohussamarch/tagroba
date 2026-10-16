@@ -59,6 +59,12 @@ object AssistantCodecs {
                         req("type", "investView"); req("spaceId", s.spaceId); req("marks", s.marks); opt("path", s.path); opt("amountMinor", s.amountMinor); opt("mix", s.mix)
                     }
                     is UserSetting.BirthDate -> { req("type", "birthDate"); req("date", s.date) }
+                    // «الاستثمار» (r05 INSIGHTS): النصايح المقفولة · قيم «استثماراتك النهارده» (قوايم متوازية)
+                    is UserSetting.InvestTips -> { req("type", "investTips"); req("closed", s.closed) }
+                    is UserSetting.InvestDaily -> {
+                        req("type", "investDaily"); req("spaceId", s.spaceId); req("date", s.date); req("ids", s.ids); req("values", s.values)
+                        opt("prevDate", s.prevDate); req("prevIds", s.prevIds); req("prevValues", s.prevValues)
+                    }
                 }
             }
         },
@@ -75,6 +81,11 @@ object AssistantCodecs {
                     d.str("spaceId"), d.ints("marks"), d.strOrNull("path"), d.longOrNull("amountMinor"), d.strOrNull("mix"), d.str("updatedAt"),
                 )
                 "birthDate" -> UserSetting.BirthDate(d.str("date"), d.str("updatedAt"))
+                "investTips" -> UserSetting.InvestTips(d.strings("closed").orEmpty(), d.str("updatedAt"))
+                "investDaily" -> UserSetting.InvestDaily(
+                    d.str("spaceId"), d.str("date"), d.strings("ids").orEmpty(), d.longs("values"), d.strOrNull("prevDate"),
+                    d.strings("prevIds").orEmpty(), d.longs("prevValues"), d.str("updatedAt"),
+                )
                 else -> throw DocumentError(uiText(TextKey.DOC_FIELD_VALUE, USER_SETTINGS_GROUP, "type", type))
             }
         },

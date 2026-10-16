@@ -8,6 +8,8 @@ import app.masroufy.usecase.LoadGoalsOverview
 import app.masroufy.usecase.LoadGoalsOverviewDeps
 import app.masroufy.usecase.LoadGoalsProgress
 import app.masroufy.usecase.LoadHomeScreen
+import app.masroufy.usecase.LoadInvestToday
+import app.masroufy.usecase.LoadInvestTodayDeps
 import app.masroufy.usecase.LoadTopCategories
 import app.masroufy.usecase.ManageHomeCards
 
@@ -28,4 +30,7 @@ class HomeCardsGraph(c: AreaContext, calendar: LoadCalendar, homeScreen: LoadHom
     // البلاد المفتوحة بتتقرا أول ما الكارت يتقري (مش وقت بناء الجراف)
     private val ledgers by lazy { c.session.spaces().map { (space, repos) -> GoalLedger(space.id, repos.wallets, repos.transactions) } }
     override val goals by lazy { LoadGoalsProgress(LoadGoalsOverview(LoadGoalsOverviewDeps(r.savingsGoals, r.goalContributions, ledgers))) }
+
+    // «استثماراتك النهارده» (مواصفة النقل §1.14): قيم «حاجاتي» النهارده ⇒ اللقطة المحفوظة في `userSettings` على الحساب
+    override val investToday by lazy { LoadInvestToday(LoadInvestTodayDeps(r.assistant.settings, holdingsOf(c), c.space.currency, c.env.clock)) }
 }
