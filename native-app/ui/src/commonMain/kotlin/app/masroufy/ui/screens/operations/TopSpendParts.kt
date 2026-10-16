@@ -21,10 +21,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.masroufy.core.Currency
 import app.masroufy.core.UiKey
@@ -55,10 +57,19 @@ private val SHARE_REST = Color(0x2E193D33)
 private val ROW_TRACK = Color(0x12193D33)
 private val CHIP_IDLE = Color(0xB3FFFFFF)
 
-/** شرايح الفترة: المختارة أخضر مليان بكتابة بيضا عريضة، والباقي أبيض شفاف بحد رفيع (التصميم). */
+/**
+ * شرايح الفترة: المختارة أخضر مليان بكتابة بيضا عريضة، والباقي أبيض شفاف بحد رفيع (التصميم). مجموعة اختيار اسمها «الفترة» (زي
+ * `aria-label` في النموذج)، والشرايح بتنزل سطر تاني لو العرض ما كفاش (`flex-wrap` في النموذج — شاشة ضيقة أو خط كبير أو الإنجليزي).
+ */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun TopSpendPeriodChips(selected: FilterPeriod, onPick: (FilterPeriod) -> Unit) {
-    Row(Modifier.selectableGroup(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    val label = t(UiKey.TOP_SPEND_PERIOD)
+    FlowRow(
+        Modifier.selectableGroup().semantics { contentDescription = label },
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
         TOP_SPEND_PERIODS.forEach { p -> PeriodChip(periodName(p), p == selected) { onPick(p) } }
     }
 }
@@ -73,7 +84,7 @@ private fun PeriodChip(label: String, on: Boolean, onClick: () -> Unit) {
             .tap(press, role = Role.RadioButton, onClick = onClick).semantics { selected = on }.padding(horizontal = 14.dp),
         contentAlignment = Alignment.Center,
     ) {
-        BasicText(label, style = Type.of(13, if (on) FontWeight.Bold else FontWeight.Normal).copy(color = if (on) Ink.onPrimary else Ink.text), maxLines = 1)
+        BasicText(label, style = Type.of(13, if (on) FontWeight.Bold else FontWeight.Normal).copy(color = if (on) Ink.onPrimary else Ink.text), maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
 
@@ -144,7 +155,8 @@ private fun RankRow(rank: Int, r: SpendRankRow, currency: Currency, onClick: () 
             BasicText(rank.toString(), Modifier.width(22.dp), style = Type.of(12, FontWeight.Bold).copy(color = Ink.muted, textAlign = TextAlign.Center))
             IconTile(color, size = 40.dp, radius = 13.dp) { LucideIcon(categoryIcon(r.iconKey), size = 20.dp, tint = color) }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                BasicText(name, style = Type.of(15, FontWeight.Bold), maxLines = 1)
+                // الاسم بيلف على سطرين لو طويل (النموذج من غير حد سطور) — مش بيتقص من غير «…»
+                BasicText(name, style = Type.of(15, FontWeight.Bold))
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     BasicText(t(UiKey.TOP_SPEND_COUNT, r.count.toString()), style = Type.caption().copy(color = Ink.muted))
                     if (change != null) {
