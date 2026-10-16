@@ -20,6 +20,18 @@ class AndroidSeenAlerts(context: Context, uid: String) : SeenAlerts {
     }
 }
 
+/** r041b P2: مسودة «أول تشغيل» على الجهاز ده (لكل حساب مفتاح لوحده) — مش بيانات حساب، وبتتمسح أول ما الرحلة تخلص. */
+class AndroidOnboardingDraft(context: Context, uid: String) : app.masroufy.ui.screens.onboarding.OnbDraftStore {
+    private val prefs = context.getSharedPreferences("onboarding-draft", Context.MODE_PRIVATE)
+    private val key = "draft|$uid"
+
+    override fun read(): String? = runCatching { prefs.getString(key, null) }.getOrNull()
+
+    override fun write(value: String?) {
+        runCatching { prefs.edit().apply { if (value == null) remove(key) else putString(key, value) }.apply() }
+    }
+}
+
 /**
  * «الجهاز ده خلّص تنزيل أول كامل للحساب» (`AccountSession` — الفتح الجاي من نسخة الجهاز لو مفيش نت، §54). علامة لكل حساب، مش بيانات.
  * بتتمسح مع بيانات التطبيق (إلغاء التثبيت) ⇒ الجهاز بيرجع يستنى التنزيل كله.

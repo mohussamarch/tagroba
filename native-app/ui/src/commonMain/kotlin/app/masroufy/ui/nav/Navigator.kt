@@ -146,10 +146,18 @@ class Navigator(start: Tab = Tab.HOME) {
         return true
     }
 
-    /** زرار الرجوع. `false` = الرئيسية من غير حاجة مفتوحة ⇒ التطبيق نفسه يتقفل. */
+    /** r041b P2: شاشات بتمسك زرار الرجوع بنفسها وهي فوق (أول تشغيل ⇒ الكارت اللي قبله) — بالاسم، ومن غيرها [pop] عادي. */
+    private val backHolders = mutableMapOf<String, () -> Boolean>()
+
+    /** [handler] = null بيشيل الإمساك. الرد true = الشاشة عملت حاجة · false = سيب الجهاز يقفل التطبيق (من غير ما الشاشة تتشال). */
+    fun holdBack(route: Route, handler: (() -> Boolean)?) {
+        if (handler == null) backHolders.remove(route.name) else backHolders[route.name] = handler
+    }
+
+    /** زرار الرجوع. `false` = الرئيسية من غير حاجة مفتوحة (أو شاشة ماسكة الرجوع قالت «سيبه») ⇒ التطبيق نفسه يتقفل. */
     fun back(): Boolean = when {
         openSheets.isNotEmpty() -> close()
-        screens.isNotEmpty() -> pop()
+        screens.isNotEmpty() -> backHolders[screens.last().route.name]?.invoke() ?: pop()
         tab != Tab.HOME -> {
             switchTab(Tab.HOME)
             true

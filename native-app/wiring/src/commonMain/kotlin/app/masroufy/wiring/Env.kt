@@ -45,6 +45,8 @@ class DeviceEnv(
      * null (الآيفون لحد ما يتجمّع · الاختبار) ⇒ التطبيق على اللي فات بيترفض برسالة، والباقي شغال.
      */
     val repairBackup: app.masroufy.port.RepairBackupPort? = null,
+    /** r041b P2: مسودة «أول تشغيل» على الجهاز (لكل حساب) — الفتح الجاي بيكمّل من نفس الكارت. null (الاختبار · الآيفون لحد ما يتجمّع) ⇒ الذاكرة بس. */
+    val onboardingDraft: app.masroufy.ui.screens.onboarding.OnbDraftStore? = null,
 )
 
 /**

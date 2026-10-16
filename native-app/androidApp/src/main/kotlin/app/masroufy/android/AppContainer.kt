@@ -174,6 +174,7 @@ class AppContainer(private val context: Context, private val problems: ProblemLo
         bankSms = space?.let { AndroidBankSms(context, ZoneId.of(countryPack(it.countryCode).timeZone)) },
         pdfPages = space?.let { PdfBoxPages(context) },
         repairBackup = app.masroufy.device.AndroidRepairBackup(context),
+        onboardingDraft = AndroidOnboardingDraft(context, uid),
     )
 
     /**
