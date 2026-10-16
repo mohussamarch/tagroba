@@ -142,7 +142,7 @@ fun IncomeKindCard(transactionId: Id, onChanged: () -> Unit) {
 /** «راتب من أي جهة؟»: جهة موجودة أو «جهة جديدة» (الاسم · من · إلى) ⇒ `markSalary` (الحساب المحوِّل بيتربط بيها في نفس الخطوة). */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun EmployerPickSheet(visible: Boolean, transactionId: Id, onDismiss: () -> Unit, onDone: (IncomeDone) -> Unit) {
+fun EmployerPickSheet(visible: Boolean, transactionId: Id, onDismiss: () -> Unit, onDone: (IncomeDone) -> Unit) {
     val deps = LocalSpace.current.operations
     val answers = deps.incomeAnswers ?: return
     val scope = rememberCoroutineScope()

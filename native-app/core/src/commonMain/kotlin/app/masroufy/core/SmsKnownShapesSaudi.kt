@@ -38,20 +38,25 @@ private const val BANK_NAME = "(?:$SAUDI_BANK_NAMES)"
 
 private val SAUDI_BANK_TITLES: List<BankTitle> = listOf(
     // ── الراجحي ──
-    t("alrajhi", "purchase", "شراء", OUT), // #0 #5
+    t("alrajhi", "purchase", "شراء(?: pos)?", OUT), // #0 #5 · r05: «شراء PoS» (الراجحي 2026)
+    // r05: «شراء انترنت بـSR 25» (الراجحي 2026 — المبلغ في العنوان؛ «شراء انترنت» من غير مبلغ = عنوان موحّد)
+    t("alrajhi", "purchase-online", "شراء انترنت ب ?$LOCAL_MONEY", OUT),
     t("alrajhi", "purchase-international", "شراء دولي", OUT), // #1
     t("alrajhi", "purchase-online-auth-capture", "خصم من التفويض عبر الانترنت", OUT), // #3
     t("alrajhi", "purchase-current-account-estore", "عملية شراء ?- ?حساب جاري ?- ?المتجر الالكتروني", OUT), // #8
     t("alrajhi", "refund-online", "استرداد شراء الانترنت", IN), // #9
     t("alrajhi", "refund", "استرداد شراء", IN), // #10
     t("alrajhi", "transfer-in-internal", "حوالة داخلية واردة(?: ب ?$LOCAL_MONEY)?", IN), // #14 #15 (المبلغ ممكن في نفس السطر — مبلغ بس)
-    t("alrajhi", "transfer-in-local", "حوالة محلية واردة", IN), // #17
-    t("alrajhi", "transfer-out-internal", "حوالة داخلية صادرة", OUT), // #19 #20
-    t("alrajhi", "transfer-out-local", "حوالة محلية صادرة", OUT), // #21
+    t("alrajhi", "transfer-in-local", "حوالة محلية واردة(?: ب ?$LOCAL_MONEY)?", IN), // #17 · r05: المبلغ في العنوان (2026)
+    t("alrajhi", "transfer-out-internal", "حوالة داخلية صادرة(?: ب ?$LOCAL_MONEY)?", OUT), // #19 #20 · r05: المبلغ في العنوان
+    t("alrajhi", "transfer-out-local", "حوالة محلية صادرة(?: ب ?$LOCAL_MONEY)?", OUT), // #21 · r05: المبلغ في العنوان
     t("alrajhi", "transfer-own-accounts", "حوالة بين حساباتك", OUT), // #23
     t("alrajhi", "deposit-government-support", "ايداع دعم حكومي ?- ?حساب المواطن", IN), // #26
     t("alrajhi", "salary", "راتب", IN), // #28
     t("alrajhi", "bill-payment-telecom", "مدفوعات سوا", OUT), // #30
+    // r05: «مدفوعات وزارة الداخلية-المخالفات المرورية» — خدمة من قايمة مقفولة بعد الشَرطة (من غيرها = العنوان الموحّد)
+    t("alrajhi", "government-moi-service", "مدفوعات وزارة الداخلية ?- ?(?:المخالفات المرورية|المرور|الجوازات|الاحوال المدنية)", OUT),
+    t("alrajhi", "refund-reversal", "استرجاع عملية", IN), // r05: الراجحي 2026 — مرتجع (بيستنى زي أي مرتجع §75-6)
     // ── الأهلي السعودي ──
     t("snb", "purchase-pos", "شراء نقاط بيع(?: (?:$WALLET))?", OUT), // #40 «شراء نقاط بيع {wallet}» — اسم محفظة بس
     t("snb", "refund", "استرجاع شراء", IN), // #42

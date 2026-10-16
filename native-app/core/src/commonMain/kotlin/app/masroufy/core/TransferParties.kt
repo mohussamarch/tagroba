@@ -76,6 +76,11 @@ val INCOMING_FROM_PERSON_KINDS: List<EconomicKind> = listOf(
     EconomicKind.LOAN_RECEIVED, EconomicKind.CUSTODY_RECEIVED, EconomicKind.ROSCA_PAYOUT,
 )
 
+/** r05 (رسالة تحويل **صادر** لشخص — طلب المالك 2026-10-16): سلفة · دعم أو هدية · سداد دين · رد أمانة. */
+val OUTGOING_TO_PERSON_KINDS: List<EconomicKind> = listOf(
+    EconomicKind.LOAN_GRANTED, EconomicKind.SUPPORT_GIFT, EconomicKind.DEBT_REPAID, EconomicKind.CUSTODY_RETURNED,
+)
+
 private const val ARABIC = "؀-ۿﭐ-﷿ﹰ-﻿"
 private val PRESENTATION_FORM = Regex("[ﭐ-﷿ﹰ-﻿]")
 // المقلوب هو حروف العرض بس — العربي العادي جوه نفس الوصف (زي «[رقم]» اللي التطبيق القديم بيحطه) مكتوب صح ومايتقلبش

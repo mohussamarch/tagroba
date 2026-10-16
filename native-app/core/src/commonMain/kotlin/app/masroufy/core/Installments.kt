@@ -42,6 +42,10 @@ data class InstallmentPlan(
     val receivedTransactionId: Id? = null,
     /** §75-8 (الشريحة S4): عمليات المالك قال عنها «مش قسط الخطة دي» ⇒ ما تتقترحش عليها تاني (`SuggestDueLinks`). */
     val dismissedTxnIds: List<Id> = emptyList(),
+    /** r05 (BNPL «كل أسبوعين»): الأقساط كل كام **أسبوع** — null = كل [cycleMonths] شهر (زي الأول). */
+    val cycleWeeks: Int? = null,
+    /** r05 (BNPL «اشتريت إيه؟»): تصنيف المشترى — أقساطه بتاخده بدل «المستحقات ← تقسيط مشتريات». null = زي الأول (§56). */
+    val categoryId: Id? = null,
 )
 
 /** ربط عملية من الكشف بخطة الأقساط. */
@@ -51,7 +55,9 @@ const val INSTALLMENT_NAME_MAX = 80
 
 class InstallmentError(message: String) : IllegalArgumentException(message)
 
-fun installmentSchedule(p: InstallmentPlan): DueSchedule = DueSchedule(p.firstDueAt, p.cycleMonths, p.installmentMinor, p.totalMinor, p.currency)
+fun installmentSchedule(p: InstallmentPlan): DueSchedule = p.cycleWeeks?.let { weeks ->
+    DueSchedule(p.firstDueAt, weeks, p.installmentMinor, p.totalMinor, p.currency, unit = CycleUnit.WEEK)
+} ?: DueSchedule(p.firstDueAt, p.cycleMonths, p.installmentMinor, p.totalMinor, p.currency)
 
 fun checkInstallmentPlan(p: InstallmentPlan): CheckedName {
     val clean = JsText.collapseWhitespace(JsText.trim(p.name))

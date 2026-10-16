@@ -28,6 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import app.masroufy.core.EconomicKind
 import app.masroufy.core.INCOMING_FROM_PERSON_KINDS
+import app.masroufy.core.OUTGOING_TO_PERSON_KINDS
 import app.masroufy.core.Id
 import app.masroufy.core.Person
 import app.masroufy.core.PersonCircle
@@ -81,7 +82,7 @@ fun decisionTexts(d: PartyDecision, party: TransferPartyRef): Pair<String, Strin
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun TransferPartyCard(party: TransferPartyRef, transactionId: Id, onChanged: () -> Unit) {
+fun TransferPartyCard(party: TransferPartyRef, transactionId: Id, onChanged: () -> Unit, outgoing: Boolean = false) {
     val deps = LocalSpace.current.operations
     val scope = rememberCoroutineScope()
     var decision by remember(party.key) { mutableStateOf<PartyDecision?>(null) }
@@ -153,7 +154,8 @@ fun TransferPartyCard(party: TransferPartyRef, transactionId: Id, onChanged: () 
                     act { answers?.let { NewPartyDecision.Ignored(it.ignore(party)) } ?: run { deps.transfers.dismiss(party); PartyDecision.NotThis } }
                 }
             }
-            if (deps.incomeAnswers != null) {
+            // r05: تحويل **صادر** (من «رسائل البنك») ⇒ أنواع الصادر لشخص، ومن غير «راتب الدوام»
+            if (deps.incomeAnswers != null && !outgoing) {
                 BasicText(t(UiKey.INCOME_ANS_OR), style = Type.of(12, FontWeight.Bold).copy(color = PartyInk.brown))
                 IncomeAnswerChips(transactionId, withOther = false, withSalary = false) { income = it; error = null; onChanged() }
             }
@@ -191,7 +193,7 @@ fun TransferPartyCard(party: TransferPartyRef, transactionId: Id, onChanged: () 
             error?.let { FieldError(it) }
         }
     }
-    PartySheet(sheet || dues, party, error, duesOnly = dues, onDismiss = { sheet = false; dues = false }) { who, draft, kind ->
+    PartySheet(sheet || dues, party, error, outgoing, duesOnly = dues, onDismiss = { sheet = false; dues = false }) { who, draft, kind ->
         act {
             val person = who ?: deps.people.addPerson(partyNewName(party, draft.name)).also { p -> draft.circle?.let { deps.circles.setProfile(p.id, it, null) } }
             if (kind == null) {
@@ -238,6 +240,7 @@ private fun PartySheet(
     visible: Boolean,
     party: TransferPartyRef,
     error: String?,
+    outgoing: Boolean,
     duesOnly: Boolean = false,
     onDismiss: () -> Unit,
     onSave: (who: Person?, draft: NewPersonDraft, kind: EconomicKind?) -> Unit,
@@ -275,7 +278,7 @@ private fun PartySheet(
         } else {
             BasicText(t(UiKey.TRANSFER_PARTY_KIND_Q), style = Type.of(14).copy(color = Ink.muted))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                for (k in INCOMING_FROM_PERSON_KINDS) SelectChip(ruleFor(k).label, kind == k, { kind = k })
+                for (k in if (outgoing) OUTGOING_TO_PERSON_KINDS else INCOMING_FROM_PERSON_KINDS) SelectChip(ruleFor(k).label, kind == k, { kind = k })
             }
             error?.let { FieldError(it) }
             PrimaryButton(t(UiKey.TRANSFER_PARTY_SAVE), onClick = {

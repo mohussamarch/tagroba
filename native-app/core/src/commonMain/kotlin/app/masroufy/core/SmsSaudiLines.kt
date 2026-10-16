@@ -46,9 +46,10 @@ private val FEE_OR_BALANCE = field(
 private val RATE_LINE = field("exchange rate|سعر الصرف~?|رسوم تحويل العملات", "(?:($RATE)|$MONEY)")
 private val COUNTRY_LINE = field("دولة|الدولة|country", "([a-z\\u0600-\\u06FF][a-z\\u0600-\\u06FF .]{1,40})")
 private val DATE_FIELD = Regex("^(?:(?:في|on|at|date|بتاريخ|التاريخ|تاريخ العملية)$SEP|في(?=\\d))($DT)$")
-private val CARD_FIELD = field(
-    "بطاقة|البطاقة|البطاقة الائتمانية|بطاقة مدي|لبطاقة مدي|ببطاقة مدي|للبطاقة|card|via|by|عبر|مدي|مدي-$LETTERS+",
-    "$SA_CARD_HEAD$ACCT$SA_CARD_TAIL",
+// r05 (الراجحي 2026): «عبر1234;مدى-سامسونج باي» — الكارت لازق في «عبر» من غير «:» ولا مسافة (زي «من1234»)
+private val CARD_FIELD = Regex(
+    "^(?:(?:بطاقة|البطاقة|البطاقة الائتمانية|بطاقة مدي|لبطاقة مدي|ببطاقة مدي|للبطاقة|card|via|by|عبر|مدي|مدي-$LETTERS+)$SEP|عبر(?=[\\d*•x#]))" +
+        "($SA_CARD_HEAD$ACCT$SA_CARD_TAIL)$",
 )
 private val ACCOUNT_FIELD = field(
     "حساب|الحساب|في حساب|لحساب|من حساب|الي حساب|حساب صاحب الشيك|acc|account|account number|from account|iban|ايبان|الايبان|خصمت من حساب",
@@ -74,7 +75,7 @@ private val BARE_FIELD = Regex("^(?:(?:من|الي|to|from|عبر|ref\\. no\\.|r
 private const val MAX_BARE_WORDS = 6
 
 /** رقم الفاتورة (الراجحي #29 «الفاتورة:» · إس تي سي #109 «Number:») = مرجع بس (أرقام وحروف من غير مسافة) — «الفاتورة: مستحقة بعد اسبوع» لأ. */
-private val BILL_REF = Regex("^(?:الفاتورة|number) ?: ?([a-z]{0,4}[\\d*•#][\\d*•#./\\-]{2,30})$")
+private val BILL_REF = Regex("^(?:الفاتورة|رقم الفاتورة|number) ?: ?([a-z]{0,4}[\\d*•#][\\d*•#./\\-]{2,30})$")
 
 /** سطر لوحده: اسم بنك من القايمة · المبلغ لوحده («1,250.00 SAR») · التاريخ والساعة · «{amount} SAR :المبلغ». */
 private val BANK_LINE = Regex("^(?:من خلال )?(?:$SAUDI_BANK_NAMES)$") // «من خلال الإنماء» (الإنماء #71)

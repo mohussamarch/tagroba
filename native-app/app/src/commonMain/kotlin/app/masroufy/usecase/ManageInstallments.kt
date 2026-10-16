@@ -63,6 +63,9 @@ data class InstallmentInput(
     val cycleMonths: Int = 1,
     val firstDueAt: IsoDate,
     val hasInterest: Boolean? = null,
+    /** r05 (BNPL): كل كام أسبوع (null = كل [cycleMonths] شهر) · تصنيف المشترى (null = «المستحقات ← تقسيط مشتريات»). */
+    val cycleWeeks: Int? = null,
+    val categoryId: Id? = null,
 )
 
 /** [receivedMinor]: مبلغ عملية «مبلغ تمويل مستلم» المربوطة (null = لسه ما اتربطتش — مش صفر). */
@@ -123,6 +126,8 @@ class ManageInstallments(private val deps: ManageInstallmentsDeps) {
             receivedTransactionId = existing?.receivedTransactionId,
             // §75-8: «مش قسط الخطة دي» بيفضل بعد التعديل
             dismissedTxnIds = existing?.dismissedTxnIds.orEmpty(),
+            cycleWeeks = input.cycleWeeks,
+            categoryId = input.categoryId,
         )
         val plan = draft.copy(name = checkInstallmentPlan(draft).name)
         if (existing != null) {
@@ -146,7 +151,7 @@ class ManageInstallments(private val deps: ManageInstallmentsDeps) {
         val payment = InstallmentPayment(deps.ids.next("installmentpay"), planId, transactionId, amount)
         deps.uow.run {
             deps.payments.saveMany(listOf(payment))
-            links.markKind(transactionId, installmentPaymentKind(plan), DuesCategories.forInstallment(plan.kind))
+            links.markKind(transactionId, installmentPaymentKind(plan), plan.categoryId ?: DuesCategories.forInstallment(plan.kind))
         }
         return payment
     }
@@ -195,6 +200,10 @@ class ManageInstallments(private val deps: ManageInstallmentsDeps) {
         val day = toDayNumber(parseIsoDate(purchaseDate))
         return near.filter { it.id !in taken }.sortedWith(compareBy({ kotlin.math.abs(toDayNumber(parseIsoDate(it.occurredAt.take(10))) - day) }, { it.occurredAt }, { it.id }))
     }
+
+    /** r05 (BNPL «تخطّي»): قسط عادي تحت «المستحقات ← تقسيط مشتريات» من غير خطة — مصروف بنوعه (§56)، وما بيتسألش تاني. */
+    suspend fun markPlainInstallment(transactionId: Id) =
+        links.markKind(transactionId, EconomicKind.PURCHASE, DuesCategories.PURCHASE_PLANS)
 
     /** مبلغ التمويل اللي نزل في الحساب (§59) — مرة واحدة لكل خطة تمويل، وبالعملية كلها. */
     suspend fun linkReceived(planId: Id, transactionId: Id): InstallmentPlan {
