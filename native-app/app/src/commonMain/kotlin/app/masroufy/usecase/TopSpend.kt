@@ -23,8 +23,9 @@ const val TOP_SPEND_SHARE_SEGMENTS = 5
  * سطر في الترتيب. [categoryId] null = «بلا تصنيف» (سطر لوحده). [name]/[iconKey]/[colorHex] null = التصنيف مش موجود في الشجرة (اتمسح)
  * أو «بلا تصنيف». [shareTenthPercent] نسبته من مجموع الفترة بالعُشر من المية (125 = 12.5٪) و[sharePercent] نفس النسبة مقرّبة لأقرب
  * واحد صحيح للعرض. [barPercent] عرض الشريط من أكبر تصنيف (0–100). [changePercent] الفرق عن الشهر اللي فات بالمية (موجب = زاد):
- * null = مش معروف أو مش متقارن (مش «الشهر ده»، أو الشهر اللي فات مش معروف/جزئي، أو التصنيف ما كانش فيه صرف) ⇒ مفيش سهم — عمره ما
- * بيبقى صفر مزيف (CLAUDE.md #10).
+ * null = مش معروف أو مش متقارن (مش «الشهر ده»، أو **الشهر ده نفسه** أو اللي فات مش معروف/جزئي، أو التصنيف ما كانش فيه صرف) ⇒ مفيش
+ * سهم — عمره ما بيبقى صفر مزيف ولا سهم من مبلغ «لحد دلوقتي» (CLAUDE.md #10). نوعه [Long] مش [Int]: من 0.01 لـ250,000 = 2,499,999,900٪
+ * والـInt كان بيلف ويقلب الإشارة (سهم أخضر لزيادة كبيرة — مراجعة r051 F3).
  */
 data class SpendRankRow(
     val categoryId: Id?,
@@ -36,7 +37,7 @@ data class SpendRankRow(
     val shareTenthPercent: Long,
     val sharePercent: Int,
     val barPercent: Int,
-    val changePercent: Int? = null,
+    val changePercent: Long? = null,
 )
 
 /** حصة في شريط المجموع: [colorHex] لون التصنيف (null = من غير لون)، و[tenthPercent] نصيبها بالعُشر من المية. */
@@ -66,7 +67,8 @@ fun rankSpend(data: HomeScreenData): TopSpendView = rankSpendOver(listOf(data))
 
 /**
  * الترتيب على شهر أو أكتر ([months]: الأحدث الأول). الأكبر الأول، والتعادل بمعرّف التصنيف (و«بلا تصنيف» آخرهم) عشان الترتيب ثابت.
- * [previous] = الشهر اللي قبل الشهر الوحيد ده ⇒ الفرق لكل تصنيف (بس لو الشهر اللي فات معروف وكامل).
+ * [previous] = الشهر اللي قبل الشهر الوحيد ده ⇒ الفرق لكل تصنيف — بس لو **الشهرين** معروفين وكاملين: الشهر الجزئي مبالغه حد أدنى، والسهم
+ * منه يبقى ادعاء مش محسوب (مراجعة r051 F1).
  */
 fun rankSpendOver(months: List<HomeScreenData>, previous: HomeScreenData? = null, current: Boolean = false): TopSpendView {
     require(months.isNotEmpty()) { "months" }
@@ -76,12 +78,12 @@ fun rankSpendOver(months: List<HomeScreenData>, previous: HomeScreenData? = null
     val slices = mergeSlices(months.flatMap { it.distribution })
     val total = sumMoney(slices.map { it.amountMinor })
     val bars = sharesOfLargest(slices.map { it.amountMinor })
-    val before = previous?.takeIf { it.expenseMinor != null && !it.partial }
+    val before = previous?.takeIf { p -> (months + p).all { it.expenseMinor != null && !it.partial } }
         ?.let { p -> mergeSlices(p.distribution).associate { it.categoryId to it.amountMinor } }
     val rows = slices.mapIndexed { i, s ->
         val c = s.categoryId?.let(byId::get)
         val tenth = tenthOf(s.amountMinor, total)
-        val change = before?.get(s.categoryId)?.takeIf { it > 0L }?.let { prev -> rateOfMoney(subtractMoney(s.amountMinor, prev), 100, prev).toInt() }
+        val change = before?.get(s.categoryId)?.takeIf { it > 0L }?.let { prev -> rateOfMoney(subtractMoney(s.amountMinor, prev), 100, prev) }
         SpendRankRow(s.categoryId, c?.name, c?.iconKey, c?.lightColor, s.amountMinor, s.count, tenth, ((tenth + 5) / 10).toInt(), bars[i], change)
     }
     val anyKnown = months.any { it.expenseMinor != null }

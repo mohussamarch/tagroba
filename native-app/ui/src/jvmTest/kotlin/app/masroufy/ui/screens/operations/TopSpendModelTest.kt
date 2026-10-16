@@ -51,7 +51,7 @@ class TopSpendModelTest {
         assertEquals(FilterPeriod.THREE, categoryOperationsRoute(Fx.shop.id, FilterPeriod.THREE).filters().period)
     }
 
-    private fun row(change: Int?) = SpendRankRow("c", "تصنيف وهمي", null, null, 10_000, 3, 500, 50, 100, change)
+    private fun row(change: Long?) = SpendRankRow("c", "تصنيف وهمي", null, null, 10_000, 3, 500, 50, 100, change)
 
     @Test fun theChangeShowsAnArrowOnlyWhenKnownAndNotZero() {
         val up = topSpendChange(row(14))!!
@@ -61,6 +61,13 @@ class TopSpendModelTest {
         assertTrue(!down.second && down.first.startsWith("↓") && down.first.contains("6%") && !down.first.contains("-"), down.first)
         assertNull(topSpendChange(row(null)), "مش معروف ⇒ مفيش سهم (مش 0%)")
         assertNull(topSpendChange(row(0)), "صفر ⇒ مفيش سهم زي التصميم")
+    }
+
+    /** مراجعة r051 F3: زيادة أكبر من حد الـInt لسه «↑» أحمر بالرقم كله (مش سهم أخضر من رقم لفّ). */
+    @Test fun aHugeIncreaseIsStillARedUpArrow() {
+        val huge = topSpendChange(row(2_499_999_900L))!!
+        assertTrue(huge.second, "زاد ⇒ أحمر")
+        assertTrue(huge.first.startsWith("↑") && huge.first.contains("2499999900%"), huge.first)
     }
 
     @Test fun theRangeLineNamesTheCurrentFinancialMonth() {

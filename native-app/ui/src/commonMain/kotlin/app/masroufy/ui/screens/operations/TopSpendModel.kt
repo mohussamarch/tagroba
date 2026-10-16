@@ -36,7 +36,7 @@ fun topSpendSummary(v: TopSpendView): String = t(UiKey.TOP_SPEND_SUMMARY, v.rows
  */
 fun topSpendChange(r: SpendRankRow): Pair<String, Boolean>? {
     val c = r.changePercent ?: return null
-    if (c == 0) return null
+    if (c == 0L) return null
     val pct = "⁦${if (c > 0) c else -c}%⁩"
     return t(if (c > 0) UiKey.TOP_SPEND_UP else UiKey.TOP_SPEND_DOWN, pct) to (c > 0)
 }

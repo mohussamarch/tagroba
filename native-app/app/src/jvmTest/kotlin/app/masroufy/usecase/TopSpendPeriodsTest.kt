@@ -9,6 +9,7 @@ import app.masroufy.core.Transaction
 import app.masroufy.memory.MemoryAllocationRepository
 import app.masroufy.memory.MemoryCategoryRepository
 import app.masroufy.memory.MemoryTransactionRepository
+import app.masroufy.port.TransactionRepository
 import kotlinx.coroutines.runBlocking
 import kotlin.math.abs
 import kotlin.test.Test
@@ -58,11 +59,11 @@ class TopSpendPeriodsTest {
         val v = useCase(now + last + before, cats).loadAll("2026-10-10", 28)
         assertTrue(v.current)
         val change = v.rows.associate { it.categoryId to it.changePercent }
-        assertEquals(14, change["c-00"], "11,400 من 10,000 = زاد 14%")
-        assertEquals(-6, change["c-01"], "9,200 من 9,800 = قلّ 6.1% ⇒ 6")
+        assertEquals(14L, change["c-00"], "11,400 من 10,000 = زاد 14%")
+        assertEquals(-6L, change["c-01"], "9,200 من 9,800 = قلّ 6.1% ⇒ 6")
         assertNull(change["c-02"], "ما كانش فيه صرف الشهر اللي فات ⇒ مفيش سهم (مش زيادة مزيفة)")
-        assertEquals(0, change["c-03"], "نفس المبلغ ⇒ صفر محسوب (الشاشة ما بتعرضش سهم)")
-        assertEquals(100, change[null], "«بلا تصنيف» بيتقارن برضه")
+        assertEquals(0L, change["c-03"], "نفس المبلغ ⇒ صفر محسوب (الشاشة ما بتعرضش سهم)")
+        assertEquals(100L, change[null], "«بلا تصنيف» بيتقارن برضه")
     }
 
     @Test
@@ -126,17 +127,69 @@ class TopSpendPeriodsTest {
         // تسخين الـJVM على عينة صغيرة (تحميل الكلاسات) — القياس على الكبيرة بس
         useCase(now + last, cats).loadAll("2026-10-10", 28)
         val top = useCase(big, forty)
-        var started = System.nanoTime()
-        val thisMonth = top.loadAll("2026-10-10", 28)
-        val msNow = (System.nanoTime() - started) / 1_000_000
-        started = System.nanoTime()
-        val three = top.loadAll("2026-10-10", 28, monthsBack = 0, months = 3)
-        val msThree = (System.nanoTime() - started) / 1_000_000
-        assertTrue(msNow < 700, "«الشهر ده» مع الفرق أخد $msNow مللي ثانية")
-        assertTrue(msThree < 700, "«آخر 3 شهور» أخد $msThree مللي ثانية")
+        val (msNow, thisMonth) = fastestMs { top.loadAll("2026-10-10", 28) }
+        val (msThree, three) = fastestMs { top.loadAll("2026-10-10", 28, monthsBack = 0, months = 3) }
+        assertTrue(msNow < 700, "«الشهر ده» مع الفرق أخد $msNow مللي ثانية (أسرع مرة من $TIMED_RUNS)")
+        assertTrue(msThree < 700, "«آخر 3 شهور» أخد $msThree مللي ثانية (أسرع مرة من $TIMED_RUNS)")
         assertEquals(40, thisMonth.rows.size)
         assertTrue(thisMonth.rows.all { it.changePercent != null }, "كل التصنيفات كان فيها صرف الشهر اللي فات")
         assertEquals(big.filter { it.occurredAt >= "2026-08" }.sumOf { it.amountMinor }, three.totalMinor)
         assertEquals(2_700, three.operationCount)
+    }
+
+    /**
+     * مراجعة r051 F7: أسرع مرة من [TIMED_RUNS] على نفس البيانات الكبيرة — وقفة GC أو فحص مضاد فيروسات أو اختبارات شغالة جنبها في مرة
+     * واحدة ما توقعش البناء من غير تغيير في الكود، والحد لسه 700 مللي ثانية (أبطأ كود بيعدّيه في كل المرات).
+     */
+    private inline fun <T> fastestMs(block: () -> T): Pair<Long, T> {
+        var best = Long.MAX_VALUE
+        var result: T? = null
+        repeat(TIMED_RUNS) {
+            val started = System.nanoTime()
+            result = block()
+            best = minOf(best, (System.nanoTime() - started) / 1_000_000)
+        }
+        @Suppress("UNCHECKED_CAST")
+        return best to (result as T)
+    }
+
+    /** مراجعة r051 F1: الشهر ده نفسه جزئي ⇒ مبالغه حد أدنى ⇒ مفيش سهم (كان بيطلع «↓ 40%» والصرف الحقيقي زاد 10%). */
+    @Test
+    fun aPartialCurrentMonthGivesNoChangeInsteadOfALowerBoundOne() = runBlocking {
+        val prev = listOf(txn("2026-09-10", 100_000, "c-00"))
+        val unsure = txn("2026-10-02", 50_000, null, kind = EconomicKind.UNCLASSIFIED, confirmed = false)
+            .copy(suggestedKind = EconomicKind.INTERNAL_TRANSFER) // مستنية «نلغي الاتنين؟» ⇒ نوعها مش معروف
+        val v = useCase(listOf(txn("2026-10-01", 60_000, "c-00"), unsure) + prev, cats).loadAll("2026-10-10", 28)
+        assertTrue(v.partial, "الشهر ده فيه عملية نوعها مش معروف ⇒ «لحد دلوقتي»")
+        assertEquals(60_000L, v.rows.single { it.categoryId == "c-00" }.amountMinor)
+        assertTrue(v.rows.all { it.changePercent == null }, "الشهر ده جزئي ⇒ مفيش أسهم")
+    }
+
+    /** مراجعة r051 F2: قراية الشهر اللي فات (للأسهم بس) وقعت ⇒ الترتيب بيطلع من غير أسهم، مش الشاشة كلها «فشل». */
+    @Test
+    fun aFailingLastMonthReadStillRanksThisMonthWithoutArrows() = runBlocking {
+        val failing = LastMonthFails(MemoryTransactionRepository(now + last))
+        val top = LoadTopCategories(LoadHomeScreen(LoadHomeScreenDeps(failing, MemoryCategoryRepository(cats), MemoryAllocationRepository())))
+        val v = top.loadAll("2026-10-10", 28)
+        assertEquals(now.sumOf { it.amountMinor }, v.totalMinor)
+        assertEquals(now.size, v.operationCount)
+        assertTrue(v.rows.all { it.changePercent == null }, "الشهر اللي فات مش معروف ⇒ مفيش أسهم")
+    }
+
+    /** مراجعة r051 F3: من هللة واحدة لـ250,000.00 = زيادة 2,499,999,900٪ — كانت بتلف في الـInt وتطلع سالبة (سهم أخضر). */
+    @Test
+    fun aHugeIncreaseStaysAnIncreaseInsteadOfWrappingAround() = runBlocking {
+        val v = useCase(listOf(txn("2026-10-01", 25_000_000, "c-00"), txn("2026-09-10", 1, "c-00")), cats).loadAll("2026-10-10", 28)
+        assertEquals(2_499_999_900L, v.rows.single().changePercent)
+    }
+
+    /** مستودع بيقع في قراية الشهر اللي فات بس (اللي بتخلص قبل أول الشهر المالي الحالي). */
+    private class LastMonthFails(private val inner: TransactionRepository) : TransactionRepository by inner {
+        override suspend fun listByDateRange(fromIso: String, toIso: String): List<Transaction> =
+            if (toIso < "2026-09-28") throw IllegalStateException("قراية وقعت (مخترع)") else inner.listByDateRange(fromIso, toIso)
+    }
+
+    private companion object {
+        const val TIMED_RUNS = 3
     }
 }
