@@ -105,6 +105,7 @@ fun AssetDetailScreen(assetId: Id) {
         }
         item(key = "hero") { DetailHero(a, onPrice = { openTrade(TradeMode.PRICE) }, onArea = { nav.push(AssetProjectionRoute(a.assetId)) }) }
         item(key = "stats") { DetailStats(a) }
+        if (!a.archived) item(key = "purpose") { app.masroufy.ui.screens.investment.holdings.HoldingPurposeRow(a.assetId) }
         if (a.realEstate) item(key = "full") { FullPictureLink { nav.push(AssetProjectionRoute(a.assetId)) } }
         item(key = "trade") {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {

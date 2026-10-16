@@ -10,6 +10,7 @@ import app.masroufy.ui.nav.RouteRegistry
 import app.masroufy.ui.nav.Tab
 import app.masroufy.ui.screens.investment.calc.CalculatorsDeps
 import app.masroufy.ui.screens.investment.calc.registerCalculators
+import app.masroufy.ui.screens.investment.holdings.registerHoldings
 import app.masroufy.usecase.LoadDefaultRates
 import app.masroufy.usecase.LoadOnlineFeeds
 import app.masroufy.usecase.ManageAssetGrowth
@@ -69,6 +70,15 @@ interface InvestmentDeps {
 
     /** الحاسبات (الادخار · التقاعد · الورث) — ملفاتها في `investment/calc/` (`CalcRoutes.kt`). */
     val calculators: CalculatorsDeps
+
+    /** «حاجاتي» (مواصفة r05 §4.0 بند 6): الصورة بتتحمّل مرة في الشاشة — `holdingsSnapshot.load(النهارده)`. */
+    val holdingsSnapshot: app.masroufy.usecase.LoadHoldings
+
+    /** المعدلات الرسمية (الغلاء · الدهب · الأسهم) — `investRates.load(البلد، النهارده)`. */
+    val investRates: app.masroufy.usecase.LoadInvestRates
+
+    /** «حاجاتي» · «ضيف حاجة» · صفحة النوع (`investment/holdings/`). */
+    val holdings: app.masroufy.ui.screens.investment.holdings.InvestHoldingsDeps
 }
 
 /** تفاصيل أصل (من «الاستثمار»). */
@@ -108,4 +118,5 @@ fun RouteRegistry.registerInvestment() {
     screen<ZakatPayRoute> { r -> ZakatPayScreen(r.yearId) }
     screen<AdvisorRoute> { AdvisorScreen() }
     registerCalculators()
+    registerHoldings()
 }

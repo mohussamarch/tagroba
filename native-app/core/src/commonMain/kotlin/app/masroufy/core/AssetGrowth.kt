@@ -164,5 +164,12 @@ internal fun checkAssetGrowthRow(row: Map<String, Any?>): String? {
     // (بيتحوّل بـ`normalizeLegacySilverAssets`)
     row[SILVER_MARKER_FIELD]?.let { if (it !is Boolean || (it && (row["kind"] != "other" || row["realEstate"] == true))) return SILVER_MARKER_FIELD }
     // سعر المتر من غير المساحة (أو العكس) في طريقة «سعر المتر» مسموح — القيمة «غير متاح» لحد ما الاتنين يتكتبوا
+    // «حاجاتي» (r05 §3.1): نصوص من القوايم بس · منطقية · نسبة 0..10000
+    row["holdingType"]?.let { v -> if (HoldingType.fromWire(v as? String) == null) return "holdingType" }
+    row["purpose"]?.let { v -> if (HoldingPurpose.fromWire(v as? String) == null) return "purpose" }
+    row["origin"]?.let { v -> if (HoldingOrigin.fromWire(v as? String) == null) return "origin" }
+    row["costKnown"]?.let { if (it !is Boolean) return "costKnown" }
+    row["place"]?.let { if (it !is String || it.length > MAX_HOLDING_PLACE) return "place" }
+    row["sharePercentBp"]?.let { if (!isSafeInteger(it) || numberOf(it)!! !in 0.0..10_000.0) return "sharePercentBp" }
     return null
 }
