@@ -4,6 +4,7 @@ import app.masroufy.core.SharedMerchantEntry
 import app.masroufy.core.UserProfile
 import app.masroufy.core.parseStoredProfile
 import app.masroufy.core.sharedMerchantKey
+import app.masroufy.core.toStored
 import app.masroufy.data.Doc
 import app.masroufy.data.DocCodec
 import app.masroufy.data.ReferenceCodecs
@@ -44,6 +45,8 @@ class FirestoreProfileRepository(private val space: FirestoreSpace) : ProfileRep
             profile.islamicContentVisible?.let { put("islamicContentVisible", it) }
             profile.carToWork?.let { put("carToWork", it) }
             profile.lookIndex?.let { put("lookIndex", it.toLong()) }
+            // «شخصيتك» v2 (character-spec §1.2): خريطة بـ`v` جوه نفس المستند — مفيش تعديل في القواعد
+            profile.character?.let { put("character", it.toStored()) }
         }
         space.write { ref().set(doc) }
         // القراية الجاية من الذاكرة لازم تشوف الحفظ ده لحظتها (المستمع بيأكده بعدها)

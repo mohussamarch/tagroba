@@ -39,6 +39,11 @@ data class UserProfile(
      * `null` = ما اختارش ⇒ الأول. حقل التطبيق الجديد بس (ما بيتكتبش لو `null`).
      */
     val lookIndex: Int? = null,
+    /**
+     * «شخصيتك» v2 (character-spec §1.2) — خريطة `character` جوه نفس المستند (`users/{uid}/profile/main`)، فالنسخة الشاملة والمزامنة
+     * بتشيلها من غير كود زيادة ومن غير تعديل في قواعد فايربيز. `null` = لسه ما اتبنتش. حقل التطبيق الجديد بس (ما بيتكتبش لو `null`).
+     */
+    val character: CharacterLook? = null,
 )
 
 /** عدد الأشكال (المؤقتة لحد ما الكاركتر النهائي يتصمم — §73). */
@@ -77,6 +82,7 @@ fun parseStoredProfile(raw: Map<String, Any?>?): UserProfile {
         islamicContentVisible = bool("islamicContentVisible"),
         carToWork = bool("carToWork"),
         lookIndex = safeInteger(data["lookIndex"])?.takeIf { it in 1..LOOK_COUNT }?.toInt(),
+        character = parseStoredCharacter(data["character"]),
     )
 }
 
@@ -105,5 +111,9 @@ fun checkProfile(input: UserProfile): ProfileCheck {
     val carToWork = if (input.hasCar == true) input.carToWork else null
     // شكل برّه الستة ⇒ ما بيتحفظش (بيرجع «ما اختارش» ⇒ الأول)
     val look = input.lookIndex?.takeIf { it in 1..LOOK_COUNT }
-    return ProfileCheck.Ok(input.copy(displayName = name?.ifEmpty { null }, dependentKinds = kinds, carToWork = carToWork, lookIndex = look))
+    // الشخصية بتمشي مع النوع اللي في ملفك (لو النوع اتغير من «ملفك» اللبس والشعر بيتظبطوا — اختيار Claude، سؤال مفتوح للمالك)
+    val character = input.character?.normalized()?.fitGender(genderIndex(input.gender))
+    return ProfileCheck.Ok(
+        input.copy(displayName = name?.ifEmpty { null }, dependentKinds = kinds, carToWork = carToWork, lookIndex = look, character = character),
+    )
 }

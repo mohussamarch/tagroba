@@ -180,10 +180,10 @@ fun checkBackupProfile(profile: Any?) {
         if (!kinds.all { it in DEPENDENT_KINDS }) bad("dependentKinds")
     }
     if (has("onboardedAt") && row["onboardedAt"] !is String) bad("onboardedAt")
-    if (has("lookIndex")) {
-        val look = numberOf(row["lookIndex"])
-        if (look == null || look % 1.0 != 0.0 || look < 1 || look > LOOK_COUNT) bad("lookIndex")
-    }
+    val look = if (has("lookIndex")) numberOf(row["lookIndex"]) else 1.0
+    if (look == null || look % 1.0 != 0.0 || look < 1 || look > LOOK_COUNT) bad("lookIndex")
+    // «شخصيتك» (character-spec §1.2): خريطة بس — الحقول بتتظبط وقت القراية، فنسخة أحدث (v3) ما تمنعش الاسترجاع
+    if (has("character") && row["character"] !is Map<*, *>) bad("character")
 }
 
 /** الميزانية القديمة بمعرّف عشوائي بتاخد مفتاح فترتها (في النسخة بس)، وسقوف التصنيفات بتتحوّل معاها. */
