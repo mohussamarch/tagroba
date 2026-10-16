@@ -102,7 +102,7 @@ body{margin:0}
   </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"tab":{"editor":"enum","options":["اللبس","غطا الراس","النضارة","المكافآت","هيئة الجسم","البشرة","الشعر","الدقن","الوش","العينين","الحواجب","المناخير","البق"],"default":"اللبس","section":"الحالة"},"gender":{"editor":"enum","options":["المحفوظ","راجل","ست"],"default":"المحفوظ","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"tab":{"editor":"enum","options":["الوش","العينين","الحواجب","المناخير","البق","هيئة الجسم","البشرة","الشعر","الدقن","اللبس","غطا الراس","النضارة","المكافآت"],"default":"الوش","section":"الحالة"},"gender":{"editor":"enum","options":["المحفوظ","راجل","ست"],"default":"المحفوظ","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
 // «ابني/عدّل شخصيتك» (النسخة التانية — طلب المالك 2026-10-15): «عايز فرق واضح بين السكاشن» + «لو انا راجل اكيد ميظهرليش لبس بنات و العكس» + هيئة الجسم + الاسم «شخصيتك»
 // النوع مش بيتسأل هنا (المالك: «هو بالفعل عارف»): جاي من خطوة «بماذا نناديك؟» في أول مرة أو من «النوع» في ملفك (masroufy-profile)
 // التكوين: معاينة ⇐ 3 أقسام قفل وفتح (واحد مفتوح بس): «اللبس» ثم «الجسم والشعر» ثم «ملامح الوش»
@@ -130,7 +130,9 @@ const P = {
   nose: { n: ['الأنف', 'المناخير'], mode: 'head', a: [[0, 'صغير', 'صغيرة'], [1, 'مستقيم', 'مستقيمة'], [2, 'عريض', 'عريضة']] },
   mouth: { n: ['الفم', 'البق'], mode: 'head', a: [[0, 'عادي', 'عادي'], [1, 'ابتسامة خفيفة', 'ابتسامة خفيفة'], [2, 'ابتسامة', 'ابتسامة'], [3, 'صغير', 'صغير']] }
 };
-const SECS = [['wear', ['الملابس', 'اللبس'], ['outfit', 'head', 'glasses', 'rewards']], ['body', ['الجسم والشعر', 'الجسم والشعر'], ['build', 'skin', 'hair', 'beard']], ['face', ['ملامح الوجه', 'ملامح الوش'], ['face', 'eyes', 'brows', 'nose', 'mouth']]];
+// الترتيب (طلب المالك 2026-10-16): ملامح الوش ثم الجسم والشعر ثم اللبس — وأول ما تفتح بيبقى «ملامح الوش» مفتوح
+const SECS = [['face', ['ملامح الوجه', 'ملامح الوش'], ['face', 'eyes', 'brows', 'nose', 'mouth']], ['body', ['الجسم والشعر', 'الجسم والشعر'], ['build', 'skin', 'hair', 'beard']], ['wear', ['الملابس', 'اللبس'], ['outfit', 'head', 'glasses', 'rewards']]];
+const secIs = (i) => ({ wear: SECS[i][0] === 'wear', body: SECS[i][0] === 'body', face: SECS[i][0] === 'face' });
 const KEY = 'masroufy-character';
 const list = (p, fem) => p.a || (fem ? p.w : p.m) || [];
 class Component extends DCLogic {
@@ -161,9 +163,9 @@ class Component extends DCLogic {
     const partsOf = (i) => SECS[i][2].filter((k) => !(k === 'beard' && fem));
     const keys = partsOf(s.sec), pi = Math.max(0, Math.min(keys.length - 1, s.at[s.sec])), key = keys[pi], part = P[key], opts = list(part, fem);
     const label = (k) => { const o = list(P[k], fem).find(([id]) => id === Number(look[k])); return o ? (eg ? o[2] : o[1]) : ''; };
-    const sums = [[label('outfit'), label('head'), Number(look.glasses) ? label('glasses') : ''], [label('build'), label('hair'), fem ? '' : label('beard')], [label('face'), label('eyes'), label('mouth')]];
+    const SUM = { wear: [label('outfit'), label('head'), Number(look.glasses) ? label('glasses') : ''], body: [label('build'), label('hair'), fem ? '' : label('beard')], face: [label('face'), label('eyes'), label('mouth')] }, sums = SECS.map((x) => SUM[x[0]]);
     const iconBox = (on) => 'width: 40px; height: 40px; border-radius: 14px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: ' + (on ? '#FFFFFF' : '#08634F') + '; background: ' + (on ? 'linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'rgba(8,99,79,0.09)');
-    const secCard = (i) => ({ title: L(SECS[i][1]), sum: sums[i].filter(Boolean).join(' · '), i: { wear: i === 0, body: i === 1, face: i === 2 }, iconBox: iconBox(false),
+    const secCard = (i) => ({ title: L(SECS[i][1]), sum: sums[i].filter(Boolean).join(' · '), i: secIs(i), iconBox: iconBox(false),
       open: () => this.setState({ sec: i }), style: 'width: 100%; min-height: 68px; box-sizing: border-box; padding: 12px 16px; border: 0; border-radius: 22px; font: inherit; color: #193D33; cursor: pointer; display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.72); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 8px 20px rgba(29,54,53,0.06)' });
     // الغطا اللي بيخبّي الشعر بيقول كده في تبويب الشعر بدل ما يبان إن الاختيار مش شغال
     const hides = [1, 2, 4, 5, 6].indexOf(Number(look.head)) >= 0 && Number(look.hat) !== 1;
@@ -171,7 +173,7 @@ class Component extends DCLogic {
     const palette = colKey === 'skin' ? SKIN : colKey === 'hairColor' ? HAIRC : colKey === 'wrap' ? WRAP : Number(look.outfit) === 5 ? ABAYA : OUTC;
     const wrapName = { 4: ['لون الحجاب', 'لون الحجاب'], 5: ['لون الخمار', 'لون الخمار'], 6: ['لون النقاب', 'لون النقاب'], 7: ['لون الكاب', 'لون الكاب'] }[Number(look.head)] || ['اللون', 'اللون'];
     const colorLabel = colKey === 'skin' ? T('لون البشرة', 'لون البشرة') : colKey === 'wrap' ? L(wrapName) : colKey === 'hairColor' ? (key === 'beard' ? T('اللون (نفس الشعر)', 'اللون (نفس الشعر)') : T('لون الشعر', 'لون الشعر')) : Number(look.outfit) === 5 ? T('لون العباية', 'لون العباية') : T('لون الملابس', 'لون اللبس');
-    const full = s.view ? s.view === 'full' : s.sec === 0 && key === 'outfit' || key === 'build';
+    const full = s.view ? s.view === 'full' : key === 'outfit' || key === 'build';
     const thumb = (mode) => 'width: 60px; height: ' + (mode === 'full' ? 96 : 60) + 'px; border-radius: ' + (mode === 'head' ? 30 : 16) + 'px; overflow: hidden; display: flex; justify-content: center; align-items: center; background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(227,239,230,0.70) 55%, rgba(201,230,212,0.80))';
     return {
       title: s.had ? T('عدّل شخصيتك', 'عدّل شخصيتك') : T('ابنِ شخصيتك', 'ابني شخصيتك'), sub: T('اختر كل جزء، والمعاينة تتغير فورًا', 'اختار كل حتة، والمعاينة بتتغير على طول'),
@@ -179,7 +181,7 @@ class Component extends DCLogic {
       bigMode: full ? 'الجسم كله' : 'راس وكتاف', bigSize: full ? 170 : 196, viewLabel: T('شكل المعاينة', 'شكل المعاينة'),
       views: [['bust', T('قريب', 'قريب')], ['full', T('الجسم كله', 'الجسم كله')]].map(([v, lb]) => { const on = (v === 'full') === full; return { label: lb, on: on ? 'true' : 'false', pick: () => this.setState({ view: v }), style: 'height: 30px; padding: 0 10px; border: 0; border-radius: 10px; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; ' + (on ? 'color: #FFFFFF; background: #08634F' : 'color: #4F625C; background: transparent') }; }),
       before: [0, 1, 2].filter((i) => i < s.sec).map(secCard), after: [0, 1, 2].filter((i) => i > s.sec).map(secCard),
-      cur: { title: L(SECS[s.sec][1]), i: { wear: s.sec === 0, body: s.sec === 1, face: s.sec === 2 }, iconBox: iconBox(true) },
+      cur: { title: L(SECS[s.sec][1]), i: secIs(s.sec), iconBox: iconBox(true) },
       parts: keys.map((k, j) => { const on = j === pi; return { label: L(P[k].n), on: on ? 'true' : 'false', pick: () => { const at = s.at.slice(); at[s.sec] = j; this.setState({ at }); },
         style: 'position: relative; flex: 1 1 auto; height: 46px; padding: 0 6px; border: 0; font: inherit; font-size: 13px; font-weight: 700; white-space: nowrap; cursor: pointer; background: transparent; color: ' + (on ? '#08634F' : '#637570'),
         bar: 'position: absolute; left: 8px; right: 8px; bottom: 0; height: 3px; border-radius: 3px 3px 0 0; background: ' + (on ? '#08634F' : 'transparent') }; }),

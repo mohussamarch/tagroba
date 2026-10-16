@@ -157,13 +157,19 @@ function clothFront(k, g, wr) {
 }
 function capeFull(col) { const lt = light(col); return path('M70 96 C52 100 34 118 30 150 C26 190 28 228 32 252 Q100 264 168 252 C172 228 174 190 170 150 C166 118 148 100 130 96 Z', col) + line('M78 150 Q72 200 70 250 M122 150 Q128 200 130 250', lt ? 'rgba(0,0,0,0.10)' : 'rgba(255,255,255,0.07)', 1.6); }
 function dollar(cx, cy, r, col, w) { return '<path d="M' + (cx + r * 0.42) + ' ' + (cy - r * 0.5) + ' C' + (cx + r * 0.2) + ' ' + (cy - r * 0.78) + ' ' + (cx - r * 0.5) + ' ' + (cy - r * 0.7) + ' ' + (cx - r * 0.42) + ' ' + (cy - r * 0.22) + ' C' + (cx - r * 0.34) + ' ' + (cy + r * 0.1) + ' ' + (cx + r * 0.42) + ' ' + (cy - r * 0.04) + ' ' + (cx + r * 0.42) + ' ' + (cy + r * 0.3) + ' C' + (cx + r * 0.42) + ' ' + (cy + r * 0.74) + ' ' + (cx - r * 0.3) + ' ' + (cy + r * 0.74) + ' ' + (cx - r * 0.46) + ' ' + (cy + r * 0.46) + '" stroke="' + col + '" stroke-width="' + w + '" fill="none" stroke-linecap="round"/>' + line('M' + cx + ' ' + (cy - r * 0.92) + 'V' + (cy + r * 0.92), col, w * 0.9); }
-// الكاب (اختيار) وطاقية الغني (مكافأة): نفس الشكل، القبة من حافة الراس منفوخة والبوز عدسة قدام الجبهة
+// الكاب (اختيار) وطاقية الغني (مكافأة): حتة واحدة لازقة في الراس (طلب المالك 2026-10-16: «مش متقطع … ملامس لجسمه»)
+// القبة = حافة الراس منفوخة 5 بس (بتغطي الشعر وما تطيرش)، نازلة على الجناب لحد فوق الودان · البوز راكب على حافة القبة من غير فراغ
+// طاقية الغني نفس الشكل بقبة أعلى عشان العملة
 function ballCap(g, col, rich) {
-  const W = g.rx, T = g.top, yb = T + 14, c = arc(g, rich ? 12 : 8.5, yb, yb, 18), vis = shade(col, 0.78), seam = 'rgba(0,0,0,0.14)', d = M(c[0]) + cr(c, false) + ' Q100 ' + (yb + 3) + ' ' + r1(c[0][0]) + ' ' + r1(c[0][1]) + 'Z';
-  let x = path(d, col) + '<circle cx="100" cy="' + (T - (rich ? 10.5 : 7)) + '" r="3.2" fill="' + vis + '"/>';
-  x += rich ? '<circle cx="100" cy="' + (yb - 13) + '" r="10.5" fill="#F3C96B" stroke="#C99A2E" stroke-width="1.5"/>' + dollar(100, yb - 13, 8, '#1F6B3A', 2.3) : line('M100 ' + (T - 4) + ' L100 ' + (yb + 2), seam, 1.4);
-  const vL = 100 - W - (rich ? 10 : 6), vR = 100 + W + (rich ? 10 : 6), bot = 'M' + vR + ' ' + (yb + 4) + ' C' + (vR - 2) + ' ' + (yb + 13) + ' ' + (100 + 20) + ' ' + (yb + 15.5) + ' 100 ' + (yb + 15.5) + ' C' + (100 - 20) + ' ' + (yb + 15.5) + ' ' + (vL + 2) + ' ' + (yb + 13) + ' ' + vL + ' ' + (yb + 4);
-  return x + '<ellipse cx="100" cy="' + (yb + 19) + '" rx="' + (W - 6) + '" ry="3" fill="rgba(0,0,0,0.12)"/>' + path('M' + vL + ' ' + (yb + 4) + ' Q100 ' + (yb - 4) + ' ' + vR + ' ' + (yb + 4) + bot.replace('M' + vR + ' ' + (yb + 4), '') + ' Z', vis) + line('M' + (vL + 4) + ' ' + (yb + 3.4) + ' Q100 ' + (yb - 3) + ' ' + (vR - 4) + ' ' + (yb + 3.4), 'rgba(0,0,0,0.18)', 1.2);
+  const W = g.rx, T = g.top, ys = 80, yb = T + 15, lift = rich ? 9 : 3, top = T - 5 - lift, vis = shade(col, 0.78), seam = 'rgba(0,0,0,0.14)';
+  const c = arc(g, 5, ys, ys, 20).map(([x, y]) => [x, y - lift * Math.pow(Math.max(0, (ys - y) / (ys - T + 5)), 1.6)]);
+  const crown = M(c[0]) + cr(c, false) + cr([c[c.length - 1], [100 + W * 0.8, yb + 6], [100, yb + 6], [100 - W * 0.8, yb + 6], c[0]], false) + 'Z';
+  let x = path(crown, col) + line('M100 ' + (top + 2) + ' Q' + r1(100 - W * 0.62) + ' ' + (top + 9) + ' ' + r1(100 - W * 0.7) + ' ' + (yb + 2) + ' M100 ' + (top + 2) + ' Q' + r1(100 + W * 0.62) + ' ' + (top + 9) + ' ' + r1(100 + W * 0.7) + ' ' + (yb + 2), seam, 1.2) + '<circle cx="100" cy="' + (top + 0.5) + '" r="3" fill="' + vis + '"/>';
+  x += rich ? '<circle cx="100" cy="' + (yb - 12) + '" r="10" fill="#F3C96B" stroke="#C99A2E" stroke-width="1.5"/>' + dollar(100, yb - 12, 7.6, '#1F6B3A', 2.2) : line('M100 ' + (top + 3) + ' L100 ' + yb, seam, 1.4);
+  const xL = 100 - W - 4, xR = 100 + W + 4;
+  return x + '<ellipse cx="100" cy="' + (yb + 14) + '" rx="' + (W - 8) + '" ry="2.6" fill="rgba(0,0,0,0.13)"/>'
+    + path('M' + xL + ' ' + (yb + 8) + ' Q100 ' + (yb - 6) + ' ' + xR + ' ' + (yb + 8) + ' C' + (xR - 4) + ' ' + (yb + 12) + ' ' + (100 + 20) + ' ' + (yb + 13) + ' 100 ' + (yb + 13) + ' C' + (100 - 20) + ' ' + (yb + 13) + ' ' + (xL + 4) + ' ' + (yb + 12) + ' ' + xL + ' ' + (yb + 8) + ' Z', vis)
+    + line('M' + (xL + 6) + ' ' + (yb + 9) + ' Q100 ' + (yb - 2) + ' ' + (xR - 6) + ' ' + (yb + 9), 'rgba(0,0,0,0.16)', 1);
 }
 function chain(full) { const y = full ? 106 : 136, py = y + 30; return line('M88 ' + y + ' Q100 ' + (y + 38) + ' 112 ' + y, '#E2B53E', full ? 2.4 : 3).replace('/>', ' stroke-dasharray="' + (full ? '3 1.2' : '4 1.4') + '"/>') + '<circle cx="100" cy="' + py + '" r="' + (full ? 6 : 7.5) + '" fill="#E2B53E" stroke="#B8902A" stroke-width="1"/>' + dollar(100, py, full ? 4.4 : 5.6, '#7A5A12', 1.3); }
 // ===== الجسم واللبس (200×440) — كله جوه مجموعة بتتمط بالعرض حسب هيئة الجسم، والإيدين برّه عشان ما تتمطش =====
@@ -201,7 +207,7 @@ function bust(k, col, fem) {
 function render(look, mode) {
   const c = Object.assign({}, DEFAULT, look || {}), fem = Number(c.gender) === 1, [sk, skd] = pick(SKIN, c.skin), hc = pick(HAIRC, c.hairColor), wr = pick(WRAP, c.wrap), oc = outCol(c);
   const g = geo(Number(c.face) || 0), hat = Number(c.hat) === 1, hk = hat ? 0 : Number(c.head) || 0, hair = Number(c.hair) || 0, out = Number(c.outfit) || 0, bd = fem ? 0 : Number(c.beard) || 0;
-  const hides = [1, 2, 4, 5, 6].indexOf(hk) >= 0, capAt = hat || hk === 7 ? g.top + 14 : hk === 3 ? g.top + 17 : 0;
+  const hides = [1, 2, 4, 5, 6].indexOf(hk) >= 0, capAt = hat || hk === 7 ? 82 : hk === 3 ? g.top + 17 : 0;
   const sx = Math.round(pick(BUILD, c.build) * (fem ? 0.95 : 1) * 100) / 100, stretch = (x) => '<g transform="translate(100 0) scale(' + sx + ' 1) translate(-100 0)">' + x + '</g>';
   const defs = '<defs><pattern id="shm" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#D2363C"/><circle cx="3" cy="3" r="1.15" fill="#FBEFEC"/></pattern><pattern id="tq" width="4" height="4" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="0.7" fill="rgba(0,0,0,0.10)"/></pattern></defs>';
   const back = (hides ? '' : hairBack(hair, hc, g, !!capAt)) + clothBack(hk, g, wr);
