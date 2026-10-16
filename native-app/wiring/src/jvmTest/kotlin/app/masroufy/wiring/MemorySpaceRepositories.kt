@@ -89,6 +89,7 @@ fun memorySpaceRepositories(
         projects = MemoryProjectRepository(), projectRules = MemoryProjectRuleRepository(), projectLinks = MemoryProjectLinkRepository(),
         roscas = MemoryRoscaRepository(), roscaEntries = MemoryRoscaEntryRepository(), installmentPlans = MemoryInstallmentPlanRepository(),
         installmentPayments = MemoryInstallmentPaymentRepository(), debtTerms = MemoryDebtTermsRepository(), transferParties = parties,
+        personLinks = app.masroufy.memory.MemoryPersonLinkRepository(),
         zakatFacts = MemoryZakatFactRepository(), zakatYears = MemoryZakatYearRepository(), zakatPayments = MemoryZakatPaymentRepository(),
         lifeEvents = MemoryLifeEventRepository(), eventLinks = MemoryEventLinkRepository(), occasions = MemoryOccasionRepository(),
         personProfiles = MemoryPersonProfileRepository(), personRelations = MemoryPersonRelationRepository(), alertSettings = MemoryAlertSettings(),

@@ -49,8 +49,30 @@ fun isEmployer(source: IncomeSource): Boolean = source.kind in SALARIED_KINDS
  */
 fun employerOf(t: Transaction, sources: List<IncomeSource>): IncomeSource? {
     if (t.observedDirection != Direction.IN) return null
-    val key = transferPartyOf(t)?.key ?: return null
+    // r05 (البند 9): الراتب اللي اختار المالك جهته بإيده (مفتاح العملية نفسها) أولًا
+    sources.firstOrNull { isEmployer(it) && salaryTxnKey(t.id) in it.payerKeys }?.let { return it }
+    val key = transferPartyOf(t)?.key ?: return soleEmployerFor(t, sources)
     return sourcesActiveOn(sources, t.occurredAt).filter { key in it.payerKeys }.maxByOrNull { it.startedAt }
+}
+
+/** مفتاح «الراتب ده من الجهة دي» على عملية من غير حساب مُحوِّل (رسالة «حوالة واردة راتب») — جوه `payerKeys` (أو `declinedPayerKeys` لـ«مش دي»). */
+fun salaryTxnKey(transactionId: Id): String = "txn:$transactionId"
+
+private val SALARY_TEXT = Regex("راتب|رواتب|مرتب|SALARY|PAYROLL", RegexOption.IGNORE_CASE)
+
+/** راتب من غير حساب مُحوِّل: داخل، مالوش طرف، ونوعه راتب أو رسالته بتقول راتب. */
+fun isPartylessSalary(t: Transaction): Boolean =
+    t.observedDirection == Direction.IN && transferPartyOf(t) == null &&
+        (t.economicKind == EconomicKind.SALARY || t.rawDescription?.let { SALARY_TEXT.containsMatchIn(it) } == true)
+
+/**
+ * r05 (البند 9): راتب من غير حساب ⇒ الجهة الوحيدة الشغالة يومه (لوحدها — «مش دي» بيحطها في `declinedPayerKeys`). جهتين أو مفيش ⇒ null (يتسأل
+ * «راتب من أي جهة؟»).
+ */
+fun soleEmployerFor(t: Transaction, sources: List<IncomeSource>): IncomeSource? {
+    if (!isPartylessSalary(t)) return null
+    val sole = sourcesActiveOn(sources, t.occurredAt).filter(::isEmployer).singleOrNull() ?: return null
+    return sole.takeIf { salaryTxnKey(t.id) !in it.declinedPayerKeys }
 }
 
 /**
@@ -84,7 +106,8 @@ fun salaryRetroPlan(
     val handSet = mutableListOf<Transaction>()
     for (t in transactions.sortedWith(compareBy({ it.occurredAt }, { it.sourceOrder }, { it.id }))) {
         if (t.id in skip || awaitsKindAnswer(t)) continue
-        val employer = employerOf(t, sources) ?: continue
+        // r05 (البند 9): «طبّق على اللي فات» لجهة بعينها بياخد رسايل الراتب اللي من غير حساب في فترتها كمان
+        val employer = employerOf(t, sources) ?: employerId?.let { id -> partylessIn(t, sources, id) } ?: continue
         if (employerId != null && employer.id != employerId) continue
         when {
             !t.economicKindConfirmed -> toSalary += t
@@ -93,6 +116,13 @@ fun salaryRetroPlan(
         }
     }
     return SalaryRetroPlan(toSalary, handSet)
+}
+
+/** راتب من غير حساب يومه جوه فترة الجهة [employerId] (ومش «مش دي» ليها). */
+private fun partylessIn(t: Transaction, sources: List<IncomeSource>, employerId: Id): IncomeSource? {
+    if (!isPartylessSalary(t)) return null
+    val e = sourcesActiveOn(sources, t.occurredAt).firstOrNull { it.id == employerId && isEmployer(it) } ?: return null
+    return e.takeIf { salaryTxnKey(t.id) !in it.declinedPayerKeys }
 }
 
 /** الإيداع بعد ما بقى «راتب» مؤكد (التصنيف ما بيتغيرش — زي `applyKnownPayerSalary`). */

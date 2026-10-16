@@ -53,6 +53,8 @@ class OperationsGraph(private val c: AreaContext) : OperationsDeps {
     )
     private val legs = spaceTransfers.legsIn(c.space.id)
 
+    override val personLinks = personLinksOf(r, ids, clock, legs)
+
     override val transactions = LoadTransactionsScreen(LoadTransactionsScreenDeps(r.transactions, r.categories, r.allocations, r.merchants, r.tags, r.transactionTags))
     override val edit = EditTransaction(
         EditTransactionDeps(
@@ -97,7 +99,7 @@ class OperationsGraph(private val c: AreaContext) : OperationsDeps {
                 r.projectLinks, r.eventLinks, r.transactionTags, r.roscaEntries, r.installmentPayments, r.installmentPlans,
                 r.zakatPayments, r.assetLots, r.assetSales, spaceLegs = legs,
             ),
-            r.uow, clock, recurring = r.recurring,
+            r.uow, clock, recurring = r.recurring, personLinks = r.personLinks,
         ),
     )
     override val bulk = app.masroufy.usecase.BulkTransactions(

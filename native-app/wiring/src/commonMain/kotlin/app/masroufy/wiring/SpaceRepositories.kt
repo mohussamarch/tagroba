@@ -96,6 +96,8 @@ data class SpaceRepositories(
     val installmentPayments: InstallmentPaymentRepository,
     val debtTerms: DebtTermsRepository,
     val transferParties: TransferPartyRepository,
+    /** ربط العمليات بالأشخاص (r05 — صفحة الشخص). */
+    val personLinks: app.masroufy.port.PersonLinkRepository,
     val zakatFacts: ZakatFactRepository,
     val zakatYears: ZakatYearRepository,
     val zakatPayments: ZakatPaymentRepository,

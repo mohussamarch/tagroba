@@ -32,6 +32,10 @@ data class TransferParty(
     val verdict: TransferVerdict,
     val personId: Id? = null,
     val decidedAt: String = "",
+    /** «سجّل تحويلاته لوحده» (صفحة الشخص — r05): المعنى اللي بيتحط على تحويلاته الجديدة · null = مقفول. */
+    val autoMeaning: AutoMeaning? = null,
+    /** من إمتى التسجيل التلقائي شغال (التحويلات اللي يومها من هنا ولقدام بس). */
+    val autoSince: String? = null,
 )
 
 /**

@@ -46,6 +46,9 @@ data class EmployerView(val source: IncomeSource, val accounts: List<PayerAccoun
     val current: Boolean get() = source.endedAt == null
 }
 
+/** «راتب من أي جهة؟» (r05 — البند 9): الجهة الحالية · اتحددت لوحدها؟ · الجهات اللي تنفع. */
+data class SalaryEmployer(val transactionId: Id, val current: IncomeSource?, val auto: Boolean, val choices: List<IncomeSource>)
+
 class ManageEmployers(private val deps: ManageEmployersDeps) {
     private suspend fun everything() = deps.txns.listByDateRange(EARLIEST, LATEST)
 
@@ -95,6 +98,48 @@ class ManageEmployers(private val deps: ManageEmployersDeps) {
         val updated = employer.copy(payerKeys = employer.payerKeys - key)
         deps.sources.saveMany(listOf(updated))
         return updated
+    }
+
+    /**
+     * r05 (البند 9) «راتب من أي جهة؟» على راتب: الجهة الحالية ([SalaryEmployer.current] — من الحساب أو اختيارك أو لوحدها لأنها الوحيدة الشغالة يومه
+     * [SalaryEmployer.auto]) والجهات اللي تنفع (الشغالة يومه الأول). null = مش راتب داخل.
+     */
+    suspend fun employerFor(transactionId: Id): SalaryEmployer? {
+        val t = deps.txns.findByIds(listOf(transactionId)).firstOrNull() ?: return null
+        if (t.observedDirection != app.masroufy.core.Direction.IN || t.economicKind != app.masroufy.core.EconomicKind.SALARY) return null
+        val all = deps.sources.listAll()
+        val current = app.masroufy.core.employerOf(t, all)
+        val explicit = all.any { app.masroufy.core.salaryTxnKey(t.id) in it.payerKeys }
+        val auto = current != null && !explicit && app.masroufy.core.transferPartyOf(t) == null
+        val active = app.masroufy.core.sourcesActiveOn(all, t.occurredAt).filter(::isEmployer).map { it.id }.toSet()
+        return SalaryEmployer(t.id, current, auto, employers(all).sortedBy { if (it.id in active) 0 else 1 })
+    }
+
+    /** «الراتب ده من الجهة دي» على عملية بعينها (من غير ما نلمس حسابات الجهة) — بيرجّع الجهات قبل التغيير للـ«تراجع» ([restore]). */
+    suspend fun attachTransaction(employerId: Id, transactionId: Id): List<IncomeSource> {
+        val all = deps.sources.listAll()
+        val target = find(all, employerId)
+        val key = app.masroufy.core.salaryTxnKey(transactionId)
+        val before = all.filter { isEmployer(it) && (key in it.payerKeys || key in it.declinedPayerKeys) && it.id != target.id } + target
+        val updated = before.map { s ->
+            if (s.id == target.id) s.copy(payerKeys = (s.payerKeys - key) + key, declinedPayerKeys = s.declinedPayerKeys - key)
+            else s.copy(payerKeys = s.payerKeys - key)
+        }
+        deps.sources.saveMany(updated)
+        return before
+    }
+
+    /** «مش دي» على الجهة اللي اتحددت لوحدها ⇒ الراتب ده يتسأل «راتب من أي جهة؟». بيرجّع الجهة قبل التغيير للـ«تراجع». */
+    suspend fun declineAuto(employerId: Id, transactionId: Id): List<IncomeSource> {
+        val target = find(deps.sources.listAll(), employerId)
+        val key = app.masroufy.core.salaryTxnKey(transactionId)
+        deps.sources.saveMany(listOf(target.copy(declinedPayerKeys = (target.declinedPayerKeys - key) + key, payerKeys = target.payerKeys - key)))
+        return listOf(target)
+    }
+
+    /** «تراجع» عن [attachTransaction] أو [declineAuto]: الجهات بترجع زي ما كانت بالظبط. */
+    suspend fun restore(before: List<IncomeSource>) {
+        if (before.isNotEmpty()) deps.sources.saveMany(before)
     }
 
     private fun find(all: List<IncomeSource>, id: Id): IncomeSource =

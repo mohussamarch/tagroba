@@ -46,14 +46,16 @@ data class TransactionRemoval(
     val linkedBefore: List<Transaction> = emptyList(),
     /** الاشتراكات زي ما كانت قبل ما ميعادها يرجع (للتراجع بس). */
     val subscriptionsBefore: List<RecurringItem> = emptyList(),
+    /** r05: ربطها بشخص (من غير دين — اللي فيه دين ممنوع بـ[EraseBlock.DEBT_ORIGIN] أو [EraseBlock.SETTLEMENT]). */
+    val personLinks: List<app.masroufy.core.PersonLink> = emptyList(),
 ) {
     val allowed: Boolean get() = blocks.isEmpty()
 
     /** جت من رسالة بنك أو كشف. */
     val imported: Boolean get() = sources.isNotEmpty()
 
-    /** الروابط اللي هتتشال معاها (وسوم · مشاريع · أحداث · دعم). */
-    val unlinkCount: Int get() = tags.size + projectLinks.size + eventLinks.size + gifts.size
+    /** الروابط اللي هتتشال معاها (وسوم · مشاريع · أحداث · دعم · شخص). */
+    val unlinkCount: Int get() = tags.size + projectLinks.size + eventLinks.size + gifts.size + personLinks.size
 }
 
 data class DeleteTransactionDeps(
@@ -67,6 +69,8 @@ data class DeleteTransactionDeps(
     val uow: UnitOfWork,
     val clock: Clock,
     val recurring: RecurringRepository? = null,
+    /** r05: ربط العمليات بالأشخاص — بيتشال مع العملية (النسخة الشاملة ما بتقبلش ربط بيشاور على عملية مش موجودة). */
+    val personLinks: app.masroufy.port.PersonLinkRepository? = null,
 )
 
 class DeleteTransaction(private val deps: DeleteTransactionDeps) {
@@ -96,6 +100,7 @@ class DeleteTransaction(private val deps: DeleteTransactionDeps) {
             eventLinks = eventLinks.filter { !it.role.isGift },
             gifts = allocations.filter { it.allocationKind == AllocationKind.GIFT },
             sources = deps.sources.listByTransactionIds(ids),
+            personLinks = deps.personLinks?.listByTransactionIds(ids).orEmpty(),
         )
     }
 
@@ -113,6 +118,7 @@ class DeleteTransaction(private val deps: DeleteTransactionDeps) {
             if (plan.projectLinks.isNotEmpty()) l.projectLinks.deleteMany(plan.projectLinks.map { it.id })
             if (plan.eventLinks.isNotEmpty()) l.eventLinks.deleteMany(plan.eventLinks.map { it.id })
             if (plan.gifts.isNotEmpty()) deps.allocations.deleteMany(plan.gifts.map { it.id })
+            if (plan.personLinks.isNotEmpty()) deps.personLinks?.deleteMany(plan.personLinks.map { it.transactionId })
             // العلامة: نفس السجل من غير عملية — النسخة الشاملة ما بتقبلش سجل بيشاور على عملية مش موجودة
             if (plan.sources.isNotEmpty()) deps.sources.saveMany(plan.sources.map { it.copy(transactionId = null, ownerDeletedAt = now) })
             // مراجعة r04: «عمليات تابعة» — الطرف التاني بيتفك (ولا مصروف منقوص بداخلة ممسوحة، ولا داخلة مستخبية ورا مصروف ممسوح)
@@ -132,6 +138,7 @@ class DeleteTransaction(private val deps: DeleteTransactionDeps) {
             if (removal.projectLinks.isNotEmpty()) l.projectLinks.saveMany(removal.projectLinks)
             if (removal.eventLinks.isNotEmpty()) l.eventLinks.saveMany(removal.eventLinks)
             if (removal.gifts.isNotEmpty()) deps.allocations.saveMany(removal.gifts)
+            if (removal.personLinks.isNotEmpty()) deps.personLinks?.saveMany(removal.personLinks)
             for (item in removal.subscriptionsBefore) deps.recurring?.save(item)
         }
     }
