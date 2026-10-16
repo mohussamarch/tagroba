@@ -86,6 +86,14 @@ interface SmsDeps {
      */
     suspend fun answerAccount(walletId: Id, last4: String, mine: Boolean, messageId: String? = null): AutoRecordResult? = null
 
+    /** r041 A10: كارت «اسمح بقراءة رسائل البنك» على الجهاز ده (`SmsInboxPort.handoffCard`). الافتراضي: مفيش. */
+    suspend fun handoffCard(): String? = null
+
+    suspend fun setHandoffCard(value: String?) {}
+
+    /** r041 A8: القراءة شغالة على الجهاز ده (مفعّلة والإذن موجود) — للرئيسية الفاضية. الافتراضي: لأ. */
+    suspend fun readingOn(): Boolean = false
+
     /** تفعيل القراية بالمرسلين دول (الإذن قبلها من `LocalPermissions`). */
     suspend fun enable(senders: List<String>): InboxView
 

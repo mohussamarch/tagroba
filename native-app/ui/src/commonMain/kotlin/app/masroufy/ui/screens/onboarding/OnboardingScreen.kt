@@ -123,8 +123,9 @@ fun OnboardingScreen() {
                     if (s.answers.source == OnbSource.SMS && bankSmsReadable()) SmsHandoff.start()
                     // حساب جديد خالص من غير كارتين الفلوس (بلد تانية من غير طريق للفلوس — المعاينة) ⇒ «المحافظ» عشان يضيف محافظه هناك
                     if (st.freshAccount && !money(s)) nav.push(WalletsRoute)
-                    // «كمّل بروفايلك» ⇒ «حسابك» ولوحة الشكل مفتوحة (الرجوع منها ⇒ الرئيسية)
-                    if (exit == OnbExit.PROFILE) nav.push(AccountLookRoute)
+                    // «كمّل بروفايلك» ⇒ «حسابك» ولوحة الشكل مفتوحة (الرجوع منها ⇒ الرئيسية). r041 A6: لو تسليم رسايل البنك شغال، الشرح
+                    // والإذن وسؤال اللي فات الأول — المضيف (`SmsHandoffHost`) بيفتحها بعدهم
+                    if (exit == OnbExit.PROFILE) SmsHandoff.openAfter(AccountLookRoute) { nav.push(it) }
                     changes.changed()
                 }
                 is OnboardingResult.Failed -> failure = r.message

@@ -28,6 +28,7 @@ import app.masroufy.ui.app.LocalBell
 import app.masroufy.ui.app.LocalDataChanges
 import app.masroufy.ui.app.LocalSpace
 import app.masroufy.ui.screens.imports.SmsAllowCard
+import app.masroufy.ui.screens.imports.homeEmptyBodyKey
 import app.masroufy.ui.screens.imports.smsAllowCardShown
 import app.masroufy.ui.app.MeInfo
 import app.masroufy.ui.app.SpaceDeps
@@ -67,10 +68,13 @@ fun HomeScreen() {
     var cashOpen by remember { mutableStateOf(false) }
     val bell = LocalBell.current
     val gone = Dismissals.of(deps.space.id).goneKeys
+    // r041 A8: كلام الرئيسية الفاضية من حالة القراءة (مش «فعّل القراءة» وهي شغالة)
+    var readingOn by remember(deps) { mutableStateOf(false) }
     LaunchedEffect(deps, tick, changes.version) {
         app.masroufy.perf.PerfTrace.span("screen:home") {
             me = runCatching { shell.me() }.getOrNull()
             load = loadHome(deps)
+            if (load.let { it is HomeLoad.Ready && isBrandNew(it.now, it.month) }) readingOn = runCatching { deps.imports.sms?.readingOn() }.getOrNull() == true
         }
     }
     // اختار «رسائل البنك» في أول تشغيل والإذن اترفض (أو الشرح اتقفل) ⇒ كارت هادي «اسمح لاحقًا» (OVERRIDES §91)
@@ -83,7 +87,8 @@ fun HomeScreen() {
             is HomeLoad.Ready -> {
                 // حساب جديد خالص ⇒ الشاشة الفاضية لوحدها (النموذج: حالة «فاضي» من غير البطاقة ولا «القادم»)
                 if (isBrandNew(s.now, s.month)) {
-                    item(key = "empty") { EmptyState(t(UiKey.HOME_EMPTY_TITLE), t(UiKey.HOME_EMPTY_BODY)) }
+                    val body = homeEmptyBodyKey(readable = deps.imports.sms != null, readingOn = readingOn)
+                    item(key = "empty") { EmptyState(t(UiKey.HOME_EMPTY_TITLE), t(body)) }
                 } else {
                     item(key = "hero") { WithYouHero(s.now, s.month, shell.today(), onCash = { cashOpen = true }) }
                     if (isQuietMonth(s.now, s.month)) item(key = "quiet") { QuietMonthCard() }

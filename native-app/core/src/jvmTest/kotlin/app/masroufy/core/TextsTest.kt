@@ -58,6 +58,8 @@ class TextsTest {
             EGYPTIAN_OWNER_1015_TEXTS.keys +
             // قرارات المالك عن البداية 2026-10-15 مساءً (`TextsFirstRun1015.kt`)
             EGYPTIAN_FIRST_RUN_1015_TEXTS.keys +
+            // جولة r041 — إصلاحات فحص 0.4 (`TextsR041.kt`)
+            EGYPTIAN_R041_TEXTS.keys +
             // مراجعة 0.3: «حساب البلد في الأرشيف» (`TextsSpaces.kt`)
             setOf(TextKey.SPACE_COUNTRY_ARCHIVED).filter { it in EGYPTIAN_SPACE_TEXTS } +
             // «ر.س» للنص الطالع برا التطبيق بس (علامة الريال الرسمية — قرار المالك 2026-10-15)

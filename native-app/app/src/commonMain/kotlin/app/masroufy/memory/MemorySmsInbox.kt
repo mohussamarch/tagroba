@@ -88,6 +88,15 @@ class MemorySmsInbox(
         this.skip = maxOf(0, skip)
     }
 
+    // r041 A10: كارت «اسمح بقراءة رسائل البنك» على الجهاز ده
+    private var handoff: String? = null
+
+    override suspend fun handoffCard(): String? = handoff
+
+    override suspend fun setHandoffCard(value: String?) {
+        handoff = value
+    }
+
     override suspend fun oldestMessageAt(senders: List<String>): String? {
         val keys = senders.map(::smsSenderKey).toSet()
         return phone.filter { smsSenderKey(it.sender) in keys }.minByOrNull { millis(it.receivedAt) }?.receivedAt

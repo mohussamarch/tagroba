@@ -105,7 +105,19 @@ interface SmsInboxPort {
      * اللي ورا صفحة كلها مستنية تأكيد. 0 = الصفحة العادية (أحدث الرسايل). بيأثر على كل `sync` بعده لحد ما يرجع 0.
      */
     suspend fun page(skip: Int)
+
+    /**
+     * r041 A10: كارت «اسمح بقراءة رسائل البنك» على **الجهاز ده** (الإذن للجهاز، مش للحساب ولا للبلد — ما بيدخلش النسخة الشاملة):
+     * `SMS_HANDOFF_PENDING_CARD` = يرجع كل تشغيل لحد ما يسمح أو يقول «لاحقًا» · `SMS_HANDOFF_DONE` = خلص · null = عمره ما بدأ.
+     */
+    suspend fun handoffCard(): String? = null
+
+    suspend fun setHandoffCard(value: String?) {}
 }
+
+/** r041 A10 — قيم [SmsInboxPort.handoffCard]. */
+const val SMS_HANDOFF_PENDING_CARD = "pending_card"
+const val SMS_HANDOFF_DONE = "done"
 
 /** نفس المرسل مهما اتكتب بحروف كبيرة أو صغيرة أو مسافات (الصندوق بيقارن المرسلين من غير حالة الحروف). */
 fun smsSenderKey(sender: String): String = sender.trim().lowercase()

@@ -129,6 +129,15 @@ internal class SmsInboxStore(context: Context) : SQLiteOpenHelper(context, "sms-
         check(edit.commit()) { "settings write failed" }
     }
 
+    /** r041 A10: كارت «اسمح بقراءة رسائل البنك» — على الجهاز ده لكل مستخدم (الإذن للجهاز؛ ما بيدخلش النسخة الشاملة ولا بيتزامن). */
+    fun handoffCard(uid: String): String? = prefs.getString("smsHandoff|$uid", null)
+
+    fun setHandoffCard(uid: String, value: String?) {
+        val edit = prefs.edit()
+        if (value == null) edit.remove("smsHandoff|$uid") else edit.putString("smsHandoff|$uid", value)
+        check(edit.commit()) { "settings write failed" }
+    }
+
     private fun migrateLegacyTarget(uid: String, spaceId: String) {
         val legacyKey = "autoTarget|$uid|$spaceId"
         val legacy = prefs.getString(legacyKey, null) ?: return
