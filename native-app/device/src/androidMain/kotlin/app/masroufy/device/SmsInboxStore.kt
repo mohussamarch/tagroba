@@ -24,6 +24,15 @@ internal class SmsInboxStore(context: Context) : SQLiteOpenHelper(context, "sms-
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) = Unit
 
+    /**
+     * r041c: فهرس للصفحة والعدّ (`snapshot`: المستني لصاحب الصندوق بالأحدث) — من غيره كل قراية بتلف على كل الرسايل اللي اتقرت من الأول.
+     * `IF NOT EXISTS` من غير تغيير رقم القاعدة (نسخة أقدم من البرنامج تفتحها عادي). لو القاعدة للقراية بس ⇒ من غير فهرس زي الأول.
+     */
+    override fun onOpen(db: SQLiteDatabase) {
+        super.onOpen(db)
+        if (!db.isReadOnly) runCatching { db.execSQL("CREATE INDEX IF NOT EXISTS messages_pending ON messages(owner,done,received)") }
+    }
+
     fun owner(): String = prefs.getString("owner", "") ?: ""
 
     fun enabled(uid: String) = uid == owner() && prefs.getBoolean("enabled", false)

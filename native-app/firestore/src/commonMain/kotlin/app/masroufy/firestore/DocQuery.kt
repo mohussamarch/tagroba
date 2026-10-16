@@ -69,6 +69,22 @@ internal data class DocQuery(val conds: List<Cond> = emptyList(), val descending
 }
 
 /**
+ * r041c — نفس نتيجة `findIn` بدفعات [IN_LIMIT] (`Cond.In` على كل دفعة لوحدها، مترتبة بالمعرّف، والدفعات ورا بعض) لكن بلفة واحدة على
+ * المستندات وجدول قيم: كانت لفة كاملة وفرز لكل 30 قيمة (آلاف العمليات ⇒ ملايين المقارنات في كل معاينة رسايل).
+ */
+internal fun mirrorIn(docs: Map<String, LocalMirror.Entry>, field: String, values: List<String>): List<LocalMirror.Entry> {
+    val chunks = values.chunked(IN_LIMIT)
+    val chunkOf = HashMap<Any, MutableList<Int>>()
+    chunks.forEachIndexed { i, chunk -> chunk.distinct().forEach { chunkOf.getOrPut(it) { mutableListOf() } += i } }
+    val groups = List(chunks.size) { mutableListOf<Map.Entry<String, LocalMirror.Entry>>() }
+    for (e in docs.entries) {
+        val v = e.value.doc[field] ?: continue
+        chunkOf[v]?.forEach { groups[it] += e }
+    }
+    return groups.flatMap { g -> g.sortedBy { it.key }.map { it.value } }
+}
+
+/**
  * أقصى انتظار لمستمع المجموعة قبل ما القراية تروح لفايربيز بنفسها ([LocalMirror.awaitDocs]). المستمع بينزّل نفس البيانات،
  * فالاستعلام جنبه بيتأخر بنفس القدر (اتقاس 2026-10-10: قراية `spaces` جنب 57 مستمع خدت 8.5 ثانية على المحاكي).
  */

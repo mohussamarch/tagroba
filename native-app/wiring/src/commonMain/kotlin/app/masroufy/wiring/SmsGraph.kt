@@ -14,7 +14,6 @@ import app.masroufy.core.parseIsoDate
 import app.masroufy.core.toDayNumber
 import app.masroufy.port.BankSmsParser
 import app.masroufy.port.SmsInboxPort
-import app.masroufy.port.SmsInboxState
 import app.masroufy.port.smsSenderKey
 import app.masroufy.ui.screens.imports.SenderReview
 import app.masroufy.ui.screens.imports.SmsDeps
@@ -28,15 +27,15 @@ import app.masroufy.usecase.AutoRecordSms
 import app.masroufy.usecase.AutoRecordSmsDeps
 import app.masroufy.usecase.AutoRecordStatus
 import app.masroufy.usecase.EditTransaction
-import app.masroufy.usecase.ImportStatement
 import app.masroufy.usecase.InboxView
 import app.masroufy.usecase.ManageSmsInbox
 import app.masroufy.usecase.ManageWallets
 import app.masroufy.usecase.ReviewSmsInbox
-import app.masroufy.usecase.ReviewSmsInboxDeps
 import app.masroufy.usecase.RevertImportBatch
 import app.masroufy.usecase.SmsLane
 import app.masroufy.usecase.SmsReviewTarget
+import app.masroufy.usecase.SmsRunMemo
+import kotlinx.coroutines.withContext
 
 /**
  * رسايل البنك لشاشات «الاستيراد» — تجميع حالات الاستخدام الموجودة بس (مفيش حساب هنا):
@@ -44,6 +43,8 @@ import app.masroufy.usecase.SmsReviewTarget
  * - مراجعة اللي مستني = `ReviewSmsInbox` **لكل بنك على محفظته** ([SenderInbox] بيدّيه رسايل البنك ده بس) — عشان «سجّل الكل» ما يسجّلش رسالة
  *   بنك في محفظة بنك تاني. ⚠️ هدف المراجعة ([targetOf]) نسخة من `AutoRecordSms.walletFor` (private هناك) — لما حالة الاستخدام تدّي
  *   مراجعة البنك بنفسها، السطور دي تتشال.
+ * - r041c: **كل** نداء هنا برّه خيط الواجهة (`DeviceEnv.work`) — قراية الصندوق وفهم الرسايل ومطابقتها وتسجيلها كانت على خيط الواجهة فالبرنامج
+ *   كله بيعلّق في «اسحب لتحت» و«إعداد القراءة» بتفضل بيضا على جوال فيه آلاف الرسايل.
  */
 internal class SmsGraph(
     private val c: AreaContext,
@@ -59,13 +60,21 @@ internal class SmsGraph(
     /** مراجعة كل بنك من آخر [overview] — «سجّل الكل» بيسجّل نفس اللي اتعرض (الجلسة جوه كل `ReviewSmsInbox`). */
     private var last: List<Pair<SenderReview, ReviewSmsInbox>> = emptyList()
 
+    /** r041c: اللي «اسحب لتحت» عاينه قبل كده ⇒ السحبة الجاية بتقرا الجديد بس (`AutoRecordSms.runNew`). */
+    private val memo = SmsRunMemo()
+
+    /** r041c: آخر «إعداد القراءة» ([settings]) — الصفحة بتعرضها على طول وهي بتجيب الجديدة. */
+    private var settingsCache: SmsOverview? = null
+
+    private suspend fun <T> work(block: suspend () -> T): T = withContext(c.env.work) { block() }
+
     // decisions-77 (مراجعة S1): الشاشة لازم تيجي من `SmsLane.screen` — نفس التعلّم والآثار والمحافظ بتوع الخلفية.
     private fun review(m: ManageSmsInbox): ReviewSmsInbox =
         SmsLane.of(space.id, smsImportDeps(space.id, c.repos, c.env, inbox), m, c.repos.wallets, countryPack(space.countryCode).timeZone).screen()
 
     private fun auto(): AutoRecordSms = autoRecordSms(c, inbox)
 
-    override suspend fun overview(record: Boolean): SmsOverview {
+    override suspend fun overview(record: Boolean): SmsOverview = work {
         val auto = auto()
         val result = if (record) auto.run() else null
         val view = manage.refresh()
@@ -81,10 +90,22 @@ internal class SmsGraph(
             reviews += SenderReview(sender, wallet.id, one.load(targetOf(wallet, wallets))) to one
         }
         last = reviews
-        return SmsOverview(view, unmapped, reviews.map { it.first }, senderWallets, result?.recordedTransactionIds.orEmpty())
+        SmsOverview(view, unmapped, reviews.map { it.first }, senderWallets, result?.recordedTransactionIds.orEmpty())
     }
 
-    override suspend fun record(categories: Map<String, Id>, includeSimilar: Set<String>): Int {
+    override suspend fun recordNew(): List<Id> = work { auto().runNew(memo).recordedTransactionIds }
+
+    override suspend fun settings(): SmsOverview = work {
+        val auto = auto()
+        val view = manage.refresh()
+        val unmapped = auto.unmappedQuick().filter { it.spaceId == space.id }
+        val senderWallets = view.senders.associateWith { sender -> runCatching { auto.walletOf(space.id, sender) }.getOrNull() }
+        SmsOverview(view, unmapped, emptyList(), senderWallets).also { settingsCache = it }
+    }
+
+    override fun cachedSettings(): SmsOverview? = settingsCache
+
+    override suspend fun record(categories: Map<String, Id>, includeSimilar: Set<String>): Int = work {
         var total = 0
         for ((shown, one) in last) {
             val lines = shown.review.ready + shown.review.similar
@@ -94,24 +115,24 @@ internal class SmsGraph(
             total += one.recordAll(chosen, similar)
         }
         last = emptyList()
-        return total
+        total
     }
 
     override suspend fun dismiss(messageIds: List<String>) {
-        manage.dismiss(messageIds)
+        work { manage.dismiss(messageIds) }
     }
 
-    override suspend fun chooseWallet(sender: String, walletId: Id?): AutoRecordResult {
+    override suspend fun chooseWallet(sender: String, walletId: Id?): AutoRecordResult = work {
         val auto = auto()
         auto.chooseWallet(space.id, sender, walletId)
-        return auto.run()
+        auto.run()
     }
 
     override suspend fun answerAccount(walletId: Id, last4: String, mine: Boolean, messageId: String?, replace: Boolean): AutoRecordResult =
-        answering().answerAndRecord(auto(), walletId, last4, mine, messageId, replace)
+        work { answering().answerAndRecord(auto(), walletId, last4, mine, messageId, replace) }
 
     override suspend fun accountNewWallet(fromWalletId: Id, last4: String, messageId: String?): Pair<Wallet, AutoRecordResult> =
-        answering().newWalletAndRecord(auto(), fromWalletId, last4, messageId)
+        work { answering().newWalletAndRecord(auto(), fromWalletId, last4, messageId) }
 
     /** r041b P10: «محفظة جديدة لهذا الحساب» بتتعمل من نفس طريق «أضف محفظة» (`ManageWallets` — عملة البلد ويومها). */
     private fun answering() = AnswerSmsAccount(
@@ -119,23 +140,23 @@ internal class SmsGraph(
         ManageWallets(c.repos.wallets, c.env.ids, c.env.clock, space.currency, countryPack(space.countryCode).timeZone),
     )
 
-    override suspend fun handoffCard(): String? = inbox.handoffCard()
+    override suspend fun handoffCard(): String? = work { inbox.handoffCard() }
 
-    override suspend fun setHandoffCard(value: String?) = inbox.setHandoffCard(value)
+    override suspend fun setHandoffCard(value: String?) = work { inbox.setHandoffCard(value) }
 
-    override suspend fun readingOn(): Boolean = manage.refresh().let { it.enabled && it.permission }
+    override suspend fun readingOn(): Boolean = work { manage.refresh().let { it.enabled && it.permission } }
 
-    override suspend fun enable(senders: List<String>): InboxView = manage.enable(senders)
+    override suspend fun enable(senders: List<String>): InboxView = work { manage.enable(senders) }
 
-    override suspend fun disable(): InboxView = manage.disable()
+    override suspend fun disable(): InboxView = work { manage.disable() }
 
-    override suspend fun remember(merchant: String, categoryId: Id, direction: Direction): Boolean = base.remember(merchant, categoryId, direction)
+    override suspend fun remember(merchant: String, categoryId: Id, direction: Direction): Boolean = work { base.remember(merchant, categoryId, direction) }
 
     /**
      * اللي اتسجل من رسايل البنك النهارده: دفعات الرسايل الأخيرة (`RevertImportBatch.history`) ⇒ عملياتها (`plan` — قراية بس) ⇒ تفاصيلها.
      * ⚠️ مفيش حالة استخدام «اللي اتسجل من الرسايل النهارده» — التجميع ده مكانها لحد ما تتعمل.
      */
-    override suspend fun recordedToday(): List<Transaction> {
+    override suspend fun recordedToday(): List<Transaction> = work {
         val today = c.env.today()
         val yesterday = dayNumberToIso(toDayNumber(parseIsoDate(today)) - 1)
         val recent = batches.history(30).filter { b ->
@@ -149,29 +170,29 @@ internal class SmsGraph(
                 if (t.occurredAt == today || b.importedAt.take(10) == today) out[t.id] = t
             }
         }
-        return out.values.sortedByDescending { it.createdAt }
+        out.values.sortedByDescending { it.createdAt }
     }
 
-    // §83 «اقرأ اللي فات؟» — بنفس صندوق وحارات التسجيل لوحده (كل البلاد)
+    // §83 «اقرأ اللي فات؟» — بنفس صندوق وحارات التسجيل لوحده (كل البلاد). `SmsHistory` نفسه بيشتغل على `DeviceEnv.work`.
     private fun history() = smsHistory(c.session.spaces().ifEmpty { listOf(c.space to c.repos) }, inbox, c.env)
 
-    override suspend fun historyQuestion() = history()?.question(space.id)
+    override suspend fun historyQuestion() = work { history()?.question(space.id) }
 
     override suspend fun historyDecline(senders: List<String>) {
-        history()?.decline(space.id, senders)
+        work { history()?.decline(space.id, senders) }
     }
 
-    override suspend fun historyStart(senders: List<String>, from: IsoDate?) = history()?.start(space.id, senders, from)
+    override suspend fun historyStart(senders: List<String>, from: IsoDate?) = work { history()?.start(space.id, senders, from) }
 
-    override suspend fun historyReport() = history()?.report()
+    override suspend fun historyReport() = work { history()?.report() }
 
-    override suspend fun confirmShapes(messageIds: List<String>) = history()?.confirmShapes(messageIds)
+    override suspend fun confirmShapes(messageIds: List<String>) = work { history()?.confirmShapes(messageIds) }
 
-    override suspend fun recordByHand(messageId: String, sender: String, amountText: String): AddOperationResult {
+    override suspend fun recordByHand(messageId: String, sender: String, amountText: String): AddOperationResult = work {
         val walletId = runCatching { auto().walletOf(space.id, sender) }.getOrNull()
         val result = c.shell.addOperation(AddOperationDraft(AddKind.OUT, amountText, walletId))
         if (result is AddOperationResult.Saved) manage.dismiss(listOf(messageId))
-        return result
+        result
     }
 }
 
@@ -182,7 +203,7 @@ internal class SmsGraph(
 internal fun autoRecordSms(c: AreaContext, inbox: SmsInboxPort): AutoRecordSms {
     val spaces = c.session.spaces().ifEmpty { listOf(c.space to c.repos) }
     val lanes = spaces.mapNotNull { (s, repos) -> smsLaneOf(s, repos, c.env, inbox) }
-    return AutoRecordSms(AutoRecordSmsDeps(inbox, lanes))
+    return AutoRecordSms(AutoRecordSmsDeps(inbox, lanes, work = c.env.work))
 }
 
 /** نفس هدف التشغيلة (`AutoRecordSms.walletFor`): المحفظة وعملتها وآخر ٤ أرقامها + آخر ٤ أرقام حسابات المالك التانية في البلد (الجولة السادسة). */
@@ -190,46 +211,4 @@ internal fun targetOf(wallet: Wallet, all: List<Wallet>): SmsReviewTarget {
     fun last4(value: String?) = value?.filter { it in '0'..'9' }?.takeLast(4)?.takeIf { it.length == 4 }
     val others = all.filter { it.id != wallet.id }.mapNotNull { last4(it.accountLast4) }.toSet()
     return SmsReviewTarget(wallet.id, wallet.name, wallet.currency, last4(wallet.accountLast4), others, notMineLast4 = all.flatMap { it.notMineLast4 }.toSet())
-}
-
-/** الصندوق نفسه برسايل مرسل واحد بس ([key] بعد `smsSenderKey`) — الشيل والتفعيل بيروحوا للصندوق الحقيقي. */
-internal class SenderInbox(private val inbox: SmsInboxPort, private val key: String) : SmsInboxPort {
-    override val available: Boolean get() = inbox.available
-
-    private fun only(state: SmsInboxState): SmsInboxState {
-        val mine = state.messages.filter { smsSenderKey(it.sender) == key }
-        return state.copy(messages = mine, count = mine.size)
-    }
-
-    override suspend fun sync() = only(inbox.sync())
-
-    override suspend fun page(skip: Int) = inbox.page(skip)
-
-    override suspend fun enable(senders: List<String>) = only(inbox.enable(senders))
-
-    override suspend fun disable() = only(inbox.disable())
-
-    override suspend fun acknowledge(ids: List<String>) = only(inbox.acknowledge(ids))
-
-    override suspend fun senderWallets(spaceId: String) = inbox.senderWallets(spaceId)
-
-    override suspend fun setSenderWallet(spaceId: String, sender: String, walletId: String?) = inbox.setSenderWallet(spaceId, sender, walletId)
-
-    // §77-A (decisions-77): التعلّم وردّ «ده راتبك؟» بيروحوا للصندوق الحقيقي زي ما هم (مش بيتفلتروا بالمرسل).
-    override suspend fun learnedShapes(spaceId: String) = inbox.learnedShapes(spaceId)
-
-    override suspend fun learnShapes(spaceId: String, sender: String, keys: Set<String>) = inbox.learnShapes(spaceId, sender, keys)
-
-    override suspend fun forgetShapes(spaceId: String, sender: String) = inbox.forgetShapes(spaceId, sender)
-
-    override suspend fun salaryAnswer(spaceId: String, sender: String) = inbox.salaryAnswer(spaceId, sender)
-
-    override suspend fun setSalaryAnswer(spaceId: String, sender: String, answer: Boolean?) = inbox.setSalaryAnswer(spaceId, sender, answer)
-
-    // §83: مؤشر القراية للصندوق كله (مش للمرسل ده بس)
-    override suspend fun oldestMessageAt(senders: List<String>) = inbox.oldestMessageAt(senders)
-
-    override suspend fun readMarks() = inbox.readMarks()
-
-    override suspend fun readFrom(point: String) = inbox.readFrom(point)
 }

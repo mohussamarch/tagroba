@@ -47,6 +47,11 @@ class DeviceEnv(
     val repairBackup: app.masroufy.port.RepairBackupPort? = null,
     /** r041b P2: مسودة «أول تشغيل» على الجهاز (لكل حساب) — الفتح الجاي بيكمّل من نفس الكارت. null (الاختبار · الآيفون لحد ما يتجمّع) ⇒ الذاكرة بس. */
     val onboardingDraft: app.masroufy.ui.screens.onboarding.OnbDraftStore? = null,
+    /**
+     * r041c: الشغل التقيل اللي الشاشات بتطلبه (قراية رسايل البنك وفهمها ومطابقتها وتسجيلها · قوايم العمليات الكبيرة) بيتعمل هنا **برّه خيط
+     * الواجهة** — كان على خيط الواجهة فالبرنامج كله بيعلّق ٤–٥ ثواني في «اسحب لتحت». الاختبار بيدّي سياقه (`EmptyCoroutineContext`).
+     */
+    val work: kotlin.coroutines.CoroutineContext = kotlinx.coroutines.Dispatchers.Default,
 )
 
 /**

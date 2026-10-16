@@ -92,9 +92,12 @@ fun OperationsScreen() {
                 val data = trace.span("ops:transactions") { deps.transactions.load(LoadTransactionsScreenRequest(PeriodChoice.periodOf(chosenKey, payday), today, payday)) }
                 trace.span("ops:view") { operationsView(data, attempt { deps.wallets() }.orEmpty(), today, space.space.currency, space.space.countryCode) }
             }
-            ui = ui.loaded(view, attempt { app.masroufy.perf.PerfTrace.span("ops:zone") { deps.transfers.zone().questions.size } })
+            // r041c: القايمة بتبان على طول — عدد أسئلة التحويلات (لفة على كل العمليات) بييجي بعدها ومش بيأخّرها
+            ui = ui.loaded(view, null)
         }
         refreshing = false // دايرة «اسحب لتحت» بتفضل ظاهرة لحد ما القراية دي تخلص
+        val parties = attempt { app.masroufy.perf.PerfTrace.span("ops:zone") { deps.transfers.zone().questions.size } }
+        if (parties != null && ui.view != null) ui = ui.copy(partiesWaiting = parties)
     }
     // وضع «تحديد» والأفعال الجماعية (قايمة المالك §6.5 بند 15) — الحالة في [OpsSelection]، والمجموع والكتابة من `BulkTransactions`
     var sel by remember(deps) { mutableStateOf(OpsSelection()) }
@@ -109,9 +112,10 @@ fun OperationsScreen() {
             refreshing = true
             scope.launch {
                 val sms = space.imports.sms
-                val seen = if (sms == null) null else attempt { sms.overview(record = true) }
-                if (sms != null && seen == null) toaster.show(t(UiKey.OPERATIONS_REFRESH_FAILED))
-                if (seen?.fresh?.isNotEmpty() == true) changes.changed()
+                // r041c: الجديد بس وبرّه خيط الواجهة (`SmsDeps.recordNew`) — كان `overview` كامل على خيط الواجهة فالبرنامج بيعلّق ٤–٥ ثواني
+                val fresh = if (sms == null) null else attempt { sms.recordNew() }
+                if (sms != null && fresh == null) toaster.show(t(UiKey.OPERATIONS_REFRESH_FAILED))
+                if (fresh?.isNotEmpty() == true) changes.changed()
                 reload++
             }
         }

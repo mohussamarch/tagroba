@@ -53,7 +53,9 @@ class OperationsGraph(private val c: AreaContext) : OperationsDeps {
     )
     private val legs = spaceTransfers.legsIn(c.space.id)
 
-    override val transactions = LoadTransactionsScreen(LoadTransactionsScreenDeps(r.transactions, r.categories, r.allocations, r.merchants, r.tags, r.transactionTags))
+    override val transactions = LoadTransactionsScreen(
+        LoadTransactionsScreenDeps(r.transactions, r.categories, r.allocations, r.merchants, r.tags, r.transactionTags, work = c.env.work),
+    )
     override val edit = EditTransaction(
         EditTransactionDeps(
             r.transactions, r.categories, r.tags, r.transactionTags, r.uow, ids, clock,
@@ -83,7 +85,7 @@ class OperationsGraph(private val c: AreaContext) : OperationsDeps {
     override val linkedInflows = app.masroufy.usecase.LinkInflows(
         app.masroufy.usecase.LinkInflowsDeps(r.transactions, r.allocations, r.settlements, r.obligations, r.uow, clock),
     )
-    override val transfers = ManageTransfers(ManageTransfersDeps(r.transactions, r.transferParties, r.people, r.uow, clock, wallets = r.wallets))
+    override val transfers = ManageTransfers(ManageTransfersDeps(r.transactions, r.transferParties, r.people, r.uow, clock, wallets = r.wallets, work = c.env.work))
 
     // تحديد كذا عملية (§6.5 بند 15): المسح بيرفض أي عملية متربطة بحاجة — نفس فحص رجول «التحويل لنفسك»
     private val txnLinks = app.masroufy.usecase.TransactionLinkRepos(
@@ -115,7 +117,10 @@ class OperationsGraph(private val c: AreaContext) : OperationsDeps {
 
     override suspend fun payday(): Int = c.shell.profile.load().payday
 
-    override suspend fun wallets(): List<Wallet> = LoadWithYouNow(r.wallets, r.transactions, c.space.currency).load(c.env.today()).wallets.map { it.wallet }
+    // r041c: أرصدة المحافظ بتلف على العمليات — برّه خيط الواجهة
+    override suspend fun wallets(): List<Wallet> = kotlinx.coroutines.withContext(c.env.work) {
+        LoadWithYouNow(r.wallets, r.transactions, c.space.currency).load(c.env.today()).wallets.map { it.wallet }
+    }
 
     override suspend fun spaceBooks(): List<SpaceWallets> = openSpaces().map { (s, repos) ->
         SpaceWallets(s, LoadWithYouNow(repos.wallets, repos.transactions, s.currency).load(c.env.today()).wallets.map { it.wallet }, s.id == c.space.id)
