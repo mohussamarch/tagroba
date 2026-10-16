@@ -106,11 +106,11 @@ fun AddOperationSheet(visible: Boolean, onClose: () -> Unit, onVoice: () -> Unit
         to = null
     }
     val o = options
-    val ready = amountText.isNotBlank() && from != null && when (kind) {
-        AddKind.OUT -> category != null
-        AddKind.IN -> income != null
-        AddKind.MOVE -> to != null && to != from
-    }
+    // r041b P7: «احفظ» المعطّل بيقول الناقص لما يتضغط (قبل كده ولا حاجة — والمالك ما يعرفش ليه)
+    val missing = addMissing(kind, amountText, from, category != null, income != null, to)
+    val ready = missing == null
+    var explain by remember { mutableStateOf(false) }
+    LaunchedEffect(visible) { explain = false }
     Sheet(visible, onClose, title = t(UiKey.ADD_TITLE), veil = Veil.MENU, closeLabel = t(UiKey.SHELL_CLOSE)) {
         Row(Modifier.fillMaxWidth().padding(bottom = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             BasicText(t(UiKey.ADD_TITLE), style = Type.section())
@@ -180,8 +180,24 @@ fun AddOperationSheet(visible: Boolean, onClose: () -> Unit, onVoice: () -> Unit
                 }
             },
             enabled = ready, loading = saving, height = 52.dp, modifier = Modifier.fillMaxWidth(),
+            onDisabledClick = { explain = true },
         )
+        // مفيش محافظ خالص ⇒ «ضيف محفظة» فوق كفاية (من غير سطر تاني يقول «اختار المحفظة»)
+        if (explain && missing != null && (missing != UiKey.ADD_NEED_FROM || o?.wallets?.isNotEmpty() == true)) FieldError(t(missing))
     }
+}
+
+/**
+ * r041b P7: أول حاجة ناقصة عشان «احفظ» يشتغل — بنفس ترتيب اللوحة من فوق لتحت: المبلغ ⇒ التصنيف (صرف) / نوع الدخل (دخل) / المحفظة
+ * اللي رايح لها (تحويل) ⇒ «من أين؟». null = جاهز.
+ */
+internal fun addMissing(kind: AddKind, amountText: String, from: String?, hasCategory: Boolean, hasIncome: Boolean, to: String?): UiKey? = when {
+    amountText.isBlank() -> UiKey.ADD_NEED_AMOUNT
+    kind == AddKind.OUT && !hasCategory -> UiKey.ADD_NEED_CATEGORY
+    kind == AddKind.IN && !hasIncome -> UiKey.ADD_NEED_INCOME_KIND
+    kind == AddKind.MOVE && (to == null || to == from) -> UiKey.ADD_NEED_TO
+    from == null -> UiKey.ADD_NEED_FROM
+    else -> null
 }
 
 @Composable

@@ -653,6 +653,7 @@ enum class UiKey : TextRef {
     LINKED_UNLINK_DONE, LINKED_RELINK_FAILED,
     // جولة r041b — القيم في `TextsR041b.kt`
     HOME_SMS_WAIT_ONE, HOME_SMS_WAIT_TWO, HOME_SMS_WAIT_FEW, HOME_SMS_WAIT_MANY, HOME_SMS_WAIT_BODY,
+    ADD_NEED_AMOUNT, ADD_NEED_CATEGORY, ADD_NEED_INCOME_KIND, ADD_NEED_TO, ADD_NEED_FROM,
 
     // «شخصيتك» (r041): أسماء الأقسام والأجزاء والاختيارات — القيم في `TextsCharacterOptions.kt`
     CHAR_SEC_FACE, CHAR_SEC_BODY, CHAR_SEC_WEAR,

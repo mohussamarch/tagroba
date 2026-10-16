@@ -61,10 +61,13 @@ fun PrimaryButton(
     loading: Boolean = false,
     height: Dp = 48.dp,
     leading: Lucide? = null,
+    /** r041b P7: الضغط على الزرار وهو معطّل ⇒ الشاشة تقول الناقص (من غير ضغط ولا ظل). null ⇒ المعطّل ما بيردش زي الأول. */
+    onDisabledClick: (() -> Unit)? = null,
 ) {
     val shape = RoundedCornerShape(Radius.control)
     val press = rememberPress()
     val active = enabled && !loading
+    val explains = !enabled && !loading && onDisabledClick != null
     val far = farShadowFactor(press, enabled)
     Row(
         modifier
@@ -75,7 +78,7 @@ fun PrimaryButton(
             .clip(shape)
             .background(Glass.primary)
             .innerSheen(shape, Shadows.primary)
-            .tap(press, active, onClick = onClick)
+            .tap(press, active || explains, onClick = if (explains) onDisabledClick ?: onClick else onClick)
             .padding(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
