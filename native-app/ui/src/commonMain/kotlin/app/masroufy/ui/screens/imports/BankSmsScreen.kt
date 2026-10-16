@@ -33,6 +33,11 @@ import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
 import app.masroufy.usecase.AddOperationResult
+import app.masroufy.usecase.BnplAnswer
+import app.masroufy.core.SmsKind
+import app.masroufy.ui.screens.operations.EmployerPickSheet
+import app.masroufy.ui.screens.operations.TransferPartyCard
+import androidx.compose.runtime.DisposableEffect
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
@@ -68,15 +73,21 @@ fun BankSmsScreen() {
     var bankSheet by remember { mutableStateOf<BankWaitingUi?>(null) }
     // OVERRIDES §91-1: «أيوه، ده حسابي» ⇒ لوحة اختيار المحفظة
     var accountLine by remember { mutableStateOf<WaitLineUi?>(null) }
+    // r05: الاختيار بيسجّل (4a) · صفحة الصندوق (4b) · كارت الطرف بعد التسجيل (4c) · جهة الشغل بعد «أيوه ده راتبي» (3b) · «ادفع بعدين»
+    val r05 = remember(deps) { SmsR05(deps, toaster) }
+    DisposableEffect(deps) { onDispose { r05.flush() } }
 
     LaunchedEffect(deps, reload) {
         categories = runCatching { deps.categories.list() }.getOrDefault(categories)
         wallets = runCatching { deps.wallets() }.getOrDefault(wallets)
         val sms = deps.sms ?: run { ui = bankSmsUi(null, emptyList(), emptySet()); return@LaunchedEffect }
         try {
-            val overview = sms.overview(record = true)
+            // r05 (4b · 4d): الصفحة المختارة من الصندوق، والشغل بره خيط الشاشة (`SmsScreenExtras`) — الهيكل بيظهر الأول
+            val overview = sms.overviewPage(record = true, skip = r05.skip)
+            if (r05.skip > 0 && r05.skip >= overview.inbox.count) { r05.skip = 0; reload++; return@LaunchedEffect }
             val today = runCatching { sms.recordedToday() }.getOrDefault(emptyList())
             ui = bankSmsUi(overview, today, overview.fresh.toSet())
+            r05.bnplAsks = runCatching { sms.bnplAsks() }.getOrDefault(emptyList())
             failure = null
         } catch (e: CancellationException) {
             throw e
@@ -101,6 +112,8 @@ fun BankSmsScreen() {
             reload++
         }
     }
+
+    fun answerBnpl(a: BnplAnswer) = act { r05.answerBnpl(a) }
 
     val actions = WaitingActions(
         pickCategory = { picking = PickFor.Line(it) },
@@ -133,6 +146,11 @@ fun BankSmsScreen() {
                 toaster.show(t(UiKey.SMS_ACCOUNT_NOT_MINE_SAVED, last4, opsCount(r?.recorded ?: 0)), dark = true)
             }
         },
+        confirmLine = { line -> act { r05.confirmLine(line) } },
+        salaryYes = { line -> act { r05.salaryYes(line) } },
+        recordParty = { line -> act { r05.recordParty(line) } },
+        older = { r05.skip += ui?.pageSize ?: 0; reload++ },
+        newest = { r05.skip = 0; reload++ },
     )
 
     InnerScaffold(
@@ -167,8 +185,13 @@ fun BankSmsScreen() {
         if (history != null && u.status == SmsStatus.READING) {
             item(key = "history") { SmsHistorySection(history, currency, deps.smsToday()) { reload++ } }
         }
-        if (u.status != SmsStatus.UNAVAILABLE && (u.live || u.waitingCount > 0)) {
-            item(key = "waiting") { SmsWaitingSection(u, currency, categories, chosen, included, busy, handError, actions) }
+        if (r05.picks.items.isNotEmpty()) item(key = "picks") { PendingPicksPanel(r05.picks) }
+        if (r05.bnplAsks.isNotEmpty()) item(key = "bnpl") {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) { BnplAskCards(r05.bnplAsks, onOpen = { r05.bnplOpen = it }, onAnswer = ::answerBnpl) }
+        }
+        for ((party, id, outgoing) in r05.parties) item(key = "party-$id") { TransferPartyCard(party, id, onChanged = { reload++ }, outgoing = outgoing) }
+        if (u.status != SmsStatus.UNAVAILABLE && (u.live || u.trueWaiting > 0)) {
+            item(key = "waiting") { SmsWaitingSection(u, currency, categories, chosen, included, busy, handError, actions, r05.skip, r05.picks.ids) }
         }
         if (u.live && u.isEmpty) {
             item(key = "empty") { EmptyState(t(UiKey.BANK_SMS_EMPTY_TITLE), t(UiKey.BANK_SMS_EMPTY_BODY)) }
@@ -188,14 +211,15 @@ fun BankSmsScreen() {
     }
 
     val pick = picking
+    // r05 (3a): العنوان اسم التاجر أو الطرف — عمره ما يبقى اسم المرسل («AlRajhiBank»)، ومن غير اسم ⇒ «تصنيف العملية»
     val title = when (pick) {
-        is PickFor.Line -> pick.line.merchant.ifBlank { pick.line.sender }
+        is PickFor.Line -> pick.line.merchant
         is PickFor.Row -> pick.row.title
         null -> ""
     }
     CategoryPickerSheet(
         visible = pick != null,
-        title = t(UiKey.SMS_CATPICK_TITLE, title),
+        title = if (title.isBlank()) t(UiKey.SMS_R05_CATPICK_PLAIN) else t(UiKey.SMS_CATPICK_TITLE, title),
         categories = categories,
         selectedId = when (pick) { is PickFor.Line -> chosen[pick.line.messageId] ?: pick.line.categoryId; is PickFor.Row -> pick.row.categoryId; null -> null },
         onPick = { cat ->
@@ -203,8 +227,10 @@ fun BankSmsScreen() {
             val sms = deps.sms
             when (pick) {
                 is PickFor.Line -> {
-                    chosen[pick.line.messageId] = cat.id
-                    scope.launch { sms?.remember(pick.line.merchant, cat.id, pick.line.direction) }
+                    // r05 (4a): الاختيار بيشيلها على طول، و«تراجع» 8 ثواني، وبعدها بتتسجل (وشكلها بيتعلّم)
+                    r05.picks.add(scope, pick.line, cat) { id, catId -> r05.commitPick(id, catId); reload++ }
+                    val party = pick.line.kind == SmsKind.TRANSFER_IN || pick.line.kind == SmsKind.TRANSFER_OUT
+                    if (!party && pick.line.merchant.isNotBlank()) scope.launch { sms?.remember(pick.line.merchant, cat.id, pick.line.direction) }
                 }
                 is PickFor.Row -> act {
                     deps.transactions.setCategory(pick.row.id, cat.id)
@@ -236,6 +262,11 @@ fun BankSmsScreen() {
                 }
             }
         }
+    }
+    BnplSheet(r05.bnplOpen, pickableCategories(categories), onDismiss = { r05.bnplOpen = null }, onSave = ::answerBnpl)
+    val employer = r05.employerTxn
+    if (employer != null && LocalSpace.current.operations.incomeAnswers != null) {
+        EmployerPickSheet(true, employer, onDismiss = { r05.employerTxn = null }) { done -> r05.employerTxn = null; toaster.show(done.title, dark = true); reload++ }
     }
     BankWalletSheet(
         bank = bankSheet,

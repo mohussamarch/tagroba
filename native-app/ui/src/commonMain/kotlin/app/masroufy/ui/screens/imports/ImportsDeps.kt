@@ -6,6 +6,9 @@ import app.masroufy.core.IsoDate
 import app.masroufy.core.Transaction
 import app.masroufy.core.Wallet
 import app.masroufy.usecase.AddOperationResult
+import app.masroufy.usecase.BnplAnswer
+import app.masroufy.usecase.BnplAsk
+import app.masroufy.usecase.BnplDone
 import app.masroufy.usecase.AutoRecordResult
 import app.masroufy.usecase.EditTransaction
 import app.masroufy.usecase.ImportStatement
@@ -128,7 +131,27 @@ interface SmsDeps {
 
     /** «أكّد الأشكال». */
     suspend fun confirmShapes(messageIds: List<String>): SmsHistoryReport? = null
+
+    // ── r05 — قايمة «بانتظار تأكيدك» و«ادفع بعدين» (كله بره خيط الشاشة — `SmsScreenExtras`). الافتراضي: مفيش ──
+
+    /** 4b: نفس [overview] من صفحة أقدم في الصندوق ([skip] = يتخطّى أحدث [skip] رسالة مستنية) — والصندوق بيرجع لأحدث صفحة بعدها. */
+    suspend fun overviewPage(record: Boolean, skip: Int): SmsOverview = overview(record)
+
+    /**
+     * 4a · 3b · 3c: المالك قرر على رسايل بعينها ⇒ بتتسجل (بالتصنيف اللي اختاره [categories]، و[isSalary] لرسالة «ده راتبك؟») وشكلها بيتعلّم،
+     * وبعدها تشغيلة بتسجّل باقي رسايل **نفس الشكل** على طول.
+     */
+    suspend fun confirmMessages(ids: List<String>, categories: Map<String, Id> = emptyMap(), isSalary: Boolean? = null): SmsConfirmed =
+        SmsConfirmed(0, 0, emptyList())
+
+    /** خصومات «اشتري دلوقتي وادفع بعدين» المستنية رد المالك (والقسط الجاي اللي يتربط لوحده بيتربط هنا). */
+    suspend fun bnplAsks(): List<BnplAsk> = emptyList()
+
+    suspend fun bnplAnswer(answer: BnplAnswer): BnplDone? = null
 }
+
+/** r05: [recorded] = اللي المالك أكّده · [sameShape] = اللي اتسجل معاه بنفس الشكل · [transactionIds] = عمليات المؤكَّد. */
+data class SmsConfirmed(val recorded: Int, val sameShape: Int, val transactionIds: List<Id>)
 
 /**
  * صورة رسايل البنك. [senderWallets] = المحفظة اللي رسايل كل مرسل مفعّل بتتسجل فيها (null = مستنية المالك يختار) بنفس كتابة المرسل في

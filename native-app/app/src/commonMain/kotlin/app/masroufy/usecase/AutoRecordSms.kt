@@ -221,13 +221,19 @@ class AutoRecordSms(private val deps: AutoRecordSmsDeps) {
      * §75-2 (مراجعة S1): الرسالة اللي عليها «ده راتبك؟» محتاجة الرد [isSalary] (بيتحفظ لمرسلها ويتطبق عليها وهي بتتسجل)؛ من غيره **ما
      * بتتسجلش** وبتفضل مستنية بسؤالها — كانت بتتسجل «مش متصنف» والسؤال يرجع للرسالة الجاية، والنص بيقول «أكّد مرة إنه راتبك».
      */
-    suspend fun confirm(messageIds: List<String>, isSalary: Boolean? = null, similarToo: Boolean = true): Int = SMS_RECORD_LOCK.withLock {
+    suspend fun confirm(
+        messageIds: List<String>, isSalary: Boolean? = null, similarToo: Boolean = true, categories: Map<String, Id> = emptyMap(), recordedIds: MutableList<Id>? = null,
+    ): Int = SMS_RECORD_LOCK.withLock {
         if (off()) return@withLock 0
         val wanted = messageIds.toSet()
         var recorded = 0
         forEachRoute({ it.id in wanted }) { lane, view, done ->
             val similar = if (!similarToo) emptyList() else view.similar.filter { it.state == MatchingState.SIMILAR }.map { it.lineNumber }
-            recorded += lane.review.recordLocked(emptyMap(), similar, clearOnly = false, salaryAnswer = isSalary, ackLater = done).recorded
+            // r05 (4a): التصنيف اللي المالك اختاره على الرسالة بيتحفظ مؤكد · [recordedIds] = عملياتها (لوحة جهة الشغل والطرف بعد التسجيل)
+            val chosen = (view.ready + view.similar).mapNotNull { l -> categories[l.messageId]?.let { l.lineNumber to it } }.toMap()
+            val outcome = lane.review.recordLocked(chosen, similar, clearOnly = false, salaryAnswer = isSalary, ackLater = done)
+            recorded += outcome.recorded
+            if (recordedIds != null) for (b in outcome.batchIds) recordedIds += lane.sources.listByBatch(b).mapNotNull { it.transactionId }
         }
         recorded
     }

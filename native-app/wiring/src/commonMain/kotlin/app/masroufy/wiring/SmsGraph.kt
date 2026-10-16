@@ -26,6 +26,10 @@ import app.masroufy.usecase.AddOperationResult
 import app.masroufy.usecase.AutoRecordResult
 import app.masroufy.usecase.AutoRecordSms
 import app.masroufy.usecase.AutoRecordSmsDeps
+import app.masroufy.usecase.BnplAnswer
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlin.coroutines.CoroutineContext
 import app.masroufy.usecase.AutoRecordStatus
 import app.masroufy.usecase.EditTransaction
 import app.masroufy.usecase.ImportStatement
@@ -51,6 +55,8 @@ internal class SmsGraph(
     private val parse: BankSmsParser,
     private val transactions: EditTransaction,
     private val batches: RevertImportBatch,
+    /** r05 (4d): شغل الزيادات الجديدة بره خيط الشاشة. */
+    private val io: CoroutineContext = Dispatchers.Default,
 ) : SmsDeps {
     private val space = c.space
     private val manage = ManageSmsInbox(inbox, parse)
@@ -64,6 +70,26 @@ internal class SmsGraph(
         SmsLane.of(space.id, smsImportDeps(space.id, c.repos, c.env, inbox), m, c.repos.wallets, countryPack(space.countryCode).timeZone).screen()
 
     private fun auto(): AutoRecordSms = autoRecordSms(c, inbox)
+
+    private val extras = SmsScreenExtras(c, { auto() }, io)
+
+    /** r05 (4b): صفحة أقدم من الصندوق، وبعدها الصندوق بيرجع لأحدث صفحة (الخلفية بتقرا من هناك). */
+    override suspend fun overviewPage(record: Boolean, skip: Int): SmsOverview = withContext(io) {
+        if (skip <= 0) return@withContext overview(record)
+        val fresh = if (record) auto().run().recordedTransactionIds else emptyList()
+        inbox.page(skip)
+        try {
+            overview(record = false).copy(fresh = fresh)
+        } finally {
+            inbox.page(0)
+        }
+    }
+
+    override suspend fun confirmMessages(ids: List<String>, categories: Map<String, Id>, isSalary: Boolean?) = extras.confirm(ids, categories, isSalary)
+
+    override suspend fun bnplAsks() = extras.bnplAsks()
+
+    override suspend fun bnplAnswer(answer: BnplAnswer) = extras.bnplAnswer(answer)
 
     override suspend fun overview(record: Boolean): SmsOverview {
         val auto = auto()

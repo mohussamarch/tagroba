@@ -1,6 +1,8 @@
 package app.masroufy.ui.screens.imports
 
+import app.masroufy.core.AskKind
 import app.masroufy.core.Category
+import app.masroufy.core.SmsKind
 import app.masroufy.core.Currency
 import app.masroufy.core.Direction
 import app.masroufy.core.Halalas
@@ -57,6 +59,9 @@ data class WaitLineUi(
     /** OVERRIDES §91-1: «الحساب ده بتاعك؟» على آخر 4 أرقام دول (وإلا null) — [walletId] = محفظة الرسالة. */
     val askLast4: String? = null,
     val walletId: Id? = null,
+    /** r05: نوع العملية من القارئ (التحويل لشخص بيعرض خيارات الطرف) · [salaryAsk] = «ده راتبك؟» عليها (شريحة «راتب» و«أيوه ده راتبي»). */
+    val kind: SmsKind = SmsKind.OTHER,
+    val salaryAsk: Boolean = false,
 )
 
 /** رسالة ما اتفهمتش: سببها ونصها (لو موجود). [foreign] = بعملة أجنبية (§75-12 — السؤال عن المبلغ المحلي لسه ما اتبناش). */
@@ -89,7 +94,13 @@ data class BankSmsUi(
     val similar: List<WaitLineUi> = emptyList(),
     val failed: List<FailedUi> = emptyList(),
     val recorded: List<RecordedUi> = emptyList(),
+    /** r05 (4b): كل اللي في الصندوق مستني (مش الصفحة المعروضة بس — الجهاز بيعرض 200) · [pageSize] = رسايل الصفحة دي. */
+    val total: Int = 0,
+    val pageSize: Int = 0,
 ) {
+    /** العدد الحقيقي للمستني — مش أقل من المعروض. */
+    val trueWaiting: Int get() = maxOf(total, waitingCount)
+
     /** عدد الرسايل المستنية قرارك. */
     val waitingCount: Int get() = banks.sumOf { it.count } + confirm.size + similar.size + failed.size
 
@@ -123,11 +134,11 @@ fun bankSmsUi(overview: SmsOverview?, recordedToday: List<Transaction>, fresh: S
         FailedUi(item.id, item.sender, item.receivedAt.take(10), rejected.reason, bodies[item.id], foreign = rejected.foreign != null || rejected.foreignUnread != null)
     }
     val recorded = recordedToday.map { it.toRecorded(it.id in fresh) }
-    return BankSmsUi(status, banks, confirm, similar, failed, recorded)
+    return BankSmsUi(status, banks, confirm, similar, failed, recorded, total = inbox.count, pageSize = inbox.messages.size)
 }
 
 private fun SmsReviewLine.toUi(sender: String, reason: String?, conflict: Boolean = false) =
-    WaitLineUi(messageId, sender, merchant, date, amountMinor, direction, categoryId, reason, conflict, askLast4, walletId)
+    WaitLineUi(messageId, sender, merchant, date, amountMinor, direction, categoryId, reason, conflict, askLast4, walletId, kind, question == AskKind.IS_SALARY)
 
 private fun Transaction.toRecorded(sheen: Boolean) = RecordedUi(
     id = id,
