@@ -47,8 +47,20 @@ private fun inWindow(date: IsoDate, start: IsoDate, end: IsoDate) = date > start
 
 private fun overlaps(s: IncomeSource, start: IsoDate, end: IsoDate) = s.startedAt <= end && (s.endedAt == null || s.endedAt > start)
 
-/** [sources] بعملة البلد بس (الفلترة في حالة الاستخدام) · [sales] كل البيع الشخصي (بيتقص هنا على الفترة). */
-fun buildIncomeRope(sources: List<IncomeSource>, sales: List<RopeKnot>, today: IsoDate): IncomeRope? {
+/**
+ * دخل متسجّل كعملية (راتب، عمولة، شغل حر…) — سموك r05: راتب اتسجّل والحبل قال «لسه مفيش دخل» لأنه كان بيقرا مصادر الدخل بس.
+ * [kind] نوع الخيط (`JOB` للراتب وتوابعه · `CLIENT` للشغل الحر) · [label] اسم التاجر أو الملاحظة أو الكلمة الافتراضية.
+ */
+data class RopeIncome(val date: IsoDate, val kind: IncomeSourceKind, val label: String)
+
+/** آخر دخل من النوع ده من شهرين أو أقل ⇒ الخيط لسه شغال (راتب شهري ممكن يتأخر أيام). */
+const val ROPE_INCOME_ACTIVE_MONTHS = 2
+
+/**
+ * [sources] بعملة البلد بس (الفلترة في حالة الاستخدام) · [sales] كل البيع الشخصي (بيتقص هنا على الفترة) · [income] عمليات الدخل —
+ * نوع مالوش مصدر متسجّل بيبقى خيط من أول دخل في الفترة لآخره (أو لحد النهارده لو لسه شغال).
+ */
+fun buildIncomeRope(sources: List<IncomeSource>, sales: List<RopeKnot>, today: IsoDate, income: List<RopeIncome> = emptyList()): IncomeRope? {
     val start = ropeWindowStart(today)
     val inRange = sources.filter { overlaps(it, start, today) }
     val jobs = inRange.filter { it.kind == IncomeSourceKind.JOB }.sortedBy { it.startedAt }
@@ -68,6 +80,14 @@ fun buildIncomeRope(sources: List<IncomeSource>, sales: List<RopeKnot>, today: I
     inRange.filter { it.kind != IncomeSourceKind.JOB }.sortedBy { it.startedAt }.forEach { s ->
         val to = s.endedAt?.let { minOf(it, today) } ?: today
         strands += RopeStrand(s.kind, maxOf(s.startedAt, start), to, s.endedAt == null, s.name, s.startedAt, s.endedAt)
+    }
+    val covered = inRange.map { it.kind }.toSet()
+    income.filter { inWindow(it.date, start, today) && it.kind !in covered }.groupBy { it.kind }.forEach { (kind, list) ->
+        val sorted = list.sortedBy { it.date }
+        val first = sorted.first().date
+        val last = sorted.last().date
+        val active = last > shiftMonths(today, -ROPE_INCOME_ACTIVE_MONTHS)
+        strands += RopeStrand(kind, first, if (active) today else last, active, sorted.last().label, first, if (active) null else last)
     }
     if (strands.isEmpty()) return null
     val knots = sales.filter { inWindow(it.date, start, today) }.sortedBy { it.date }
