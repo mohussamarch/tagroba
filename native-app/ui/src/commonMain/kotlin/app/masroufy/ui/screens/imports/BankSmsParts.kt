@@ -90,17 +90,26 @@ fun SmsStatusBanner(status: SmsStatus?, onSettings: () -> Unit, onPaste: () -> U
     }
 }
 
+/** صفوف «سُجّلت تلقائيًا اليوم» في المرة (الباقي بـ«اعرض N كمان»). */
+private const val RECORDED_PAGE = 30
+
 /** «سُجّلت تلقائيًا اليوم»: صف لكل عملية (التصنيف بلونه · المقترح يتأكد · المتجر الجديد يتصنّف) + لمعة على اللي اتسجل دلوقتي. */
 @Composable
 fun RecordedToday(rows: List<RecordedUi>, categories: List<Category>, onConfirm: (RecordedUi) -> Unit, onCategorize: (RecordedUi) -> Unit) {
+    // سموك r05: بعد «أكّد الأشكال» على صندوق كبير القايمة كانت مئات الصفوف في عنصر واحد ⇒ القياس والرسم وقّفوا الشاشة 13 ثانية.
+    // بنرسم صفحة بصفحة (العدد فوق هو الكل)، و«اعرض N كمان» بتزوّد صفحة.
+    var shown by remember { mutableStateOf(RECORDED_PAGE) }
+    val visible = rows.take(shown)
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         CountTitle(t(UiKey.BANK_SMS_AUTO_TITLE), opsCount(rows.size))
         FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)) {
-            rows.forEachIndexed { i, row ->
+            visible.forEachIndexed { i, row ->
                 if (i > 0) Divider()
                 RecordedRow(row, categories.firstOrNull { it.id == row.categoryId }, onConfirm, onCategorize)
             }
         }
+        val left = rows.size - visible.size
+        if (left > 0) QuietButton(t(UiKey.SMS_RECORDED_MORE, app.masroufy.core.sentenceNumber(minOf(left, RECORDED_PAGE))), { shown += RECORDED_PAGE }, Modifier.fillMaxWidth())
     }
 }
 
