@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.provider.Telephony
 import app.masroufy.core.TextKey
 import app.masroufy.core.uiText
+import app.masroufy.port.QueuedSms
 import app.masroufy.port.SmsInboxPort
 import app.masroufy.port.SmsInboxState
 import app.masroufy.port.SmsReadMarks
@@ -28,9 +29,15 @@ class AndroidSmsInbox(private val context: Context, private val uid: String) : S
         context.checkSelfPermission(it) == PackageManager.PERMISSION_GRANTED
     }
 
+    /**
+     * r051: قاعدة واحدة مفتوحة طول ما البرنامج شغال — كانت كل قراية بتفتح `SQLiteOpenHelper` جديد وتقفله (عشرات المرات في كل صفحة من
+     * التشغيلة). الاستقبال في الخلفية (`BankSmsReceiver`) بيفتح بتاعه زي ما هو، والكتابة بالدور بـ[SmsInboxStore.LOCK].
+     */
+    private val store: SmsInboxStore by lazy { SmsInboxStore.shared(context) }
+
     private suspend fun <T> withStore(block: (SmsInboxStore) -> T): T = withContext(Dispatchers.IO) {
         try {
-            synchronized(SmsInboxStore.LOCK) { SmsInboxStore(context).use(block) }
+            synchronized(SmsInboxStore.LOCK) { block(store) }
         } catch (e: SecurityException) {
             Problems.report(ProblemCode.SMS_PERMISSION_LOST, e)
             throw SmsPermissionError(uiText(TextKey.SMS_INBOX_PERMISSION_REVOKED))
@@ -109,6 +116,12 @@ class AndroidSmsInbox(private val context: Context, private val uid: String) : S
 
     override suspend fun page(skip: Int) {
         this.skip = maxOf(0, skip)
+    }
+
+    /** r051 (`SmsInboxPort.window`): صفحة صريحة بالمؤشر — من غير صفحة الشاشة ([skip]) ولا قراية صندوق الجوال (`catchUp`). */
+    override suspend fun window(before: QueuedSms?): SmsInboxState = withStore { store ->
+        val key = before?.let { (runCatching { Instant.parse(it.receivedAt).toEpochMilli() }.getOrNull() ?: Long.MAX_VALUE) to it.id }
+        store.snapshot(uid, granted(), false, before = key)
     }
 
     override suspend fun sync(): SmsInboxState = withStore { store ->

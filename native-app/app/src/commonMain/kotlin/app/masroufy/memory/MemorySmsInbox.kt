@@ -34,10 +34,29 @@ class MemorySmsInbox(
 
     private fun millis(iso: String) = isoInstantMillis(iso) ?: Long.MIN_VALUE
 
+    private val order = compareBy<QueuedSms>({ millis(it.receivedAt) }, { it.id })
+
     private fun state(): SmsInboxState {
         // الجهاز بيعرض أحدث رسايل الصندوق (من الأقدم للأحدث) — من غير حد: الصندوق زي ما هو بترتيب دخوله
         val shown = if (skip == 0 && queue.size <= window) queue.toList()
-        else queue.sortedWith(compareBy({ millis(it.receivedAt) }, { it.id })).dropLast(skip).takeLast(window)
+        else queue.sortedWith(order).dropLast(skip).takeLast(window)
+        return stateOf(shown)
+    }
+
+    /** للاختبار (r051): عدد الصفحات الصريحة اللي اتقرت ([window]). */
+    var windows = 0
+        private set
+
+    /** r051 (`SmsInboxPort.window`): صفحة صريحة — الأقدم من [before] بس (null = أحدث صفحة)، من غير صفحة الشاشة ولا سحب من الجوال. */
+    override suspend fun window(before: QueuedSms?): SmsInboxState {
+        windows++
+        if (before == null && queue.size <= window) return stateOf(queue.toList())
+        val sorted = queue.sortedWith(order)
+        val older = if (before == null) sorted else sorted.filter { order.compare(it, before) < 0 }
+        return stateOf(older.takeLast(window))
+    }
+
+    private fun stateOf(shown: List<QueuedSms>): SmsInboxState {
         return SmsInboxState(
             enabled = enabled, permission = enabled, more = more, count = queue.size, senders = senders.toList(), messages = shown,
             oldestQueuedAt = queue.minByOrNull { millis(it.receivedAt) }?.receivedAt,
@@ -80,7 +99,8 @@ class MemorySmsInbox(
     }
 
     override suspend fun acknowledge(ids: List<String>): SmsInboxState {
-        queue = queue.filter { it.id !in ids }
+        val gone = ids.toHashSet()
+        queue = queue.filter { it.id !in gone }
         return state()
     }
 

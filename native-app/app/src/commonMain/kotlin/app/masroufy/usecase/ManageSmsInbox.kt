@@ -51,6 +51,12 @@ class ManageSmsInbox(
     /** r041c: نفس [refresh] بس بيفهم الرسايل [ids] بس (null = كلها) — التسجيل لوحده بيقرا الجديد من غير ما يعيد فهم الصفحة كلها. */
     suspend fun refresh(ids: Set<String>?): InboxView = prepare(port.sync(), ids)
 
+    /**
+     * r051: صفحة اتقرت خلاص (`SmsInboxPort.window`) بقارئ البلد دي — من غير قراية تانية للصندوق. التشغيلة بتقرا الصفحة مرة وبتفهمها مرة لكل
+     * بلد، وكل محفظة بتتعاين منها (كانت كل محفظة بتقرا الصندوق وتفهم الصفحة من الأول).
+     */
+    internal fun view(state: SmsInboxState, ids: Set<String>?): InboxView = prepare(state, ids)
+
     suspend fun enable(senders: List<String>): InboxView {
         val clean = senders.map(::jsTrim).filter { it.isNotEmpty() }.distinct()
         if (clean.isEmpty() || clean.size > 10 || clean.any { it.length > 50 }) {

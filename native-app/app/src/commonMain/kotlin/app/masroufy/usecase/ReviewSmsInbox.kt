@@ -108,8 +108,15 @@ class ReviewSmsInbox internal constructor(private val deps: ReviewSmsInboxDeps) 
     internal suspend fun loadFor(target: SmsReviewTarget, ids: Set<String>? = null, only: (InboxItem) -> Boolean): SmsReview =
         build(deps.inbox.refresh(ids), target, only, route = false)
 
+    /** r051: نفس [loadFor] على صفحة اتقرت واتفهمت خلاص ([view]) — من غير قراية ولا فهم تاني. */
+    internal suspend fun loadFor(target: SmsReviewTarget, view: InboxView, only: (InboxItem) -> Boolean): SmsReview =
+        build(view, target, only, route = false)
+
     /** الصندوق بقارئ البلد دي (من غير بناء معاينة). [ids] (r041c) = الرسايل اللي بتتفهم بس (null = كلها). */
     internal suspend fun inboxView(ids: Set<String>? = null): InboxView = deps.inbox.refresh(ids)
+
+    /** r051: صفحة صريحة اتقرت خلاص (`SmsInboxPort.window`) بقارئ البلد دي. */
+    internal fun inboxView(state: app.masroufy.port.SmsInboxState, ids: Set<String>?): InboxView = deps.inbox.view(state, ids)
 
     suspend fun enable(senders: List<String>, target: SmsReviewTarget): SmsReview = build(deps.inbox.enable(senders), target)
 
@@ -146,6 +153,8 @@ class ReviewSmsInbox internal constructor(private val deps: ReviewSmsInboxDeps) 
     internal suspend fun recordLocked(
         categories: Map<Int, Id>, includeSimilar: List<Int>, clearOnly: Boolean = false, salaryAnswer: Boolean? = null,
         mergeChoices: Map<Int, Id> = emptyMap(), ackLater: MutableList<String>? = null,
+        /** r051: الجلسة اتبنت دلوقتي جوه نفس مسكة القفل (التسجيل لوحده) ⇒ الحفظ من غير معاينة تانية (`ImportStatement.commit`). */
+        verified: Boolean = false,
     ): SmsRecordOutcome {
         val current = session ?: return SmsRecordOutcome(0, 0, emptyList())
         val allowed = includeSimilar.toSet()
@@ -161,7 +170,9 @@ class ReviewSmsInbox internal constructor(private val deps: ReviewSmsInboxDeps) 
         var recorded = 0
         var duplicates = 0
         val batches = mutableListOf<Id>()
-        for (part in current.parts) {
+        for ((index, part) in current.parts.withIndex()) {
+            // r051: أول جزء بس اتعاين من غير كتابة بعدها — الأجزاء اللي بعده اتعاينت قبل حفظ اللي قبلها ⇒ بتتأكد زي الأول
+            val fresh = verified && index == 0
             val selection = part.preview.lines.filter(::wanted).map { it.row.lineNumber }
                 .filter { !clearOnly || current.shapeByLine[it]?.clear == true }
                 .filter { salaryAnswer != null || !asked(it) }
@@ -172,7 +183,7 @@ class ReviewSmsInbox internal constructor(private val deps: ReviewSmsInboxDeps) 
             var partRecorded = 0
             if (handled.isNotEmpty()) {
                 // عقد C0: التسجيل التلقائي مش تسجيل المالك (الآثار اللي بتفرّق بينهم بتبص على `byOwner`)
-                val batch = deps.importer.commit(part.request.copy(byOwner = !clearOnly), part.preview, selection, categories, merges)
+                val batch = deps.importer.commit(part.request.copy(byOwner = !clearOnly), part.preview, selection, categories, merges, verified = fresh)
                 if (part.preview.previousBatch?.id != batch.id) {
                     partRecorded = handled.size
                     batches += batch.id

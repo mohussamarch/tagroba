@@ -139,13 +139,13 @@ interface SmsDeps {
     suspend fun historyDecline(senders: List<String>) = Unit
 
     /** «أيوه» من أول يوم [from] (null = من أقدم رسالة). */
-    suspend fun historyStart(senders: List<String>, from: IsoDate?): SmsHistoryReport? = null
+    suspend fun historyStart(senders: List<String>, from: IsoDate?, progress: (app.masroufy.usecase.SmsRunProgress) -> Unit = {}): SmsHistoryReport? = null
 
     /** قايمة «أكّد رسالة واحدة من كل شكل» دلوقتي. */
     suspend fun historyReport(): SmsHistoryReport? = null
 
-    /** «أكّد الأشكال». */
-    suspend fun confirmShapes(messageIds: List<String>): SmsHistoryReport? = null
+    /** «أكّد الأشكال». r051: [progress] بعد كل صفحة من التسجيل (من خيط الشغل — الشاشة بتحطه في حالتها بس). */
+    suspend fun confirmShapes(messageIds: List<String>, progress: (app.masroufy.usecase.SmsRunProgress) -> Unit = {}): SmsHistoryReport? = null
 
     // ── r05 — قايمة «بانتظار تأكيدك» و«ادفع بعدين» (كله بره خيط الشاشة — `SmsScreenExtras`). الافتراضي: مفيش ──
 

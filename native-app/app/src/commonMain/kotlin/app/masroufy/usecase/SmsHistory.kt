@@ -15,6 +15,8 @@ import app.masroufy.port.smsSenderKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.TimeSource
 
 /**
  * **§83-1 (المالك 2026-10-10): «لو اول مرة اضيفه يسألني اقرأ اللي فات ؟ ولو جاوبت ايوة المفروض كل اللي فات يتحمل في البرنامج»**.
@@ -62,7 +64,8 @@ data class SmsShapeGroup(
 
 /**
  * [recorded] · [duplicates] = اللي اتسجل (أو اتدمج في عملية كشف) واللي اتشال مكرر في النداء ده. [shapes] = قايمة التأكيد (شكل واحد في السطر).
- * [waiting] = كل اللي مستني تأكيد المالك في الجزء المعروض من الصندوق · [queued] = كل اللي في الصندوق · [unread] (مراجعة 0.3) = اللي في
+ * [waiting] = كل اللي مستني تأكيد المالك **في الصندوق كله** (r051 — كان الجزء المعروض بس فكان دايمًا «200») · [queued] = كل اللي في الصندوق ·
+ * [shapes] «+N زيها» على الصندوق كله برضه · [unread] (مراجعة 0.3) = اللي في
  * الصندوق ورا الجزء المعروض (المالك لسه ما شافهاش — بتظهر لما يخلّص اللي قدامه).
  */
 data class SmsHistoryReport(
@@ -118,17 +121,28 @@ class SmsHistory(private val deps: SmsHistoryDeps) {
      * «أيوه، اقراها» من أول يوم [from] (null = من أقدم رسالة على الجوال): المؤشر بيرجع لهناك والبلد بتتحفظ «اتسألت» **قبل** القراية (لو الشاشة
      * اتقفلت في النص، الخلفية بتكمّل من المؤشر)، وبعدين الصندوق بيتملى كله وكل اللي شكله اتعلّم بيتسجل.
      */
-    suspend fun start(spaceId: String, senders: List<String>, from: IsoDate?): SmsHistoryReport = withContext(deps.work) {
+    suspend fun start(
+        spaceId: String, senders: List<String>, from: IsoDate?, progress: ((SmsRunProgress) -> Unit)? = null, memo: SmsRunMemo? = null,
+    ): SmsHistoryReport = withContext(deps.work) {
         // §88: أول اليوم بتوقيت البلد — مصر من 00:00 القاهرة (22:00 أو 21:00 جرينتش حسب الصيفي)، مش 21:00 ثابتة
         val zone = deps.sms.lanes.firstOrNull { it.spaceId == spaceId }?.timeZone ?: SAUDI_TIME_ZONE
         val point = if (from != null) dayStartIn(zone, from) else inbox.oldestMessageAt(senders)
         if (point != null) inbox.readFrom(point)
         remember(spaceId, senders, point)
-        drain(0)
+        drain(0, progress, memo)
     }
 
-    /** «أكّد الأشكال»: الرسايل دي بتتسجل وأشكالها بتتعلّم (§77-A) ⇒ كل اللي بنفس الأشكال في الصندوق بيتسجل لوحده. */
-    suspend fun confirmShapes(messageIds: List<String>): SmsHistoryReport = withContext(deps.work) { drain(auto.confirm(messageIds)) }
+    /**
+     * «أكّد الأشكال»: الرسايل دي بتتسجل وأشكالها بتتعلّم (§77-A) ⇒ كل اللي بنفس الأشكال في الصندوق بيتسجل لوحده.
+     * r051: [progress] بعد كل صفحة (العدّ بيتحرك والشغل شغال) · [memo] = فتح الشاشة بعدها بيقرا الجديد بس (مش لفة كاملة تانية).
+     */
+    suspend fun confirmShapes(
+        messageIds: List<String>, progress: ((SmsRunProgress) -> Unit)? = null, memo: SmsRunMemo? = null,
+    ): SmsHistoryReport = withContext(deps.work) {
+        val confirmed = auto.confirm(messageIds)
+        progress?.invoke(SmsRunProgress(confirmed, 0, inbox.window(null).count))
+        drain(confirmed, progress, memo)
+    }
 
     /** الصورة دلوقتي — من غير كتابة. */
     suspend fun report(): SmsHistoryReport = withContext(deps.work) { reportOf(0, 0) }
@@ -140,31 +154,31 @@ class SmsHistory(private val deps: SmsHistoryDeps) {
         points.save(spaceId, earliest, doc?.asked.orEmpty() + senders.map(::smsSenderKey))
     }
 
-    /** الصندوق بيتملى من الجوال كله (500 في المرة على الجهاز) وبعدين التسجيل لوحده لحد ما ما يبقاش فيه حاجة تتسجل. */
-    private suspend fun drain(already: Int): SmsHistoryReport {
-        var recorded = already
-        var duplicates = 0
-        for (round in 0 until MAX_ROUNDS) {
-            for (pull in 0 until MAX_PULLS) if (!inbox.sync().more) break
-            val run = auto.run()
-            if (run.status != AutoRecordStatus.RAN) break
-            recorded += run.recorded
-            duplicates += run.duplicates
-            if (run.recorded == 0 && run.duplicates == 0) break
-        }
-        return reportOf(recorded, duplicates)
+    /**
+     * الصندوق بيتملى من الجوال كله (500 في المرة على الجهاز) وبعدين **لفة واحدة** بالمؤشر على الصندوق كله بتسجّل كل اللي شكله اتعلّم.
+     * r051: كانت لفات لحد ما ما يتسجلش حاجة (لحد 500 لفة × صفحات بتتعاد) ⇒ أكتر من 5 دقايق على 3,600 رسالة. اللي ما لحقش قبل [BUDGET]
+     * (أو وصل في النص) بيتسجل في التشغيلة الجاية (الخلفية · فتح الشاشة).
+     */
+    private suspend fun drain(already: Int, progress: ((SmsRunProgress) -> Unit)?, memo: SmsRunMemo?): SmsHistoryReport {
+        for (pull in 0 until MAX_PULLS) if (!inbox.sync().more) break
+        val deadline = TimeSource.Monotonic.markNow() + BUDGET
+        val run = auto.record({ p -> progress?.invoke(p.copy(recorded = already + p.recorded)) }, memo, deadline)
+        return reportOf(already + (run?.recorded ?: 0), run?.duplicates ?: 0)
     }
 
     private suspend fun reportOf(recorded: Int, duplicates: Int): SmsHistoryReport {
-        val waiting = auto.waiting()
-        val newShape = waiting.newShape.toSet()
+        val found = auto.waitingWithAsks()
+        val box = inbox.sync()
+        val unread = (box.count - box.messages.size).coerceAtLeast(0)
+        val (state, asks) = found ?: return SmsHistoryReport(recorded, duplicates, emptyList(), 0, box.count, unread)
+        val newShape = state.waiting.newShape.toSet()
         // «ده راتبك؟» محتاج رده — التأكيد من غيره ما بيسجلش (§75-2) ⇒ مش في قايمة الأشكال
-        val salary = if (newShape.isEmpty()) emptySet() else auto.waitingAsks().filter { it.kind == AskKind.IS_SALARY }.mapNotNull { it.messageId }.toSet()
+        val salary = asks.filter { it.kind == AskKind.IS_SALARY }.mapNotNullTo(HashSet()) { it.messageId }
         val groups = LinkedHashMap<Triple<String, String, String>, MutableList<Pair<InboxItem, app.masroufy.core.SmsRow>>>()
-        val placed = mutableSetOf<String>()
+        val placed = HashSet<String>()
         for (lane in deps.sms.lanes) {
             if (newShape.isEmpty()) break
-            for (item in lane.review.inboxView().items) {
+            for (item in (state.views[lane.spaceId] ?: lane.review.inboxView(state.box, null)).items) {
                 if (item.id !in newShape || item.id in salary || item.id in placed) continue
                 val row = (item.parsed as? SmsParseResult.Ok)?.row ?: continue
                 val key = row.learnKey ?: continue
@@ -172,18 +186,45 @@ class SmsHistory(private val deps: SmsHistoryDeps) {
                 groups.getOrPut(Triple(lane.spaceId, smsSenderKey(item.sender), key)) { mutableListOf() } += item to row
             }
         }
+        val behind = if (groups.isEmpty()) emptyMap() else sameShapeBehind(state, groups.keys)
         val shapes = groups.map { (key, list) ->
             val (item, row) = list.maxWith(compareBy({ millisOf(it.first.receivedAt) }, { it.first.id }))
-            SmsShapeGroup(key.first, item.sender, item.id, row.date, row.amountMinor, row.direction, row.merchantName, list.size)
+            SmsShapeGroup(key.first, item.sender, item.id, row.date, row.amountMinor, row.direction, row.merchantName, list.size + (behind[key] ?: 0))
         }
-        val box = inbox.sync()
-        return SmsHistoryReport(recorded, duplicates, shapes, waiting.messageIds.size, box.count, (box.count - box.messages.size).coerceAtLeast(0))
+        return SmsHistoryReport(recorded, duplicates, shapes, state.waiting.total, box.count, unread)
+    }
+
+    /**
+     * r051: «+N زيها» على الصندوق كله مش الـ200 بتوع الصفحة — الرسايل اللي **ورا** الصفحة بنفس (البلد · المرسل · الشكل) بالفهم بس
+     * (من غير معاينة)، صفحة صفحة بالمؤشر. ده نفس معنى «زيها» (نفس الشكل)؛ المكرر منها بيتشال بعد التأكيد بدل ما يتسجل.
+     */
+    private suspend fun sameShapeBehind(state: WaitingState, keys: Set<Triple<String, String, String>>): Map<Triple<String, String, String>, Int> {
+        val out = HashMap<Triple<String, String, String>, Int>()
+        var box = state.box
+        for (pass in 0 until MAX_PULLS) {
+            if (box.messages.size >= box.count) break
+            box = inbox.window(oldestOf(box) ?: break)
+            if (box.messages.isEmpty()) break
+            val placed = HashSet<String>()
+            for (lane in deps.sms.lanes) {
+                for (item in lane.review.inboxView(box, null).items) {
+                    if (item.id in placed) continue
+                    val row = (item.parsed as? SmsParseResult.Ok)?.row ?: continue
+                    placed += item.id
+                    val key = Triple(lane.spaceId, smsSenderKey(item.sender), row.learnKey ?: continue)
+                    if (key in keys) out[key] = (out[key] ?: 0) + 1
+                }
+            }
+        }
+        return out
     }
 
     private companion object {
         /** حد أمان: 1000 × 500 رسالة. */
         const val MAX_PULLS = 1_000
-        const val MAX_ROUNDS = 500
+
+        /** r051: حد وقت لفة التأكيد — الباقي في التشغيلة الجاية. */
+        val BUDGET = 3.minutes
     }
 }
 

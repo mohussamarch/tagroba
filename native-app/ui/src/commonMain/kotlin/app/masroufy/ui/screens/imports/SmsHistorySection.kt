@@ -40,6 +40,7 @@ import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
 import app.masroufy.usecase.SmsHistoryQuestion
 import app.masroufy.usecase.SmsHistoryReport
+import app.masroufy.usecase.SmsRunProgress
 import app.masroufy.usecase.shapeMessageIds
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
@@ -62,17 +63,21 @@ internal fun SmsHistorySection(sms: SmsDeps, currency: Currency, today: IsoDate,
     var report by remember(sms) { mutableStateOf<SmsHistoryReport?>(null) }
     var readFrom by remember(sms) { mutableStateOf<IsoDate?>(null) }
     var busy by remember(sms) { mutableStateOf(false) }
+    // r051: تقدم «أكّد الأشكال» صفحة صفحة (اللي اتسجل · المكرر · اللي لسه في الصندوق) — العدّ بيتحرك والشغل شغال
+    var live by remember(sms) { mutableStateOf<SmsRunProgress?>(null) }
 
     LaunchedEffect(sms) {
         question = runCatching { sms.historyQuestion() }.getOrNull()
         if (question == null) report = runCatching { sms.historyReport() }.getOrNull()
     }
 
-    fun act(block: suspend () -> SmsHistoryReport?) {
+    fun act(block: suspend ((SmsRunProgress) -> Unit) -> SmsHistoryReport?) {
         scope.launch {
             busy = true
+            live = null
             try {
-                report = block()
+                // التقدم بييجي من خيط الشغل ⇒ بيتحط في الحالة على خيط الشاشة (مرة لكل صفحة، مش لكل عملية)
+                report = block { p -> scope.launch { if (busy) live = p } }
                 question = null
                 onChanged()
             } catch (e: CancellationException) {
@@ -81,6 +86,7 @@ internal fun SmsHistorySection(sms: SmsDeps, currency: Currency, today: IsoDate,
                 toaster.show(e.message ?: t(UiKey.IMPORTS_LOAD_FAILED), dark = true)
             }
             busy = false
+            live = null
         }
     }
 
@@ -89,12 +95,12 @@ internal fun SmsHistorySection(sms: SmsDeps, currency: Currency, today: IsoDate,
         HistoryQuestionPanel(
             q, today, busy,
             onNo = { act { sms.historyDecline(q.senders); null } },
-            onStart = { day -> readFrom = day ?: q.oldestDay; act { sms.historyStart(q.senders, day) } },
+            onStart = { day -> readFrom = day ?: q.oldestDay; act { p -> sms.historyStart(q.senders, day, p) } },
         )
         return
     }
     val r = report ?: return
-    HistoryReportPanel(r, readFrom, currency, busy) { act { sms.confirmShapes(r.shapeMessageIds) } }
+    HistoryReportPanel(r, readFrom, currency, busy, live) { act { p -> sms.confirmShapes(r.shapeMessageIds, p) } }
 }
 
 /**
@@ -149,11 +155,15 @@ internal fun HistoryQuestionPanel(q: SmsHistoryQuestion, today: IsoDate, busy: B
 
 /** بعد القراية: العدّ و«قايمة واحدة» فيها رسالة من كل شكل جديد و«أكّد الأشكال» (§77-A). [started] = يوم البداية لو المالك لسه قاري. */
 @Composable
-private fun HistoryReportPanel(r: SmsHistoryReport, started: IsoDate?, currency: Currency, busy: Boolean, onConfirm: () -> Unit) {
-    if (started == null && r.shapes.isEmpty()) return
+private fun HistoryReportPanel(r: SmsHistoryReport, started: IsoDate?, currency: Currency, busy: Boolean, live: SmsRunProgress?, onConfirm: () -> Unit) {
+    if (started == null && r.shapes.isEmpty() && live == null) return
     TintedPanel(PanelTone.MINT) {
-        if (started != null) {
-            PanelTitle(t(UiKey.SMS_HISTORY_DONE_TITLE, dayMonthYear(started)), PanelTone.MINT)
+        if (started != null) PanelTitle(t(UiKey.SMS_HISTORY_DONE_TITLE, dayMonthYear(started)), PanelTone.MINT)
+        // r051: والشغل شغال العدّ من التقدم (اللي لسه في الصندوق بيقل) — وبعده «بانتظارك» = العدد الحقيقي في الصندوق كله
+        if (live != null) {
+            BasicText(t(UiKey.SMS_HISTORY_COUNTS, sentenceNumber(live.recorded), sentenceNumber(live.duplicates), sentenceNumber(live.queued)), style = Type.of(13))
+            BasicText(t(UiKey.SMS_HISTORY_READING), style = Type.caption().copy(color = Ink.muted))
+        } else if (started != null) {
             BasicText(t(UiKey.SMS_HISTORY_COUNTS, sentenceNumber(r.recorded), sentenceNumber(r.duplicates), sentenceNumber(r.waiting)), style = Type.of(13))
         }
         if (r.shapes.isNotEmpty()) {

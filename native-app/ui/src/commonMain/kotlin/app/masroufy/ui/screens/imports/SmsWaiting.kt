@@ -2,6 +2,8 @@ package app.masroufy.ui.screens.imports
 
 import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -68,11 +70,10 @@ class WaitingActions(
  * «بانتظار تأكيدك» (`SmsWaiting`): بنك من غير محفظة · رسايل مفهومة مستنية تأكيدك (بسببها) · شبه عملية موجودة · رسالة ما اتفهمتش.
  * [chosen] = التصنيف اللي اختاره المالك لرسالة · [included] = الشبيه اللي هيتسجل مع «سجّل الكل» · [handError] = خطأ المبلغ المكتوب.
  */
-@Composable
-fun SmsWaitingSection(
+fun LazyListScope.smsWaitingItems(
     ui: BankSmsUi,
     currency: Currency,
-    categories: List<Category>,
+    categories: Map<String, Category>,
     chosen: Map<String, String>,
     included: Set<String>,
     busy: Boolean,
@@ -81,30 +82,52 @@ fun SmsWaitingSection(
     skip: Int = 0,
     hidden: Set<String> = emptySet(),
 ) {
-    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        // r05 (4b): العدد الحقيقي في الصندوق (مش أول 200 بس) — واللي اتختار ومستني «تراجع» مش محسوب (4a)
-        val n = maxOf(0, ui.trueWaiting - hidden.size)
-        val lines = ui.confirm.filter { it.messageId !in hidden }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            BasicText(t(UiKey.SMS_WAITING_TITLE), style = Type.of(15, FontWeight.Bold))
-            CountBadge(sentenceNumber(n), waiting = n > 0)
+    // r05 (4b): العدد الحقيقي في الصندوق (مش أول 200 بس) — واللي اتختار ومستني «تراجع» مش محسوب (4a)
+    val n = maxOf(0, ui.trueWaiting - hidden.size)
+    val lines = ui.confirm.filter { it.messageId !in hidden }
+    item(key = "waiting-head") {
+        Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                BasicText(t(UiKey.SMS_WAITING_TITLE), style = Type.of(15, FontWeight.Bold))
+                CountBadge(sentenceNumber(n), waiting = n > 0)
+            }
+            if (n == 0) TintedPanel(PanelTone.MINT, radius = 18.dp) { BasicText(t(UiKey.SMS_WAITING_ALL_DONE), style = Type.of(13, FontWeight.Bold).copy(color = Ink.primary)) }
         }
-        if (n == 0) TintedPanel(PanelTone.MINT, radius = 18.dp) { BasicText(t(UiKey.SMS_WAITING_ALL_DONE), style = Type.of(13, FontWeight.Bold).copy(color = Ink.primary)) }
-        for (bank in ui.banks) BankCard(bank, currency) { actions.pickWallet(bank) }
-        if (lines.isNotEmpty()) ConfirmCard(lines, currency, categories, chosen, actions)
-        for (line in ui.similar) SimilarCard(line, currency, line.messageId in included, actions)
-        for (f in ui.failed) FailedCard(f, currency, handError?.takeIf { it.first == f.messageId }?.second, actions)
-        val toRecord = lines.size + ui.similar.count { it.messageId in included }
-        if (toRecord > 0) {
-            PrimaryButton(t(UiKey.SMS_WAITING_RECORD, opsCountObj(toRecord)), actions.recordAll, Modifier.fillMaxWidth(), loading = busy)
-        }
-        if (ui.total > ui.pageSize || skip > 0) {
+    }
+    val bankKeys = uniqueKeys(ui.banks.map { it.sender }, "waiting-bank-")
+    itemsIndexed(ui.banks, key = { i, _ -> bankKeys[i] }) { _, bank -> BankCard(bank, currency) { actions.pickWallet(bank) } }
+    if (lines.isNotEmpty()) item(key = "waiting-confirm-title") {
+        BasicText(t(UiKey.SMS_WAITING_CONFIRM_TITLE), style = Type.of(13, FontWeight.Bold).copy(color = Ink.focus))
+    }
+    // r051: سطر لكل رسالة (عنصر كسول بمفتاح الرسالة) — كانت الـ200 سطر كلهم في عنصر واحد ⇒ إطار واحد 13 ثانية بعد ما الصفحة تتحمّل
+    val lineKeys = uniqueKeys(lines.map { it.messageId }, "waiting-line-")
+    itemsIndexed(lines, key = { i, _ -> lineKeys[i] }) { _, line -> FloatingCard(Modifier.fillMaxWidth()) { ConfirmRow(line, currency, categories, chosen, actions) } }
+    val similarKeys = uniqueKeys(ui.similar.map { it.messageId }, "waiting-similar-")
+    itemsIndexed(ui.similar, key = { i, _ -> similarKeys[i] }) { _, line -> SimilarCard(line, currency, line.messageId in included, actions) }
+    val failedKeys = uniqueKeys(ui.failed.map { it.messageId }, "waiting-failed-")
+    itemsIndexed(ui.failed, key = { i, _ -> failedKeys[i] }) { _, f -> FailedCard(f, currency, handError?.takeIf { it.first == f.messageId }?.second, actions) }
+    val toRecord = lines.size + ui.similar.count { it.messageId in included }
+    if (toRecord > 0) item(key = "waiting-record") {
+        PrimaryButton(t(UiKey.SMS_WAITING_RECORD, opsCountObj(toRecord)), actions.recordAll, Modifier.fillMaxWidth(), loading = busy)
+    }
+    if (ui.total > ui.pageSize || skip > 0) item(key = "waiting-pages") {
+        Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             BasicText(t(UiKey.SMS_R05_WAIT_SHOWN, sentenceNumber(ui.pageSize), sentenceNumber(ui.total)), style = Type.caption().copy(color = Ink.muted))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (skip > 0) QuietButton(t(UiKey.SMS_R05_WAIT_NEWEST), actions.newest, Modifier.weight(1f))
                 if (skip + ui.pageSize < ui.total) TonalButton(t(UiKey.SMS_R05_WAIT_OLDER), actions.older, Modifier.weight(1f))
             }
         }
+    }
+}
+
+/** مفتاح لكل سطر بمعرّف رسالته — رجلين تحويل بين محفظتين (نفس الرسالة مرتين) بياخدوا مفتاح تاني بالترتيب (المفتاح المكرر بيوقّع القايمة). */
+private fun uniqueKeys(ids: List<String>, prefix: String): List<String> {
+    val seen = HashMap<String, Int>()
+    return ids.map { id ->
+        val n = (seen[id] ?: 0) + 1
+        seen[id] = n
+        if (n == 1) prefix + id else "$prefix$id#$n"
     }
 }
 
@@ -130,30 +153,24 @@ private fun BankCard(bank: BankWaitingUi, currency: Currency, onPick: () -> Unit
 }
 
 @Composable
-private fun ConfirmCard(lines: List<WaitLineUi>, currency: Currency, categories: List<Category>, chosen: Map<String, String>, actions: WaitingActions) {
-    FloatingCard(Modifier.fillMaxWidth()) {
-        BasicText(t(UiKey.SMS_WAITING_CONFIRM_TITLE), style = Type.of(13, FontWeight.Bold).copy(color = Ink.focus))
-        lines.forEachIndexed { i, line ->
-            if (i > 0) Divider()
-            Column(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                    // r05 (3a): اسم المرسل («AlRajhiBank») عمره ما يبقى عنوان العملية
-                    BasicText(line.merchant.ifBlank { t(UiKey.SMS_R05_LINE_NO_NAME) }, Modifier.weight(1f), style = Type.bodyBold(), maxLines = 1)
-                    AmountText(line.amountMinor, currency, tone = toneOf(line.direction), showCurrency = false)
-                }
-                BasicText(dayMonth(line.date), style = Type.caption().copy(color = Ink.muted))
-                if (line.reason != null) BasicText(line.reason, style = Type.caption().copy(color = Ink.focus))
-                val asked = line.askLast4
-                if (asked != null && line.walletId != null) {
-                    BasicText(t(UiKey.SMS_ACCOUNT_ASK, asked), style = Type.of(13, FontWeight.Bold))
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        TonalButton(t(UiKey.SMS_ACCOUNT_YES), { actions.answerAccount(line, true) }, Modifier.weight(1f), height = 40.dp)
-                        TonalButton(t(UiKey.SMS_ACCOUNT_NO), { actions.answerAccount(line, false) }, Modifier.weight(1f), height = 40.dp, muted = true)
-                    }
-                }
-                LineChoices(line, categories, chosen, actions)
+private fun ConfirmRow(line: WaitLineUi, currency: Currency, categories: Map<String, Category>, chosen: Map<String, String>, actions: WaitingActions) {
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            // r05 (3a): اسم المرسل («AlRajhiBank») عمره ما يبقى عنوان العملية
+            BasicText(line.merchant.ifBlank { t(UiKey.SMS_R05_LINE_NO_NAME) }, Modifier.weight(1f), style = Type.bodyBold(), maxLines = 1)
+            AmountText(line.amountMinor, currency, tone = toneOf(line.direction), showCurrency = false)
+        }
+        BasicText(dayMonth(line.date), style = Type.caption().copy(color = Ink.muted))
+        if (line.reason != null) BasicText(line.reason, style = Type.caption().copy(color = Ink.focus))
+        val asked = line.askLast4
+        if (asked != null && line.walletId != null) {
+            BasicText(t(UiKey.SMS_ACCOUNT_ASK, asked), style = Type.of(13, FontWeight.Bold))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                TonalButton(t(UiKey.SMS_ACCOUNT_YES), { actions.answerAccount(line, true) }, Modifier.weight(1f), height = 40.dp)
+                TonalButton(t(UiKey.SMS_ACCOUNT_NO), { actions.answerAccount(line, false) }, Modifier.weight(1f), height = 40.dp, muted = true)
             }
         }
+        LineChoices(line, categories, chosen, actions)
     }
 }
 
@@ -162,7 +179,7 @@ private fun ConfirmCard(lines: List<WaitLineUi>, currency: Currency, categories:
  * غير كده ⇒ شريحة التصنيف (اختيارها بيسجّل الرسالة — 4a) · و«أكّد الشكل ده» (3c) بيسجّلها وكل رسايل نفس الشكل.
  */
 @Composable
-private fun LineChoices(line: WaitLineUi, categories: List<Category>, chosen: Map<String, String>, actions: WaitingActions) {
+private fun LineChoices(line: WaitLineUi, categories: Map<String, Category>, chosen: Map<String, String>, actions: WaitingActions) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
         when {
             line.salaryAsk -> {
@@ -173,7 +190,7 @@ private fun LineChoices(line: WaitLineUi, categories: List<Category>, chosen: Ma
                 TonalButton(t(UiKey.SMS_R05_PARTY_RECORD), { actions.recordParty(line) }, Modifier.weight(1f), height = 36.dp)
             else -> {
                 val catId = chosen[line.messageId] ?: line.categoryId
-                val cat = categories.firstOrNull { it.id == catId }
+                val cat = catId?.let { categories[it] }
                 SelectChip(cat?.name ?: t(UiKey.IMPORTS_UNCATEGORIZED), chosen.containsKey(line.messageId), { actions.pickCategory(line) }, dot = cat?.let { parseHex(it.lightColor) }, height = 36.dp)
                 QuietButton(t(UiKey.SMS_R05_CONFIRM_SHAPE), { actions.confirmLine(line) }, Modifier.weight(1f), height = 36.dp)
             }

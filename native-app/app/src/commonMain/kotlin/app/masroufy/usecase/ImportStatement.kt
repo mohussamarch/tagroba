@@ -4,6 +4,7 @@ import app.masroufy.core.Id
 import app.masroufy.core.ImportBatch
 import app.masroufy.core.ImportBatchState
 import app.masroufy.core.ImportCounts
+import app.masroufy.core.ImportSourceType
 import app.masroufy.core.MatchingState
 import app.masroufy.core.SourceRecord
 import app.masroufy.core.TextKey
@@ -47,9 +48,14 @@ class ImportStatement(private val deps: ImportStatementDeps) {
             val records = mutableListOf<SourceRecord>()
             val includedLines = mutableListOf<ImportPreviewLine>()
 
+            // r051 (OVERRIDES §102 · ARCHITECTURE §31.44): رسايل البنك بتكتب سجل مصدر **للي اتعمل بيه حاجة بس** — اللي اتسجل والمكرر اللي
+            // بيتشال. الرسالة اللي لسه مستنية بتفضل في الصندوق ومالهاش سجل (كانت كل تشغيلة بتكتب 200 سجل يتيم — 16 ألف كتابة في تأكيد واحد
+            // على باقة Spark). الكشف زي ما هو: سجل لكل سطر (أثر المراجعة).
+            val handledOnly = request.sourceType == ImportSourceType.SMS
             for (line in previewResult.lines) {
                 val included = line.row.lineNumber in selection
                 if (included && line.mergeInto != null) continue
+                if (handledOnly && !included && line.state != MatchingState.DUPLICATE) continue
                 val txnId = if (included) deps.ids.next("txn") else null
                 if (txnId != null) {
                     transactions += importLineTransaction(txnId, line, now, request, chosenCategories?.get(line.row.lineNumber))
@@ -140,6 +146,11 @@ class ImportStatement(private val deps: ImportStatementDeps) {
         selected: List<Int>? = null,
         chosenCategories: Map<Int, Id>? = null,
         mergeChoices: Map<Int, Id> = emptyMap(),
+        /**
+         * r051: [previous] اتبنت دلوقتي **جوه نفس القفل** (`SMS_RECORD_LOCK` — التسجيل لوحده) ومفيش كتابة بينها وبين الحفظ ⇒ من غير معاينة
+         * تانية (كانت كل صفحة بتتعاين مرتين). الشاشة (معاينة من بدري) بتفضل تتأكد.
+         */
+        verified: Boolean = false,
     ): ImportBatch {
         if (committing) throw IllegalStateException(uiText(TextKey.IMPORT_COMMIT_RUNNING))
         committing = true
@@ -147,7 +158,7 @@ class ImportStatement(private val deps: ImportStatementDeps) {
             if (importFingerprint(request.content, request.accountIdentity) != previous.fileHash || request.accountIdentity != previous.accountIdentity) {
                 throw IllegalStateException(uiText(TextKey.IMPORT_DATA_CHANGED))
             }
-            val fresh = preview(request)
+            val fresh = if (verified) previous else preview(request)
             val selection = selected ?: previous.lines.filter { it.selectedByDefault }.map { it.row.lineNumber }
             /*
              * الملف اتستورد قبل كده؟ بنرجّع الدفعة القديمة **بس لو مفيش حاجة جديدة تتضاف**
