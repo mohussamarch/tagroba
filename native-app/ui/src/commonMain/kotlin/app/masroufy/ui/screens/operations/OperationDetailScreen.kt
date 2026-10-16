@@ -75,8 +75,16 @@ fun OperationDetailScreen(transactionId: Id, openPerson: Boolean = false) {
     var erasing by remember { mutableStateOf(false) }
     var erased by remember { mutableStateOf<TxnErased?>(null) }
     val nav = app.masroufy.ui.nav.LocalNavigator.current
-    LaunchedEffect(erased) { if (erased != null) kotlinx.coroutines.delay(8_000).also { if (erased != null) nav.pop() } }
+    val erasedWindow = undoWindowFor(erased) { if (erased != null) nav.pop() } // r041 A5: نفس شباك الـ8 ثواني
     var reload by remember { mutableIntStateOf(0) }
+    // r041 A11: «عمليات تابعة» بتتحمّل مرة (الشريط «مربوطة بـ» فوق والكارت تحت) · «فك الربط» بتأكيد ثم «تراجع» 8 ثواني
+    val linkedView = rememberLinkedView(transactionId, reload)
+    val unlinks = remember(transactionId) { UnlinkFlow() }
+    val unlinkWindow = undoWindowFor(unlinks.undo) { unlinks.undo = null }
+    fun linkStep(step: suspend UnlinkFlow.(app.masroufy.usecase.LinkInflows, (String) -> Unit) -> Unit) = scope.launch {
+        deps.linkedInflows?.let { unlinks.step(it) { m -> toaster.show(m) } }
+        reload++
+    }
     var picking by remember { mutableStateOf(false) }
     // كارت «مَن هذا؟» بيفضل بعد القرار (بحالة «تم» و«تراجع») حتى لو التحميل الجديد شال السؤال
     var partyShown by remember { mutableStateOf<app.masroufy.core.TransferPartyRef?>(null) }
@@ -108,13 +116,19 @@ fun OperationDetailScreen(transactionId: Id, openPerson: Boolean = false) {
                 val v = s.view
                 erased?.let { e ->
                     item(key = "erase-undo") {
-                        UndoStrip(e.text) {
+                        UndoStrip(e.text, erasedWindow) {
                             erased = null
                             scope.launch { toaster.show(failureOf { deps.erase?.restore(e.removal) } ?: t(UiKey.OPS_BULK_UNDONE)); reload++ }
                         }
                     }
                 }
+                if (unlinks.undo != null) item(key = "unlink-undo") {
+                    UndoStrip(t(UiKey.LINKED_UNLINK_DONE), unlinkWindow) { linkStep { l, show -> revert(l, show) } }
+                }
                 item(key = "hero") { DetailHero(v) }
+                (linkedView as? app.masroufy.usecase.LinkedInflowsView.Inflow)?.let { li ->
+                    item(key = "linked-parent") { LinkedParentBanner(li, unlinks) { linkStep { l, show -> confirm(l, show) } } }
+                }
                 if (v.unrecorded && v.category?.status == CategoryStatus.NONE) item(key = "cash") { CashDifferenceBox { picking = true } }
                 val party = v.askParty ?: partyShown
                 if (party != null) item(key = "party") { TransferPartyCard(party, v.id, onChanged = { reload++ }) }
@@ -130,7 +144,9 @@ fun OperationDetailScreen(transactionId: Id, openPerson: Boolean = false) {
                     }, onTagsChanged = { reload++ })
                 }
                 // §6.5-14 «عمليات تابعة»: على المصروف (اختار الفلوس اللي دخلت) وعلى الداخلة التابعة (علامة بترجّع للمصروف)
-                item(key = "linked") { LinkedInflowsCard(v.id, reloadKey = reload, onChanged = { reload++ }) }
+                item(key = "linked") {
+                    LinkedInflowsCard(linkedView, unlinks, onConfirmUnlink = { linkStep { l, show -> confirm(l, show) } }, onChanged = { reload++ })
+                }
                 if (v.flow != LinkFlow.NONE) item(key = "links") {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         BasicText(t(UiKey.OPERATION_DETAIL_LINK_TITLE), style = Type.of(13, FontWeight.Bold).copy(color = Ink.muted))
