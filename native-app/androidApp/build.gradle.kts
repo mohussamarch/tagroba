@@ -24,8 +24,8 @@ android {
         applicationId = "app.masroufy.mobile"
         minSdk = 24
         targetSdk = 36
-        versionCode = 6
-        versionName = "kotlin-0.5"
+        versionCode = 7
+        versionName = "kotlin-0.5.1"
         buildConfigField("String", "FIREBASE_EMULATOR_PROJECT", "\"\"")
         buildConfigField("boolean", "HAS_FIREBASE_SETTINGS", (firebaseSettings != null).toString())
         // تقارير الأعطال (OVERRIDES §90): شغالة في نسخ المالك الحقيقية (debug · fast)، ومقفولة في نسخ المحاكي (emulator · fastEmulator)
