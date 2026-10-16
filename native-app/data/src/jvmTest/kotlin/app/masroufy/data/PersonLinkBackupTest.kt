@@ -100,6 +100,10 @@ class PersonLinkBackupTest {
         assertEquals(party, codec.decode(codec.toStore(party)))
         assertFalse("autoSkip" in codec.toStore(party.copy(autoSkip = emptyList())), "المستند القديم زي ما هو")
         val income = out.copy(economicKind = EconomicKind.OTHER_INCOME, observedDirection = Direction.IN, economicKindConfirmed = true)
-        assertEquals(income, LedgerCodecs.transactions.decode(LedgerCodecs.transactions.toStore(income)))
+        // الكودك بيخبّي رقم الحساب الكامل في الوصف (القاعدة 11) ⇒ المقارنة على النوع والاتجاه والتأكيد
+        val stored = LedgerCodecs.transactions.toStore(income)
+        assertEquals("other_income", stored["economicKind"])
+        val back = LedgerCodecs.transactions.decode(stored)
+        assertEquals(Triple(EconomicKind.OTHER_INCOME, Direction.IN, true), Triple(back.economicKind, back.observedDirection, back.economicKindConfirmed))
     }
 }

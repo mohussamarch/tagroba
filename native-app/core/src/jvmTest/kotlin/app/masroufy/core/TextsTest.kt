@@ -69,7 +69,9 @@ class TextsTest {
             // مراجعة 0.3: «حساب البلد في الأرشيف» (`TextsSpaces.kt`)
             setOf(TextKey.SPACE_COUNTRY_ARCHIVED).filter { it in EGYPTIAN_SPACE_TEXTS } +
             // «ر.س» للنص الطالع برا التطبيق بس (علامة الريال الرسمية — قرار المالك 2026-10-15)
-            setOf(TextKey.CURRENCY_SAR_PLAIN)
+            setOf(TextKey.CURRENCY_SAR_PLAIN) +
+            // «دخل تاني» (رد المالك 2026-10-16 · A4 · OVERRIDES §98-ب) — جنب «مكافأة نهاية الخدمة» في `TextsIncome.kt`
+            setOf(TextKey.KIND_OTHER_INCOME)
         assertTrue(newer.all { textKeyNamed(it) in afterSnapshot }, "مفتاح جديد مالوش مكان معروف: $newer")
     }
 
