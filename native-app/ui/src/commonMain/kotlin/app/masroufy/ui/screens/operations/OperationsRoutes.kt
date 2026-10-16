@@ -83,6 +83,9 @@ interface OperationsDeps {
     /** «آخر اللي استخدمته» في «إيه الصنف؟» بعد «شراء» (2026-10-16). null ⇒ من غيرها. */
     val recentCategories: app.masroufy.usecase.RecentCategories? get() = null
 
+    /** «ممكن تكون مربوطة بـ» أول ما العملية تتفتح (2026-10-16). null ⇒ القسم مش ظاهر. */
+    val quickLinks: app.masroufy.usecase.QuickLinks? get() = null
+
     /** «جهات الشغل» (البند 7) — اختيار الجهة في «راتب الدوام». */
     val employers: app.masroufy.usecase.ManageEmployers? get() = null
 

@@ -86,6 +86,9 @@ fun OperationDetailScreen(transactionId: Id, openPerson: Boolean = false) {
         reload++
     }
     var picking by remember { mutableStateOf(false) }
+    var kindTx by remember { mutableStateOf<app.masroufy.core.Transaction?>(null) }
+    var kindDone by remember { mutableStateOf<KindChange?>(null) }
+    var purchase by remember { mutableStateOf<PurchaseAsk?>(null) }
     // كارت «مَن هذا؟» بيفضل بعد القرار (بحالة «تم» و«تراجع») حتى لو التحميل الجديد شال السؤال
     var partyShown by remember { mutableStateOf<app.masroufy.core.TransferPartyRef?>(null) }
     LaunchedEffect(deps, reload) {
@@ -127,7 +130,9 @@ fun OperationDetailScreen(transactionId: Id, openPerson: Boolean = false) {
                 if (unlinks.undo != null) item(key = "unlink-undo") {
                     UndoStrip(t(UiKey.LINKED_UNLINK_DONE), unlinkWindow) { linkStep { l, show -> revert(l, show) } }
                 }
+                kindDone?.let { k -> item(key = "kind-undo") { KindUndoStrip(k, onClear = { kindDone = null }, onChanged = { reload++ }) } }
                 item(key = "hero") { DetailHero(v) }
+                item(key = "quick-links") { QuickLinksSection(v.id, onChanged = { reload++ }) }
                 (linkedView as? app.masroufy.usecase.LinkedInflowsView.Inflow)?.let { li ->
                     item(key = "linked-parent") { LinkedParentBanner(li, unlinks) { linkStep { l, show -> confirm(l, show) } } }
                 }
@@ -143,7 +148,7 @@ fun OperationDetailScreen(transactionId: Id, openPerson: Boolean = false) {
                             toaster.show(err ?: t(UiKey.OPERATION_DETAIL_CONFIRMED))
                             reload++
                         }
-                    }, onTagsChanged = { reload++ })
+                    }, onTagsChanged = { reload++ }, onKind = if (deps.bulk != null && kindEditable(v.transaction, s.locked)) ({ kindTx = v.transaction }) else null)
                 }
                 // §6.5-14 «عمليات تابعة»: على المصروف (اختار الفلوس اللي دخلت) وعلى الداخلة التابعة (علامة بترجّع للمصروف)
                 item(key = "linked") {
@@ -163,6 +168,8 @@ fun OperationDetailScreen(transactionId: Id, openPerson: Boolean = false) {
         }
     }
     OperationEraseSheet(if (erasing) transactionId else null, deps.erase, onDismiss = { erasing = false }) { e -> erasing = false; erased = e }
+    KindPickerSheet(kindTx, onDismiss = { kindTx = null }) { change, kind -> kindTx = null; kindDone = change; purchase = purchaseAskAfter(kind, listOf(transactionId)); reload++ }
+    PurchaseCategorySheet(purchase) { purchase = null; reload++ }
     CategoryPicker(
         visible = picking && ready != null,
         title = ready?.view?.let { if (it.unrecorded) t(UiKey.CATEGORY_PICKER_CASH_TITLE) else t(UiKey.CATEGORY_PICKER_TITLE, it.title) }.orEmpty(),
@@ -225,7 +232,7 @@ private fun CashDifferenceBox(onPick: () -> Unit) {
 
 /** كارت الحقول: المحفظة · التصنيف (بأفعاله) · النوع — وتحتهم الوسوم. */
 @Composable
-private fun FieldsCard(v: DetailView, tags: List<Tag>, onPick: () -> Unit, onConfirm: (Id) -> Unit, onTagsChanged: () -> Unit) {
+private fun FieldsCard(v: DetailView, tags: List<Tag>, onPick: () -> Unit, onConfirm: (Id) -> Unit, onTagsChanged: () -> Unit, onKind: (() -> Unit)? = null) {
     FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)) {
         FieldRow(v.fields.first())
         v.category?.let { c ->
@@ -248,7 +255,8 @@ private fun FieldsCard(v: DetailView, tags: List<Tag>, onPick: () -> Unit, onCon
         }
         for (f in v.fields.drop(1)) {
             Divider()
-            FieldRow(f)
+            // 2026-10-16: «النوع» بيتداس ⇒ لوحة الأنواع
+            if (f.kindRow && onKind != null) FieldRow(f) { SmallAction(t(UiKey.KIND_PICK_CHANGE), strong = f.chip != null, onClick = onKind) } else FieldRow(f)
         }
         Divider()
         Box(Modifier.padding(vertical = 6.dp)) { TagsRow(v.id, tags, onTagsChanged) }
