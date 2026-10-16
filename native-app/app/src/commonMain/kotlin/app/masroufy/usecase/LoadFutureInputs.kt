@@ -23,9 +23,9 @@ fun interface FutureSavingSource {
     suspend fun averageMinor(today: IsoDate): Halalas?
 }
 
+/**
  * الدخل الشهري لقاعدة الـ10%. **رد المالك Q7 (2026-10-16):** متوسط الدخل الفعلي لآخر 3 شهور كاملة، ولو مش معروف ⇒ المرتب اللي المستخدم
  * كتبه بالظبط (فرع `r05-salary` — مش نطاق ولا تخمين). ولا ده ولا ده ⇒ null ⇒ مبلغ البلد الثابت والجملة بتقول «دخلك مش معروف».
- * مش مكتوب ⇒ null ⇒ مبلغ البلد الثابت والجملة بتقول «دخلك مش معروف».
  */
 fun interface FutureIncomeSource {
     suspend fun monthlyIncomeMinor(today: IsoDate): Halalas?

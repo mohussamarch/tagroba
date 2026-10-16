@@ -14,6 +14,7 @@ import app.masroufy.core.TextKey
 import app.masroufy.core.averageSavingMinor
 import app.masroufy.core.compareWithActual
 import app.masroufy.core.formatMoney
+import app.masroufy.core.monthIncomeMinor
 import app.masroufy.core.monthSavingMinor
 import app.masroufy.core.periodForDate
 import app.masroufy.core.savingsPerMonth
