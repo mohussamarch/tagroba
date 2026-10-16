@@ -106,6 +106,7 @@ internal fun mixLabel(m: FutureMix): String = t(
 /** سطر المصدر تحت «بتستثمرها في»: النسبة + اسم المصدر من سطر ملف المتوسطات نفسه (رسمي/مش رسمي — مش مكتوب في الكود). */
 internal fun mixSourceLine(pr: FutureProjection): String {
     val src = pr.mixSource ?: return t(FUT_MIX_SRC_MINE, formatBp(pr.mixBp))
+    if (pr.choice.mix == FutureMix.MINE) return t(FUT_MIX_SRC_MINE_SHARES, formatBp(pr.mixBp), sourceText(FutureMix.SHARES, src))
     return t(FUT_MIX_SRC, formatBp(pr.mixBp), sourceText(pr.choice.mix, src))
 }
 

@@ -24,6 +24,7 @@ internal val ENGLISH_INVEST_FUTURE_TEXTS: Map<TextRef, String> = mapOf(
     FUT_HINT_NORMAL to "Your current saving {0} + about 10% of your income", FUT_HINT_NORMAL_NO_INCOME to "Your current saving {0} + {1}",
     FUT_MIX_TITLE to "Invested in", FUT_MIX_MINE to "Like your holdings", FUT_MIX_SHARES to "Shares", FUT_MIX_GOLD to "Gold", FUT_MIX_PROPERTY to "Property",
     FUT_MIX_SRC_MINE to "At an average of {0} a year (your holdings' average, weighted by value)", FUT_MIX_SRC to "At an average of {0} a year — {1}",
+    FUT_MIX_SRC_MINE_SHARES to "You have no growing holdings yet, so we use the stock average of {0} a year — {1}",
     FUT_CHART_TITLE to "How much you'll have", FUT_MODE_A11Y to "Number format", FUT_MODE_TODAY to "In today's money",
     FUT_MODE_THEN to "In that year's money", FUT_CHART_NOTE to "The bold line is your path · slide your finger across the chart to see any year",
     FUT_PINS_TITLE to "Your marks", FUT_AXIS_MILLION to "{0}M", FUT_AXIS_THOUSAND to "{0}K", FUT_TIP_AGE to " · age {0}",

@@ -39,7 +39,12 @@ internal data class ReturnsTexts(val reValue: String, val note: String)
 
 internal fun returnsTexts(v: ReturnsView): ReturnsTexts {
     val m = v.math ?: return ReturnsTexts(t(InvestInsightKey.RET_NA), t(InvestInsightKey.RET_NA_NOTE))
-    val note = t(InvestInsightKey.RET_NOTE, money(m.perMonthMinor, v.currency), formatBp(m.mixBp), money(m.spentMinor, v.currency), money(m.reinvestMinor, v.currency))
+    val per = money(m.perMonthMinor, v.currency)
+    val spent = money(m.spentMinor, v.currency)
+    val reinvest = money(m.reinvestMinor, v.currency)
+    // مفيش أملاك بتكبر ⇒ متوسط الأسهم ومصدره (مش «متوسط أملاكك»)
+    val note = v.sharesSource?.let { t(InvestInsightKey.RET_NOTE_SHARES, per, formatBp(m.mixBp), spent, reinvest, it) }
+        ?: t(InvestInsightKey.RET_NOTE, per, formatBp(m.mixBp), spent, reinvest)
     // «≈ M» سطر واحد من الشمال لليمين زي النموذج (`dir="ltr"`): عزل LTR + مسافة ما بتتقسمش بعد «≈»
     val re = t(InvestInsightKey.RET_RE_VALUE, money(m.reinvestMinor, v.currency)).replace("≈ ", "≈ ")
     return ReturnsTexts("⁦$re⁩", note)

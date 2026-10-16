@@ -89,7 +89,7 @@ data class PassiveIncome(val nowMinor: Halalas, val atYearMinor: Halalas, val kn
 data class PathLine(val path: FuturePath, val values: List<Halalas>)
 
 /**
- * ناتج التوقع (مواصفة §2.3 — §2.5). [choice] بعد التحديد (الطريق والمبلغ مش null). [mixSource] مصدر المتوسط لو مش «زي أملاكك».
+ * ناتج التوقع (مواصفة §2.3 — §2.5). [choice] بعد التحديد (الطريق والمبلغ مش null). [mixSource] مصدر المتوسط لو مش «زي أملاكك» (أو «زي أملاكك» من غير أملاك بتكبر ⇒ مصدر الأسهم).
  * [pins] = (سنة العلامة، قيمتها على الطريق المختار).
  */
 data class FutureProjection(

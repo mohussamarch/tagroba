@@ -1,6 +1,8 @@
 package app.masroufy.usecase
 
 import app.masroufy.core.Currency
+import app.masroufy.core.DefaultRate
+import app.masroufy.core.GrowthClass
 import app.masroufy.core.Halalas
 import app.masroufy.core.HoldingsSnapshot
 import app.masroufy.core.InvestInsightKey
@@ -19,8 +21,17 @@ import app.masroufy.port.TransactionRepository
 /** سطر في «اللي رجعلك»: اسم التصنيف · «10 أشهر» أو «مرة: مارس» أو «مرتين: مارس وسبتمبر» · المبلغ. */
 data class ReturnsRowView(val label: String, val sub: String, val amountMinor: Halalas)
 
-/** [math] null = المتوسطات مش متاحة ⇒ صندوق «لو رجّعته» والملاحظة «غير متاح». [cpiSource] اسم مصدر الغلاء (للملاحظة). */
-data class ReturnsView(val currency: Currency, val rows: List<ReturnsRowView>, val totalMinor: Halalas, val math: ReinvestMath?)
+/**
+ * [math] null = المتوسطات مش متاحة ⇒ صندوق «لو رجّعته» والملاحظة «غير متاح». [sharesSource] مش null = مفيش أملاك بتكبر فالمتوسط هو
+ * متوسط الأسهم ⇒ الملاحظة تقول كده ومصدره (OVERRIDES §87)، مش «متوسط أملاكك».
+ */
+data class ReturnsView(
+    val currency: Currency,
+    val rows: List<ReturnsRowView>,
+    val totalMinor: Halalas,
+    val math: ReinvestMath?,
+    val sharesSource: String? = null,
+)
 
 data class LoadInvestReturnsDeps(val txns: TransactionRepository, val categories: CategoryRepository)
 
@@ -32,13 +43,15 @@ class LoadInvestReturns(private val deps: LoadInvestReturnsDeps) {
     suspend fun load(today: IsoDate, currency: Currency, holdings: HoldingsSnapshot?, rates: InvestRatesState?): ReturnsView? {
         val txns = deps.txns.listByDateRange(today.take(4) + "-01-01", today)
         val ready = (rates as? InvestRatesState.Ready)?.rates
-        val mix = ready?.let { r -> holdings?.let { holdingsMixBp(investableSplit(it.items), r) } ?: r.sharesBp }
+        val mine = ready?.let { r -> holdings?.let { holdingsMixBp(investableSplit(it.items), r) } }
+        val mix = mine ?: ready?.sharesBp
+        val sharesSource = ready?.takeIf { mine == null }?.shares?.let { DefaultRate(GrowthClass.LOCAL_STOCKS, it.valueBp, it, it.stale, false, null).sourceText }
         val result = investReturns(txns, currency, today, mix, ready?.cpiBp) ?: return null
         val names = if (result.rows.any { it.categoryId != null }) deps.categories.listAll().associate { it.id to it.name } else emptyMap()
         val rows = result.rows.map { r ->
             ReturnsRowView(r.categoryId?.let { names[it] } ?: uiText(InvestInsightKey.RET_DEFAULT_LABEL), monthsSub(r.months), r.totalMinor)
         }
-        return ReturnsView(currency, rows, result.totalMinor, result.math)
+        return ReturnsView(currency, rows, result.totalMinor, result.math, sharesSource)
     }
 }
 

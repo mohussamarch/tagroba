@@ -196,5 +196,10 @@ class InvestInsightsMathTest {
         assertEquals(600, holdingsMixBp(split(p = 100, g = 100), rates))
         assertEquals(733, holdingsMixBp(InvestableSplit(1, 2, 0, 50, 0), InvestRates(200, 1_000, 0, avg("a", 200), avg("b", 1_000), avg("c", 0))))
         assertNull(holdingsMixBp(split(n = 500), rates)) // اللي ما بيكبرش بس ⇒ مفيش متوسط
+        // «زي أملاكك» من غير أملاك بتكبر ⇒ متوسط الأسهم ومصدره هو (مش «متوسط أملاكك» من غير مصدر)
+        assertEquals(795, mixBpOf(FutureMix.MINE, split(n = 500), rates))
+        assertEquals("STOCKS_SA", mixSourceOf(FutureMix.MINE, split(n = 500), rates)?.key)
+        assertNull(mixSourceOf(FutureMix.MINE, split(p = 100, g = 100), rates))
+        assertEquals("GOLD", mixSourceOf(FutureMix.GOLD, split(n = 500), rates)?.key)
     }
 }

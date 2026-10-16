@@ -62,9 +62,12 @@ fun mixBpOf(mix: FutureMix, split: InvestableSplit, rates: InvestRates): Int = w
     FutureMix.PROPERTY -> rates.cpiBp
 }
 
-/** مصدر متوسط الاختيار (للسطر تحت الأزرار) — «زي أملاكك» مالوش مصدر واحد ⇒ null. */
-fun mixSourceOf(mix: FutureMix, rates: InvestRates): AverageEntry? = when (mix) {
-    FutureMix.MINE -> null
+/**
+ * مصدر متوسط الاختيار (للسطر تحت الأزرار) — «زي أملاكك» بأملاك بتكبر مالوش مصدر واحد ⇒ null؛ من غير أملاك بتكبر المتوسط هو متوسط
+ * الأسهم ⇒ مصدره هو (OVERRIDES §87: كل رقم مكتوب مصدره — مش «متوسط أملاكك» لأملاك مش موجودة).
+ */
+fun mixSourceOf(mix: FutureMix, split: InvestableSplit, rates: InvestRates): AverageEntry? = when (mix) {
+    FutureMix.MINE -> if (holdingsMixBp(split, rates) == null) rates.shares else null
     FutureMix.SHARES -> rates.shares
     FutureMix.GOLD -> rates.gold
     FutureMix.PROPERTY -> rates.cpi
@@ -160,7 +163,7 @@ fun projectFuture(i: FutureInputs, c: FutureChoice): FutureProjection? {
     val pins = c.marks.filter { it - i.thisYear in 1..FUTURE_MAX_YEARS }.sorted().map { it to fv[it - i.thisYear] }
     return FutureProjection(
         i, c.copy(years = years, path = selected, amountMinor = amount), r, selected, lines, end, subtractMoney(end, i.netNowMinor),
-        start, max, rules.stepMinor, mixBp, mixSourceOf(c.mix, r), milestones(fv, rules), goals,
+        start, max, rules.stepMinor, mixBp, mixSourceOf(c.mix, i.split, r), milestones(fv, rules), goals,
         PassiveIncome(now, atYear, i.passiveKnownMinor), pins,
     )
 }
