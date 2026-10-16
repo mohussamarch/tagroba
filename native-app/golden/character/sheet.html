@@ -1,0 +1,26 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Character sheet</title>
+<style>
+html,body{margin:0;background:#ffffff;font:11px/1.2 Arial,sans-serif;color:#333}
+#g{display:grid;grid-template-columns:repeat(10,120px)}
+.c{width:120px;height:150px;box-sizing:border-box;border:1px solid #eee;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;overflow:hidden}
+.c img{display:block;width:110px;height:110px;margin-top:4px}
+.c.full img{width:60px;height:132px;margin-top:0}
+.c span{width:116px;text-align:center;word-break:break-all;font-size:9px}
+.one{display:block}
+</style></head><body><div id="g"></div>
+<script src="prototype-art.js"></script>
+<script src="set.js"></script>
+<script>
+// ?src=proto (default: the prototype render()) or ?src=kotlin (window.KOTLIN[id] from kotlin-svgs.js written by the jvm test)
+// &only=<id> renders one look alone at 200x200 (head/bust) or 200x440 (full) for per-look PNGs
+const q = new URLSearchParams(location.search), src = q.get('src') || 'proto', only = q.get('only');
+const svgOf = (it) => src === 'kotlin' ? (window.KOTLIN || {})[it.id] : render(it.look, it.mode);
+const uri = (svg) => 'data:image/svg+xml,' + encodeURIComponent(svg || '<svg xmlns="http://www.w3.org/2000/svg"/>');
+function go() {
+  const g = document.getElementById('g');
+  if (only) { const it = SET.find((x) => x.id === only); const im = new Image(); im.className = 'one'; im.width = 200; im.height = it.mode === 'full' ? 440 : 200; im.src = uri(svgOf(it)); document.body.replaceChildren(im); return; }
+  SET.forEach((it) => { const c = document.createElement('div'); c.className = 'c' + (it.mode === 'full' ? ' full' : ''); const im = new Image(); im.src = uri(svgOf(it)); const s = document.createElement('span'); s.textContent = it.id; c.append(im, s); g.append(c); });
+}
+if (src === 'kotlin') { const s = document.createElement('script'); s.src = 'kotlin-svgs.js'; s.onload = go; s.onerror = go; document.head.append(s); } else go();
+</script></body></html>
