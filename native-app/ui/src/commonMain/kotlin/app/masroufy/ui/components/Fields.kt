@@ -21,8 +21,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -62,7 +64,8 @@ fun FieldLabel(text: String, modifier: Modifier = Modifier) {
 
 @Composable
 fun FieldError(text: String, modifier: Modifier = Modifier) {
-    Row(modifier, horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+    // R041B-3: السطر بيتقري بصوت أول ما يظهر (TalkBack) — «احفظ» المعطّل بيرد بالسطر ده بس، ومن غيره المستخدم يفتكرها اتحفظت
+    Row(modifier.semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite }, horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
         LucideIcon(Lucide.CIRCLE_ALERT, size = 16.dp, tint = Ink.expense)
         BasicText(text, style = Type.of(13).copy(color = Ink.expense))
     }
