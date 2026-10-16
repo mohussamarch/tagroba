@@ -86,7 +86,7 @@ internal fun PeopleScreen() {
     val scope = rememberCoroutineScope()
     var retry by remember { mutableStateOf(0) }
     var load by remember(deps) { mutableStateOf<Load<PeopleTabUi>>(Load.Loading) }
-    var me by remember(deps) { mutableStateOf<String?>(null) }
+    var me by remember(deps) { mutableStateOf<app.masroufy.ui.app.MeInfo?>(null) }
     val editor = remember(deps) { RowEditor(scope) { deps.people.row.save(it) } }
     // وضع التعديل في الآلية الواحدة (HANDOVER §6.5 بند 11): زرار الرجوع بيخرج منه، والضغط برّه المسرح وشريط «تراجع» كمان
     // (الطبقة الشفافة تحت بتفضل تاكل الضغطة اللي على الشاشة نفسها — §84)
@@ -96,7 +96,7 @@ internal fun PeopleScreen() {
         val full = loadOf { app.masroufy.perf.PerfTrace.span("screen:people") { peopleTabUi(deps.people.overview.forSpace(deps.shell.today(), deps.space.id), deps.space.id, deps.space.currency, row) } }
         load = if (full !is Load.Failed) full else loadOf { peopleWithoutBalances(deps.people.people.listWithBalances(), row) }.let { if (it is Load.Ready) it else full }
         (load as? Load.Ready)?.value?.let { editor.load(it.orbit.map { c -> c.id }, it.custom) }
-        me = runCatching { deps.shell.me().displayName }.getOrNull()
+        me = runCatching { deps.shell.me() }.getOrNull()
     }
     val pickable by produceState(emptyList<Id>(), deps, editor.ids, version) { value = runCatching { deps.people.row.pickable(editor.ids) }.getOrDefault(emptyList()) }
     val open = { p: PersonChip -> nav.push(PersonProfileRoute(p.id)) }
@@ -158,7 +158,7 @@ internal fun PeopleScreen() {
                     else {
                         val heroAlpha = max(0f, 1f - 2.2f * p)
                         PeopleStage(
-                            chips, editor, pickable.isNotEmpty(), me, open,
+                            chips, editor, pickable.isNotEmpty(), me?.displayName, open,
                             Modifier.zIndex(5f).padding(horizontal = Space.gutter).offset(y = (top + HERO_TOP).dp).choiceArea(rowChoice)
                                 .graphicsLayer {
                                     translationY = -70f * p * density.density
@@ -168,6 +168,8 @@ internal fun PeopleScreen() {
                                     alpha = heroAlpha
                                 }.height(STAGE_H.dp),
                             interactive = heroAlpha > 0.5f,
+                            character = me?.character,
+                            onBuild = { nav.push(app.masroufy.ui.screens.character.CharacterBuilderRoute) },
                         )
                     }
                     when {

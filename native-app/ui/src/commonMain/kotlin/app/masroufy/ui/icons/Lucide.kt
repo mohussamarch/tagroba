@@ -84,6 +84,14 @@ class Lucide(val name: String, internal vararg val paths: String) {
         val UNDO_2 = Lucide("UNDO_2", "M9 14 4 9l5-5", "M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11")
         val UPLOAD = Lucide("UPLOAD", "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4", "M17 8L12 3L7 8", "M12 3L12 15")
         val USER = Lucide("USER", "M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2", "M8 7a4 4 0 1 0 8 0a4 4 0 1 0 -8 0")
+
+        // أقسام «شخصيتك» (r041 — `CharacterBuilder`): ملامح الوجه · الجسم والشعر · الملابس
+        val SMILE = Lucide("SMILE", "M2 12a10 10 0 1 0 20 0a10 10 0 1 0 -20 0", "M8 14s1.5 2 4 2 4-2 4-2", "M9 9h.01", "M15 9h.01")
+        val PERSON_STANDING = Lucide("PERSON_STANDING", "M11 5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0", "m9 20 3-6 3 6", "m6 8 6 2 6-2", "M12 10v4")
+        val SHIRT = Lucide(
+            "SHIRT",
+            "M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z",
+        )
         val USERS = Lucide("USERS", "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2", "M5 7a4 4 0 1 0 8 0a4 4 0 1 0 -8 0", "M22 21v-2a4 4 0 0 0-3-3.87", "M16 3.13a4 4 0 0 1 0 7.75")
         val UTENSILS = Lucide("UTENSILS", "M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2", "M7 2v20", "M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7")
         val WALLET = Lucide("WALLET", "M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1", "M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4")

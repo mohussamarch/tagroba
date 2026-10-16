@@ -76,7 +76,7 @@ fun MoreScreen() {
 private fun MeCard(me: MeInfo?, view: MoreView, onClick: () -> Unit) {
     FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp), onClick = onClick, clickLabel = t(UiKey.ME_PROFILE)) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            MeAvatar(46.dp, me?.profilePercent, Modifier.size(46.dp), look = me?.lookIndex ?: 1)
+            MeAvatar(46.dp, me?.profilePercent, Modifier.size(46.dp), character = me?.character)
             Column(Modifier.weight(1f)) {
                 BasicText(view.name ?: t(UiKey.ACC_NO_NAME), style = Type.of(16, FontWeight.Bold))
                 BasicText(view.spaceLine, style = Type.caption().copy(color = Ink.muted))

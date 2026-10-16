@@ -16,7 +16,7 @@ import app.masroufy.usecase.ReconcileBalance
 import app.masroufy.usecase.RunAlertEngine
 
 /**
- * منطقة «المزيد» (`SCREENS.md` §2.8): More · Account (+ LookSheet) · AppSettings (القفل واللغة والمحتوى الإسلامي) · NotificationSettings ·
+ * منطقة «المزيد» (`SCREENS.md` §2.8): More · Account (+ «شخصيتك» — `screens/character/`) · AppSettings (القفل واللغة والمحتوى الإسلامي) · NotificationSettings ·
  * Spaces · Wallets · WalletDetail (+ WalletAddSheet) · IncomeSources · IncomeSourceDetail (+ IncomeSourceEditSheet · JobChangeSheet) ·
  * Backup · RestorePreview. الملف ده بتاع المنطقة بس. Categories · Rules · Projects لسه «قيد البناء» (روابطهم في `MoreLinks.kt`).
  * تسجيل الخروج: `LocalApp.current.signIn.signOut()` (الجلسة بترجع لشاشة الدخول لوحدها).
@@ -83,9 +83,9 @@ object AccountRoute : Route {
     override val name = "Account"
 }
 
-/** «حسابك» ولوحة «اختر شكلك» مفتوحة — «كمّل بروفايلك» في آخر أول تشغيل (قرار المالك 2026-10-15 مساءً). الرجوع ⇒ الرئيسية. */
-object AccountLookRoute : Route {
-    override val name = "AccountLook"
+/** «ملفك» و«ابنِ شخصيتك» فوقها — «كمّل بروفايلك» في آخر أول تشغيل (r041 · character-spec §4.5). الرجوع ⇒ «ملفك» ⇒ الرئيسية. */
+object AccountCharacterRoute : Route {
+    override val name = "AccountCharacter"
 }
 
 object SpacesRoute : Route {
@@ -133,7 +133,8 @@ data class RestorePreviewRoute(val fileName: String, val text: String) : Route {
 fun RouteRegistry.registerMore() {
     screen<MoreRoute> { MoreScreen() }
     screen<AccountRoute> { AccountScreen() }
-    screen<AccountLookRoute> { AccountScreen(openLook = true) }
+    screen<AccountCharacterRoute> { AccountScreen(openBuilder = true) }
+    screen<app.masroufy.ui.screens.character.CharacterBuilderRoute> { app.masroufy.ui.screens.character.CharacterBuilderScreen() }
     screen<AppSettingsRoute> { AppSettingsScreen() }
     screen<NotificationSettingsRoute> { NotificationSettingsScreen() }
     screen<SpacesRoute> { SpacesScreen() }

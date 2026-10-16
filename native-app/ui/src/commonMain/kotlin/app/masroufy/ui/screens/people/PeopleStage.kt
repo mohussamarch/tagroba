@@ -40,6 +40,11 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import app.masroufy.core.TextKey
+import app.masroufy.core.CharacterLayer
+import app.masroufy.core.CharacterLook
+import app.masroufy.ui.character.CharacterArt
+import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.ui.draw.clipToBounds
 import app.masroufy.ui.components.HeroCard
 import app.masroufy.ui.components.LensOnHero
 import app.masroufy.ui.components.pressScale
@@ -60,6 +65,9 @@ import kotlin.math.min
 internal val SPOTS = listOf(298f to 184f, 250f to 112f, 175f to 82f, 100f to 112f, 52f to 184f)
 private const val HEAD_X = 175f
 private const val HEAD_Y = 196f
+
+/** راس «شخصيتك» لما تتبني (`CHAR_HEAD` في النموذج) — الخيوط بتبدأ منه بدل الدايرة. */
+private const val CHAR_HEAD_Y = 180f
 internal const val STAGE_W = 350f
 internal const val STAGE_H = 360
 
@@ -77,6 +85,10 @@ internal fun PeopleStage(
     modifier: Modifier = Modifier,
     /** المسرح باين كفاية (`opacity > 0.5` في النموذج) ⇒ بيستقبل اللمس. مطوي ⇒ لأ. */
     interactive: Boolean = true,
+    /** «شخصيتك» (r041) — null = لسه ما اتبنتش ⇒ الدايرة والقوس. */
+    character: CharacterLook? = null,
+    /** الضغطة الطويلة على مكانك ⇒ البنّاء. */
+    onBuild: () -> Unit = {},
 ) {
     val haptics = LocalHapticFeedback.current
     val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
@@ -92,7 +104,7 @@ internal fun PeopleStage(
                 onEnter = { haptics.performHapticFeedback(HapticFeedbackType.LongPress); editor.enter() },
             )
             Box(Modifier.fillMaxWidth().size(width = w, height = STAGE_H.dp).then(touch)) {
-                Threads(editor.shown.size)
+                Threads(editor.shown.size, if (character != null) CHAR_HEAD_Y else HEAD_Y)
                 if (!editor.editing && !editor.custom) {
                     BasicText(
                         t(UiKey.PEOPLE_ORBIT_NOTE),
@@ -105,7 +117,22 @@ internal fun PeopleStage(
                     RowDone(editor::exit)
                     if (canAdd && editor.shown.size < SPOTS.size) RowAddSpot(editor.shown.size, w.value, rtl) { editor.picking = true }
                 }
-                You(meName, Modifier.align(Alignment.BottomCenter))
+                if (character != null) {
+                    // من تحت الصف لآخر الكارت: الجسم كله 270×594 من فوق ⇒ الراس لحد فوق البطن، من غير قوس ولا حرف
+                    Box(Modifier.fillMaxWidth().padding(top = 107.dp).fillMaxSize().clipToBounds(), contentAlignment = Alignment.TopCenter) {
+                        CharacterArt(character, CharacterLayer.FULL, Modifier.requiredSize(width = 270.dp, height = 594.dp))
+                    }
+                } else {
+                    You(meName, Modifier.align(Alignment.BottomCenter))
+                }
+                // الضغطة الطويلة (480ms) على مكانك ⇒ البنّاء — مش في وضع الترتيب، ومن غير ما تاكل اللمس من المسرح
+                val k = w.value / STAGE_W
+                Box(
+                    Modifier.padding(start = (110 * k).dp, end = (110 * k).dp, top = 120.dp).fillMaxSize().mePress(
+                        enabled = interactive && !editor.editing,
+                        label = t(if (character != null) UiKey.CHAR_PEOPLE_EDIT else UiKey.CHAR_PEOPLE_BUILD),
+                    ) { haptics.performHapticFeedback(HapticFeedbackType.LongPress); onBuild() },
+                )
             }
         }
     }
@@ -133,7 +160,7 @@ private fun You(meName: String?, modifier: Modifier) {
 
 /** الخيوط من راسك لكل شخص فوق: منحنى بنقطتين تحكم على الجنبين بالتبادل، وبيترسم بالنابض الهادي («تقليل الحركة» ⇒ مرسوم على طول). */
 @Composable
-private fun Threads(count: Int) {
+private fun Threads(count: Int, headY: Float) {
     val reduce = LocalReduceMotion.current
     val drawn = remember { Animatable(if (reduce) 1f else 0f) }
     LaunchedEffect(count, reduce) { if (reduce) drawn.snapTo(1f) else drawn.animateTo(1f, Springs.GENTLE.spec()) }
@@ -148,16 +175,16 @@ private fun Threads(count: Int) {
             val ex = x
             val ey = y + 30f
             val dx = ex - HEAD_X
-            val dy = ey - HEAD_Y
+            val dy = ey - headY
             val len = hypot(dx, dy).coerceAtLeast(1f)
             val nx = -dy / len
             val ny = dx / len
             val amp = (if (i % 2 == 1) 1f else -1f) * min(26f, len * 0.22f)
             val path = Path().apply {
-                moveTo(px(HEAD_X), HEAD_Y * sy)
+                moveTo(px(HEAD_X), headY * sy)
                 cubicTo(
-                    px(HEAD_X + dx * 0.3f + nx * amp), (HEAD_Y + dy * 0.3f + ny * amp) * sy,
-                    px(HEAD_X + dx * 0.7f - nx * amp), (HEAD_Y + dy * 0.7f - ny * amp) * sy,
+                    px(HEAD_X + dx * 0.3f + nx * amp), (headY + dy * 0.3f + ny * amp) * sy,
+                    px(HEAD_X + dx * 0.7f - nx * amp), (headY + dy * 0.7f - ny * amp) * sy,
                     px(ex), ey * sy,
                 )
             }

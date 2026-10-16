@@ -62,7 +62,7 @@ interface AskDeps {
 val LocalSpace = staticCompositionLocalOf<SpaceDeps> { error("SpaceDeps مش متقدّم — الشاشة لازم تبقى جوه AppShell بعد ما الحساب يجهز") }
 
 /** اسمك ونسبة اكتمال ملفك (دايرتك والتحية). [profilePercent] = null ⇒ الحسبة لسه ما اتبنتش (OVERRIDES §76 «ناقص في كوتلن») ⇒ مفيش شريط. */
-data class MeInfo(val displayName: String?, val profilePercent: Int?, val lookIndex: Int = 1)
+data class MeInfo(val displayName: String?, val profilePercent: Int?, val character: app.masroufy.core.CharacterLook? = null)
 
 /** بلد في لوحة التبديل: «معك الآن» بعملتها (null = غير متاح). */
 data class SpaceChoice(val space: Space, val withYouNowMinor: Halalas?, val currency: Currency, val active: Boolean)

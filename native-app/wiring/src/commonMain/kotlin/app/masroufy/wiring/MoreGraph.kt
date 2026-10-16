@@ -6,7 +6,8 @@ import app.masroufy.core.Id
 import app.masroufy.core.IsoDate
 import app.masroufy.core.MainWalletSource
 import app.masroufy.core.countryPack
-import app.masroufy.ui.screens.more.LookSetting
+import app.masroufy.core.CharacterLook
+import app.masroufy.ui.screens.character.CharacterSetting
 import app.masroufy.ui.screens.more.MainWalletAccess
 import app.masroufy.ui.screens.more.MoreDeps
 import app.masroufy.ui.screens.more.NewWallet
@@ -84,12 +85,14 @@ class MoreGraph(private val c: AreaContext) : MoreDeps {
     /** «أضف بلدًا» · «أرشفة» · «استعادة» (`ManageSpaces` بالشجرة المضمّنة — [SessionSpacesAdmin]): البلد الجديدة بتتفتح في نفس الجلسة. */
     override val spacesAdmin = c.shell.spacesAdmin
 
-    /** «اختر شكلك» ⇒ ملفك (`ManageProfile.chooseLook`) — الحفظ الغلط بيرمي عشان اللوحة ما تقولش «حُفظ». */
-    override val look: LookSetting = object : LookSetting {
-        override suspend fun current(): Int = c.shell.profile.look()
+    /** «ابنِ شخصيتك» / «عدّل شخصيتك» ⇒ ملفك (`ManageProfile.saveCharacter`) — الحفظ الغلط بيرمي عشان الشاشة ما تقفلش كأنه اتحفظ. */
+    override val character: CharacterSetting = object : CharacterSetting {
+        override suspend fun current(): CharacterLook? = c.shell.profile.character()
 
-        override suspend fun choose(look: Int) {
-            val r = c.shell.profile.chooseLook(look)
+        override suspend fun profileGender(): String? = c.shell.profile.load().gender
+
+        override suspend fun save(look: CharacterLook) {
+            val r = c.shell.profile.saveCharacter(look)
             if (r is app.masroufy.core.ProfileCheck.Invalid) throw IllegalArgumentException(r.message)
         }
     }

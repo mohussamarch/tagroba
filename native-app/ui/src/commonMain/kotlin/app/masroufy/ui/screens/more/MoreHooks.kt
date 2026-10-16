@@ -31,8 +31,8 @@ interface MoreHooks {
     /** لغة التطبيق المحفوظة على الجهاز (`Texts.language` بتتظبط مرة عند البداية — مفيش مكان بيتحفظ فيه الاختيار). */
     val appLanguage: LanguageSetting? get() = null
 
-    /** «اختر شكلك» (الكاركتر المؤقت 1–6) — `UserProfile` مالوش حقل للشكل (SCREENS.md §3 سؤال 12). */
-    val look: LookSetting? get() = null
+    /** «ابنِ شخصيتك» / «عدّل شخصيتك» (r041) ⇒ `ManageProfile.character` و`saveCharacter` — متوصّل في `MoreGraph`. */
+    val character: app.masroufy.ui.screens.character.CharacterSetting? get() = null
 
     /** نطاق الراتب («أقل من 5 آلاف» …) — `UserProfile` فيه راتب بالهللة بس، والنموذج بيسأل نطاقات (§63). */
     val salaryRange: SalaryRangeSetting? get() = null
@@ -87,12 +87,6 @@ interface LanguageSetting {
 
     /** بيتطبق لما التطبيق يتفتح تاني. */
     fun choose(language: Language)
-}
-
-interface LookSetting {
-    suspend fun current(): Int
-
-    suspend fun choose(look: Int)
 }
 
 /** نطاقات الراتب الأربعة + «أفضّل ألا أقول» (§63). */
