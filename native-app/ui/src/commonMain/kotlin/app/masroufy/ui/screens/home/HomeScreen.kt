@@ -30,6 +30,7 @@ import app.masroufy.ui.app.LocalSpace
 import app.masroufy.ui.screens.imports.SmsAllowCard
 import app.masroufy.ui.screens.imports.homeEmptyBodyKey
 import app.masroufy.ui.screens.imports.smsAllowCardShown
+import app.masroufy.ui.screens.imports.smsShapeWaiting
 import app.masroufy.ui.app.MeInfo
 import app.masroufy.ui.app.SpaceDeps
 import app.masroufy.ui.components.EmptyState
@@ -70,28 +71,35 @@ fun HomeScreen() {
     val gone = Dismissals.of(deps.space.id).goneKeys
     // r041 A8: كلام الرئيسية الفاضية من حالة القراءة (مش «فعّل القراءة» وهي شغالة)
     var readingOn by remember(deps) { mutableStateOf(false) }
+    // r041b P3: رسايل البنك المستنية «أكّد الأشكال» ⇒ كارت فوق بيفتح «رسائل البنك» على طول
+    var smsWaiting by remember(deps) { mutableStateOf(0) }
     LaunchedEffect(deps, tick, changes.version) {
         app.masroufy.perf.PerfTrace.span("screen:home") {
             me = runCatching { shell.me() }.getOrNull()
             load = loadHome(deps)
-            if (load.let { it is HomeLoad.Ready && isBrandNew(it.now, it.month) }) readingOn = runCatching { deps.imports.sms?.readingOn() }.getOrNull() == true
+            // r041b P3: الكارت الهادي «لا توجد عمليات» كمان (مش الشاشة الفاضية بس) بيقول القراءة شغالة لو شغالة
+            if (load.let { it is HomeLoad.Ready && (isBrandNew(it.now, it.month) || isQuietMonth(it.now, it.month)) }) {
+                readingOn = runCatching { deps.imports.sms?.readingOn() }.getOrNull() == true
+            }
+            smsWaiting = deps.imports.sms?.let { s -> smsShapeWaiting(runCatching { s.historyReport() }.getOrNull()) } ?: 0
         }
     }
     // اختار «رسائل البنك» في أول تشغيل والإذن اترفض (أو الشرح اتقفل) ⇒ كارت هادي «اسمح لاحقًا» (OVERRIDES §91)
     val smsCard = smsAllowCardShown()
+    val emptyBody = homeEmptyBodyKey(readable = deps.imports.sms != null, readingOn = readingOn)
     TabScaffold(t(UiKey.TAB_HOME), header = { HomeHeader(me, bell.state, bell.refresh) }) {
         if (smsCard) item(key = "smsAllow") { SmsAllowCard() }
+        if (smsWaiting > 0) item(key = "smsWaiting") { SmsWaitingCard(smsWaiting) }
         when (val s = load) {
             HomeLoad.Loading -> item(key = "loading") { HomeSkeleton() }
             HomeLoad.Failed -> item(key = "failed") { HomeErrorBanner { load = HomeLoad.Loading; tick++ } }
             is HomeLoad.Ready -> {
                 // حساب جديد خالص ⇒ الشاشة الفاضية لوحدها (النموذج: حالة «فاضي» من غير البطاقة ولا «القادم»)
                 if (isBrandNew(s.now, s.month)) {
-                    val body = homeEmptyBodyKey(readable = deps.imports.sms != null, readingOn = readingOn)
-                    item(key = "empty") { EmptyState(t(UiKey.HOME_EMPTY_TITLE), t(body)) }
+                    item(key = "empty") { EmptyState(t(UiKey.HOME_EMPTY_TITLE), t(emptyBody)) }
                 } else {
                     item(key = "hero") { WithYouHero(s.now, s.month, shell.today(), onCash = { cashOpen = true }) }
-                    if (isQuietMonth(s.now, s.month)) item(key = "quiet") { QuietMonthCard() }
+                    if (isQuietMonth(s.now, s.month)) item(key = "quiet") { QuietMonthCard(emptyBody) }
                     else s.inbox?.let { advisorCardOf(it, gone) }?.let { card -> item(key = "advisor") { AdvisorCardView(card) } }
                     if (s.profileCard) item(key = "profile") { ProfileCardView() }
                     item(key = "cards") { app.masroufy.ui.screens.home.cards.HomeCards() }

@@ -56,12 +56,32 @@ internal fun AdvisorCardView(card: AdvisorCard) {
     }
 }
 
-/** شهر من غير عمليات (بس فيه محافظ): نفس جملة الشاشة الفاضية في كارت هادي. */
+/**
+ * شهر من غير عمليات (بس فيه محافظ): نفس جملة الشاشة الفاضية في كارت هادي — والسطر التاني حسب القراءة ([body] من `homeEmptyBodyKey`،
+ * r041b P3: مش «فعّل قراءة رسائل البنك» والقراءة شغالة).
+ */
 @Composable
-internal fun QuietMonthCard() {
+internal fun QuietMonthCard(body: UiKey) {
     FloatingCard(Modifier.fillMaxWidth()) {
         BasicText(t(UiKey.HOME_EMPTY_TITLE), style = Type.bodyBold())
-        BasicText(t(UiKey.HOME_EMPTY_BODY), style = Type.of(13).copy(color = Ink.muted))
+        BasicText(t(body), style = Type.of(13).copy(color = Ink.muted))
+    }
+}
+
+/** r041b P3: «عندك N رسالة من البنك مستنية تأكيدك» ⇒ «رسائل البنك» على قايمة «أكّد الأشكال» على طول (قبل كده ولا حاجة في الرئيسية بتدل عليها). */
+@Composable
+internal fun SmsWaitingCard(count: Int) {
+    val nav = LocalNavigator.current
+    FloatingCard(Modifier.fillMaxWidth(), onClick = { nav.push(app.masroufy.ui.screens.imports.BankSmsRoute) }, clickLabel = t(UiKey.SMS_HISTORY_CONFIRM)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
+            IconTile(Ink.focus, size = 40.dp) { LucideIcon(Lucide.MESSAGE_SQUARE_TEXT, size = 20.dp, tint = Ink.focus) }
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                val title = app.masroufy.ui.screens.imports.countText(count, UiKey.HOME_SMS_WAIT_ONE, UiKey.HOME_SMS_WAIT_TWO, UiKey.HOME_SMS_WAIT_FEW, UiKey.HOME_SMS_WAIT_MANY)
+                BasicText(title, style = Type.bodyBold())
+                BasicText(t(UiKey.HOME_SMS_WAIT_BODY), style = Type.of(13).copy(color = Ink.muted))
+                BasicText(t(UiKey.SMS_HISTORY_CONFIRM), style = Type.of(13, androidx.compose.ui.text.font.FontWeight.Bold).copy(color = Ink.primary))
+            }
+        }
     }
 }
 
