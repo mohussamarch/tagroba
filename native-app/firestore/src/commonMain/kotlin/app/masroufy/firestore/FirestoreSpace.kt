@@ -136,6 +136,10 @@ internal suspend fun FirestoreSpace.updateDoc(group: String, id: String, fields:
  * من الذاكرة كمان بدفعات 30: النتيجة **بنفس ترتيب فايربيز** (كل دفعة مترتبة لوحدها) — `MirrorParityTest` مسك الفرق ده.
  */
 internal suspend fun <T> FirestoreSpace.findIn(codec: DocCodec<T>, field: String, values: List<String>): List<T> {
+    if (values.isEmpty()) return emptyList()
+    // r041c: من الذاكرة لفة واحدة على المجموعة (مش لفة وفرز لكل 30 قيمة — آلاف المعرّفات كانت ملايين المقارنات) وبنفس الترتيب
+    val local = mirror?.awaitDocs(codec.group, MIRROR_WAIT_MS)
+    if (local != null) return ReadMeter.mirror(codec.group, local.size) { mirrorIn(local, field, values).map { it.entity(codec::decode) } }
     val out = mutableListOf<T>()
     for (chunk in values.chunked(IN_LIMIT)) out += select(codec, DocQuery(listOf(Cond.In(field, chunk))))
     return out
