@@ -100,6 +100,23 @@ class HomeCardsTest {
     }
 
     @Test
+    fun unpricedPaymentsInTheWindowAreReportedNotTreatedAsNone() {
+        // R041B-1: مناسبة بلا مبلغ مخطط وزكاة سنة مفتوحة (PAY بلا مبلغ) وقسط بعملة تانية ⇒ ما بتتطرحش، بس لازم تتعرف إنها موجودة
+        val items = listOf(
+            item(CalendarItemType.OCCASION, "2026-10-12", null, DueFlow.PAY),
+            item(CalendarItemType.ZAKAT, "2026-10-14", null, DueFlow.PAY),
+            item(CalendarItemType.INSTALLMENT, "2026-10-16", 9_900, DueFlow.PAY, Currency.USD),
+            // برا: فلوس جاية · بعد آخر يوم · قبل النهارده · بمبلغ وبعملة المساحة (ده بيتطرح)
+            item(CalendarItemType.DEBT, "2026-10-15", null, DueFlow.RECEIVE),
+            item(CalendarItemType.OCCASION, "2026-10-28", null, DueFlow.PAY),
+            item(CalendarItemType.OCCASION, "2026-10-01", null, DueFlow.PAY),
+            item(CalendarItemType.RECURRING, "2026-10-20", 40_000, DueFlow.PAY),
+        )
+        assertEquals(listOf("2026-10-12", "2026-10-14", "2026-10-16"), unpricedDuesUntil(items, "2026-10-07", "2026-10-27", Currency.SAR).map { it.date })
+        assertEquals(listOf("2026-10-20"), duesItemsUntil(items, "2026-10-07", "2026-10-27", Currency.SAR).map { it.date })
+    }
+
+    @Test
     fun barsAreShareOfLargestAndGoalPercentIsFloored() {
         assertEquals(listOf(100, 50, 34), sharesOfLargest(listOf(184_000, 92_000, 64_000)))
         assertEquals(emptyList(), sharesOfLargest(emptyList()))

@@ -104,9 +104,12 @@ internal fun DailyCard(state: ReadState<DailyAllowanceView>) {
             s.short -> t(UiKey.HOME_DAILY_SHORT)
             // r041b P4: مفيش التزامات متسجلة ⇒ جملة، مش «ناقص 0.00» كأنها معروفة
             v.noDuesListed -> t(UiKey.HOME_DAILY_BASIS_NO_DUES, amountLabel(s.onHandMinor, v.currency))
+            // R041B-1: كل اللي قبل المرتب من غير مبلغ (أو بعملة تانية) ⇒ لا «مفيش التزامات» ولا «ناقص 0.00» — الجملة اللي تحت بتقول ليه
+            v.unpricedDues && s.duesMinor == 0L -> t(UiKey.HOME_DAILY_BASIS_ON_HAND, amountLabel(s.onHandMinor, v.currency))
             else -> t(UiKey.HOME_DAILY_BASIS, amountLabel(s.onHandMinor, v.currency), amountLabel(s.duesMinor, v.currency))
         }
         BasicText(basis, style = Type.caption().copy(color = Ink.muted))
+        if (v.unpricedDues && s.perDayMinor != null) BasicText(t(UiKey.HOME_DAILY_UNPRICED_NOTE), style = Type.caption().copy(color = Ink.muted))
     }
 }
 

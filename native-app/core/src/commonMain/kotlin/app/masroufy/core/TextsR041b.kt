@@ -23,6 +23,8 @@ internal val MSA_R041B_TEXTS: Map<TextRef, String> = mapOf(
     // الفلوس ورسايل البنك
     TextKey.FORECAST_NO_DATA to "لا عمليات في هذه الفترة بعد — لا أساس للتوقع.",
     UiKey.HOME_DAILY_BASIS_NO_DUES to "معك {0}، ولا التزامات مسجّلة قبل الراتب، مقسومًا على الأيام الباقية.",
+    UiKey.HOME_DAILY_BASIS_ON_HAND to "معك {0}، مقسومًا على الأيام الباقية.",
+    UiKey.HOME_DAILY_UNPRICED_NOTE to "بعض الالتزامات قبل الراتب بلا مبلغ معروف أو بعملة أخرى، ولم تُخصم.",
     UiKey.BANK_SMS_PARTY_TO to "تحويل لشخص",
     UiKey.BANK_SMS_PARTY_FROM to "تحويل من شخص",
     UiKey.SMS_ACCOUNT_NEW_WALLET to "محفظة جديدة لهذا الحساب",
@@ -47,6 +49,8 @@ internal val EGYPTIAN_R041B_TEXTS: Map<TextRef, String> = mapOf(
     // الفلوس ورسايل البنك
     TextKey.FORECAST_NO_DATA to "لسه مفيش عمليات في الفترة دي — مفيش أساس للتوقع.",
     UiKey.HOME_DAILY_BASIS_NO_DUES to "معاك {0}، ومفيش التزامات متسجلة قبل المرتب، على الأيام الفاضلة.",
+    UiKey.HOME_DAILY_BASIS_ON_HAND to "معاك {0}، على الأيام الفاضلة.",
+    UiKey.HOME_DAILY_UNPRICED_NOTE to "فيه التزامات قبل المرتب من غير مبلغ معروف أو بعملة تانية، ومش متطروحة.",
     UiKey.BANK_SMS_PARTY_TO to "تحويل لشخص",
     UiKey.BANK_SMS_PARTY_FROM to "تحويل من شخص",
     UiKey.SMS_ACCOUNT_NEW_WALLET to "محفظة جديدة للحساب ده",
@@ -71,6 +75,8 @@ internal val ENGLISH_R041B_TEXTS: Map<TextRef, String> = mapOf(
     // الفلوس ورسايل البنك
     TextKey.FORECAST_NO_DATA to "No transactions in this period yet — nothing to base a forecast on.",
     UiKey.HOME_DAILY_BASIS_NO_DUES to "You have {0}, with no commitments recorded before payday, over the days left.",
+    UiKey.HOME_DAILY_BASIS_ON_HAND to "You have {0}, over the days left.",
+    UiKey.HOME_DAILY_UNPRICED_NOTE to "Some commitments before payday have no known amount or are in another currency, and are not deducted.",
     UiKey.BANK_SMS_PARTY_TO to "Transfer to a person",
     UiKey.BANK_SMS_PARTY_FROM to "Transfer from a person",
     UiKey.SMS_ACCOUNT_NEW_WALLET to "A new wallet for this account",

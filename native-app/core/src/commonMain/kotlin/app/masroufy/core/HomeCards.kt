@@ -111,6 +111,13 @@ fun duesUntil(items: List<CalendarItem>, today: IsoDate, lastDay: IsoDate, curre
 fun duesItemsUntil(items: List<CalendarItem>, today: IsoDate, lastDay: IsoDate, currency: Currency): List<CalendarItem> =
     items.filter { it.flow == DueFlow.PAY && it.amountMinor != null && it.currency == currency && it.date >= today && it.date <= lastDay }
 
+/**
+ * R041B-1: سطور بتدفعها في نفس الفترة و[duesItemsUntil] سابها — من غير مبلغ (مناسبة من غير مبلغ مخطط · زكاة سنة لسه مفتوحة) أو بعملة
+ * تانية. وجودها معناه إن الطرح ناقص ⇒ جملة «فيه التزامات من غير مبلغ» — عمرها ما تبقى «مفيش التزامات» (CLAUDE.md #10: المجهول مش صفر).
+ */
+fun unpricedDuesUntil(items: List<CalendarItem>, today: IsoDate, lastDay: IsoDate, currency: Currency): List<CalendarItem> =
+    items.filter { it.flow == DueFlow.PAY && (it.amountMinor == null || it.currency != currency) && it.date >= today && it.date <= lastDay }
+
 /** عرض الشريط لكل صف من أكبر واحد (0–100، صحيح) — «أكتر حاجة صرفت فيها». الأكبر = 100، والصفر أو السالب = 0. */
 fun sharesOfLargest(amounts: List<Halalas>): List<Int> {
     val max = amounts.maxOrNull() ?: return emptyList()
