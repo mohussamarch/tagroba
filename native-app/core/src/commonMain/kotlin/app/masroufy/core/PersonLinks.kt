@@ -106,9 +106,15 @@ val PERSON_SEED_CATEGORY_IDS: Set<Id> = setOf(seedCategoryId("تحويلات", "
 
 private val DUES_SYSTEM_SUBS: Set<Id> = setOf(DuesCategories.ROSCAS, DuesCategories.FINANCING, DuesCategories.PURCHASE_PLANS)
 
-/** الكلمات (بعد التطبيع وشيل «ال» و«و» و«ل» و«ب») اللي بتخلّي تصنيف عمله المالك «فلوس مع شخص» — كلمة كاملة بالظبط، مش جزء من كلمة. */
+/**
+ * الكلمات (بعد التطبيع وشيل «ال» و«و» و«ل» و«ب») اللي بتخلّي تصنيف عمله المالك «فلوس مع شخص» — كلمة كاملة بالظبط، مش جزء من كلمة:
+ * سلف · ديون · قروض · مستحقات (A1). «شخص/أشخاص» لوحدها **مش** كفاية (زي «هدايا لأشخاص») — لازم معاها «تحويل» ([PERSON_TRANSFER_WORDS]).
+ */
 val PERSON_CATEGORY_WORDS: Set<String> =
-    setOf("سلف", "سلفه", "سلفيات", "دين", "ديون", "قرض", "قروض", "مستحق", "مستحقات", "مستحقه", "اشخاص", "شخص", "تحويل لاشخاص")
+    setOf("سلف", "سلفه", "سلفيات", "دين", "ديون", "قرض", "قروض", "اقتراض", "استلاف", "مستحق", "مستحقات", "مستحقه")
+
+/** «تحويل لأشخاص» اللي المالك عمله بنفسه: كلمة أولها «تحويل» + كلمة من دول. */
+val PERSON_TRANSFER_WORDS: Set<String> = setOf("شخص", "اشخاص", "ناس")
 
 /** المعاني اللي تنفع لشراء (نصيب شخص فيه): «دفعت عنه» · «هدية له» · «مع الشخص ده بس». */
 val PURCHASE_MEANINGS: List<PersonMeaning> = listOf(PersonMeaning.LENT, PersonMeaning.GAVE, PersonMeaning.WITH)
@@ -169,17 +175,15 @@ private val ARTICLE_PREFIXES = listOf("وال", "بال", "لل", "ال", "و", 
 
 /**
  * التصنيف ده معناه «فلوس مع شخص»؟ المزروع بمعرّفه بس ([PERSON_SEED_CATEGORY_IDS]) — الاسم ما بيتبصلوش (عشان «العناية الشخصية»). اللي المالك
- * عمله: كلمة كاملة من [PERSON_CATEGORY_WORDS] بعد التطبيع (أو الاسم كله زي «تحويل لأشخاص»).
+ * عمله: كلمة كاملة من [PERSON_CATEGORY_WORDS] بعد التطبيع، أو «تحويل» ومعاها كلمة من [PERSON_TRANSFER_WORDS] (زي «تحويل لأشخاص»).
  */
 fun isPersonCategory(category: Category): Boolean {
     if (category.id in PERSON_SEED_CATEGORY_IDS) return true
     if (category.id.startsWith(SEED_CATEGORY_PREFIX)) return false
-    val name = normalizeText(category.name)
-    if (name in PERSON_CATEGORY_WORDS) return true
-    return name.split(' ').any { word ->
-        val bare = ARTICLE_PREFIXES.firstOrNull { word.startsWith(it) && word.length - it.length >= 3 }?.let { word.removePrefix(it) } ?: word
-        bare in PERSON_CATEGORY_WORDS || word in PERSON_CATEGORY_WORDS
-    }
+    val words = normalizeText(category.name).split(' ').filter { it.isNotEmpty() }
+    val bare = words.flatMap { word -> listOfNotNull(word, ARTICLE_PREFIXES.firstOrNull { word.startsWith(it) && word.length - it.length >= 3 }?.let { word.removePrefix(it) }) }
+    if (bare.any { it in PERSON_CATEGORY_WORDS }) return true
+    return words.any { it.startsWith("تحويل") || it.startsWith("التحويل") } && bare.any { it in PERSON_TRANSFER_WORDS }
 }
 
 /** معرّفات التصنيفات المزروعة (`seedCategoryId` · المستحقات · الدخل · رسوم البنك) — اللي المالك بيعمله `category-…`. */

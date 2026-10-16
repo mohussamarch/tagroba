@@ -179,7 +179,7 @@ fun OperationDetailScreen(transactionId: Id, openPerson: Boolean = false) {
         }
     }
     OperationEraseSheet(if (erasing) transactionId else null, deps.erase, onDismiss = { erasing = false }) { e -> erasing = false; erased = e }
-    KindPickerSheet(kindTx, onDismiss = { kindTx = null }) { change, kind -> kindTx = null; kindDone = change; purchase = purchaseAskAfter(kind, listOf(transactionId)); reload++ }
+    KindPickerSheet(kindTx, onDismiss = { kindTx = null }) { change, kind -> kindTx = null; kindDone = change; purchase = purchaseAskAfter(kind, listOf(transactionId)); scope.launch { person.afterKind(deps.personLinks, transactionId); reload++ } }
     PurchaseCategorySheet(purchase) { purchase = null; reload++ }
     CategoryPicker(
         visible = picking && ready != null,

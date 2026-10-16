@@ -115,6 +115,15 @@ class PersonLinksFixesTest {
         assertEquals(PersonMeaning.SUPPORTED, links.listByTransactionIds(listOf("t-in")).single().meaning, "المالك اختار معنى تاني")
     }
 
+    @Test fun f3AKindTheOwnerChoseByHandIsNeverRelinkedByTheRules() = runBlocking {
+        personParty(auto = AutoMeaning.GIFT)
+        manage.rules.ownerChose("t-in2")
+        assertEquals(listOf("t-in2"), parties.listAll().single().autoSkip)
+        assertEquals(0, manage.accounts.applyAuto(listOf("t-in2")), "تفاصيل العملية بعد تغيير النوع ما بتربطهاش")
+        assertEquals(1, manage.rules.onRecorded(listOf("t-in", "t-in2")), "العملية التانية بس")
+        assertTrue(links.listByTransactionIds(listOf("t-in2")).isEmpty())
+    }
+
     @Test fun a2DuesRuleSettlesAtRecordTimeAsAnUndoableLink() = runBlocking {
         manage.link("t-out", "p-1", PersonMeaning.LENT)
         personParty(dues = true)

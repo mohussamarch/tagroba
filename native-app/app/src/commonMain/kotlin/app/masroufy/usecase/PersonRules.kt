@@ -43,6 +43,14 @@ class PersonRules internal constructor(private val deps: PersonLinksDeps, privat
         return duesNow(t, party)
     }
 
+    /**
+     * المالك غيّر معنى العملية بإيده (لوحة «النوع» في التفاصيل) ⇒ قواعد حسابها ما ترجعش تربطها لوحدها أبدًا (A2/F3 — «غيّر معناها»).
+     * من غير طرف تحويل أو حساب بقاعدة ⇒ مفيش حاجة تتكتب.
+     */
+    suspend fun ownerChose(transactionId: Id) {
+        rememberSkip(deps, transactionId)
+    }
+
     /** «تراجع» عن سداد سجّلته القاعدة جوه رد «مستحقات دايمًا» (القرار نفسه بيرجع، فمفيش منع للعملية). */
     suspend fun undo(transactionId: Id) {
         owner.unlink(transactionId, remember = false)

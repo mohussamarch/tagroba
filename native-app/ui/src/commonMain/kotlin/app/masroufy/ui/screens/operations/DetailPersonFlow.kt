@@ -49,6 +49,11 @@ class DetailPersonFlow {
         target = MeaningTarget(v.id, v.transaction.observedDirection, v.title, v.amountMinor, v.currency, purchase = app.masroufy.core.isPurchaseShaped(v.transaction))
     }
 
+    /** بعد ما المالك غيّر النوع بإيده: قواعد الحساب المربوط ما ترجعش تربطها (A2/F3) — قبل إعادة التحميل عشان التفاصيل ما تربطهاش تاني. */
+    suspend fun afterKind(links: ManagePersonLinks?, transactionId: Id) {
+        links?.let { attempt { it.rules.ownerChose(transactionId) } }
+    }
+
     /** بعد ما التصنيف يتحفظ: لو بقى «فلوس مع شخص» والعملية مش مربوطة ⇒ «مع مين؟» على طول (طريق المالك نفسه). */
     suspend fun afterCategory(links: ManagePersonLinks?, v: DetailView) {
         val s = links?.let { attempt { it.statusOf(v.id) } } ?: return

@@ -85,11 +85,12 @@ class PersonPageAcrossTest {
             c(seedCategoryId("تحويلات"), null, "تحويلات"), c(seedCategoryId("تحويلات", "تحويل لأشخاص"), seedCategoryId("تحويلات"), "تحويل لأشخاص"),
             c(DuesCategories.ROOT, null, "المستحقات"), c(DuesCategories.FINANCING, DuesCategories.ROOT, "تمويل"),
             c("category-1", null, "سلف الأصحاب"), c("category-2", "category-1", "أخويا"), c("category-3", null, "منتجات شخصية"), c("category-4", null, "قروض"),
+            c("category-5", null, "هدايا لأشخاص"), c("category-6", null, "تحويلات للأشخاص"), c("category-7", null, "مستحقات الشغل"), c("category-8", null, "شخصي"),
         )
         assertEquals(
-            setOf(seedCategoryId("تحويلات", "تحويل لأشخاص"), DuesCategories.ROOT, "category-1", "category-2", "category-4"),
+            setOf(seedCategoryId("تحويلات", "تحويل لأشخاص"), DuesCategories.ROOT, "category-1", "category-2", "category-4", "category-6", "category-7"),
             personCategoryIds(tree),
-            "«العناية الشخصية» وفروعها و«شخصية» مش فلوس مع شخص · تمويل البنك تحت المستحقات برّه",
+            "«العناية الشخصية» وفروعها و«شخصية» و«هدايا لأشخاص» مش فلوس مع شخص · تمويل البنك تحت المستحقات برّه",
         )
     }
 
