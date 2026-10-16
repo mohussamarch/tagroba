@@ -76,11 +76,13 @@ fun HomeScreen() {
     LaunchedEffect(deps, tick, changes.version) {
         app.masroufy.perf.PerfTrace.span("screen:home") {
             me = runCatching { shell.me() }.getOrNull()
-            load = loadHome(deps)
-            // r041b P3: الكارت الهادي «لا توجد عمليات» كمان (مش الشاشة الفاضية بس) بيقول القراءة شغالة لو شغالة
-            if (load.let { it is HomeLoad.Ready && (isBrandNew(it.now, it.month) || isQuietMonth(it.now, it.month)) }) {
+            val loaded = loadHome(deps)
+            // r041b P3: الكارت الهادي «لا توجد عمليات» كمان (مش الشاشة الفاضية بس) بيقول القراءة شغالة لو شغالة.
+            // R041B-2: حالة القراءة بتتقري **قبل** ما الشاشة تتعرض — وإلا أول إطار بيقول «فعّل القراءة» وهي شغالة لحد ما القراية ترجع
+            if (loaded.let { it is HomeLoad.Ready && (isBrandNew(it.now, it.month) || isQuietMonth(it.now, it.month)) }) {
                 readingOn = runCatching { deps.imports.sms?.readingOn() }.getOrNull() == true
             }
+            load = loaded
             smsWaiting = deps.imports.sms?.let { s -> smsShapeWaiting(runCatching { s.historyReport() }.getOrNull()) } ?: 0
         }
     }
