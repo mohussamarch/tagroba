@@ -12,6 +12,7 @@ import app.masroufy.core.ImportSourceType
 import app.masroufy.core.IsoDate
 import app.masroufy.core.MatchingState
 import app.masroufy.core.SchemaId
+import app.masroufy.core.SmsKind
 import app.masroufy.core.SmsLegVerdict
 import app.masroufy.core.SmsParseResult
 import app.masroufy.core.SmsRow
@@ -45,13 +46,17 @@ data class SmsUnrecordedLine(
 /** معاينة الشاشة كلها: النقل (قبل ⇒ بعد) و«الكشف غطّاها». */
 data class SmsRepairPreview(val moves: List<SmsRepairLine>, val unrecorded: List<SmsUnrecordedLine>)
 
-/** اللي اتكتب لما «الكشف غطّاها» اتسجلت — «تراجع» بيمسح الجديد ويرجّع السجلات والدفعات زي ما كانت بالحرف. */
+/**
+ * اللي اتكتب لما «الكشف غطّاها» اتسجلت — «تراجع» بيمسح الجديد ويرجّع السجلات والدفعات زي ما كانت بالحرف.
+ * [createdStamps] = `updatedAt` لكل عملية اتعملت لحظة الكتابة: اتغيرت من ساعتها (تعديل · ربط) ⇒ «تراجع» بيترفض (النسخة هي البديل).
+ */
 internal class CoveredWrite(
     val lineCount: Int,
     val createdTransactionIds: List<Id>,
     val createdRecordIds: List<Id>,
     val recordsBefore: List<SourceRecord>,
     val batchesBefore: List<ImportBatch>,
+    val createdStamps: Map<Id, String> = emptyMap(),
 )
 
 /**
@@ -59,9 +64,11 @@ internal class CoveredWrite(
  * يأكّد، وبتتسجل وعليها «مش في الكشف» بنفس بنّا التسجيل العادي (`RecordLines.kt`) — نفس آثار خط الرسايل ([withReturnEffects] زي `SmsLane.of`).
  * الحكم «جوه أيام الكشف» و«المبلغ في الكشف» هو نفس دوال التسجيل ([inCoveredDays] · [amountInStatement]) — القاعدتين ما يختلفوش.
  * ⚠️ آثار ما بعد الحفظ (`afterCommit` — سؤال «ده راتبك؟» · ميعاد الاشتراك) **ما بتتنداش هنا**: بتكتب برّا وحدة العمل و«تراجع» ما يقدرش يرجّعها.
+ * عشان كده `ReturnedSmsEffect` **مش هنا** (ربطه بعملية متخزنة بيكمل في `afterCommit` وبيكتب على عملية متخزنة جوه `prepare`)، ورسايل «رجع»
+ * وكل سطر ليه سبب انتظار (`waitReasonOf` — استرداد · سحب كاش · إيداع كاش · …) ما بتتعرضش في النسخة دي (OVERRIDES §91 — سؤال مفتوح).
  */
 class CoveredSmsRepair(deps: ImportStatementDeps, private val wallets: WalletRepository, private val readers: List<BankSmsReader>) {
-    private val deps = withReturnEffects(deps)
+    private val deps = withReturnEffects(deps).let { d -> d.copy(effects = d.effects.filter { it !is ReturnedSmsEffect }) }
 
     internal class Candidate(val line: SmsUnrecordedLine, val record: SourceRecord, val batch: ImportBatch, val wallet: Wallet, val row: SmsRow)
 
@@ -92,7 +99,8 @@ class CoveredSmsRepair(deps: ImportStatementDeps, private val wallets: WalletRep
             // اتسجلت بعدين بطريقة تانية · أو المالك مسحها بإيده (§91-12) ⇒ مش هنا
             if (sameRef[ref].orEmpty().any { it.transactionId != null || it.ownerDeletedAt != null }) continue
             val wallet = all.filter { it.name == record.accountIdentity }.singleOrNull() ?: continue
-            val row = rowOf(record, batch, wallet, own, notMine) ?: continue
+            val row = rowOf(record, batch, wallet, own, notMine)
+                ?.takeIf { it.kind != SmsKind.RETURNED && waitReasonOf(it, targetOf(wallet, all, movesCash = false)) == null } ?: continue
             val cover = covers.getOrPut(record.accountIdentity) { coverOf(record.accountIdentity) } ?: continue
             // المبلغ **في** الكشف ⇒ ما بتظهرش أبدًا (قاعدة المالك — بتفضل مدموجة/مغطّاة)
             if (!inCoveredDays(row.date, cover.days) || amountInStatement(cover.statement, row.date, row.amountMinor, row.direction)) continue
@@ -160,9 +168,10 @@ class CoveredSmsRepair(deps: ImportStatementDeps, private val wallets: WalletRep
         deps.sources.saveMany(updated + extra.map { it.second })
         deps.txns.saveMany(lineTxns + extra.map { it.first })
         for (b in batchesAfter) deps.batches.save(b)
+        val created = lineTxns + extra.map { it.first }
         return CoveredWrite(
-            chosen.size, (lineTxns + extra.map { it.first }).map { it.id }, extra.map { it.second.id },
-            chosen.map { it.record }, chosen.map { it.batch }.distinctBy { it.id },
+            chosen.size, created.map { it.id }, extra.map { it.second.id },
+            chosen.map { it.record }, chosen.map { it.batch }.distinctBy { it.id }, created.associate { it.id to it.updatedAt },
         )
     }
 

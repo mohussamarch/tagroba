@@ -134,11 +134,14 @@ class RepairOldSms(
 
     /**
      * «تراجع» الدفعة كلها في وحدة عمل واحدة. اللي «الكشف غطّاها» سجّله بيتمسح **من غير علامة مسح المالك** (عشان يتعرض تاني) والسجلات والدفعات
-     * بترجع بالحرف. عملية منهم اتربطت بعدها (مصروف تابع · مبلغ داخل مربوط) ⇒ رفض زي المسح.
+     * بترجع بالحرف. عملية منهم اتربطت بعدها (مصروف تابع · مبلغ داخل مربوط) أو اتعدلت (`updatedAt` اتغير) ⇒ رفض زي المسح، ومفيش ولا كتابة.
      */
     suspend fun undo(undo: SmsRepairUndo) {
         val c = undo.covered
-        if (c != null && txns.findByIds(c.createdTransactionIds).any { it.linkedExpenseId != null || it.linkedInflowMinor != null }) {
+        if (c != null && txns.findByIds(c.createdTransactionIds).any {
+                it.linkedExpenseId != null || it.linkedInflowMinor != null || c.createdStamps[it.id].let { stamp -> stamp != null && stamp != it.updatedAt }
+            }
+        ) {
             throw IllegalStateException(uiText(UiKey.ERASE_TXN_BLOCKED_TITLE))
         }
         uow.run {

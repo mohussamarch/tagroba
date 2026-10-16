@@ -11,6 +11,7 @@ import app.masroufy.core.ImportSourceType
 import app.masroufy.core.MatchingState
 import app.masroufy.core.ReviewState
 import app.masroufy.core.SaudiBankSmsReader
+import app.masroufy.core.SmsKind
 import app.masroufy.core.SmsLegVerdict
 import app.masroufy.core.SmsParseResult
 import app.masroufy.core.SourceRecord
@@ -174,6 +175,28 @@ class RepairOldSmsUnrecordedTest {
         assertEquals(moveTxn, w.txns.findByIds(listOf("t1")).single())
         assertEquals(notInStatement, w.sources.listByBatch("bSms").single { it.id == "r1" })
         assertTrue(w.txns.findByIds(listOf(created)).isEmpty())
+    }
+
+    @Test
+    fun aRefundWaitsForItsOwnQuestionInsteadOfBeingListed() = runBlocking {
+        // سطر ليه سبب انتظار (استرداد) ⇒ مش في النسخة دي — حتى لو مبلغه مش في الكشف ويومه جوه أيامه
+        val body = "Notification: Refund\nTransaction: TEST OPTICS\nCard: ***2222\nAmount: 89.00 SAR\nDate: 2026-03-14 16:02"
+        val row = (SaudiBankSmsReader.parse(BankSmsMessage("", "2026-03-25T12:00:00Z", body), 1) as SmsParseResult.Ok).row
+        assertEquals(Triple(SmsKind.REFUND, "2026-03-14", Direction.IN), Triple(row.kind, row.date, row.direction))
+        assertTrue(World(listOf(skipped("r9", "SMS:nine", body))).repair.previewAll().unrecorded.isEmpty())
+    }
+
+    @Test
+    fun undoIsRefusedWithoutAnyWriteWhenTheRecordedLineWasEditedSince() = runBlocking {
+        val w = World(listOf(notInStatement))
+        val result = assertNotNull(w.repair.applyAll(emptySet(), setOf("r1")))
+        val record = w.sources.listByBatch("bSms").single()
+        val created = w.txns.findByIds(listOf(assertNotNull(record.transactionId))).single()
+        val edited = created.copy(categoryId = "cOther", updatedAt = "2026-10-17T09:00:00.000Z")
+        w.txns.saveMany(listOf(edited))
+        assertFailsWith<IllegalStateException> { w.repair.undo(result.undo) }
+        assertEquals(edited, w.txns.findByIds(listOf(created.id)).single())
+        assertEquals(record, w.sources.listByBatch("bSms").single())
     }
 
     @Test
