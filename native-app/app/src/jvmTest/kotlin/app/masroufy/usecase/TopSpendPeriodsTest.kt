@@ -95,6 +95,7 @@ class TopSpendPeriodsTest {
     @Test
     fun anUnsureLastMonthGivesNoChangeInsteadOfAFakeOne() = runBlocking {
         val unsure = last + txn("2026-09-14", 4_000, null, kind = EconomicKind.UNCLASSIFIED, confirmed = false)
+            .copy(suggestedKind = EconomicKind.INTERNAL_TRANSFER) // مستنية «نلغي الاتنين؟» ⇒ نوعها مش معروف
         val v = useCase(now + unsure, cats).loadAll("2026-10-10", 28)
         assertTrue(v.rows.all { it.changePercent == null }, "الشهر اللي فات فيه عمليات نوعها مش معروف ⇒ مفيش أسهم")
         val none = useCase(now, cats).loadAll("2026-10-10", 28)
