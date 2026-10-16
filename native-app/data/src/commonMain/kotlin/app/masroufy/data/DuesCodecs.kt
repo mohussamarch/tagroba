@@ -57,7 +57,7 @@ object DuesCodecs {
                 req("cycleMonths", p.cycleMonths); req("firstDueAt", p.firstDueAt); opt("hasInterest", p.hasInterest); req("createdAt", p.createdAt)
                 opt("receivedTransactionId", p.receivedTransactionId)
                 opt("dismissedTxnIds", p.dismissedTxnIds.takeIf { it.isNotEmpty() })
-                opt("cycleWeeks", p.cycleWeeks); opt("categoryId", p.categoryId)
+                opt("cycleWeeks", p.cycleWeeks); opt("categoryId", p.categoryId); opt("remindDayBefore", p.remindDayBefore)
             }
         },
         { d ->
@@ -65,7 +65,7 @@ object DuesCodecs {
                 d.str("id"), d.str("name"), d.str("provider"), d.wire("kind", InstallmentKind::fromWire), d.wire("currency", Currency::valueOf),
                 d.long("principalMinor"), d.long("totalMinor"), d.long("installmentMinor"), d.int("cycleMonths"), d.str("firstDueAt"),
                 d.boolOrNull("hasInterest"), d.str("createdAt"), d.strOrNull("receivedTransactionId"), d.strings("dismissedTxnIds").orEmpty(),
-                d.intOrNull("cycleWeeks"), d.strOrNull("categoryId"),
+                d.intOrNull("cycleWeeks"), d.strOrNull("categoryId"), d.boolOrNull("remindDayBefore"),
             )
         },
     )

@@ -49,7 +49,7 @@ class BnplChargesTest {
                 MemoryUnitOfWork(listOf(payments, txns)), SequentialIdGenerator(), FixedClock("2026-10-16T09:00:00.000Z"), MemoryCategoryRepository(),
             ),
         )
-        val bnpl = BnplCharges(BnplChargesDeps(txns, plans, payments, installments, FixedClock("2026-10-16T09:00:00.000Z")) { today })
+        val bnpl = BnplCharges(BnplChargesDeps(txns, plans, payments, installments, FixedClock("2026-10-16T09:00:00.000Z"), { today }))
     }
 
     @Test fun providersAreRecognisedByNameOnly() {

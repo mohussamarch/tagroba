@@ -44,6 +44,8 @@ object LedgerCodecs {
                 opt("explainsCheckpointId", t.explainsCheckpointId)
                 // OVERRIDES §91-2: علامة «مش في الكشف» — لو موجودة بس
                 opt("notInStatement", t.notInStatement)
+                // r051: ردّ لوحة «ادفع بعدين» — لو موجود بس
+                opt("bnplDecided", t.bnplDecided)
             }
         },
         { r ->
@@ -67,6 +69,7 @@ object LedgerCodecs {
                 supportAskPending = r.boolOrNull("supportAskPending"),
                 explainsCheckpointId = r.strOrNull("explainsCheckpointId"),
                 notInStatement = r.boolOrNull("notInStatement"),
+                bnplDecided = r.boolOrNull("bnplDecided"),
             )
         },
     )

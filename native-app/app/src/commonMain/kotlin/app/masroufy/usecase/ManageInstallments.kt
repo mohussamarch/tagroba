@@ -66,6 +66,8 @@ data class InstallmentInput(
     /** r05 (BNPL): كل كام أسبوع (null = كل [cycleMonths] شهر) · تصنيف المشترى (null = «المستحقات ← تقسيط مشتريات»). */
     val cycleWeeks: Int? = null,
     val categoryId: Id? = null,
+    /** r051: «فكّرني قبل كل دفعة بيوم» (`InstallmentPlan.remindDayBefore`). */
+    val remindDayBefore: Boolean? = null,
 )
 
 /** [receivedMinor]: مبلغ عملية «مبلغ تمويل مستلم» المربوطة (null = لسه ما اتربطتش — مش صفر). */
@@ -128,6 +130,7 @@ class ManageInstallments(private val deps: ManageInstallmentsDeps) {
             dismissedTxnIds = existing?.dismissedTxnIds.orEmpty(),
             cycleWeeks = input.cycleWeeks,
             categoryId = input.categoryId,
+            remindDayBefore = input.remindDayBefore ?: existing?.remindDayBefore,
         )
         val plan = draft.copy(name = checkInstallmentPlan(draft).name)
         if (existing != null) {

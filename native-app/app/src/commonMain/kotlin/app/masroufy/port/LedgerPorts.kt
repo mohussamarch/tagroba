@@ -70,6 +70,8 @@ data class TransactionPatch(
     /** النوع المقترح المستني تأكيد (§75-6 · §77-D) — `clearSuggestedKind` = اتجاوب. */
     val suggestedKind: app.masroufy.core.EconomicKind? = null,
     val clearSuggestedKind: Boolean = false,
+    /** r051: «اتردّ على لوحة ادفع بعدين» (`Transaction.bnplDecided`) — true بس (null = زي ما هو). */
+    val bnplDecided: Boolean? = null,
     /** ربط العملية اللي رجعت بالأصلية (§77-D) — `clear…` = فك الربط (التراجع والتصليح). */
     val reversalOfId: Id? = null,
     val clearReversalOfId: Boolean = false,
