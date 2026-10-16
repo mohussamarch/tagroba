@@ -1673,3 +1673,12 @@ Legacy v1 restoration remains a separate compatibility path; its coverage is exp
 - **الخيوط:** `LoadHoldings` و`LoadInvestRates` مرة واحدة لكل فتحة، والحساب على `Dispatchers.Default` (نفس قاعدة §31.42) — الشاشة ما بتختارش خيط.
 - **البناء:** البناء الكامل وقع مرة بـ`StackOverflowError` جوه مترجم Compose (لما الترجمة بتبدأ من الأول) ⇒ اشتغل بـ`"-Dorg.gradle.jvmargs=-Xmx3g -Xss16m -Dfile.encoding=UTF-8"` على أمر gradle. `gradle.properties` ما اتغيرش.
 - **النسخة:** `versionCode 6` · `kotlin-0.5` (و`kotlin-0.5-fast` للسريعة).
+
+### 31.44 جولة 0.5.1: لوحة «ادفع بعدين» المعتمدة وقسم «مشتريات بالتقسيط» (2026-10-17، فرع `r051-bnpl2` فوق `b66d0a11` — OVERRIDES §102)
+
+- **`core`:** `BnplPlan.kt` (`BNPL_SPLITS` · `bnplSchedule` · `bnplPreview` · `bnplSteps` — من `DueSchedule` المشترك) · `Bnpl.kt` (`BnplOpenPlan.paidCount/count` · `bnplMatch(…, transactionId)` بيتجاهل الخطة اللي اتعمل لها «تراجع») · `DueItem.alertDays` (null = من غير تنبيه) ⇐ `InstallmentPlan.remindDayBefore` · `Transaction.bnplDecided` · نصوص `TextsBnplSheet.kt` (مفاتيح `UiKey.BNPL2_*` — متسجلة مع منطقة الاستيراد).
+- **`app`:** `BnplCharges` (`settle` ⇐ `autoLinked` + `options` بالفرق واسم المحفظة · `preview` · `notInstallment` · `undoAutoLink`) · `BnplTypes.kt` (الأنواع) · `LoadBnplPlans` (قسم «الأقساط»). `BnplChargesDeps` + `wallets` و`categories` اختياريين. `TransactionPatch.bnplDecided`.
+- **`ui`:** `screens/dues/BnplHost.kt` (جوه `AppShell` جنب `SmsHandoffHost`) · `BnplSheet.kt` · `BnplWhich.kt` · `BnplParts.kt` · `BnplSection.kt` · `InstallmentsScreen` بيقرا برّه الخيط. `Toaster.show(text, action, …)` = رسالة بزرار (8 ثواني). `DuesDeps.bnpl` و`bnplPlans` (null ⇒ مفيش لوحة ولا قسم).
+- **`wiring`:** `DuesGraph` بيبني الاتنين بنفس `ManageInstallments`. اتشال من `SmsDeps`/`SmsScreenExtras` (`bnplAsks` · `bnplAnswer`) — الهيكل هو المكان الوحيد.
+- **التخزين:** حقلين اختياريين بس (`bnplDecided` في العملية · `remindDayBefore` في الخطة) — بيتكتبوا لو موجودين ⇒ مفيش هجرة ولا تعديل في القواعد.
+- **مفيش مكتبة جديدة.** السرعة: `BnplSpeedTest` (3,600 عملية مخترعة + 40 خطة) — `settle` + `LoadBnplPlans` + المعاينة أقل من 700 مللي ثانية. الرسم: `BnplPngTest` (`BNPL_PNG_DIR`).
