@@ -44,6 +44,18 @@ data class UserProfile(
      * وبتتنسخ في النسخة الاحتياطية مع الملف من غير كود زيادة. `null` = لسه ما اتبنتش. حقل التطبيق الجديد بس (ما بيتكتبش لو `null`).
      */
     val character: CharacterLook? = null,
+    /**
+     * عملة [salaryMinor] (قرار المالك 2026-10-16: المرتب **مبلغ بالظبط** بعملة البلد — مش نطاقات). `null` مع مبلغ = مبلغ قديم من قبل
+     * العملات (بيتعرض زي ما كان). المبلغ بعملة تانية ما بيتعرضش في بلد عملتها مختلفة (القاعدة 10). حقل التطبيق الجديد بس.
+     */
+    val salaryCurrency: Currency? = null,
+    /** «أفضّل ما أقولش» على سؤال المرتب ⇒ `true` (السؤال ما بيرجعش). `null` = ما اختارش ده. حقل التطبيق الجديد بس. */
+    val salaryDeclined: Boolean? = null,
+    /**
+     * نطاق مرتب قديم متخزن (مفتاح `salaryRange` — الطريقة اللي اتلغت 2026-10-16) **زي ما هو**. عمره ما بيتحول لرقم متخمّن:
+     * المرتب بيفضل «ما اتجاوبش» وبيتطلب يتكتب بالظبط. بيتمسح أول ما يكتب المبلغ أو يختار «أفضّل ما أقولش».
+     */
+    val salaryRangeLegacy: String? = null,
 )
 
 /** عدد الأشكال (المؤقتة لحد ما الكاركتر النهائي يتصمم — §73). */
@@ -83,6 +95,9 @@ fun parseStoredProfile(raw: Map<String, Any?>?): UserProfile {
         carToWork = bool("carToWork"),
         lookIndex = safeInteger(data["lookIndex"])?.takeIf { it in 1..LOOK_COUNT }?.toInt(),
         character = parseStoredCharacter(data["character"]),
+        salaryCurrency = (data["salaryCurrency"] as? String)?.let { c -> Currency.entries.firstOrNull { it.name == c } },
+        salaryDeclined = bool("salaryDeclined")?.takeIf { it },
+        salaryRangeLegacy = data["salaryRange"]?.let { it as? String ?: it.toString() }?.takeIf { it.isNotEmpty() },
     )
 }
 

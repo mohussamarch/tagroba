@@ -165,6 +165,13 @@ class ManageIncomeSources(private val deps: ManageIncomeSourcesDeps) {
         return updated
     }
 
+    /** «أفضّل ما أقولش» على سؤال المرتب (`ProfileSalary.decline`) ⇒ المرتب المتوقع للجهة بيتمسح (رجوع لـ«ما اتجاوبش» — مش صفر). */
+    suspend fun forgetExpectedSalary(sourceId: Id): IncomeSource {
+        val updated = find(sourceId).copy(expectedMinor = null)
+        deps.sources.saveMany(listOf(updated))
+        return updated
+    }
+
     /** «أيوه، غيّر بداية شهري» ⇒ يوم الراتب في الملف، من نفس استخدام الملف (بيتأكد من القيمة قبل الحفظ). */
     suspend fun applyMonthStart(day: Int): ProfileCheck = deps.profile.save(deps.profile.load().copy(payday = day))
 }

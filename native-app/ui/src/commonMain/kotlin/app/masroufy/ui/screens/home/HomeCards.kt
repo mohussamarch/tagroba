@@ -110,7 +110,9 @@ internal fun ProfileCardView() {
     val nav = LocalNavigator.current
     val deps = LocalSpace.current
     val tips = rememberHomeTips()
-    val next by produceState<ProfileCard?>(null, deps) { value = runCatching { nextProfileCard(deps.home.profile.load()) }.getOrNull() }
+    val next by produceState<ProfileCard?>(null, deps) {
+        value = runCatching { nextProfileCard(deps.home.profile.load(), runCatching { deps.home.salary?.current() }.getOrNull()) }.getOrNull()
+    }
     val key = next?.let { profileTipKey(it.name) } ?: return
     if (!tips.profileShown(key)) return
     FloatingCard(Modifier.fillMaxWidth(), onClick = { nav.push(ProfileQuestionRoute) }) {

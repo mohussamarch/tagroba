@@ -45,6 +45,9 @@ class MoreGraph(private val c: AreaContext) : MoreDeps {
 
     override val incomeSources = ManageIncomeSources(ManageIncomeSourcesDeps(r.incomeSources, c.shell.profile, r.uow, c.env.ids, c.env.clock))
 
+    /** «المرتب الشهري» — مبلغ بالظبط (قرار المالك 2026-10-16) على جهة الشغل الرئيسية أو الملف. */
+    override val salary = salaryCase(c, incomeSources)
+
     override val incomeSignals = IncomeSourceSignals(
         IncomeSignalsDeps(r.incomeSources, r.transactions, r.allocations, r.profile, r.uow, c.env.clock, parties = r.transferParties),
     )

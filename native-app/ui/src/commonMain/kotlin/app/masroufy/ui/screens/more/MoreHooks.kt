@@ -34,8 +34,11 @@ interface MoreHooks {
     /** «ابنِ شخصيتك» / «عدّل شخصيتك» (r041) ⇒ `ManageProfile.character` و`saveCharacter` — متوصّل في `MoreGraph`. */
     val character: app.masroufy.ui.screens.character.CharacterSetting? get() = null
 
-    /** نطاق الراتب («أقل من 5 آلاف» …) — `UserProfile` فيه راتب بالهللة بس، والنموذج بيسأل نطاقات (§63). */
-    val salaryRange: SalaryRangeSetting? get() = null
+    /**
+     * «المرتب الشهري» — **مبلغ بالظبط بيتكتب** (قرار المالك 2026-10-16، بدل النطاقات) — **متوصّل** في `MoreGraph`.
+     * null (المعاينة) ⇒ «غير متاح بعد».
+     */
+    val salary: app.masroufy.usecase.ProfileSalary? get() = null
 
     /** «سؤال الكاش» وتكراره في إعدادات الإشعارات (§74 — مالوش إعداد ولا تنبيه في كوتلن). */
     val cashQuestion: CashQuestionSetting? get() = null
@@ -87,15 +90,6 @@ interface LanguageSetting {
 
     /** بيتطبق لما التطبيق يتفتح تاني. */
     fun choose(language: Language)
-}
-
-/** نطاقات الراتب الأربعة + «أفضّل ألا أقول» (§63). */
-enum class SalaryRange { R1, R2, R3, R4, SKIP }
-
-interface SalaryRangeSetting {
-    suspend fun current(): SalaryRange?
-
-    suspend fun choose(range: SalaryRange)
 }
 
 /** كل كام أسبوع بيسأل «كم معك كاش؟». */

@@ -80,11 +80,21 @@ class AccountStateTest {
     }
 
     @Test
-    fun salaryRangeWinsOverTheStoredAmountAndFollowsTheCountry() {
-        assertEquals(t(UiKey.ACC_SAL_SA_R2), salaryValue(blank.copy(salaryMinor = 500_000), Currency.SAR, SalaryRange.R2))
-        assertEquals(t(UiKey.ACC_SAL_EG_R2), salaryValue(blank, Currency.EGP, SalaryRange.R2))
-        assertEquals(t(UiKey.ACC_SAL_SKIP), salaryValue(blank, Currency.EGP, SalaryRange.SKIP))
+    fun salaryIsTheExactTypedAmountAndAnOldRangeAsksToTypeIt() {
+        val sar = app.masroufy.core.SalaryState(1_250_050, Currency.SAR, declined = false, wasRange = false, employer = null)
+        assertEquals(amountLabel(1_250_050, Currency.SAR), salaryValue(blank, Currency.SAR, sar))
+        val skip = sar.copy(amountMinor = null, declined = true)
+        assertEquals(t(UiKey.ACC_SAL_SKIP), salaryValue(blank, Currency.EGP, skip))
+        val range = sar.copy(amountMinor = null, wasRange = true)
+        assertNull(salaryValue(blank, Currency.SAR, range), "النطاق القديم مش رقم ⇒ «لم تُجب بعد»")
+        assertEquals(UiKey.ACC_SALARY_WAS_RANGE, salaryHint(range))
+        assertEquals(UiKey.ACC_SALARY_HINT, salaryHint(sar))
         assertNull(salaryValue(blank, Currency.SAR, null))
+        assertNull(salaryValue(blank.copy(salaryMinor = 500_000, salaryCurrency = Currency.SAR), Currency.EGP, null), "ريال ما يتعرضش بالجنيه")
+        assertEquals(1_250_050L, readSalaryText(salaryDraft(sar), Currency.SAR).minor, "المسودة بتتقري هي هي")
+        assertEquals(SalaryText(1_250_050, false), readSalaryText(" 12500.50 ", Currency.SAR))
+        assertEquals(SalaryText(null, true), readSalaryText("0", Currency.SAR))
+        assertEquals(SalaryText(null, false), readSalaryText("  ", Currency.SAR))
     }
 
     @Test

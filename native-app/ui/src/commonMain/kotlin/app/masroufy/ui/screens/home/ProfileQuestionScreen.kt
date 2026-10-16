@@ -27,8 +27,13 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import app.masroufy.core.Halalas
 import app.masroufy.core.IncomeFollowUp
 import app.masroufy.core.ProfileCheck
+import app.masroufy.core.SalaryState
+import app.masroufy.ui.screens.more.SalaryInput
+import app.masroufy.ui.screens.more.salaryDraft
+import app.masroufy.usecase.SalarySaved
 import app.masroufy.core.TextKey
 import app.masroufy.core.UserProfile
 import app.masroufy.ui.app.LocalSpace
@@ -71,8 +76,30 @@ fun ProfileQuestionScreen() {
     var saving by remember { mutableStateOf(false) }
     // «عندي سيارة» وعنده شغل شغال ⇒ «هل تذهب بها إلى العمل؟» هو السؤال الجاي (§64 — `IncomeFollowUp.CarToWork`)
     var carToWork by remember { mutableStateOf(false) }
+    // المرتب مبلغ بالظبط (قرار المالك 2026-10-16) — حالته من `ProfileSalary` (على جهة الشغل الرئيسية أو الملف)
+    var salary by remember(deps) { mutableStateOf<SalaryState?>(null) }
+    var salaryText by remember { mutableStateOf("") }
     LaunchedEffect(deps) {
-        runCatching { deps.home.profile.load() }.onSuccess { profile = it; card = nextProfileCard(it) }.onFailure { failed = true }
+        salary = runCatching { deps.home.salary?.current() }.getOrNull()
+        salaryText = salaryDraft(salary)
+        runCatching { deps.home.profile.load() }.onSuccess { profile = it; card = nextProfileCard(it, salary) }.onFailure { failed = true }
+    }
+    fun salaryAnswer(declined: Boolean, amount: Halalas?) {
+        val use = deps.home.salary ?: return
+        if (saving) return
+        saving = true
+        error = null
+        scope.launch {
+            when (val r = runCatching { if (declined) use.decline() else use.save(amount) }.getOrNull()) {
+                is SalarySaved.Ok -> {
+                    salary = r.state
+                    reply = t(if (declined) UiKey.PROFILE_QUESTION_SALARY_SKIP_REPLY else UiKey.PROFILE_QUESTION_SALARY_REPLY)
+                }
+                is SalarySaved.Invalid -> error = r.message
+                null -> error = t(UiKey.PROFILE_QUESTION_SAVE_FAILED)
+            }
+            saving = false
+        }
     }
     fun answer(c: ProfileCard, option: ProfileOption) {
         val p = profile ?: return
@@ -115,7 +142,12 @@ fun ProfileQuestionScreen() {
             else -> {
                 item(key = "lead") { LeadLine() }
                 item(key = "card-${c.name}") { QuestionCard(c, picked, enabled = reply == null && !saving) { answer(c, it) } }
-                error?.let { msg -> item(key = "error") { FieldError(msg) } }
+                if (c == ProfileCard.SALARY && reply == null) item(key = "salary") {
+                    SalaryInput(
+                        salaryText, { salaryText = it; error = null }, deps.space.currency, salary, error, enabled = !saving,
+                        onSave = { salaryAnswer(declined = false, amount = it) }, onDecline = { salaryAnswer(declined = true, amount = null) },
+                    )
+                } else error?.let { msg -> item(key = "error") { FieldError(msg) } }
                 val r = reply
                 if (r != null) item(key = "reply") {
                     // §63: سؤال واحد بس كل مرة ⇒ بعد الإجابة «العودة إلى الرئيسية» (النموذج) — إلا سؤال المتابعة اللي المنطق نفسه طلّعه

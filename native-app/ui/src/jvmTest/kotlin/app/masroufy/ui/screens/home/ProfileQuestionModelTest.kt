@@ -7,6 +7,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 /**
  * «كمّل ملفك»: سؤال واحد بالترتيب (السيارة ⇒ العائلة ⇒ السكن ⇒ العمل الخاص) للحقول اللي لسه فاضية بس، والإجابة ⇒ حقول يقبلها `checkProfile`.
@@ -20,6 +21,16 @@ class ProfileQuestionModelTest {
         assertEquals(ProfileCard.HOME, nextProfileCard(p.copy(hasCar = true, supportsDependents = false)))
         assertEquals(ProfileCard.BIZ, nextProfileCard(p.copy(hasCar = true, supportsDependents = true, renter = false)))
         assertNull(nextProfileCard(p.copy(hasCar = true, supportsDependents = true, renter = false, business = false)), "خلص ⇒ الكارت بيختفي")
+    }
+
+    @Test fun salaryIsAskedAfterFamilyUntilTypedOrSkipped() {
+        val p = emptyProfile().copy(hasCar = true, supportsDependents = false)
+        val open = app.masroufy.core.SalaryState(null, app.masroufy.core.Currency.SAR, declined = false, wasRange = true, employer = null)
+        assertEquals(ProfileCard.SALARY, nextProfileCard(p, open), "النطاق القديم = ما اتجاوبش ⇒ بيتسأل يكتب المبلغ")
+        assertEquals(ProfileCard.HOME, nextProfileCard(p, open.copy(amountMinor = 900_000)))
+        assertEquals(ProfileCard.HOME, nextProfileCard(p, open.copy(declined = true)))
+        assertEquals(ProfileCard.HOME, nextProfileCard(p, null), "مش متوصل ⇒ ما بيتسألش")
+        assertTrue(optionsOf(ProfileCard.SALARY).isEmpty())
     }
 
     @Test fun answersBecomeProfileFieldsTheLogicAccepts() {

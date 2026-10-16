@@ -129,7 +129,8 @@ internal suspend fun loadHome(deps: SpaceDeps): HomeLoad {
         homeMonthOf(data, next)
     }.getOrNull()
     val inbox = runCatching { trace.span("home:inbox") { home.alerts.inbox() } }.getOrNull()
-    return HomeLoad.Ready(now, month, inbox, profileCard = profile != null && nextProfileCard(profile) != null)
+    val salary = runCatching { home.salary?.current() }.getOrNull()
+    return HomeLoad.Ready(now, month, inbox, profileCard = profile != null && nextProfileCard(profile, salary) != null)
 }
 
 /** رأس الرئيسية (KOTLIN-MAP §3): دايرتك 46 ⇒ «ملفك» · التحية 18 + شارة البلد حرفين والتاريخ 12 · الجرس 48 · الترس 48 آخر حاجة على الشمال. */

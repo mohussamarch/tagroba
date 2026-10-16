@@ -26,7 +26,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import app.masroufy.core.Currency
 import app.masroufy.core.DEPENDENT_KINDS
+import app.masroufy.core.Halalas
 import app.masroufy.core.MAX_NAME_LENGTH
+import app.masroufy.core.SalaryState
 import app.masroufy.core.TextKey
 import app.masroufy.core.currencySymbol
 import app.masroufy.core.sentenceNumber
@@ -59,11 +61,10 @@ sealed interface AccountEdit {
 @Composable
 fun AccountSheet(
     edit: AccountEdit?,
-    rangeEditable: Boolean,
+    salary: SalaryLink,
     onDraft: (AccountEdit) -> Unit,
     onClose: () -> Unit,
     onSave: (AccountField, Any?) -> Unit,
-    onRange: (SalaryRange) -> Unit,
     onCarToWork: (Boolean) -> Unit,
 ) {
     // اللوحة بتفضل مرسومة وهي بتنزل (حركة الخروج) ⇒ آخر محتوى محفوظ
@@ -74,7 +75,8 @@ fun AccountSheet(
     Sheet(edit != null, onClose, title = sheetTitle(current, currency), closeLabel = t(UiKey.SHELL_CLOSE), corner = 28.dp, spacing = 12.dp) {
         BasicText(sheetTitle(current, currency), style = Type.of(17, FontWeight.Bold))
         when (current) {
-            is AccountEdit.Field -> FieldBody(current, rangeEditable, currency, onDraft, onSave, onRange)
+            is AccountEdit.Field -> if (current.field == AccountField.SALARY) SalaryBody(current, salary, currency, onDraft)
+            else FieldBody(current, onDraft, onSave)
             AccountEdit.CarToWork -> {
                 BasicText(t(UiKey.ACC_CAR_TO_WORK_BODY), style = Type.of(13).copy(color = Ink.muted))
                 TwoActions(t(UiKey.MORE_YES), danger = false, onFirst = { onCarToWork(true) }, second = t(UiKey.MORE_NO), onSecond = { onCarToWork(false) })
@@ -105,21 +107,38 @@ private fun sheetTitle(e: AccountEdit, currency: Currency): String = when (e) {
     }
 }
 
+/**
+ * سؤال المرتب في «ملفك»: [state] من `ProfileSalary.current` · [save]/[decline] بيرجعوا null لو اتحفظ أو جملة الغلط.
+ * [state] null و[editable] غلط ⇒ حالة الاستخدام مش متوصلة (المعاينة) ⇒ «غير متاح بعد».
+ */
+data class SalaryLink(
+    val state: SalaryState?,
+    val editable: Boolean,
+    val save: (Halalas) -> Unit,
+    val decline: () -> Unit,
+)
+
+@Composable
+private fun SalaryBody(e: AccountEdit.Field, link: SalaryLink, currency: Currency, onDraft: (AccountEdit) -> Unit) {
+    BasicText(t(UiKey.ACC_SALARY_BODY), style = Type.of(13).copy(color = Ink.muted))
+    SalaryInput(
+        text = e.draft as? String ?: "", onText = { onDraft(e.copy(draft = it, error = null)) }, currency = currency,
+        salary = link.state, error = e.error, enabled = link.editable, onSave = link.save, onDecline = link.decline,
+    )
+    if (!link.editable) NotYetLine(t(UiKey.MORE_NOT_YET))
+}
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun FieldBody(
     e: AccountEdit.Field,
-    rangeEditable: Boolean,
-    currency: Currency,
     onDraft: (AccountEdit) -> Unit,
     onSave: (AccountField, Any?) -> Unit,
-    onRange: (SalaryRange) -> Unit,
 ) {
     val body = when (e.field) {
         AccountField.NAME -> UiKey.ACC_NAME_BODY
         AccountField.GENDER -> UiKey.ACC_GENDER_BODY
         AccountField.DEPENDENTS -> UiKey.ACC_DEP_BODY
-        AccountField.SALARY -> UiKey.ACC_SALARY_BODY
         AccountField.PAYDAY -> UiKey.ACC_PAYDAY_BODY
         else -> null
     }
@@ -149,13 +168,6 @@ private fun FieldBody(
                 }
             }
         }
-        AccountField.SALARY -> {
-            ok = rangeEditable && e.draft is SalaryRange
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                for (r in SalaryRange.entries) FillChip(salaryRangeLabel(r, currency), e.draft == r, enabled = rangeEditable) { onDraft(e.copy(draft = r)) }
-            }
-            if (!rangeEditable) NotYetLine(t(UiKey.ACC_SALARY_NOT_YET))
-        }
         AccountField.PAYDAY -> {
             DayGrid(e.draft as? Int, { onDraft(e.copy(draft = it)) })
             BasicText(t(UiKey.ACC_PAYDAY_NOTE), style = Type.caption().copy(color = Ink.muted))
@@ -169,7 +181,7 @@ private fun FieldBody(
     if (e.error != null) FieldError(e.error)
     PrimaryButton(
         saveLabel,
-        onClick = { if (e.field == AccountField.SALARY) (e.draft as? SalaryRange)?.let(onRange) else onSave(e.field, e.draft) },
+        onClick = { onSave(e.field, e.draft) },
         enabled = ok, modifier = Modifier.fillMaxWidth(),
     )
 }

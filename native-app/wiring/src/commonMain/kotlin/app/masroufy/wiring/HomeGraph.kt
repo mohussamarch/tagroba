@@ -37,6 +37,9 @@ class HomeGraph(c: AreaContext) : HomeDeps {
 
     override val profile = c.shell.profile
 
+    /** «مرتبك في الشهر كام؟» في «كمّل ملفك» — مبلغ بالظبط على جهة الشغل الرئيسية أو الملف (نفس قاعدة «ملفك»). */
+    override val salary = salaryCase(c)
+
     override val alerts = c.shell.engine
 
     override val kinds = SetEconomicKind(SetEconomicKindDeps(r.transactions, r.categories, r.uow, c.env.clock))
