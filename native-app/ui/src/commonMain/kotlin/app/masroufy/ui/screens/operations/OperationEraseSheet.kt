@@ -79,7 +79,7 @@ internal fun OperationEraseSheet(targetId: Id?, erase: DeleteTransaction?, onDis
 }
 
 private fun nameOf(p: TransactionRemoval): String =
-    p.transaction.rawMerchantName?.takeIf { it.isNotBlank() } ?: p.transaction.rawDescription?.takeIf { it.isNotBlank() } ?: t(UiKey.OPERATIONS_ROW_UNCLASSIFIED)
+    p.transaction.rawMerchantName?.takeIf { it.isNotBlank() } ?: app.masroufy.core.displayTitleOrNull(p.transaction) ?: t(UiKey.OPERATIONS_ROW_UNCLASSIFIED)
 
 /** سطور التأكيد من خطة المسح: العملية بمبلغها ويومها · الروابط اللي هتتشال · جاية من رسالة أو كشف · الرصيد. */
 private fun eraseBody(p: TransactionRemoval): String = buildList {

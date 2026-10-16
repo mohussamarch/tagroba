@@ -10,7 +10,6 @@ import app.masroufy.core.IsoDate
 import app.masroufy.core.TextKey
 import app.masroufy.core.Transaction
 import app.masroufy.core.dayMonth
-import app.masroufy.core.ruleFor
 import app.masroufy.ui.components.AmountTone
 import app.masroufy.ui.components.isOwnMove
 import app.masroufy.ui.components.moveSideLineOf
@@ -64,6 +63,5 @@ fun cashViewOf(summary: CashSummary?, walletNames: Map<String, String> = emptyMa
     )
 }
 
-/** اسم العملية في الصفوف: التاجر ⇒ الملاحظة ⇒ الوصف ⇒ اسم نوعها. */
-fun transactionTitle(tx: Transaction): String =
-    listOf(tx.rawMerchantName, tx.note, tx.rawDescription).firstOrNull { !it.isNullOrBlank() }?.trim() ?: ruleFor(tx.economicKind).label
+/** اسم العملية في الصفوف (r041 A4 — نفس `displayTitleOf` بتاع «العمليات»): التاجر ⇒ الملاحظة ⇒ الطرف ⇒ أول سطر من الوصف ⇒ اسم نوعها. */
+fun transactionTitle(tx: Transaction): String = app.masroufy.core.displayTitleOf(tx)

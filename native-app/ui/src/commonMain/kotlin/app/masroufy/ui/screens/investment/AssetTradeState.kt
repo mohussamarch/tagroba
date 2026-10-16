@@ -104,7 +104,7 @@ fun linkableOps(data: TransactionsScreenData?, outgoing: Boolean, currency: Curr
 fun opTitle(t: Transaction, data: TransactionsScreenData): String =
     data.merchantNamesByTransaction[t.id]?.firstOrNull()
         ?: t.rawMerchantName?.takeIf { it.isNotBlank() }
-        ?: t.rawDescription?.takeIf { it.isNotBlank() }
+        ?: app.masroufy.core.displayTitleOrNull(t)
         ?: t.note?.takeIf { it.isNotBlank() }
         ?: data.categories.firstOrNull { it.id == t.categoryId }?.name
         ?: uiText(TextKey.NOT_AVAILABLE)
