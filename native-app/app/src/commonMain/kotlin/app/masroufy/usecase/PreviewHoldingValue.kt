@@ -15,6 +15,7 @@ import app.masroufy.core.Quantity
 import app.masroufy.core.AssetError
 import app.masroufy.core.TextKey
 import app.masroufy.core.groupBucket
+import app.masroufy.core.pricedAtPurity
 import app.masroufy.core.growHoldingGroup
 import app.masroufy.core.uiText
 import app.masroufy.core.valueOfQuantity
@@ -35,13 +36,15 @@ fun metalFeedSymbol(type: HoldingType, karatOrFineness: Int, currency: Currency)
     return if (currency == Currency.EGP) base + "_EGP" else base
 }
 
-/** «قيمته النهارده ≈» في «ضيف حاجة»: الجرامات × سعر جرام العيار النهارده من الملف — null لو الملف أو السطر مش موجود (مش صفر). */
+/** «قيمته النهارده ≈» في «ضيف حاجة»: الجرامات × سعر جرام العيار (الفضة: الصافي × النقاوة) النهارده من الملف — null لو الملف أو السطر مش موجود (مش صفر). */
 class PreviewHoldingValue(private val feedPrice: FeedPriceLookup) {
     suspend fun metalToday(type: HoldingType, karatOrFineness: Int, grams: Quantity, currency: Currency): Halalas? {
         if (grams <= 0L) return null
         val symbol = metalFeedSymbol(type, karatOrFineness, currency) ?: return null
         val price = runCatching { feedPrice.find(symbol, currency) }.getOrNull() ?: return null
-        return valueOfQuantity(grams, price.pricePerUnitMinor)
+        // الفضة: السطر سعر الصافي ⇒ × النقاوة ÷ 1000 (نفس سعر الأصل بعد الحفظ — `core/FeedPurity.kt`)
+        val fineness = karatOrFineness.takeIf { type == HoldingType.SILVER }
+        return valueOfQuantity(grams, pricedAtPurity(price.pricePerUnitMinor, fineness))
     }
 }
 

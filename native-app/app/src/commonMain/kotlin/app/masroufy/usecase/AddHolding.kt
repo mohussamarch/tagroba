@@ -5,6 +5,8 @@ import app.masroufy.core.ASSET_KIND_SILVER
 import app.masroufy.core.AssetLot
 import app.masroufy.core.AssetPrice
 import app.masroufy.core.Currency
+import app.masroufy.core.feedLinkOf
+import app.masroufy.core.pricedAtPurity
 import app.masroufy.core.HoldingOrigin
 import app.masroufy.core.HoldingType
 import app.masroufy.core.Id
@@ -81,9 +83,11 @@ class AddHolding(private val deps: AddHoldingDeps) {
             h.type.metal -> {
                 val symbol = metalFeedSymbol(h.type, h.karat ?: h.fineness ?: 0, deps.currency)
                 if (symbol != null) {
+                    // سطر الفضة سعر الجرام الصافي ⇒ 925 أو 800 بتتربط بالنقاوة وسعرها × النقاوة ÷ 1000 (`core/FeedPurity.kt`)
+                    val fineness = h.fineness.takeIf { h.type == HoldingType.SILVER }
                     val feed = runCatching { deps.feedPrice.find(symbol, deps.currency) }.getOrNull()
-                    deps.assets.linkToFeed(asset.id, feed?.symbol ?: symbol)
-                    if (feed != null) deps.prices.save(AssetPrice(asset.id, feed.pricePerUnitMinor, feed.asOf, "feed"))
+                    deps.assets.linkToFeed(asset.id, feedLinkOf(feed?.symbol ?: symbol, fineness))
+                    if (feed != null) deps.prices.save(AssetPrice(asset.id, pricedAtPurity(feed.pricePerUnitMinor, fineness), feed.asOf, "feed"))
                 }
                 deps.metalFacts.write(asset.id, if (h.jewellery) ZakatPurpose.WEAR else ZakatPurpose.SAVING, h.karat, h.fineness)
             }

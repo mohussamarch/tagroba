@@ -4,6 +4,8 @@ import app.masroufy.core.AssetPrice
 import app.masroufy.core.PriceFeed
 import app.masroufy.core.TextKey
 import app.masroufy.core.indexFeed
+import app.masroufy.core.parseFeedLink
+import app.masroufy.core.pricedAtPurity
 import app.masroufy.core.uiText
 import app.masroufy.port.AssetPriceRepository
 import app.masroufy.port.AssetRepository
@@ -37,11 +39,13 @@ class SyncAssetPrices(private val deps: SyncAssetPricesDeps) {
 
         for (asset in deps.assets.listAll()) {
             if (asset.archived) continue
-            val symbol = asset.feedSymbol
-            if (symbol.isNullOrEmpty()) {
+            val link = asset.feedSymbol
+            if (link.isNullOrEmpty()) {
                 manualCount += 1
                 continue
             }
+            // «SILVER_GRAM@925» ⇒ سطر الصافي × النقاوة (`core/FeedPurity.kt`)
+            val (symbol, fineness) = parseFeedLink(link)
             val feedPrice = bySymbol[symbol]
             if (feedPrice == null) {
                 skipped += PriceSkipped(asset.name, uiText(TextKey.PRICE_SYMBOL_MISSING, symbol))
@@ -52,7 +56,7 @@ class SyncAssetPrices(private val deps: SyncAssetPricesDeps) {
                 skipped += PriceSkipped(asset.name, uiText(TextKey.PRICE_CURRENCY_MISMATCH, symbol, feedPrice.currency, asset.currency.name))
                 continue
             }
-            deps.prices.save(AssetPrice(asset.id, feedPrice.pricePerUnitMinor, feedPrice.asOf, "feed"))
+            deps.prices.save(AssetPrice(asset.id, pricedAtPurity(feedPrice.pricePerUnitMinor, fineness), feedPrice.asOf, "feed"))
             updated += PriceUpdated(asset.name, feedPrice.symbol, feedPrice.asOf)
         }
         return SyncOutcome(updated, skipped, manualCount)

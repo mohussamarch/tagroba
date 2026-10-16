@@ -11,6 +11,7 @@ import app.masroufy.core.Id
 import app.masroufy.core.InvestRates
 import app.masroufy.core.InvestRatesState
 import app.masroufy.core.NewHolding
+import app.masroufy.core.PriceFeed
 import app.masroufy.core.QUANTITY_SCALE
 import app.masroufy.core.RealEstateValuation
 import app.masroufy.core.ZakatFact
@@ -169,6 +170,25 @@ class AddHoldingTest {
         prefs.setIncludePersonal(false)
         assertEquals(false, prefs.includePersonal())
         assertEquals(1, store.listAll().size) // مستند واحد على الحساب
+    }
+
+    @Test fun silverBelow999IsValuedAtItsPurityFromThePureRow() = runBlocking {
+        // 1,000 جرام فضة 925 · سطر الصافي 4.00 ر.س ⇒ 3,700 ر.س (مش 4,000)
+        val w = World(feed = mapOf("SILVER_GRAM" to gram("SILVER_GRAM", 400)))
+        w.add.add(NewHolding(HoldingType.SILVER, "فضة", HoldingPurpose.RESERVE, HoldingOrigin.BUY, 1_000 * QUANTITY_SCALE, fineness = 925), today)
+        assertEquals("SILVER_GRAM@925", w.assetRepo.listAll().single().feedSymbol)
+        assertEquals(370_000L, w.load.load(today).items.single().valueMinor)
+        // تحديث الأسعار بيطبّق نفس المعامل: 5.00 × 0.925 = 4.625 ⇒ 4.63 (النص لبعيد عن الصفر)
+        val feed = PriceFeed("T10:00:00Z", "SAR", listOf(gram("SILVER_GRAM", 500)), emptyList(), emptyList())
+        assertEquals(1, SyncAssetPrices(SyncAssetPricesDeps(w.assetRepo, w.prices)).sync(feed).updated.size)
+        assertEquals(463_000L, w.load.load(today).items.single().valueMinor)
+        // 999 ⇒ السطر الصافي زي ما هو
+        val pure = World(feed = mapOf("SILVER_GRAM" to gram("SILVER_GRAM", 400)))
+        pure.add.add(NewHolding(HoldingType.SILVER, "فضة", HoldingPurpose.RESERVE, HoldingOrigin.BUY, 1_000 * QUANTITY_SCALE, fineness = 999), today)
+        assertEquals("SILVER_GRAM", pure.assetRepo.listAll().single().feedSymbol)
+        val preview = PreviewHoldingValue { symbol, _ -> if (symbol == "SILVER_GRAM") gram(symbol, 400) else null }
+        assertEquals(370_000L, preview.metalToday(HoldingType.SILVER, 925, 1_000 * QUANTITY_SCALE, Currency.SAR))
+        assertEquals(400_000L, preview.metalToday(HoldingType.SILVER, 999, 1_000 * QUANTITY_SCALE, Currency.SAR))
     }
 
     @Test fun previewUsesTheKaratRowAndIsNullWithoutIt() = runBlocking {
