@@ -39,6 +39,8 @@ fun smsImportDeps(spaceId: String, r: SpaceRepositories, env: DeviceEnv, inbox: 
         spaceId, r.wallets, inbox, r.categories,
         remember = RememberChosenCategoryEffect(MerchantMemory(r.merchants, env.ids)), subscriptions = r.recurring,
         txns = r.transactions, sources = r.sourceRecords,
+        // A2: «مستحقات دايمًا» و«سجّل تحويلاته لوحده» أول ما الرسالة تتسجل (الخلفية · التسجيل لوحده · تأكيد المالك)
+        personRules = app.masroufy.usecase.PersonRulesEffect(personLinksOf(r, env.ids, env.clock, SpaceLegsOf(spaceId, r.spaceTransfers)).rules),
     ),
 )
 

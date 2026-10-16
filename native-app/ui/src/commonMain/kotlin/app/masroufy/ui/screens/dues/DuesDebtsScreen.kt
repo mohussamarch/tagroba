@@ -102,6 +102,8 @@ fun DuesDebtsScreen(initialSide: DebtSide) {
                 val d = s.value
                 val ui = duesDebtsUi(d.people, d.totals, d.dues, d.today, space.space.currency, side, query)
                 if (ui.empty) {
+                    // F6: مفيش ديون لسه (المالك علّم بالتصنيف بس) ⇒ الكارت قبل الحالة الفاضية عشان يربطها
+                    item(key = "needs-person") { app.masroufy.ui.screens.people.NeedsPersonCard() }
                     item {
                         EmptyState(t(UiKey.DEBTS_EMPTY_TITLE), t(UiKey.DEBTS_EMPTY_BODY), action = {
                             PrimaryButton(t(UiKey.DEBTS_EMPTY_GO), { nav.switchTab(Tab.PEOPLE) })
@@ -109,6 +111,8 @@ fun DuesDebtsScreen(initialSide: DebtSide) {
                     }
                     return@DuesScaffold
                 }
+                // r05: العمليات اللي تصنيفها فلوس مع شخص ومش مربوطة بحد — ضغطة ⇒ «مع مين؟»
+                item(key = "needs-person") { app.masroufy.ui.screens.people.NeedsPersonCard() }
                 item(key = "sides") {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         for (sd in ui.sides) SideFilter(Modifier.weight(1f), sd, side == sd.side, ui.currency) { side = if (side == sd.side) DebtSide.ALL else sd.side }

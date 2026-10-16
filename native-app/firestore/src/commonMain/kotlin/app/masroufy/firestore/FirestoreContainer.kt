@@ -71,6 +71,8 @@ class FirestoreContainer(val accountRoot: FirestoreSpace, val spaceRoot: Firesto
     val installmentPayments = FirestoreInstallmentPaymentRepository(space)
     val debtTerms = FirestoreDebtTermsRepository(space)
     val transferParties = FirestoreTransferPartyRepository(space)
+    /** ربط العمليات بالأشخاص (r05) — في البلد زي الديون. */
+    val personLinks = FirestorePersonLinkRepository(space)
     val zakatFacts = FirestoreZakatFactRepository(space)
     val zakatYears = FirestoreZakatYearRepository(space)
     val zakatPayments = FirestoreZakatPaymentRepository(space)

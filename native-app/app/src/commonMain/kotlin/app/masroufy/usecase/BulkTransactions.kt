@@ -56,6 +56,8 @@ data class BulkTransactionsDeps(
      * علامة المصدر · رجوع ميعاد الاشتراك · «تراجع» بـ`restore`) — واللي `DeleteTransaction` بيمنعها بتتساب وتتعدّ. `null` ⇒ المسح المجمّع القديم.
      */
     val erase: DeleteTransaction? = null,
+    /** R4/N4: المربوطة بشخص نوعها جزء من الربط ⇒ «غيّر النوع» بيسيبها (بتتعدّ «اتساب»). null ⇒ مفيش فحص. */
+    val personLinks: app.masroufy.port.PersonLinkRepository? = null,
 )
 
 /** اللي بيظهر وإنت بتحدد: العدد · المجموع لكل عملة · كام واحدة منهم ينفع تتمسح. */
@@ -114,11 +116,12 @@ class BulkTransactions(private val deps: BulkTransactionsDeps) {
     suspend fun setKind(ids: List<Id>, kind: EconomicKind): BulkResult {
         if (kind !in BULK_KINDS) throw IllegalArgumentException(uiText(TextKey.NOT_AVAILABLE))
         val found = load(ids)
+        val personLinked = deps.personLinks?.listByTransactionIds(found.map { it.id })?.map { it.transactionId }?.toSet().orEmpty()
         val legs = deps.spaceLegs?.legsAmong(found.map { it.id }).orEmpty()
         // مراجعة r04: التحويل بين محافظك ونص زوج «رجعت» بيتسابوا (نفس استثناءات المسح) — نوع تاني عليهم بيعدّ الفلوس مصروف وهي لسه في المحفظة التانية
         val fits = found.filter {
             isConsistentWithObservedDirection(kind, it.observedDirection) && (it.economicKind == kind || it.id !in legs) &&
-                it.transferToWalletId == null && it.reversalOfId == null && it.reversedById == null
+                it.transferToWalletId == null && it.reversalOfId == null && it.reversedById == null && (it.economicKind == kind || it.id !in personLinked)
         }
         val now = deps.clock.nowIso()
         val changed = fits.map { it.copy(economicKind = kind, economicKindConfirmed = true, suggestedKind = null, updatedAt = now) }

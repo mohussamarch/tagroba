@@ -13,6 +13,9 @@ interface ZakatFactRepository {
     suspend fun listAll(): List<ZakatFact>
 
     suspend fun save(fact: ZakatFact)
+
+    /** الحقيقة اللي على الدين أو الأصل ده (R3: الدين اتشال ⇒ حقيقته بتتشال معاه — وإلا النسخة الشاملة بترفض العلاقة المقطوعة). */
+    suspend fun remove(subjectId: Id)
 }
 
 interface ZakatYearRepository {

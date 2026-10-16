@@ -149,7 +149,8 @@ class MergeDuplicates(private val deps: MergeDuplicatesDeps) {
         val ids = listOf(t.id)
         val l = deps.links
         val out = mutableSetOf<MergeLink>()
-        if (deps.allocations.listByTransactionIds(ids).isNotEmpty()) out += MergeLink.PERSON
+        // R2: رابط شخص (حتى من غير نصيب ولا دين) ⇒ الدمج بيترفض بدل ما الرابط يفضل بيشاور على عملية اتشالت
+        if (deps.allocations.listByTransactionIds(ids).isNotEmpty() || l.personLinks?.listByTransactionIds(ids)?.isNotEmpty() == true) out += MergeLink.PERSON
         if (deps.settlements.listByTransactionIds(ids).isNotEmpty() || deps.obligations.listByTransactionIds(ids).isNotEmpty()) out += MergeLink.DEBT
         if (l.transactionTags.listByTransactionIds(ids).isNotEmpty()) out += MergeLink.TAG
         if (l.projectLinks.listByTransaction(t.id).isNotEmpty()) out += MergeLink.PROJECT

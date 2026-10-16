@@ -38,6 +38,7 @@ fun FirestoreContainer.toRepositories() = SpaceRepositories(
     installmentPayments = installmentPayments,
     debtTerms = debtTerms,
     transferParties = transferParties,
+    personLinks = personLinks,
     zakatFacts = zakatFacts,
     zakatYears = zakatYears,
     zakatPayments = zakatPayments,

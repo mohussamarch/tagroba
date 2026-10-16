@@ -48,6 +48,8 @@ data class ManageTransfersDeps(
     val wallets: WalletRepository? = null,
     /** r041c: [ManageTransfers.zone] بيلف على **كل** العمليات — برّه خيط الواجهة. الاختبار بيدّي سياقه. */
     val work: kotlin.coroutines.CoroutineContext = kotlinx.coroutines.Dispatchers.Default,
+    /** R4/N4: قرار الحساب ما بيغيّرش نوع عملية مربوطة بشخص ولا بيعملها رِجل (نوعها جزء من الربط). null ⇒ مفيش فحص. */
+    val personLinks: app.masroufy.port.PersonLinkRepository? = null,
 )
 
 /** سطر في الزون: طرف بعملة واحدة (المبالغ ما بتتجمعش بين عملتين). */
@@ -157,12 +159,14 @@ class ManageTransfers(private val deps: ManageTransfersDeps) {
         val now = deps.clock.nowIso()
         val decision = TransferParty(party.key, party.label, party.last4, verdict, personId, now)
         val mine = everything().filter { transferPartyOf(it)?.key == party.key }
-        val changed = mine.mapNotNull { t -> applyTransferVerdict(t, decision, now).takeIf { it != t } }
+        val personLinked = deps.personLinks?.listByTransactionIds(mine.map { it.id })?.map { it.transactionId }?.toSet().orEmpty()
+        val free = mine.filter { it.id !in personLinked }
+        val changed = free.mapNotNull { t -> applyTransferVerdict(t, decision, now).takeIf { it != t } }
         // «حسابي التاني»: اللي الأسئلة كتبته على **كل** تحويلات الطرف (مش اللي اتغير بس — عشان الإعادة بعد انقطاع تكمّل الشيل)
         val ledger = deps.ledger?.takeIf { verdict == TransferVerdict.OWN_ACCOUNT }
-        val stale = ledger?.let { it.askWrites(it.linksOf(mine.map { t -> t.id }).values, withLoans = true) }
+        val stale = ledger?.let { it.askWrites(it.linksOf(free.map { t -> t.id }).values, withLoans = true) }
         if (stale != null && stale.blocking.isNotEmpty()) throw TransferZoneError(uiText(TextKey.ASK_LOAN_HAS_REPAYMENT))
-        val legs = if (verdict == TransferVerdict.OWN_ACCOUNT) otherLegs(party, mine, now) else emptyList()
+        val legs = if (verdict == TransferVerdict.OWN_ACCOUNT) otherLegs(party, free, now) else emptyList()
         deps.uow.run {
             deps.parties.save(decision)
             if (changed.isNotEmpty() || legs.isNotEmpty()) deps.txns.saveMany(changed + legs)

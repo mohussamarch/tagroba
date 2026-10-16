@@ -69,6 +69,16 @@ class PeopleGraph(c: AreaContext) : PeopleDeps {
         ManagePeopleDeps(r.people, r.obligations, r.settlements, r.settlementWriter, r.allocations, r.transactions, r.uow, env.ids, env.clock, legs),
     )
 
+    override val links = personLinksOf(r, env.ids, env.clock, legs)
+
+    // A3: صفحة الشخص بكل البلاد — نفس الحالة في كل بلد مفتوحة غير الشغالة
+    private val abroadLinks by lazy {
+        runCatching { c.session.spaces() }.getOrDefault(emptyList()).filter { it.first.id != c.space.id }
+            .map { (s, repos) -> personLinksOf(repos, env.ids, env.clock, SpaceLegsOf(s.id, repos.spaceTransfers)) }
+    }
+
+    override suspend fun otherSpaceLinks(): List<app.masroufy.usecase.ManagePersonLinks> = abroadLinks
+
     override val circles = ManagePersonCircles(ManagePersonCirclesDeps(r.people, r.personProfiles, r.personRelations, env.clock))
 
     override val occasions = ManageOccasions(ManageOccasionsDeps(r.occasions, r.people, r.lifeEvents, r.eventLinks, r.transactions, env.ids, env.clock))
@@ -96,6 +106,16 @@ class PeopleGraph(c: AreaContext) : PeopleDeps {
 
     override val money: PeopleMoney = CoreMoney
 }
+
+/** ربط العمليات بالأشخاص (r05) — نفس الاعتمادات في تفاصيل العملية وصفحة الشخص. */
+internal fun personLinksOf(r: SpaceRepositories, ids: app.masroufy.port.IdGenerator, clock: app.masroufy.port.Clock, legs: app.masroufy.port.SpaceTransferLegs) =
+    app.masroufy.usecase.ManagePersonLinks(
+        app.masroufy.usecase.PersonLinksDeps(
+            r.personLinks, r.people, r.obligations, r.settlements, r.allocations, r.transactions, r.categories, r.transferParties, r.uow, ids, clock,
+            legs, r.wallets, app.masroufy.usecase.AddTransaction(app.masroufy.usecase.AddTransactionDeps(r.transactions, r.wallets, ids, clock)),
+            terms = r.debtTerms, zakatFacts = r.zakatFacts,
+        ),
+    )
 
 /** الحسابات من `core` بس (الشاشة ما بتحسبش — CLAUDE.md #4). */
 internal object CoreMoney : PeopleMoney {

@@ -85,6 +85,8 @@ data class TransactionPatch(
     val clearLinkedInflowMinor: Boolean = false,
     /** §82-13 (مراجعة 0.3): علامة سؤال «سلفة ولا دعم؟» على «دعم» قديم — null = ما تتغيرش. */
     val supportAskPending: Boolean? = null,
+    /** A2/F3: قواعد الحسابات المربوطة ما ترجعش تربط العملية دي لوحدها (Transaction.personRulesOff) — null = ما تتغيرش. */
+    val personRulesOff: Boolean? = null,
 )
 
 interface SourceRecordRepository {

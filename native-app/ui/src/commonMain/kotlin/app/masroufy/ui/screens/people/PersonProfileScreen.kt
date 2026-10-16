@@ -70,7 +70,17 @@ internal fun PersonProfileScreen(personId: String) {
     val version = PeopleChanges.version
     var retry by remember { mutableStateOf(0) }
     var load by remember(deps, personId) { mutableStateOf<Load<PersonPageUi?>>(Load.Loading) }
+    // r05: «السجل بينا» والحسابات المربوطة (`ManagePersonLinks`) — فشلها ما بيوقعش الصفحة (بيرجع للسجل القديم)
+    var ledger by remember(deps, personId) { mutableStateOf<Pair<LedgerUi, app.masroufy.usecase.PersonPageData>?>(null) }
     LaunchedEffect(deps, personId, version, retry) {
+        // A2: القواعد بتشتغل لحظة التسجيل (مش هنا) · A3: كل البلاد · السرعة: بالفهرس وبرّه الخيط الرئيسي
+        ledger = deps.people.links?.let { l ->
+            runCatching {
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
+                    l.page.load(personId, deps.people.otherSpaceLinks())?.let { d -> ledgerUi(d.ledger, d.accounts.size, deps.shell.today()) to d }
+                }
+            }.getOrNull()
+        }
         load = loadOf {
             val p = deps.people
             val today = deps.shell.today()
@@ -97,13 +107,21 @@ internal fun PersonProfileScreen(personId: String) {
             is Load.Ready -> {
                 val ui = l.value
                 if (ui == null) item { Head(null, top) { nav.pop() }; EmptyState(t(UiKey.PERSON_PAGE_NOT_FOUND)) }
-                else personBody(ui, top) { nav.pop() }
+                else personBody(ui, top, ledger, deps.shell.today(), { nav.push(app.masroufy.ui.screens.operations.OperationDetailRoute(it)) }, { if (!it.startsWith(app.masroufy.usecase.ABROAD_ID_PREFIX)) nav.push(DebtDetailRoute(it)) }) { nav.pop() }
             }
         }
     }
 }
 
-private fun androidx.compose.foundation.lazy.LazyListScope.personBody(ui: PersonPageUi, top: androidx.compose.ui.unit.Dp, back: () -> Unit) {
+private fun androidx.compose.foundation.lazy.LazyListScope.personBody(
+    ui: PersonPageUi,
+    top: androidx.compose.ui.unit.Dp,
+    ledger: Pair<LedgerUi, app.masroufy.usecase.PersonPageData>?,
+    today: String,
+    openTxn: (String) -> Unit,
+    openDebt: (String) -> Unit,
+    back: () -> Unit,
+) {
     item(key = "head") {
         Head(ui, top, back)
         Column(Modifier.fillMaxWidth().offset(y = (-66).dp).padding(horizontal = Space.gutter), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -123,9 +141,24 @@ private fun androidx.compose.foundation.lazy.LazyListScope.personBody(ui: Person
             BalanceBox(t(UiKey.PERSON_PAGE_ALEK), ui.owe, AmountTone.EXPENSE, null, t(UiKey.PERSON_PAGE_NO_NETTING), Modifier.weight(1f))
         }
     }
-    item(key = "together") { Together(ui, Modifier.offset(y = (-66).dp).padding(horizontal = Space.gutter)) }
-    item(key = "history") { History(ui, Modifier.offset(y = (-66).dp).padding(horizontal = Space.gutter)) }
-    item(key = "dues-rules") { app.masroufy.ui.screens.operations.DuesRulesCard(ui.id, Modifier.offset(y = (-66).dp).padding(horizontal = Space.gutter)) }
+    val section = Modifier.offset(y = (-66).dp).padding(horizontal = Space.gutter)
+    if (ledger == null) item(key = "history") { History(ui, section) }
+    else {
+        // r05: السجل كله · الديون (المفتوحة والمقفولة) · الحسابات المربوطة · اربط عمليات · أضف عملية
+        personLedgerItems(ledger.first, section, openTxn, openDebt)
+        item(key = "accounts") {
+            val links = app.masroufy.ui.app.LocalSpace.current.people.links
+            if (links != null) PersonAccountsCard(ui.id, ui.name, ledger.second.accounts, links, section)
+        }
+        // العمليات اللي اتعلّمت بتصنيف «فلوس مع شخص» ومش مربوطة ⇒ ضغطة ⇒ «معناها إيه؟» على الشخص ده
+        item(key = "needs-person") { NeedsPersonCard(section, personId = ui.id, onDemand = true) }
+        item(key = "link-ops") {
+            val links = app.masroufy.ui.app.LocalSpace.current.people.links
+            if (links != null) PersonLinkOpsCard(ui.id, ui.name, links, today, section)
+        }
+    }
+    item(key = "together") { Together(ui, section) }
+    item(key = "dues-rules") { app.masroufy.ui.screens.operations.DuesRulesCard(ui.id, section) }
     if (ui.badges.isNotEmpty()) item(key = "badges") {
         Column(Modifier.offset(y = (-66).dp).padding(horizontal = Space.gutter), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             BasicText(t(UiKey.PERSON_PAGE_BADGES), style = Type.section())

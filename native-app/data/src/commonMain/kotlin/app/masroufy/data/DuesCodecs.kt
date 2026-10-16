@@ -105,7 +105,7 @@ object DocumentCodecs {
     val dues: List<DocCodec<*>> = listOf(DuesCodecs.roscas, DuesCodecs.roscaEntries, DuesCodecs.installmentPlans, DuesCodecs.installmentPayments, DuesCodecs.debtTerms)
 
     /** «زون التحويلات» (§60). */
-    val transfers: List<DocCodec<*>> = listOf(TransferCodecs.transferParties)
+    val transfers: List<DocCodec<*>> = listOf(TransferCodecs.transferParties, TransferCodecs.personLinks)
 
     /** الزكاة (§62). */
     val zakat: List<DocCodec<*>> = listOf(ZakatCodecs.zakatFacts, ZakatCodecs.zakatYears, ZakatCodecs.zakatPayments)

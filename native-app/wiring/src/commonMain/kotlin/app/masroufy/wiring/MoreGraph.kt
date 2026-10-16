@@ -133,7 +133,7 @@ class MoreGraph(private val c: AreaContext) : MoreDeps {
             r.transactions, r.sourceRecords, r.importBatches, r.uow, c.env.clock, c.env.repairBackup, r.allocations, r.settlements, r.obligations,
             app.masroufy.usecase.RevertLinkDeps(
                 r.projectLinks, r.eventLinks, r.transactionTags, r.roscaEntries, r.installmentPayments, r.installmentPlans,
-                r.zakatPayments, r.assetLots, r.assetSales,
+                r.zakatPayments, r.assetLots, r.assetSales, personLinks = r.personLinks,
             ),
             r.spaceTransfers,
             rematch = rematch,

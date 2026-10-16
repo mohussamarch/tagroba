@@ -7,9 +7,10 @@ package app.masroufy.core
  * **ممنوع «·» جنب رقم عربي** ⇒ «،». القيم مقسومة على ملفات تحت 300 سطر:
  * `TextsAreaPeopleMsa1/2` (الفصحى) · `TextsAreaPeopleEgy1/2` (المصري) · `TextsAreaPeopleEng1/2` (الإنجليزي) —
  * 1 = العام والأشخاص و«لك/عليك» وملف الشخص والإضافة والديون القديمة · 2 = المناسبات والأحداث والتجهيزات والنقوط والمشاريع.
+ * ربط العمليات بالأشخاص وصفحة الشخص الجديدة (جولة r05): `TextsAreaPeopleLinksMsa/Egy/Eng`.
  */
-internal val MSA_AREA_PEOPLE_TEXTS: Map<UiKey, String> = MSA_PEOPLE_AREA_1 + MSA_PEOPLE_AREA_2
+internal val MSA_AREA_PEOPLE_TEXTS: Map<UiKey, String> = MSA_PEOPLE_AREA_1 + MSA_PEOPLE_AREA_2 + MSA_PEOPLE_LINK_TEXTS
 
-internal val EGYPTIAN_AREA_PEOPLE_TEXTS: Map<UiKey, String> = EGYPTIAN_PEOPLE_AREA_1 + EGYPTIAN_PEOPLE_AREA_2
+internal val EGYPTIAN_AREA_PEOPLE_TEXTS: Map<UiKey, String> = EGYPTIAN_PEOPLE_AREA_1 + EGYPTIAN_PEOPLE_AREA_2 + EGYPTIAN_PEOPLE_LINK_TEXTS
 
-internal val ENGLISH_AREA_PEOPLE_TEXTS: Map<UiKey, String> = ENGLISH_PEOPLE_AREA_1 + ENGLISH_PEOPLE_AREA_2
+internal val ENGLISH_AREA_PEOPLE_TEXTS: Map<UiKey, String> = ENGLISH_PEOPLE_AREA_1 + ENGLISH_PEOPLE_AREA_2 + ENGLISH_PEOPLE_LINK_TEXTS

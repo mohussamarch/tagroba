@@ -38,22 +38,28 @@ data class TransferParty(
     val verdict: TransferVerdict,
     val personId: Id? = null,
     val decidedAt: String = "",
+    /** «سجّل تحويلاته لوحده» (صفحة الشخص — r05): المعنى اللي بيتحط على تحويلاته الجديدة · null = مقفول. */
+    val autoMeaning: AutoMeaning? = null,
+    /** من إمتى التسجيل التلقائي شغال (التحويلات اللي يومها من هنا ولقدام بس). */
+    val autoSince: String? = null,
     /** [TransferVerdict.COMPANY] · [TransferVerdict.LABEL]: النوع اللي اختاره المالك (null في «حاجة تانية» = [LABEL_DEFAULT_KIND]). */
     val kind: EconomicKind? = null,
     /** [TransferVerdict.LABEL]: الاسم اللي المالك كتبه (لحد [PARTY_NOTE_MAX] حرف). */
     val note: String? = null,
     /** «بيحوّلي مستحقات دايمًا» (2026-10-16): مع [TransferVerdict.PERSON] — كل وارد من الحساب بيسدّد اللي الشخص عليه (لو عليه حاجة). */
     val dues: Boolean = false,
+    /**
+     * العمليات اللي المالك فك ربطها أو غيّر معناها بإيده (رد المالك 2026-10-16 · A2): قواعد الحساب ده («سجّل تحويلاته لوحده» و«مستحقات
+     * دايمًا») عمرها ما ترجع تتطبق عليها.
+     */
+    val autoSkip: List<Id> = emptyList(),
 )
 
 /** أطول اسم حر في «حاجة تانية». */
 const val PARTY_NOTE_MAX = 40
 
-/**
- * نوع «حاجة تانية» لو المالك ما اختارش: مفيش نوع «دخل آخر» في الأنواع ⇒ «دعم أو تعويض» (دخل · مالوش أثر على شخص) — ❓ سؤال مفتوح للمالك
- * (HANDOVER): نضيف نوع «دخل آخر»؟
- */
-val LABEL_DEFAULT_KIND: EconomicKind = EconomicKind.BENEFIT_RECEIVED
+/** نوع «حاجة تانية (أكتبها)» لو المالك ما اختارش = «دخل تاني» (رد المالك 2026-10-16 — OVERRIDES §103 · A4): دخل، والاسم اللي كتبه هو العنوان. */
+val LABEL_DEFAULT_KIND: EconomicKind = EconomicKind.OTHER_INCOME
 
 /** أنواع «شركة أو جهة» (استرداد · تعويض · دخل تاني) — من غير «متجر جديد» ومن غير أنواع الأشخاص. */
 val COMPANY_INCOMING_KINDS: List<EconomicKind> = listOf(

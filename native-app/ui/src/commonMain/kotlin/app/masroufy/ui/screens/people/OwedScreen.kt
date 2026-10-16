@@ -71,6 +71,8 @@ internal fun OwedScreen(side: OwedSide) {
             Load.Failed -> item { ErrorCard({ retry++ }, title = t(UiKey.PPL_LOAD_FAILED), body = "") }
             is Load.Ready -> {
                 val ui = l.value
+                // r05: العمليات اللي تصنيفها فلوس مع شخص ومش مربوطة بحد
+                item(key = "needs-person") { NeedsPersonCard() }
                 item(key = "total") { TotalHero(ui, owed) }
                 item(key = "note") { BasicText(t(UiKey.OWED_ORDER_NOTE), style = Type.of(13, FontWeight.Bold).copy(color = Ink.muted)) }
                 item(key = "rows") {

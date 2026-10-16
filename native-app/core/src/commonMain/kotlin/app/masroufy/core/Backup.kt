@@ -15,7 +15,7 @@ val BACKUP_GROUPS = listOf(
     // «المستحقات» — التطبيق الجديد بس (OVERRIDES §50 و§55). التطبيق الحالي بيقبل الملف ويتجاهلها
     "roscas", "roscaEntries", "installmentPlans", "installmentPayments", "debtTerms",
     // «زون التحويلات» (§60) والزكاة (§62) والأحداث ومناسبات الشخص (§64) — التطبيق الجديد بس
-    "transferParties", "zakatFacts", "zakatYears", "zakatPayments", "lifeEvents", "eventLinks", "occasions",
+    "transferParties", "zakatFacts", "zakatYears", "zakatPayments", "lifeEvents", "eventLinks", "occasions", PERSON_LINKS_GROUP,
     // مصادر الدخل (§48 · §64) — التطبيق الجديد بس
     "incomeSources",
     // تصنيف التاجر جوه مساحة غير السعودية (§64) — فاضية دايمًا في مساحة السعودية
@@ -61,7 +61,7 @@ val CALENDAR_BACKUP_GROUPS = listOf("reservations", "eventPrep")
 
 val NEW_APP_BACKUP_GROUPS = DUES_BACKUP_GROUPS + TRANSFER_PARTIES_GROUP + ZAKAT_BACKUP_GROUPS + EVENT_BACKUP_GROUPS + INCOME_SOURCES_GROUP +
     MERCHANT_CATEGORIES_GROUP + CALENDAR_BACKUP_GROUPS + PEOPLE_BACKUP_GROUPS + ALERT_SETTINGS_GROUP + GOAL_BACKUP_GROUPS + ALERT_INBOX_GROUP +
-    INHERITANCE_SCENARIOS_GROUP + ASSISTANT_ALL_BACKUP_GROUPS
+    INHERITANCE_SCENARIOS_GROUP + ASSISTANT_ALL_BACKUP_GROUPS + PERSON_LINKS_GROUP
 
 val LATER_BACKUP_GROUPS = listOf("projects", "projectLinks", "projectRules") + NEW_APP_BACKUP_GROUPS
 
@@ -87,6 +87,7 @@ val BACKUP_RELATIONS: Map<String, Map<String, String>> = mapOf(
     "installmentPayments" to linkedMapOf("planId" to "installmentPlans", "transactionId" to "transactions"),
     "debtTerms" to linkedMapOf("obligationId" to "obligations", "personId" to "people"),
     "transferParties" to mapOf("personId" to "people"),
+    PERSON_LINKS_GROUP to linkedMapOf("transactionId" to "transactions", "personId" to "people", "obligationId" to "obligations", "allocationId" to "allocations"),
     "zakatFacts" to linkedMapOf("assetId" to "assets", "obligationId" to "obligations"),
     "zakatPayments" to linkedMapOf("yearId" to "zakatYears", "transactionId" to "transactions"),
     "lifeEvents" to mapOf("hostPersonId" to "people"),
@@ -107,7 +108,7 @@ fun emptyBackupData(): Map<String, MutableList<BackupRow>> = BACKUP_GROUPS.assoc
  * زي ملف التطبيق الحالي (ونفس البصمة). لو فيها أي حاجة، الخمسة بيتكتبوا. القراية بتكمّل الناقص فاضي (`LATER_BACKUP_GROUPS`).
  */
 fun exportedBackupData(data: FullBackupData): FullBackupData {
-    val blocks = listOf(DUES_BACKUP_GROUPS, listOf(TRANSFER_PARTIES_GROUP), ZAKAT_BACKUP_GROUPS, EVENT_BACKUP_GROUPS, listOf(INCOME_SOURCES_GROUP), listOf(MERCHANT_CATEGORIES_GROUP), CALENDAR_BACKUP_GROUPS, PEOPLE_BACKUP_GROUPS, listOf(ALERT_SETTINGS_GROUP), GOAL_BACKUP_GROUPS, listOf(ALERT_INBOX_GROUP), listOf(INHERITANCE_SCENARIOS_GROUP)) +
+    val blocks = listOf(DUES_BACKUP_GROUPS, listOf(TRANSFER_PARTIES_GROUP), ZAKAT_BACKUP_GROUPS, EVENT_BACKUP_GROUPS, listOf(INCOME_SOURCES_GROUP), listOf(MERCHANT_CATEGORIES_GROUP), CALENDAR_BACKUP_GROUPS, PEOPLE_BACKUP_GROUPS, listOf(ALERT_SETTINGS_GROUP), GOAL_BACKUP_GROUPS, listOf(ALERT_INBOX_GROUP), listOf(INHERITANCE_SCENARIOS_GROUP), listOf(PERSON_LINKS_GROUP)) +
         ASSISTANT_ALL_BACKUP_GROUPS.map { listOf(it) }
     val dropped = blocks.filter { block -> block.all { data[it].isNullOrEmpty() } }.flatten().toSet()
     return if (dropped.isEmpty()) data else data.filterKeys { it !in dropped }
@@ -207,6 +208,7 @@ private val NATURAL_KEYS = mapOf(
     "projectLinks" to listOf("projectId", "transactionId"),
     // العملية الواحدة ليها ربط واحد بحدث (§64) ⇒ نفس العملية على جهاز تاني = نفس الربط
     "eventLinks" to listOf("transactionId"),
+    PERSON_LINKS_GROUP to listOf("transactionId"),
 )
 
 private fun semantic(group: String, row: BackupRow): String? {
@@ -256,7 +258,7 @@ fun mergeFullBackupDetailed(
                 val mapped = maps[target]?.get(jsString(value))
                 if (mapped != null) row[field] = mapped else if (target == group) later += Triple(row, field, jsString(value))
             }
-            remapDismissedTxnIds(group, row, maps["transactions"]) // §75-8 (S4): «مش ده» قايمة عمليات
+            remapRowLists(group, row, maps) // §75-8 (S4) «مش ده» قايمة عمليات · R6 رابط الشخص بمعرّف عمليته
             val id = backupRowId(group, row)
             val key = semantic(group, row)
             val found = byId[id] ?: key?.let { k -> byContent[k]?.firstOrNull { backupRowId(group, it) !in consumed } }

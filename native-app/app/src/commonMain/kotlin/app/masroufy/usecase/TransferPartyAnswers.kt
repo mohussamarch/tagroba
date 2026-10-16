@@ -39,6 +39,13 @@ data class TransferPartyAnswersDeps(
     val ledger: PersonLedgerRepos,
     val uow: UnitOfWork,
     val clock: Clock,
+    /**
+     * A2 (OVERRIDES §103): «مستحقات دايمًا» بيسجّل السداد كربط بالشخص (`PersonRules.dues`) ⇒ «فك الربط» على العملية والمالك لو فكّه ما بيرجعش.
+     * null (اختبارات قديمة) ⇒ نفس طريق «ده سداد؟» القديم.
+     */
+    val rules: PersonRules? = null,
+    /** R4/N4: «حاجة تانية» ما بتغيّرش نوع عملية مربوطة بشخص (المفتوحة ⇒ «فك الربط الأول»). null ⇒ مفيش فحص. */
+    val personLinks: app.masroufy.port.PersonLinkRepository? = null,
 )
 
 /** تراجع عن رد واحد: القرار قبله (null = ما كانش فيه) · العمليات قبله · العمليات اللي اتسجل عليها سداد. */
@@ -58,7 +65,7 @@ class TransferPartyAnswers(private val deps: TransferPartyAnswersDeps) {
         deps.txns.findByIds(listOf(id)).firstOrNull() ?: throw TransferPartyAnswerError(uiText(UiKey.EMPLOYER_ERR_TXN))
 
     private fun decision(party: TransferPartyRef, verdict: TransferVerdict, now: String, kind: EconomicKind? = null, note: String? = null, personId: Id? = null, dues: Boolean = false) =
-        TransferParty(party.key, party.label, party.last4, verdict, personId, now, kind, note, dues)
+        TransferParty(party.key, party.label, party.last4, verdict, personId, now, kind = kind, note = note, dues = dues)
 
     /** «شركة أو جهة»: الجهة بتتفتكر، والمبلغ ده بالنوع المختار (مؤكد). */
     suspend fun markCompany(party: TransferPartyRef, transactionId: Id, kind: EconomicKind): PartyUndo {
@@ -81,8 +88,10 @@ class TransferPartyAnswers(private val deps: TransferPartyAnswersDeps) {
         val now = deps.clock.nowIso()
         val d = decision(party, TransferVerdict.LABEL, now, kind = kind, note = text)
         val mine = everything().filter { transferPartyOf(it)?.key == party.key || it.id == transactionId }
+        val personLinked = deps.personLinks?.listByTransactionIds(mine.map { it.id })?.map { it.transactionId }?.toSet().orEmpty()
+        if (transactionId in personLinked) throw TransferPartyAnswerError(uiText(UiKey.PLINK_ERR_UNLINK_FIRST))
         // المبلغ اللي المالك فاتحه بياخد الاسم حتى لو نوعه كان متأكد (هو اللي اختار دلوقتي)
-        val changed = mine.mapNotNull { t ->
+        val changed = mine.filter { it.id !in personLinked }.mapNotNull { t ->
             val base = if (t.id == transactionId) t.copy(economicKindConfirmed = false) else t
             applyTransferVerdict(base, d, now).takeIf { it != base && it != t }
         }
@@ -125,7 +134,8 @@ class TransferPartyAnswers(private val deps: TransferPartyAnswersDeps) {
 
     /** «تراجع»: السداد اللي الرد سجّله بيتشال · العمليات زي ما كانت · القرار القديم (أو مفيش). */
     suspend fun undo(u: PartyUndo) {
-        val writes = if (u.settledIds.isEmpty()) null else deps.ledger.askWrites(deps.ledger.linksOf(u.settledIds).values, withLoans = false)
+        deps.rules?.let { r -> u.settledIds.forEach { r.undo(it) } }
+        val writes = if (u.settledIds.isEmpty() || deps.rules != null) null else deps.ledger.askWrites(deps.ledger.linksOf(u.settledIds).values, withLoans = false)
         deps.uow.run {
             writes?.let { deps.ledger.remove(it) }
             if (u.transactions.isNotEmpty()) deps.txns.saveMany(u.transactions.map { it.copy(updatedAt = deps.clock.nowIso()) })
@@ -168,7 +178,7 @@ class TransferPartyAnswers(private val deps: TransferPartyAnswersDeps) {
     }
 
     private suspend fun settleAll(incoming: List<Transaction>): List<Id> =
-        incoming
+        deps.rules?.let { r -> incoming.sortedWith(compareBy({ it.occurredAt }, { it.id })).filter { r.dues(it) }.map { it.id } } ?: incoming
             .sortedWith(compareBy({ it.occurredAt }, { it.id }))
             .mapNotNull { t ->
                 val pending = runCatching { deps.asks.askOf(t.id) }.getOrNull() == AskKind.DEBT_REPAYMENT

@@ -85,6 +85,8 @@ data class RevertLinkDeps(
      * ولا زوج بيفضل بيشاور على عملية مش موجودة. التشغيل الحقيقي بيدّيه.
      */
     val spaceLegs: app.masroufy.port.SpaceTransferLegs? = null,
+    /** روابط الأشخاص (R2 — r05): العملية المربوطة بشخص بتفضل (الرابط ما بيشاورش على عملية مش موجودة). null (اختبارات قديمة) ⇒ مفيش. */
+    val personLinks: app.masroufy.port.PersonLinkRepository? = null,
 )
 
 /** الروابط اللي هتتشال مع العمليات اللي هتتمسح. */
@@ -144,6 +146,8 @@ class RevertImportBatch(private val deps: RevertDeps) {
             ).toSet()
         val investmentIds = (l.assetLots.listAll().mapNotNull { it.transactionId } + l.assetSales.listAll().mapNotNull { it.transactionId }).toSet()
         val giftIds = l.eventLinks.listByTransactionIds(txnIds).filter { it.role.isGift }.map { it.transactionId }.toSet()
+        // R2: رابط شخص من غير دين ولا نصيب (هدية · «مع الشخص ده بس» · سداد من غير دين مفتوح) — شيل العملية كان بيسيبه بيشاور على ولا حاجة
+        val personLinked = l.personLinks?.listByTransactionIds(txnIds)?.map { it.transactionId }?.toSet().orEmpty()
 
         val sourceCountByTxn = mutableMapOf<Id, Int>()
         for (record in allSources) {
@@ -158,7 +162,7 @@ class RevertImportBatch(private val deps: RevertDeps) {
         for (id in txnIds) {
             val outcome = when {
                 id in settledIds -> RevertLineOutcome(id, RevertDecision.KEPT_HAS_SETTLEMENT, uiText(TextKey.REVERT_KEPT_SETTLEMENT))
-                id in allocatedIds || id in obligationOriginIds ->
+                id in allocatedIds || id in obligationOriginIds || id in personLinked ->
                     RevertLineOutcome(id, RevertDecision.KEPT_HAS_ALLOCATION, uiText(TextKey.REVERT_KEPT_ALLOCATION))
                 id in dueIds -> RevertLineOutcome(id, RevertDecision.KEPT_HAS_DUE, uiText(TextKey.REVERT_KEPT_DUE))
                 id in investmentIds -> RevertLineOutcome(id, RevertDecision.KEPT_HAS_INVESTMENT, uiText(TextKey.REVERT_KEPT_INVESTMENT))

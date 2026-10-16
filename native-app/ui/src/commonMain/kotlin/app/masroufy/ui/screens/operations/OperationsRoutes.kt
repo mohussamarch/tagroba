@@ -29,6 +29,8 @@ import app.masroufy.usecase.TransferBetweenSpaces
 interface OperationsDeps {
     /** «عمليات تابعة» (§6.5-14): `load` · `link` · `unlink`. null ⇒ الكارت ما بيظهرش (الاختبارات اللي ما بتحتاجهوش). */
     val linkedInflows: app.masroufy.usecase.LinkInflows? get() = null
+    /** ربط العملية بشخص بمعنى (r05): «اربطها بـ › شخص» لأي نوع · «مع مين؟» بعد تصنيف فلوس مع شخص. null ⇒ الكارت القديم بس. */
+    val personLinks: app.masroufy.usecase.ManagePersonLinks? get() = null
     /** سجل الفترة والمجاميع — `TransactionsScreenData` (المجاميع `null` ⇒ «غير متاح»). */
     val transactions: LoadTransactionsScreen
 

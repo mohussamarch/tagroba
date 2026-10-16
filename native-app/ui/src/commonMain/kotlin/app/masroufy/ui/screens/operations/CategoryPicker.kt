@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.masroufy.core.CATEGORY_GROUPS
 import app.masroufy.core.Category
+import app.masroufy.core.personCategoryIds
 import app.masroufy.core.Direction
 import app.masroufy.core.Id
 import app.masroufy.core.TextKey
@@ -35,8 +36,11 @@ fun pickerChoices(categories: List<Category>, view: DetailView): List<Category> 
 fun pickerChoices(categories: List<Category>, spendOnly: Boolean, currentId: Id?): List<Category> {
     val spend = CATEGORY_GROUPS.filter { it.kind == "spend" }.map { it.key }.toSet()
     val mains = categories.filter { it.active && it.parentId == null && (!spendOnly || it.groupKey == null || it.groupKey in spend) }.sortedBy { it.order }
+    // F5 (A1): تصنيفات «فلوس مع شخص» (حتى الفرعي زي «تحويل لأشخاص» ومن غير شرط المجموعة) دايمًا موجودة ⇒ اختيارها بيفتح «مع مين؟»
+    val personIds = personCategoryIds(categories)
+    val all = mains + categories.filter { it.active && it.id in personIds && mains.none { m -> m.id == it.id } }.sortedBy { it.order }
     val current = currentId?.let { id -> categories.firstOrNull { it.id == id } }
-    return if (current == null || mains.any { it.id == current.id }) mains else listOf(current) + mains
+    return if (current == null || all.any { it.id == current.id }) all else listOf(current) + all
 }
 
 /**

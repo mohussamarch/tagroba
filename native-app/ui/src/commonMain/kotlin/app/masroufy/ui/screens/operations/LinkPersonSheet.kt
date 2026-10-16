@@ -54,23 +54,50 @@ import kotlinx.coroutines.launch
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun LinkPersonCard(v: DetailView, locked: Boolean, openInitially: Boolean) {
+fun LinkPersonCard(v: DetailView, locked: Boolean, openInitially: Boolean, flow: DetailPersonFlow? = null, onUnlink: () -> Unit = {}) {
     val deps = LocalSpace.current.operations
     val scope = rememberCoroutineScope()
-    val blocked = locked || v.flow != LinkFlow.PURCHASE
-    var open by remember { mutableStateOf(openInitially && !blocked) }
+    // r05: الحوالة والاسترداد ورسايل البنك بتتربط بـ«مع مين؟» (`ManagePersonLinks`) — الشراء بيفضل يتقسم هنا
+    // F7: الشراء كمان بيعدّي من «مع مين؟» (نفس `ManagePersonLinks`) — اللوحة القديمة بس لو الربط مش متوصل
+    val meaningFlow = flow != null && deps.personLinks != null
+    val linked = flow?.status?.link
+    val taken = linked != null || flow?.status?.ledgerLinked == true
+    // N7: الشراء اللي اتربط بشخص (أو اتقسم قبل كده) ⇒ «حد تاني» بيفتح لوحة التقسيم (نصيب لكل شخص — OVERRIDES §103-3)؛ غيره رابط واحد بس
+    val card = personCardState(locked, v.flow == LinkFlow.PURCHASE, meaningFlow, taken)
+    val purchaseMore = card.purchaseMore
+    val blocked = card.blocked
+    var open by remember { mutableStateOf(openInitially && !blocked && v.flow == LinkFlow.PURCHASE && !meaningFlow) }
+    // N6: «تخصيص مبلغ لشخص» من قايمة العمليات ⇒ اللوحة بتتفتح أول ما حالة العملية تتقري (مرة واحدة)
+    var openedInitially by remember(v.id) { mutableStateOf(false) }
+    LaunchedEffect(flow?.status, blocked) {
+        val first = initialPersonAction(openInitially && !openedInitially, meaningFlow, flow?.status != null, card)
+        if (first == InitialPersonAction.NONE) return@LaunchedEffect
+        openedInitially = true
+        if (first == InitialPersonAction.SPLIT) open = true else flow?.ask(v)
+    }
     var rows by remember(v.id) { mutableStateOf<List<PersonRow>>(emptyList()) }
     var added by remember(v.id) { mutableStateOf<List<PersonLinkLine>>(emptyList()) }
     var reload by remember { mutableStateOf(0) }
     LaunchedEffect(v.id, reload) { rows = attempt { deps.people.listWithBalances() }.orEmpty() }
-    val links = existingPersonLinks(rows, v.id) + added
+    val links = existingPersonLinks(rows, v.id, skipObligation = linked?.obligationId) + added
     val sub = when {
         locked -> t(UiKey.LINK_PERSON_LOCKED)
+        purchaseMore -> t(UiKey.LINK_PERSON_SUB_MORE)
+        meaningFlow -> t(UiKey.PLINK_CARD_SUB_TRANSFER)
         v.flow != LinkFlow.PURCHASE -> t(UiKey.LINK_PERSON_TRANSFER_SOON)
-        links.isEmpty() -> t(UiKey.LINK_PERSON_SUB)
+        links.isEmpty() && linked == null -> t(UiKey.LINK_PERSON_SUB)
         else -> t(UiKey.LINK_PERSON_SUB_MORE)
     }
-    LinkCard(Lucide.USERS, t(UiKey.LINK_PERSON_CARD), sub, if (links.isEmpty()) t(UiKey.LINK_PERSON_OPEN) else t(UiKey.LINK_PERSON_ANOTHER), enabled = !blocked, onOpen = { open = true }) {
+    val action = if (links.isEmpty() && linked == null) t(UiKey.LINK_PERSON_OPEN) else t(UiKey.LINK_PERSON_ANOTHER)
+    LinkCard(Lucide.USERS, t(UiKey.LINK_PERSON_CARD), sub, action, enabled = !blocked, onOpen = { if (meaningFlow && !purchaseMore) flow?.ask(v) else open = true }) {
+        if (linked != null) {
+            Divider()
+            Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                BasicText(t(UiKey.LINK_PERSON_LINE, flow?.status?.personName.orEmpty(), meaningLabel(linked.meaning)), Modifier.weight(1f), style = Type.of(13, FontWeight.Bold))
+                AmountText(linked.amountMinor, v.currency, tone = v.tone, size = 14)
+                SmallAction(t(UiKey.PLINK_UNLINK), onClick = onUnlink)
+            }
+        }
         for (l in links) {
             Divider()
             Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -144,6 +171,23 @@ fun LinkPersonCard(v: DetailView, locked: Boolean, openInitially: Boolean) {
             }
         })
     }
+}
+
+/** حالة كارت «شخص» (N7): [purchaseMore] = شراء اتربط بشخص أو اتقسم قبل كده ⇒ «حد تاني» بيفتح لوحة التقسيم بدل ما الكارت يتقفل. */
+internal data class PersonCardState(val blocked: Boolean, val purchaseMore: Boolean)
+
+internal fun personCardState(locked: Boolean, purchase: Boolean, meaningFlow: Boolean, taken: Boolean): PersonCardState {
+    val more = meaningFlow && purchase && taken
+    return PersonCardState(locked || (!purchase && !meaningFlow) || (meaningFlow && taken && !more), more)
+}
+
+internal enum class InitialPersonAction { NONE, ASK, SPLIT }
+
+/** N6: «تخصيص مبلغ لشخص» من قايمة العمليات ⇒ أول ما حالة العملية تتقري: «مع مين؟» — أو لوحة التقسيم لو الشراء اتربط بحد قبل كده. */
+internal fun initialPersonAction(wanted: Boolean, meaningFlow: Boolean, statusLoaded: Boolean, card: PersonCardState): InitialPersonAction = when {
+    !wanted || !meaningFlow || !statusLoaded || card.blocked -> InitialPersonAction.NONE
+    card.purchaseMore -> InitialPersonAction.SPLIT
+    else -> InitialPersonAction.ASK
 }
 
 /** صندوق «الأثر على أرقامك» (أخضر خفيف). */

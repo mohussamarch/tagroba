@@ -46,6 +46,8 @@ data class SetEconomicKindDeps(
     val clock: Clock,
     /** رجول التحويل لنفسك (§64): نوعها ما يتغيرش غير بالفك (وإلا تبقى مصروف أو دخل وهي فلوسك رايحة بلد تانية). */
     val spaceLegs: app.masroufy.port.SpaceTransferLegs? = null,
+    /** R4/N4: العملية المربوطة بشخص نوعها جزء من الربط (دين · سداد) ⇒ بيتغير بعد «فك الربط» بس. null ⇒ مفيش فحص (اختبارات قديمة). */
+    val personLinks: app.masroufy.port.PersonLinkRepository? = null,
 )
 
 class SetEconomicKind(private val deps: SetEconomicKindDeps) {
@@ -102,6 +104,9 @@ class SetEconomicKind(private val deps: SetEconomicKindDeps) {
         }
         if (kind != transaction.economicKind && deps.spaceLegs?.isLeg(transactionId) == true) {
             throw IllegalStateException(app.masroufy.core.uiText(app.masroufy.core.TextKey.SPACE_TRANSFER_LEG_LOCKED))
+        }
+        if (kind != transaction.economicKind && deps.personLinks?.listByTransactionIds(listOf(transactionId))?.isNotEmpty() == true) {
+            throw IllegalStateException(uiText(app.masroufy.core.UiKey.PLINK_ERR_UNLINK_FIRST))
         }
 
         deps.txns.update(
