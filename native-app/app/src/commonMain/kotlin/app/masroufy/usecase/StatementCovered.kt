@@ -1,6 +1,8 @@
 package app.masroufy.usecase
 
 import app.masroufy.core.CROSS_SOURCE_WIDE_WINDOW_DAYS
+import app.masroufy.core.Direction
+import app.masroufy.core.Halalas
 import app.masroufy.core.Id
 import app.masroufy.core.ImportBatchState
 import app.masroufy.core.ImportSourceType
@@ -8,6 +10,7 @@ import app.masroufy.core.IsoDate
 import app.masroufy.core.MatchingState
 import app.masroufy.core.SourceRecord
 import app.masroufy.core.TextKey
+import app.masroufy.core.Transaction
 import app.masroufy.core.UiKey
 import app.masroufy.core.daysBetween
 import app.masroufy.core.isSmsReference
@@ -29,20 +32,31 @@ internal suspend fun markStatementCovered(
     ledger: ExistingLedger,
 ): List<ImportPreviewLine> {
     if (request.sourceType != ImportSourceType.SMS || lines.isEmpty()) return lines
-    val (firstDay, lastDay) = statementDays(deps.batches, ledger) ?: return lines
-    val statement = statementRecords(deps.batches, ledger.records).mapNotNull { r -> r.transactionId?.let { ledger.byId[it] } }
+    val days = statementDays(deps.batches, ledger) ?: return lines
+    val lastDay = days.second
+    val statement = statementTransactions(deps.batches, ledger)
     return lines.map { line ->
-        // مراجعة r04: آخر يوم في الكشف غالبًا ناقص (الكشف اتصدّر في نصّه) ⇒ الشراء اللي بعد التصدير لازم يتسجل · وقبل أول يوم الكشف ما يعرفش حاجة
-        val covered = line.row.date >= firstDay && line.row.date < lastDay
-        if (line.state != MatchingState.NEW || line.mergeInto != null || !covered) return@map line
-        val inStatement = statement.any { t ->
-            t.amountMinor == line.row.amountMinor && t.observedDirection == line.row.direction &&
-                abs(daysBetween(line.row.date, t.occurredAt.take(10))) <= CROSS_SOURCE_WIDE_WINDOW_DAYS
-        }
+        if (line.state != MatchingState.NEW || line.mergeInto != null || !inCoveredDays(line.row.date, days)) return@map line
+        val inStatement = amountInStatement(statement, line.row.date, line.row.amountMinor, line.row.direction)
         if (inStatement) line.copy(state = MatchingState.DUPLICATE, selectedByDefault = false, reason = uiText(TextKey.SMS_COVERED_BY_STATEMENT, lastDay))
         else line.copy(notInStatement = true, reason = uiText(UiKey.TXN_NOT_IN_STATEMENT_NOTE))
     }
 }
+
+/**
+ * r041-B: **نفس الحكم** في التسجيل ([markStatementCovered]) وفي «صلّح رسايل البنك القديمة» (`CoveredSmsRepair`) — ما ينفعش القاعدتين يختلفوا.
+ * مراجعة r04: آخر يوم في الكشف غالبًا ناقص (الكشف اتصدّر في نصّه) ⇒ الشراء اللي بعد التصدير لازم يتسجل · وقبل أول يوم الكشف ما يعرفش حاجة.
+ */
+internal fun inCoveredDays(day: IsoDate, days: Pair<IsoDate, IsoDate>): Boolean = day >= days.first && day < days.second
+
+/** المبلغ ده **في الكشف**: نفس المبلغ والاتجاه جوه النافذة الواسعة من يوم الرسالة ([statement] = عمليات الكشف بس). */
+internal fun amountInStatement(statement: List<Transaction>, day: IsoDate, amountMinor: Halalas, direction: Direction): Boolean = statement.any { t ->
+    t.amountMinor == amountMinor && t.observedDirection == direction && abs(daysBetween(day, t.occurredAt.take(10))) <= CROSS_SOURCE_WIDE_WINDOW_DAYS
+}
+
+/** عمليات الكشف بس في دفاتر الحساب ده (سجلات [statementRecords]). */
+internal suspend fun statementTransactions(batches: ImportBatchRepository, ledger: ExistingLedger): List<Transaction> =
+    statementRecords(batches, ledger.records).mapNotNull { r -> r.transactionId?.let { ledger.byId[it] } }
 
 /** آخر يوم فيه عملية من **كشف** (مش رسالة) في دفاتر الحساب ده — دفعات مقفولة بس (المعلّقة والمتراجع عنها ما بتغطيش حاجة). */
 internal suspend fun lastStatementDay(batches: ImportBatchRepository, ledger: ExistingLedger): IsoDate? = statementDays(batches, ledger)?.second

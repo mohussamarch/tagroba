@@ -18,6 +18,9 @@ internal val MSA_SMS_FIX_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.SMS_REPAIR_UNDO to "تراجع",
     TextKey.SMS_REPAIR_DUPES to "عمليات مكررة بين الرسائل والكشف: {0}. راجعها في «راجع المكرر»",
     TextKey.SMS_REPAIR_WALLET_DIGITS to "آخر 4 أرقام من رقم الحساب",
+    TextKey.SMS_REPAIR_UNRECORDED_TITLE to "رسائل لم تُسجَّل (الكشف لا يحتويها)",
+    TextKey.SMS_REPAIR_UNRECORDED_NOTE to "يومها داخل أيام الكشف المستورد ومبلغها ليس فيه، فلم تُسجَّل سابقًا. ستُسجَّل وعليها علامة «ليست في الكشف» وتدخل في رصيد المحفظة، فيختلف عن رصيد الكشف في تلك الأيام بمبلغها",
+    TextKey.SMS_REPAIR_UNRECORDED_COUNT to "رسائل لم تُسجَّل: {0}",
 )
 
 internal val EGYPTIAN_SMS_FIX_TEXTS: Map<TextKey, String> = mapOf(
@@ -34,6 +37,9 @@ internal val EGYPTIAN_SMS_FIX_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.SMS_REPAIR_UNDO to "تراجع",
     TextKey.SMS_REPAIR_DUPES to "عمليات متكررة بين الرسايل والكشف: {0}. راجعها في «راجع المكرر»",
     TextKey.SMS_REPAIR_WALLET_DIGITS to "آخر 4 أرقام من رقم الحساب",
+    TextKey.SMS_REPAIR_UNRECORDED_TITLE to "رسايل ما اتسجلتش (الكشف ما فيهاش)",
+    TextKey.SMS_REPAIR_UNRECORDED_NOTE to "يومها جوه أيام الكشف اللي استوردته ومبلغها مش فيه، فما اتسجلتش قبل كده. هتتسجل وعليها علامة «مش في الكشف» وتدخل في رصيد المحفظة، فهيختلف عن رصيد الكشف في الأيام دي بمبلغها",
+    TextKey.SMS_REPAIR_UNRECORDED_COUNT to "رسايل ما اتسجلتش: {0}",
 )
 
 internal val ENGLISH_SMS_FIX_TEXTS: Map<TextKey, String> = mapOf(
@@ -50,4 +56,7 @@ internal val ENGLISH_SMS_FIX_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.SMS_REPAIR_UNDO to "Undo",
     TextKey.SMS_REPAIR_DUPES to "Message/statement duplicates: {0}. Review them in «Review duplicates»",
     TextKey.SMS_REPAIR_WALLET_DIGITS to "Last 4 digits of the account number",
+    TextKey.SMS_REPAIR_UNRECORDED_TITLE to "Messages never recorded (not in the statement)",
+    TextKey.SMS_REPAIR_UNRECORDED_NOTE to "Their day is inside your imported statement's days but their amount isn't in it, so they were never recorded. They'll be recorded with the «Not in statement» mark and count in the wallet balance, so it will differ from the statement balance on those days by their amount",
+    TextKey.SMS_REPAIR_UNRECORDED_COUNT to "Never recorded: {0}",
 )
