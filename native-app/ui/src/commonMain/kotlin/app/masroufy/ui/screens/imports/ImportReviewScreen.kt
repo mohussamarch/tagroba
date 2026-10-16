@@ -145,7 +145,7 @@ fun ImportReviewScreen(draftId: Long) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 if (done == null) {
                     PrimaryButton(
-                        if (saving) t(UiKey.IMPORT_REVIEW_SAVING) else t(UiKey.IMPORT_REVIEW_COMMIT, opsCount(selection.size)), ::commit, Modifier.fillMaxWidth(),
+                        if (saving) t(UiKey.IMPORT_REVIEW_SAVING) else t(UiKey.IMPORT_REVIEW_COMMIT, opsCountObj(selection.size)), ::commit, Modifier.fillMaxWidth(),
                         enabled = selection.isNotEmpty() && error == null, loading = saving, height = 52.dp,
                     )
                 } else {

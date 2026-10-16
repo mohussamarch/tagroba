@@ -190,7 +190,7 @@ internal fun ResultsBlock(
             }
         }
         val missing = choose && wallet == null
-        PrimaryButton(t(UiKey.SMS_PASTE_SAVE, opsCount(result.toSave)), onSave, Modifier.fillMaxWidth(), enabled = !missing && result.toSave > 0, loading = busy)
+        PrimaryButton(t(UiKey.SMS_PASTE_SAVE, opsCountObj(result.toSave)), onSave, Modifier.fillMaxWidth(), enabled = !missing && result.toSave > 0, loading = busy)
         val note = when {
             missing -> UiKey.SMS_PASTE_PICK_WALLET
             result.duplicates > 0 -> UiKey.SMS_PASTE_NOTE_DUPS

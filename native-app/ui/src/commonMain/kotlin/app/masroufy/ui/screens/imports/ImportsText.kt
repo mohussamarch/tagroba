@@ -20,6 +20,9 @@ fun countText(n: Int, one: TextRef, two: TextRef, few: TextRef, many: TextRef): 
 
 fun opsCount(n: Int) = countText(n, UiKey.IMPORTS_OPS_ONE, UiKey.IMPORTS_OPS_TWO, UiKey.IMPORTS_OPS_FEW, UiKey.IMPORTS_OPS_MANY)
 
+/** العدد مفعول به بعد فعل («سجّل عمليتين» مش «سجّل عمليتان» — فحص المحاكي بند 8). المثنى بس اللي بيفرق في الفصحى. */
+fun opsCountObj(n: Int) = countText(n, UiKey.IMPORTS_OPS_ONE, UiKey.PPL_OPS_TWO_OBJ, UiKey.IMPORTS_OPS_FEW, UiKey.IMPORTS_OPS_MANY)
+
 fun msgsCount(n: Int) = countText(n, UiKey.IMPORTS_MSGS_ONE, UiKey.IMPORTS_MSGS_TWO, UiKey.IMPORTS_MSGS_FEW, UiKey.IMPORTS_MSGS_MANY)
 
 fun linesCount(n: Int) = countText(n, UiKey.IMPORTS_LINES_ONE, UiKey.IMPORTS_LINES_TWO, UiKey.IMPORTS_LINES_FEW, UiKey.IMPORTS_LINES_MANY)

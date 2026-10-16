@@ -85,7 +85,7 @@ fun SmsWaitingSection(
         for (f in ui.failed) FailedCard(f, currency, handError?.takeIf { it.first == f.messageId }?.second, actions)
         val toRecord = ui.confirm.size + ui.similar.count { it.messageId in included }
         if (toRecord > 0) {
-            PrimaryButton(t(UiKey.SMS_WAITING_RECORD, opsCount(toRecord)), actions.recordAll, Modifier.fillMaxWidth(), loading = busy)
+            PrimaryButton(t(UiKey.SMS_WAITING_RECORD, opsCountObj(toRecord)), actions.recordAll, Modifier.fillMaxWidth(), loading = busy)
         }
     }
 }
