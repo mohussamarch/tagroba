@@ -27,6 +27,12 @@ fun monthSavingMinor(transactions: List<Transaction>, allocations: List<PersonAl
     return subtractMoney(incomeTotals.incomeMinor, addMoney(all.personalExpenseMinor, all.excludedExpenseMinor))
 }
 
+/** دخل شهر واحد لقاعدة الـ10% في «هيبقى معاك كام» (رد المالك Q7): نفس شرط «الشهر المعروف» بتاع التحويش؛ null = مش معروف. */
+fun monthIncomeMinor(transactions: List<Transaction>, allocations: List<PersonAllocation>): Halalas? {
+    if (transactions.isEmpty() || transactions.any { it.economicKind == EconomicKind.UNCLASSIFIED }) return null
+    return computePeriodTotals(transactions.filter { it.economicKind !in NOT_IN_INCOME_AVERAGES }, allocations).incomeMinor
+}
+
 /**
  * متوسط التحويش في الشهر على [ACTUAL_SAVING_MONTHS] شهور: أي شهر null ⇒ null (مش متوسط الشهور المعروفة بس — القاعدة 10).
  * القسمة بالتقريب لأقرب هللة (النص لبعيد عن الصفر)، والسالب بيفضل سالب.

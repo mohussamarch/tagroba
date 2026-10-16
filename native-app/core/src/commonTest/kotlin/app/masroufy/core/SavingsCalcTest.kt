@@ -108,6 +108,13 @@ class SavingsCalcTest {
         assertNull(monthSavingMinor(rows + txn("x", EconomicKind.UNCLASSIFIED, 10), emptyList()), "عملية نوعها لسه ما اتحددش ⇒ مش معروف")
     }
 
+    @Test fun monthIncomeIsRealIncomeOnlyAndUnknownStaysUnknown() {
+        assertEquals(100_000L, monthIncomeMinor(listOf(txn("s", EconomicKind.SALARY, 100_000), txn("p", EconomicKind.PURCHASE, 150_000)), emptyList()))
+        assertNull(monthIncomeMinor(emptyList(), emptyList()), "شهر من غير ولا عملية ⇒ مش معروف (مش صفر)")
+        assertNull(monthIncomeMinor(listOf(txn("x", EconomicKind.UNCLASSIFIED, 10)), emptyList()), "نوع لسه ما اتحددش ⇒ مش معروف")
+        assertEquals(110_000L, averageSavingMinor(listOf(100_000L, 110_000L, 120_000L)), "متوسط 3 شهور بالهللة")
+    }
+
     @Test fun averageNeedsAllThreeMonthsKnown() {
         // (6,500 + 5,000 + 4,000) ÷ 3 = 5,166.666… ⇒ 5,166.67
         assertEquals(516_667L, averageSavingMinor(listOf(650_000, 500_000, 400_000)))

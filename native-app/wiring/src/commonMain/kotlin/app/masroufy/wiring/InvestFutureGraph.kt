@@ -66,7 +66,11 @@ class InvestFutureGraph(private val c: AreaContext) : InvestFutureDeps {
                 c.space.id, c.space.countryCode, currency, LoadWithYouNow(r.wallets, r.transactions, currency),
                 saving = FutureSavingSource { today -> saving.load(currency, today).averageMinor },
                 // المُجمِّع بعد دمج r05-salary: UserProfile.salaryMinor لو salaryCurrency = عملة البلد، وإلا null (النطاق القديم عمره ما يتحول لرقم)
-                income = FutureIncomeSource { null },
+                // رد المالك Q7: متوسط الدخل الفعلي لآخر 3 شهور كاملة؛ مش معروف ⇒ المرتب المكتوب (الجهات، وإلا الملف)؛ ولا ده ⇒ null
+                income = FutureIncomeSource { today ->
+                    saving.load(currency, today).incomeAverageMinor?.takeIf { it > 0 }
+                        ?: app.masroufy.core.salaryState(r.profile.load(), r.incomeSources.listAll(), currency, today).amountMinor
+                },
                 debts = debts,
                 incomeSources = r.incomeSources,
                 goals = FutureGoalsSource { today ->

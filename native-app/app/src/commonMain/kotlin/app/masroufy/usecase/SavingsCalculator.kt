@@ -38,10 +38,10 @@ import app.masroufy.port.TransactionRepository
  * تحويش شهر مالي واحد — null = الشهر مش معروف. [pendingIncomingCount] > 0 ⇒ فيه داخل مستني تأكيدك (§75-1) برّه الدخل، فالرقم
  * «لحد دلوقتي» (من الدخل المؤكد بس) وبيتعرض بالملاحظة — نفس قاعدة الرئيسية (§18).
  */
-data class MonthSaving(val period: Period, val savedMinor: Halalas?, val pendingIncomingCount: Int = 0)
+data class MonthSaving(val period: Period, val savedMinor: Halalas?, val pendingIncomingCount: Int = 0, val incomeMinor: Halalas? = null)
 
 /** آخر 3 شهور مالية مكتملة (الأقدم الأول) ومتوسطها — null = «غير متاح». */
-data class ActualSaving(val months: List<MonthSaving>, val averageMinor: Halalas?)
+data class ActualSaving(val months: List<MonthSaving>, val averageMinor: Halalas?, val incomeAverageMinor: Halalas? = null)
 
 data class LoadActualSavingDeps(
     val txns: TransactionRepository,
@@ -65,9 +65,10 @@ class LoadActualSaving(private val deps: LoadActualSavingDeps) {
             // المستني (§75-1): برّه الدخل ومعدود لوحده، والتحويش من الدخل المؤكد (زي المتبقي في الرئيسية)
             val view = withEstimatedKinds(rows, names)
             val counted = view.withoutPendingIncoming
-            MonthSaving(p, monthSavingMinor(counted, deps.allocations.listByTransactionIds(counted.map { it.id })), view.pendingIncomingCount)
+            val shares = deps.allocations.listByTransactionIds(counted.map { it.id })
+            MonthSaving(p, monthSavingMinor(counted, shares), view.pendingIncomingCount, monthIncomeMinor(counted, shares))
         }
-        return ActualSaving(months, averageSavingMinor(months.map { it.savedMinor }))
+        return ActualSaving(months, averageSavingMinor(months.map { it.savedMinor }), averageSavingMinor(months.map { it.incomeMinor }))
     }
 }
 
