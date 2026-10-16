@@ -1673,3 +1673,18 @@ Legacy v1 restoration remains a separate compatibility path; its coverage is exp
 - **الخيوط:** `LoadHoldings` و`LoadInvestRates` مرة واحدة لكل فتحة، والحساب على `Dispatchers.Default` (نفس قاعدة §31.42) — الشاشة ما بتختارش خيط.
 - **البناء:** البناء الكامل وقع مرة بـ`StackOverflowError` جوه مترجم Compose (لما الترجمة بتبدأ من الأول) ⇒ اشتغل بـ`"-Dorg.gradle.jvmargs=-Xmx3g -Xss16m -Dfile.encoding=UTF-8"` على أمر gradle. `gradle.properties` ما اتغيرش.
 - **النسخة:** `versionCode 6` · `kotlin-0.5` (و`kotlin-0.5-fast` للسريعة).
+
+### 31.44 r051: «أكّد الأشكال» على صندوق كبير — سجل المصدر · التشغيلة بالمؤشر · القفل لكل صفحة (2026-10-17، فرع `r051-confirm2` — OVERRIDES §102)
+
+- **سجلات المصدر لرسايل البنك (قرار تقني):** `ImportStatement.commitPrepared` بيكتب `SourceRecord` لرسالة البنك **لو اتسجلت أو مكررة** بس؛ الرسالة المستنية
+  مالهاش سجل (هي لسه في الصندوق). الكشف (`CSV`/`PDF`) سجل لكل سطر زي ما هو. الكتابات في التأكيد = الرسايل اللي اتعمل بيها حاجة (حماية حد Spark).
+- **المنفذ:** `SmsInboxPort.window(before: QueuedSms?)` = صفحة صريحة (أحدث 200 أقدم من `before` بترتيب الوصول ثم المعرّف) من غير `sync` (مفيش قراية
+  صندوق الجوال) ومن غير صفحة الشاشة المشتركة (`page`). `AndroidSmsInbox` بيفتح `SmsInboxStore` مرة واحدة (`SmsInboxStore.shared`).
+- **`app/usecase`:** `SmsRouteWalk` (التوزيع على المحافظ + «مستنية» على صفحة اتقرت مرة واتفهمت مرة لكل بلد) · `AutoRecordSms.walk` (صفحة صفحة بالمؤشر،
+  القفل لكل صفحة، تقدم `SmsRunProgress`) · `record` / `sweep` (تسجيل من غير «مستنية») · `waitingWithAsks` (حسبة واحدة للتقرير) ·
+  `ReviewSmsInbox.recordLocked(verified)` ⇒ `ImportStatement.commit(verified)` من غير معاينة تانية جوه نفس المسكة.
+- **`SmsHistory`:** `drain` = سحب كل الجديد من الجوال ثم لفة واحدة بحد وقت · `SmsHistoryReport.waiting` = العدد الحقيقي · «+N زيها» بالفهم على الصفحات اللي ورا.
+- **الشاشة:** `smsWaitingItems` (عنصر كسول لكل سطر بمفتاح الرسالة) · `BankSmsScreen` بيعرض الصفحة قبل التسجيل (`recordNew`) و`bankSmsUi` على
+  `Dispatchers.Default` · `SmsHistorySection` بيعرض التقدم (مرة لكل صفحة على خيط الشاشة).
+- **القياس (`SmsConfirmScaleTest` — 3,600 رسالة مخترعة · 3,500 عملية):** قبل 75 ثانية · 16,332 سجل · 83 دفعة · 39,302 فهم — بعد ~8-11 ثانية ·
+  2,880 سجل (= اللي اتسجل) · 19 دفعة · 3,800 فهم.
