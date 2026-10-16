@@ -120,7 +120,7 @@ fun OperationsScreen() {
         value = attempt { deps.bulk?.summary(sel.ids) }
     }
     LaunchedEffect(ui.view) { if (sel.active) sel = sel.keepOnly(visibleIds) }
-    LaunchedEffect(done) { if (done != null) kotlinx.coroutines.delay(8_000).also { done = null } }
+    val undoWindow = undoWindowFor(done) { done = null } // 8 ثواني من ساعة رتيبة، وواقفة والإيد على الشريط (r041 A5)
     if (sel.active) app.masroufy.ui.overlay.Overlay(onBack = { sel = sel.cancel() }) {}
     fun undo(d: BulkDone) {
         val u = d.undo ?: return
@@ -163,7 +163,7 @@ fun OperationsScreen() {
                             }
                         }
                     }
-                    done?.let { d -> stickyHeader(key = "bulk-undo") { UndoStrip(d.text) { undo(d) } } }
+                    done?.let { d -> stickyHeader(key = "bulk-undo") { UndoStrip(d.text, undoWindow) { undo(d) } } }
                     operationsTab(
                         ui, onRetry = { ui = ui.retrying(); reload++ },
                         onOpen = { r -> if (sel.active) sel = sel.toggle(r.id) else quick.guardTap { nav.push(OperationDetailRoute(r.id)) }() },
