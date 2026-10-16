@@ -10,7 +10,9 @@ import app.masroufy.core.MatchingState
 import app.masroufy.core.SmsParseResult
 import app.masroufy.core.Transaction
 import app.masroufy.core.displayTitleOf
+import app.masroufy.core.Wallet
 import app.masroufy.core.jsTrim
+import app.masroufy.core.normalizeCompact
 import app.masroufy.core.transferPartyOf
 import app.masroufy.port.smsSenderKey
 import app.masroufy.usecase.SmsReviewLine
@@ -131,7 +133,7 @@ private fun Transaction.toRecorded(sheen: Boolean) = RecordedUi(
     id = id,
     merchant = jsTrim(rawMerchantName ?: rawDescription ?: ""),
     title = displayTitleOf(this),
-    party = transferToWalletId == null && rawMerchantName.isNullOrBlank() && transferPartyOf(this) != null,
+    party = isPartyTransfer(),
     categoryId = categoryId,
     amountMinor = amountMinor,
     currency = currency,
@@ -143,6 +145,29 @@ private fun Transaction.toRecorded(sheen: Boolean) = RecordedUi(
     },
     sheen = sheen,
 )
+
+/**
+ * r041b P9 + فحص المحاكي (بند 8): تحويل لشخص أو من شخص — مش «متجر جديد» وما بيتحفظش في ذاكرة التجار (أسامي ناس — CLAUDE.md الأمان 7).
+ * الصادرة مالهاش تاجر، بس قارئ الرسالة في **الواردة** بيحط «من: الاسم» في خانة التاجر ⇒ التاجر = اسم الطرف نفسه برضه شخص.
+ */
+private fun Transaction.isPartyTransfer(): Boolean {
+    if (transferToWalletId != null) return false
+    val name = transferPartyOf(this)?.key?.substringBefore('#') ?: return false
+    val merchant = normalizeCompact(rawMerchantName.orEmpty())
+    if (merchant.isEmpty()) return true
+    return name.isNotEmpty() && (merchant.startsWith(name) || name.startsWith(merchant))
+}
+
+/**
+ * فحص المحاكي (بند 8): «في أي محفظة؟» لرسالة بنك بيعرض محافظ **نفس البنك** بس (غير الكاش) — رسالة الراجحي ما تعرضش «بنك الرياض».
+ * بنك محفظة الرسالة مش معروف ⇒ محفظة الرسالة نفسها بس (+ «محفظة جديدة لهذا الحساب» في اللوحة). محفظة الرسالة نفسها مش لاقيينها ⇒ زي
+ * الأول (كل المحافظ غير الكاش) عشان اللوحة ما تبقاش من غير مخرج.
+ */
+fun accountSheetWallets(all: List<Wallet>, messageWalletId: Id?): List<Wallet> {
+    val from = all.firstOrNull { it.id == messageWalletId } ?: return all.filter { it.kind != "cash" }
+    val bank = from.bankId
+    return all.filter { it.kind != "cash" && (it.id == from.id || (bank != null && it.bankId == bank)) }
+}
 
 /** التصنيفات اللي ينفع تتختار (الظاهرة بس — المخفي ما بيظهرش في الاختيار، §28). */
 fun pickableCategories(all: List<Category>): List<Category> = all.filter { it.active }

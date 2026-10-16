@@ -111,6 +111,30 @@ class BankSmsModelTest {
         assertFalse(ui.recorded[1].party)
     }
 
+    @Test fun anIncomingTransferFromAPersonIsNotANewShopEvenWhenTheReaderPutTheNameAsMerchant() {
+        // فحص المحاكي بند 8: قارئ الرسالة بيحط «من: الاسم» في خانة التاجر للواردة ⇒ كانت بتظهر «متجر جديد»
+        val sms = "حوالة داخلية واردة\nإلى:1111\nمن:QA SENDER\nبـSR 250\n26/10/07 09:35"
+        val fromPerson = Fx.txn("t7", "QA SENDER", 25000, direction = Direction.IN).copy(rawDescription = sms)
+        val shop = Fx.txn("t8", "TEST SHOP", 4550, direction = Direction.IN)
+        val ui = bankSmsUi(overview(), listOf(fromPerson, shop), emptySet())
+        assertEquals("QA SENDER", ui.recorded[0].title)
+        assertTrue(ui.recorded[0].party)
+        assertFalse(ui.recorded[1].party)
+    }
+
+    @Test fun theAccountSheetOffersOnlyWalletsOfTheMessageBank() {
+        // فحص المحاكي بند 8: رسالة الراجحي كانت بتعرض محفظة بنك تاني
+        val a1 = Fx.wallet("w1", "TEST BANK A").copy(bankId = "bank-a")
+        val a2 = Fx.wallet("w2", "TEST BANK A 2", last4 = "7321").copy(bankId = "bank-a")
+        val b = Fx.wallet("w3", "TEST BANK B").copy(bankId = "bank-b")
+        val cash = Fx.wallet("w4", "CASH", kind = "cash")
+        val all = listOf(a1, a2, b, cash)
+        assertEquals(listOf("w1", "w2"), accountSheetWallets(all, "w1").map { it.id })
+        // بنك محفظة الرسالة مش معروف ⇒ محفظتها بس · محفظة الرسالة مش موجودة ⇒ كل غير الكاش (اللوحة ما تبقاش من غير مخرج)
+        assertEquals(listOf("w5"), accountSheetWallets(all + Fx.wallet("w5", "NO BANK"), "w5").map { it.id })
+        assertEquals(listOf("w1", "w2", "w3"), accountSheetWallets(all, null).map { it.id })
+    }
+
     @Test fun hiddenCategoriesAreNotPickable() {
         val all = listOf(Fx.category("a", "مطاعم"), Fx.category("b", "قديم", active = false))
         assertEquals(listOf("a"), pickableCategories(all).map { it.id })

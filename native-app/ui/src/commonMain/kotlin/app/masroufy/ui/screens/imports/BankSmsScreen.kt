@@ -219,7 +219,8 @@ fun BankSmsScreen() {
     )
     val asked = accountLine
     // r041b P10: «محفظة جديدة لهذا الحساب» + كل محافظ البنك (نقل الأرقام بملاحظة صريحة) — مفيش لوحة فاضية من غير مخرج
-    AccountWalletSheet(asked?.askLast4, wallets, onDismiss = { accountLine = null }) { choice ->
+    // فحص المحاكي (بند 8): محافظ بنك الرسالة بس — رسالة الراجحي ما تعرضش محفظة بنك تاني
+    AccountWalletSheet(asked?.askLast4, accountSheetWallets(wallets, asked?.walletId), onDismiss = { accountLine = null }) { choice ->
         accountLine = null
         val last4 = asked?.askLast4
         val messageId = asked?.messageId
