@@ -79,14 +79,14 @@ class TopSpendPngTest {
         listOf("2026-10", "2026-09", "2026-08").flatMapIndexed { m, ym -> (design[i][3 + m] as Pair<Long, Int>).let { (a, c) -> month(ym, "c-$i", a, c) } }
     }
 
-    private fun view(list: List<Transaction>, back: Int, months: Int): TopSpendView = runBlocking {
-        LoadTopCategories(LoadHomeScreen(LoadHomeScreenDeps(MemoryTransactionRepository(list), MemoryCategoryRepository(cats), MemoryAllocationRepository())))
+    private fun view(list: List<Transaction>, back: Int, months: Int, categories: List<Category> = cats): TopSpendView = runBlocking {
+        LoadTopCategories(LoadHomeScreen(LoadHomeScreenDeps(MemoryTransactionRepository(list), MemoryCategoryRepository(categories), MemoryAllocationRepository())))
             .loadAll("2026-10-10", 28, back, months)
     }
 
     @OptIn(ExperimentalComposeUiApi::class)
-    private fun png(out: File, name: String, heightDp: Int, content: @Composable () -> Unit) {
-        val scene = ImageComposeScene(390 * 2, heightDp * 2, Density(2f)) {
+    private fun png(out: File, name: String, heightDp: Int, widthDp: Int = 390, content: @Composable () -> Unit) {
+        val scene = ImageComposeScene(widthDp * 2, heightDp * 2, Density(2f)) {
             MasroufyTheme(reduceMotion = true) {
                 Box(Modifier.fillMaxSize().background(Brush.linearGradient(listOf(Color(0xFFFAF9F3), Color(0xFFEFF3ED), Color(0xFFDCE9DF))))) { content() }
             }
@@ -123,6 +123,9 @@ class TopSpendPngTest {
         val unknown = listOf(txn("2026-10-02", 5_000, null, EconomicKind.UNCLASSIFIED, confirmed = false).copy(suggestedKind = EconomicKind.INTERNAL_TRANSFER))
         png(out, "TopSpending-unknown", 520) { Screen(view(unknown, 0, 1), FilterPeriod.THIS) }
         png(out, "TopSpending-empty", 520) { Screen(view(emptyList(), 0, 1), FilterPeriod.THIS) }
+        // مراجعة r051 F5/F6: شاشة ضيقة ⇒ الشرايح بتنزل سطر، والاسم الطويل بيلف على سطرين (زي النموذج)
+        val long = cats.map { if (it.id == "c-0") it.copy(name = "اشتراكات رقمية وخدمات سحابية ومنصات") else it }
+        png(out, "TopSpending-narrow", 900, widthDp = 300) { Screen(view(txns, 0, 1, long), FilterPeriod.THIS) }
         assertTrue(File(out, "TopSpending.png").isFile)
     }
 }
