@@ -73,6 +73,20 @@ body{margin:0}
       <span style="font-size: 12px; line-height: 1.7; color: #637570">{{rulesNote}}</span>
     </div>
 
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="display: flex; justify-content: space-between; align-items: baseline"><h2 style="margin: 0; font-size: 15px; font-weight: 700">{{igTitle}}</h2><span style="font-size: 12px; color: #637570">{{igCount}}</span></span>
+      <span style="font-size: 12px; line-height: 1.7; color: #637570">{{igSub}}</span>
+      <div style="border-radius: 22px; padding: 4px 8px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <sc-for list="{{ignored}}" as="ig" hint-placeholder-count="2">
+          <span style="{{ig.rowStyle}}">
+            <span aria-hidden="true" style="width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: rgba(25,61,51,0.06)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#637570" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49M14.084 14.158a3 3 0 0 1-4.242-4.242M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143M2 2l20 20"></path></svg></span>
+            <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px"><span style="display: flex; align-items: center; gap: 6px"><span style="font-size: 15px; font-weight: 700">{{ig.name}}</span><span dir="ltr" style="font-size: 12px; color: #637570">•••• {{ig.last4}}</span></span><span style="font-size: 12px; color: #637570">{{ig.sub}}</span></span>
+            <button type="button" class="m-press" onClick="{{ig.restore}}" style="flex-shrink: 0; height: 40px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{igRestore}}</button>
+          </span>
+        </sc-for>
+        <sc-if value="{{igEmpty}}" hint-placeholder-val="{{ false }}"><span style="display: block; padding: 14px 8px; font-size: 13px; color: #637570">{{igEmptyText}}</span></sc-if>
+      </div>
+    </div>
     <a href="NotificationSettings.dc.html" class="m-press" style="min-height: 48px; display: flex; align-items: center; gap: 10px; padding: 0 14px; border-radius: 16px; text-decoration: none; color: #08634F; font-size: 14px; font-weight: 700; background: rgba(8,99,79,0.06)"><span style="flex: 1 1 auto">{{notifLink}}</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
   </div>
 
@@ -187,6 +201,15 @@ class Component extends DCLogic {
       addStyle: 'height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08);' + (full ? ' opacity: 0.5; cursor: default' : ''),
       openAdd: () => { if (!full) this.setState({ sheet: { mode: 'add' }, pick: null, newName: '', tried: false }); },
       rulesNote: eg ? 'لو في البلد حساب بنك واحد، رسايله بتتسجل فيه على طول. ولو عندك حسابين في نفس البنك، بنفرّق بينهم بآخر 4 أرقام في الرسالة. البنك اللي مالوش محفظة رسايله بتستنى لحد ما تختار.' : 'إن كان في البلد حساب بنكي واحد تُسجَّل رسائله فيه مباشرة. وإن كان لك حسابان في البنك نفسه نفرّق بينهما بآخر 4 أرقام في الرسالة. والبنك الذي بلا محفظة تنتظر رسائله حتى تختار.',
+      // مخترعة · رد «تجاهل الحساب ده» في «مَن هذا؟» بيحط الحساب هنا
+      igTitle: eg ? 'حسابات متجاهَلة' : 'حسابات متجاهَلة',
+      igSub: eg ? 'مش بنسألك عن تحويلاتها. «رجّعه» يرجّع السؤال لما يوصل منه تحويل.' : 'لا نسألك عن تحويلاتها. «استعِد» يعيد السؤال عند وصول تحويل منها.',
+      igRestore: eg ? 'رجّعه' : 'استعِد',
+      ...(() => { const IG = [['i1', 'سالم', '4821', '17 أكتوبر', 2], ['i2', eg ? 'مؤسسة النخبة' : 'مؤسسة النخبة', '0937', '3 أكتوبر', 5]].filter((x) => !(s.igBack || {})[x[0]]);
+        return { igCount: n(IG.length), igEmpty: !IG.length, igEmptyText: eg ? 'مفيش حسابات متجاهَلة.' : 'لا توجد حسابات متجاهَلة.',
+          ignored: IG.map(([id, name, last4, when, cnt], i) => ({ name, last4, sub: (eg ? 'اتجاهل ' : 'تُجوهل ') + when + ' · ' + n(cnt) + (eg ? ' تحويل من وقتها' : ' تحويل منذ ذلك'),
+            rowStyle: 'display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 8px 6px;' + (i ? ' border-top: 1px solid rgba(25,61,51,0.07);' : ''),
+            restore: () => { this.setState({ igBack: Object.assign({}, s.igBack, { [id]: true }) }); this.say(eg ? 'رجع — هسألك عنه لما يوصل منه تحويل.' : 'عاد — سنسألك عنه عند وصول تحويل منه.'); } })) }; })(),
       notifLink: eg ? 'إشعارات رسايل البنك' : 'إشعارات رسائل البنك',
       sheetOpen: !!sh && (isAdd || !!target),
       isAdd, isEdit: !!target, canUnlink: !!(target && target.w),

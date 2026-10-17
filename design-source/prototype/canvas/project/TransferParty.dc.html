@@ -17,33 +17,45 @@ body{margin:0}
 .p-veil{animation:p-fade 220ms cubic-bezier(.2,.7,.3,1) both}
 .p-up{animation:p-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
 .p-in{position:relative;overflow:hidden;animation:p-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
-.p-sheen{position:absolute;top:0;bottom:0;left:100%;width:60%;pointer-events:none;background:linear-gradient(100deg,transparent 30%,rgba(166,222,193,0.75) 50%,transparent 70%);animation:p-sheen 1200ms cubic-bezier(.3,.7,.4,1) 200ms both}
-@keyframes p-sheen{from{transform:translateX(0)}to{transform:translateX(-270%)}}
 @keyframes p-fade{from{opacity:0}to{opacity:1}}
 @keyframes p-up{from{transform:translateY(100%)}to{transform:none}}
 @keyframes p-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
-@media (prefers-reduced-motion: reduce){.p-press{transition:none}.p-press:active{transform:none}.p-sheen{display:none}.p-up,.p-in{animation:p-fade 150ms both}}
+@media (prefers-reduced-motion: reduce){.p-press{transition:none}.p-press:active{transform:none}.p-up,.p-in{animation:p-fade 150ms both}}
 :focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+input::placeholder{color:#8A9A95}
 </style>
 </helmet>
 <div dir="rtl" style="width: 100%; min-width: 350px; display: flex; flex-direction: column; font-family: SAR, 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
   <sc-if value="{{asking}}" hint-placeholder-val="{{ true }}">
-    <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: #FBF0DD">
-      <span style="font-size: 13px; font-weight: 700; color: #956000">{{askTitle}}</span>
+    <div style="border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 10px; background: #FBF0DD">
+      <span style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px"><span style="font-size: 15px; font-weight: 700; color: #956000">{{askTitle}}</span><span style="{{amtStyle}}">{{amount}}</span></span>
       <span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 16px; font-weight: 700">{{partyLine}}</span><span style="font-size: 12px; color: #6B4600">{{partyFrom}}</span></span>
-      <button type="button" class="p-press" onClick="{{openWho}}" style="height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 8px 18px rgba(8,99,79,0.22)">{{personLabel}}</button>
-      <div style="display: flex; gap: 8px">
-        <button type="button" class="p-press" onClick="{{markOwn}}" style="flex: 1 1 0; height: 44px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #6B4600; cursor: pointer; background: rgba(255,255,255,0.7)">{{ownLabel}}</button>
-        <button type="button" class="p-press" onClick="{{markNot}}" style="flex: 1 1 0; height: 44px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #6B4600; cursor: pointer; background: rgba(255,255,255,0.7)">{{notLabel}}</button>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+        <sc-for list="{{options}}" as="o" hint-placeholder-count="6">
+          <button type="button" class="p-press" onClick="{{o.pick}}" style="display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-height: 92px; padding: 10px 12px; border: 0; border-radius: 16px; font: inherit; text-align: right; color: #193D33; cursor: pointer; background: rgba(255,255,255,0.78)">
+            <span aria-hidden="true" style="{{o.box}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{o.color}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="{{o.ic}}"></path></svg></span>
+            <span style="font-size: 14px; font-weight: 700; line-height: 1.35">{{o.label}}</span>
+            <span style="font-size: 11px; line-height: 1.45; color: #637570">{{o.hint}}</span>
+          </button>
+        </sc-for>
       </div>
+      <button type="button" class="p-press" onClick="{{ignore}}" style="display: flex; align-items: center; justify-content: center; gap: 8px; height: 44px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #6B4600; cursor: pointer; background: transparent"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B4600" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="{{eyeOff}}"></path></svg>{{ignoreLabel}}</button>
     </div>
   </sc-if>
+
+  <sc-if value="{{ignoring}}" hint-placeholder-val="{{ false }}">
+    <div role="status" class="p-in" style="border-radius: 18px; padding: 10px 10px 10px 14px; display: flex; align-items: center; gap: 10px; color: #FFFFFF; background: rgba(25,61,51,0.94)">
+      <span style="flex: 1 1 auto; min-width: 0; font-size: 13px; font-weight: 700; line-height: 1.6">{{ignoreStrip}}</span>
+      <span aria-hidden="true" style="flex-shrink: 0; font-size: 12px; color: #9FE0C8; font-variant-numeric: tabular-nums">{{secs}}</span>
+      <button type="button" class="p-press" onClick="{{undo}}" style="flex-shrink: 0; height: 40px; padding: 0 14px; border: 0; border-radius: 12px; font: inherit; font-size: 13px; font-weight: 700; color: #9FE0C8; cursor: pointer; background: rgba(255,255,255,0.10)">{{undoLabel}}</button>
+    </div>
+  </sc-if>
+
   <sc-if value="{{decided}}" hint-placeholder-val="{{ false }}">
     <div class="p-in" style="{{doneStyle}}">
-      <span style="font-size: 13px; font-weight: 700">{{doneTitle}}</span>
-      <span style="font-size: 13px; color: #193D33">{{doneBody}}</span>
-      <button type="button" class="p-press" onClick="{{undo}}" style="align-self: flex-start; height: 40px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(255,255,255,0.75)">{{undoLabel}}</button>
-      <span class="p-sheen" aria-hidden="true"></span>
+      <span style="font-size: 14px; font-weight: 700">{{doneTitle}}</span>
+      <span style="font-size: 13px; line-height: 1.7; color: #193D33">{{doneBody}}</span>
+      <button type="button" class="p-press" onClick="{{undo}}" style="align-self: flex-start; height: 40px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(255,255,255,0.75)">{{doneBtn}}</button>
     </div>
   </sc-if>
 
@@ -52,111 +64,128 @@ body{margin:0}
       <button type="button" class="p-veil" onClick="{{closeSheet}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
       <div role="dialog" aria-modal="true" aria-label="{{sheetTitle}}" class="p-up" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 92%; overflow-y: auto; box-sizing: border-box; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 12px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
         <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
-        <span style="font-size: 17px; font-weight: 700">{{sheetTitle}}</span>
-        <sc-if value="{{stepWho}}" hint-placeholder-val="{{ true }}">
-          <div style="display: flex; flex-direction: column; gap: 10px">
-            <div style="{{newBox}}">
-              <span style="font-size: 12px; font-weight: 700; color: #08634F">{{newTitle}}</span>
-              <input type="text" aria-label="{{nameLabel}}" value="{{newName}}" onInput="{{typeName}}" onFocus="{{pickNew}}" maxlength="80" style="height: 48px; box-sizing: border-box; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 16px; font-weight: 700; color: #193D33; background: #FFFFFF; outline: none; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)">
-              <div style="display: flex; gap: 6px">
-                <sc-for list="{{circles}}" as="c" hint-placeholder-count="3">
-                  <button type="button" class="p-press" aria-pressed="{{c.on}}" onClick="{{c.pick}}" style="{{c.style}}">{{c.label}}</button>
-                </sc-for>
-              </div>
-            </div>
-            <span style="font-size: 12px; font-weight: 700; color: #637570">{{orLabel}}</span>
-            <div style="display: flex; flex-direction: column; gap: 6px">
-              <sc-for list="{{people}}" as="p" hint-placeholder-count="5">
-                <button type="button" role="radio" aria-checked="{{p.on}}" class="p-press" onClick="{{p.pick}}" style="{{p.style}}">
-                  <span aria-hidden="true" style="width: 36px; height: 36px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: #08634F; background: #DCEBD6">{{p.initial}}</span>
-                  <span style="flex: 1 1 auto; text-align: right; font-size: 15px; font-weight: 700">{{p.name}}</span>
-                </button>
-              </sc-for>
-            </div>
-            <button type="button" class="p-press" onClick="{{toKind}}" disabled="{{noWho}}" style="{{nextStyle}}">{{nextLabel}}</button>
+        <span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 17px; font-weight: 700">{{sheetTitle}}</span><span style="font-size: 13px; line-height: 1.7; color: #637570">{{sheetSub}}</span></span>
+        <sc-if value="{{subPerson}}" hint-placeholder-val="{{ false }}">
+          <dc-import name="WithWho" bare="{{true}}" amount="{{wwAmt}}" dir="{{wwDir}}" cat="{{wwCat}}" suggest="{{partyName}}" space="{{spaceName}}" on-done="{{onPerson}}" on-later="{{onLater}}" hint-size="350px,640px"></dc-import>
+        </sc-if>
+        <sc-if value="{{subChips}}" hint-placeholder-val="{{ true }}">
+          <div role="radiogroup" aria-label="{{sheetTitle}}" style="display: flex; flex-wrap: wrap; gap: 8px">
+            <sc-for list="{{chips}}" as="c" hint-placeholder-count="5"><button type="button" role="radio" aria-checked="{{c.on}}" class="p-press" onClick="{{c.pick}}" style="{{c.style}}">{{c.label}}</button></sc-for>
           </div>
         </sc-if>
-        <sc-if value="{{stepKind}}" hint-placeholder-val="{{ false }}">
-          <div style="display: flex; flex-direction: column; gap: 10px">
-            <span style="font-size: 14px; color: #637570">{{kindQ}}</span>
-            <div role="radiogroup" aria-label="{{kindQ}}" style="display: flex; flex-wrap: wrap; gap: 8px">
-              <sc-for list="{{kinds}}" as="k" hint-placeholder-count="6">
-                <button type="button" role="radio" aria-checked="{{k.on}}" class="p-press" onClick="{{k.pick}}" style="{{k.style}}">{{k.label}}</button>
-              </sc-for>
-            </div>
-            <button type="button" class="p-press" onClick="{{save}}" disabled="{{noKind}}" style="{{saveStyle}}">{{saveLabel}}</button>
-          </div>
+        <sc-if value="{{subLabel}}" hint-placeholder-val="{{ false }}">
+          <input type="text" autocomplete="off" aria-label="{{sheetTitle}}" placeholder="{{labelHint}}" value="{{labelText}}" onInput="{{typeLabel}}" maxlength="60" style="height: 50px; box-sizing: border-box; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 16px; font-weight: 700; color: #193D33; background: #FFFFFF; outline: none; box-shadow: inset 0 0 0 1.5px #08634F">
         </sc-if>
+        <sc-if value="{{hasNote}}" hint-placeholder-val="{{ true }}"><span style="border-radius: 14px; padding: 10px 12px; font-size: 13px; line-height: 1.7; color: #08634F; background: #DCEBD6">{{note}}</span></sc-if>
+        <sc-if value="{{hasSave}}" hint-placeholder-val="{{ true }}"><button type="button" class="p-press" onClick="{{save}}" disabled="{{cantSave}}" style="{{saveStyle}}">{{saveLabel}}</button></sc-if>
       </div>
     </div>
   </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":350,"height":360}}'>
+<script type="text/x-dc" data-dc-script data-props='{"dir":{"editor":"enum","options":["وارد","صادر"],"default":"وارد","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":350,"height":470}}'>
 class Component extends DCLogic {
   constructor(props) {
     super(props);
     // مخترعة: الاسم من سطر «من:» في رسالة البنك، وآخر 4 أرقام بس (ممنوع الرقم كامل)
-    this.state = { mode: 'ask', sheet: false, step: 'who', who: null, newName: 'سالم', circle: null, kind: null };
+    this.state = { mode: 'ask', sheet: null, pick: null, label: '', who: null, secs: 0 };
+    this.timers = [];
+    this.onPerson = (r) => { if (r && typeof r.person === 'string') this.decide('person', r.person + ' · ' + r.meaning, r); };
+    this.onLater = () => this.setState({ sheet: null });
   }
+  componentDidUpdate(prev) { if (prev.dir !== this.props.dir) { this.stop(); this.setState({ mode: 'ask', sheet: null, pick: null, label: '', who: null }); } }
+  componentWillUnmount() { this.stop(); }
+  stop() { this.timers.forEach(clearInterval); this.timers = []; }
   tell(kind) { if (typeof this.props.onKind === 'function') this.props.onKind(kind); }
+  decide(mode, kind, extra) { this.stop(); this.setState({ mode, sheet: null, extra: extra || null }); this.tell(kind); }
+  eg() { return (this.props.space ?? 'السعودية') === 'مصر'; }
   renderVals() {
-    const eg = (this.props.space ?? 'السعودية') === 'مصر';
-    const s = this.state;
-    const chip = (on) => 'height: 40px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'color: #193D33; background: rgba(25,61,51,0.06)');
-    const primary = (ok) => 'height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%);' + (ok ? '' : ' opacity: 0.45; cursor: default');
-    const isNew = s.who === 'new';
-    const name = isNew ? (s.newName.trim() || 'سالم') : s.who;
-    const circles = [['family', eg ? 'عيلة' : 'عائلة'], ['friends', eg ? 'صحاب' : 'أصدقاء'], ['work', eg ? 'شغل' : 'عمل']].map(([id, label]) => ({
-      label, on: s.circle === id ? 'true' : 'false', pick: () => this.setState({ circle: s.circle === id ? null : id, who: 'new' }), style: chip(s.circle === id)
-    }));
-    const people = ['ليلى', 'يوسف', 'خالد', 'أحمد', 'نورة'].map((p) => ({
-      name: p, initial: p.slice(0, 1), on: s.who === p ? 'true' : 'false', pick: () => this.setState({ who: p }),
-      style: 'display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 6px 12px; border: 0; border-radius: 16px; font: inherit; color: #193D33; cursor: pointer; ' + (s.who === p ? 'background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'background: rgba(25,61,51,0.04)')
-    }));
-    // §42: الوارد من شخص بيتسأل نوعه من القايمة دي
-    const kindDefs = eg ? ['هدية', 'مساعدة', 'تحصيل دين', 'سلفة جاتلي', 'أمانة', 'دور جمعية'] : ['هدية', 'مساعدة', 'تحصيل دين', 'قرض مستلم', 'أمانة', 'دور جمعية'];
-    const kinds = kindDefs.map((label) => ({ label, on: s.kind === label ? 'true' : 'false', pick: () => this.setState({ kind: label }), style: chip(s.kind === label) }));
-    const tone = { person: ['#08634F', '#DCEBD6'], own: ['#2469BA', 'rgba(36,105,186,0.10)'], not: ['#637570', 'rgba(25,61,51,0.06)'] }[s.mode] || ['#637570', '#FFFFFF'];
+    const eg = this.eg(), out = (this.props.dir ?? 'وارد') === 'صادر', s = this.state;
+    const fmt = (m) => { const f = m % 100; return String((m - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; };
+    const amt = Number.isInteger(this.props.amount) && this.props.amount > 0 ? this.props.amount : (out ? 50000 : 30000) * (eg ? 3 : 1);
+    const money = eg ? '⁦' + (out ? '−' : '+') + fmt(amt) + '⁩ ج.م' : '⁦' + (out ? '−' : '+') + '⃁ ' + fmt(amt) + '⁩';
+    const name = 'سالم';
+    const I = {
+      person: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 3a4 4 0 1 0 0 8a4 4 0 1 0 0-8M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75',
+      own: 'M8 3 4 7l4 4M4 7h16M16 21l4-4-4-4M20 17H4',
+      salary: 'M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16M4 6h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z',
+      company: 'M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18ZM6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2M10 6h4M10 10h4M10 14h4M10 18h4',
+      dues: 'm17 2 4 4-4 4M3 11v-1a4 4 0 0 1 4-4h14M7 22l-4-4 4-4M21 13v1a4 4 0 0 1-4 4H3',
+      label: 'M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497zM15 5l4 4'
+    };
+    const C = { person: '#08634F', own: '#2469BA', salary: '#956000', company: '#5B5BA8', dues: '#B0466A', label: '#637570' };
+    // الوارد ليه 6 ردود · الصادر 4 (رد المالك 2026-10-17: «مستحقات» في الصادر بقت معنى جوه «شخص أعرفه»)
+    const defs = (out
+      ? [['person', eg ? 'شخص أعرفه' : 'شخص أعرفه', eg ? 'سلفة · سداد · مستحقات له…' : 'سلفة · سداد · مستحقات له…'], ['own', eg ? 'حسابي التاني' : 'حسابي الآخر', eg ? 'تحويل بين محافظك' : 'تحويل بين محافظك'], ['company', 'شركة أو جهة', eg ? 'مش شخص ومش محل' : 'ليست شخصًا ولا متجرًا'], ['label', eg ? 'حاجة تانية (أكتبها)' : 'شيء آخر (اكتبه)', eg ? 'سمّيها بنفسك' : 'سمِّها بنفسك']]
+      : [['person', 'شخص أعرفه', eg ? 'سلفة رجعتلي · هدية · دعم…' : 'سلفة رجعت لي · هدية · دعم…'], ['own', eg ? 'حسابي التاني' : 'حسابي الآخر', eg ? 'تحويل بين محافظك' : 'تحويل بين محافظك'], ['salary', eg ? 'جهة شغلي (راتب)' : 'جهة عملي (راتب)', eg ? 'يتسجّل مرتب على طول' : 'يُسجَّل راتبًا دائمًا'], ['company', 'شركة أو جهة', eg ? 'مش شخص ومش محل' : 'ليست شخصًا ولا متجرًا'], ['dues', eg ? 'بيحوّلي مستحقات دايمًا' : 'يحوّل لي مستحقات دائمًا', eg ? 'قاعدة لكل تحويل منه' : 'قاعدة لكل تحويل منه'], ['label', eg ? 'حاجة تانية (أكتبها)' : 'شيء آخر (اكتبه)', eg ? 'سمّيها بنفسك' : 'سمِّها بنفسك']]);
+    const open = (id) => {
+      if (id === 'own') return this.decide('own', 'تحويل بين محافظك');
+      if (id === 'salary') return this.decide('salary', 'راتب');
+      this.setState({ sheet: id, pick: null, label: '' });
+    };
+    const options = defs.map(([id, label, hint]) => ({ label, hint, ic: I[id], color: C[id], pick: () => open(id),
+      box: 'width: 32px; height: 32px; border-radius: 11px; display: flex; align-items: center; justify-content: center; background: ' + C[id] + '1A' }));
+    const chip = (on) => 'min-height: 40px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'color: #193D33; background: rgba(25,61,51,0.06)');
+    const companyKinds = out ? (eg ? ['فاتورة أو خدمة', 'رسوم', 'قسط', 'اشتراك', 'مصروف تاني'] : ['فاتورة أو خدمة', 'رسوم', 'قسط', 'اشتراك', 'مصروف آخر']) : (eg ? ['استرداد', 'مكافأة', 'تعويض', 'أرباح', 'إيجار', 'دخل تاني'] : ['استرداد', 'مكافأة', 'تعويض', 'أرباح', 'إيجار', 'دخل آخر']);
+    const people = ['ليلى', 'يوسف', 'خالد'];
+    const list = s.sheet === 'company' ? companyKinds : s.sheet === 'dues' ? people : [];
+    const chips = list.map((label) => ({ label, on: s.pick === label ? 'true' : 'false', pick: () => this.setState({ pick: label }), style: chip(s.pick === label) }));
+    const lbl = s.label.trim();
+    const sheets = {
+      person: [eg ? 'مين صاحب الحساب 4821؟' : 'من صاحب الحساب 4821؟', (eg ? 'الاسم في الرسالة «' : 'الاسم في الرسالة «') + name + '» · ' + money],
+      company: [(out ? (eg ? 'المبلغ ده لـ' : 'ما نوع هذا المبلغ لـ') : (eg ? 'المبلغ ده من ' : 'ما نوع هذا المبلغ من ')) + name + (eg ? ' إيه؟' : '؟'), eg ? 'الجهة مش شخص ومش محل — اختار نوع الفلوس دي.' : 'الجهة ليست شخصًا ولا متجرًا — اختر نوع هذا المال.'],
+      dues: [(eg ? 'مين اللي بيحوّلك مستحقاته من ' : 'من يحوّل لك مستحقاته من ') + name + '؟', eg ? 'كل تحويل جاي من الحساب ده هيسدّد اللي على الشخص ده.' : 'كل تحويل يصل من هذا الحساب يسدّد ما على هذا الشخص.'],
+      label: [eg ? 'سمّي فلوس الحساب ده' : 'سمِّ أموال هذا الحساب', eg ? 'الاسم بيظهر على كل تحويل من الحساب ده.' : 'يظهر الاسم على كل تحويل من هذا الحساب.']
+    }[s.sheet] || ['', ''];
+    const note = s.sheet === 'label' ? (out ? (eg ? 'هتتسجل مصروف باسم «' : 'تُسجَّل مصروفًا باسم «') + (lbl || '…') + (eg ? '» — وتقدر تصنّفها.' : '» — ويمكنك تصنيفها.') : (eg ? 'هتتسجل «دخل تاني» باسم «' : 'تُسجَّل «دخلًا آخر» باسم «') + (lbl || '…') + '».')
+      : s.sheet === 'dues' && s.pick ? (eg ? 'هيتسجل سداد من تحويل واحد لحد دلوقتي. توقّف القاعدة من صفحة ' : 'سيُسجَّل سداد من تحويل واحد حتى الآن. توقف القاعدة من صفحة ') + s.pick + '.' : '';
+    const ok = s.sheet === 'label' ? !!lbl : !!s.pick;
+    const saveIt = () => {
+      if (!ok) return;
+      if (s.sheet === 'company') this.decide('company', s.pick, { what: s.pick });
+      else if (s.sheet === 'dues') this.decide('dues', eg ? 'مستحقات' : 'مستحقات', { who: s.pick });
+      else this.decide('label', out ? 'مصروف' : (eg ? 'دخل تاني' : 'دخل آخر'), { what: lbl });
+    };
+    const x = s.extra || {};
     const done = {
-      person: [(eg ? 'اتربط ب' : 'رُبط ب') + name + (s.kind ? ' · ' + s.kind : ''),
-        (s.made ? (eg ? name + ' اتضاف لأشخاصك. ' : 'أُضيف ' + name + ' إلى أشخاصك. ') : '') + (eg ? 'أي تحويل من الحساب 4821 أو ليه هيتسجل عليه لوحده، وهنسألك نوعه كل مرة (سلفة ولا دعم…).' : 'أي تحويل من الحساب 4821 أو إليه يُسجَّل عليه تلقائيًا، ونسألك نوعه كل مرة (سلفة أو دعم…).')],
-      own: [eg ? 'تحويل بين محافظك' : 'تحويل بين محافظك', eg ? 'مش دخل ولا مصروف. واتصلّح كمان تحويلين قدام من نفس الحساب.' : 'ليس دخلًا ولا مصروفًا. وصُحّح تحويلان سابقان من الحساب نفسه.'],
-      not: [eg ? 'تمام' : 'تم', eg ? 'مش هنسألك عن الحساب ده تاني. التحويل فاضل دخل من غير شخص.' : 'لن نسألك عن هذا الحساب مجددًا. يبقى التحويل دخلًا بلا شخص.']
-    }[s.mode] || ['', ''];
+      person: [(eg ? 'اتربط بـ' : 'رُبط بـ') + (x.person || name) + (x.meaning ? ' · ' + x.meaning : ''), (x.isNew ? (eg ? (x.person || name) + ' اتضاف لأشخاصك. ' : 'أُضيف ' + (x.person || name) + ' إلى أشخاصك. ') : '') + (eg ? 'أي تحويل من الحساب 4821 أو ليه هيتسجّل عليه لوحده، وهنسألك معناه كل مرة.' : 'أي تحويل من الحساب 4821 أو إليه يُسجَّل عليه تلقائيًا، ونسألك معناه كل مرة.'), '#08634F', '#DCEBD6'],
+      own: [eg ? 'تحويل بين محافظك' : 'تحويل بين محافظك', eg ? 'مش دخل ولا مصروف. واتصلّح كمان تحويلين قدام من نفس الحساب.' : 'ليس دخلًا ولا مصروفًا. وصُحّح تحويلان سابقان من الحساب نفسه.', '#2469BA', 'rgba(36,105,186,0.10)'],
+      salary: [eg ? 'تمام — اتسجّل مرتب' : 'تم — سُجّل راتبًا', eg ? 'أي تحويل جاي من الحساب 4821 هيتسجّل مرتب لوحده، والتوقع بيتحسب منه.' : 'أي تحويل يصل من الحساب 4821 يُسجَّل راتبًا تلقائيًا، ويُحسب منه التوقع.', '#956000', '#FBF0DD'],
+      company: [(eg ? 'تمام — جهة: ' : 'تم — جهة: ') + name, (eg ? 'المبلغ ده «' : 'هذا المبلغ «') + (x.what || '') + (eg ? '». الجاي منها هسألك عن نوعه.' : '». سنسألك عن نوع ما يصل منها لاحقًا.'), '#5B5BA8', 'rgba(91,91,168,0.10)'],
+      dues: [(eg ? 'تمام — كل تحويل من الحساب ده بيسدّد اللي على ' : 'تم — كل تحويل من هذا الحساب يسدّد ما على ') + (x.who || ''), eg ? 'اتسجل سداد من تحويل واحد. توقّف القاعدة من صفحة الشخص.' : 'سُجّل سداد من تحويل واحد. توقف القاعدة من صفحة الشخص.', '#B0466A', 'rgba(176,70,106,0.10)'],
+      label: [(eg ? 'تمام — «' : 'تم — «') + (x.what || '') + '»', (eg ? 'أي تحويل جاي من ' : 'أي تحويل يصل من ') + name + (eg ? ' هيتسجل «' : ' يُسجَّل «') + (x.what || '') + '».', '#637570', 'rgba(25,61,51,0.06)'],
+      ignored: [eg ? 'الحساب 4821 متجاهَل' : 'الحساب 4821 متجاهَل', eg ? 'التحويل فاضل من غير طرف. ترجّعه من «إعداد القراية» › «حسابات متجاهَلة».' : 'يبقى التحويل بلا طرف. تستعيده من «إعداد القراءة» › «حسابات متجاهَلة».', '#637570', 'rgba(25,61,51,0.06)']
+    }[s.mode] || ['', '', '#637570', '#FFFFFF'];
     return {
-      asking: s.mode === 'ask', decided: s.mode !== 'ask',
+      asking: s.mode === 'ask', ignoring: s.mode === 'ignoring', decided: !['ask', 'ignoring'].includes(s.mode),
       askTitle: eg ? 'مين ده؟' : 'من هذا؟',
-      partyLine: eg ? 'الاسم في كشف الحساب: سالم' : 'الاسم في الرسالة: سالم',
-      partyFrom: eg ? 'حساب آخره 4821، أول مرة يحوّلك' : 'حساب ينتهي بـ 4821، أول تحويل منه',
-      personLabel: eg ? 'شخص أعرفه' : 'شخص أعرفه',
-      ownLabel: eg ? 'حسابي التاني' : 'حسابي الآخر', notLabel: eg ? 'مش ده' : 'ليس هذا',
-      openWho: () => this.setState({ sheet: true, step: 'who' }),
-      markOwn: () => { this.setState({ mode: 'own' }); this.tell(eg ? 'تحويل بين محافظك' : 'تحويل بين محافظك'); },
-      markNot: () => { this.setState({ mode: 'not' }); this.tell(eg ? 'دخل' : 'دخل'); },
-      doneStyle: 'border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; color: ' + tone[0] + '; background: ' + tone[1],
-      doneTitle: done[0], doneBody: done[1],
+      amount: money, amtStyle: 'font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (out ? '#BE3D48' : '#08634F'),
+      partyLine: (eg ? 'الاسم في الرسالة: ' : 'الاسم في الرسالة: ') + name,
+      partyFrom: out ? (eg ? 'حساب آخره 4821، أول مرة تحوّله' : 'حساب ينتهي بـ 4821، أول تحويل إليه') : (eg ? 'حساب آخره 4821، أول مرة يحوّلك' : 'حساب ينتهي بـ 4821، أول تحويل منه'),
+      options, eyeOff: 'M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49M14.084 14.158a3 3 0 0 1-4.242-4.242M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143M2 2l20 20',
+      ignoreLabel: eg ? 'تجاهل الحساب ده' : 'تجاهل هذا الحساب',
+      ignore: () => {
+        this.stop();
+        this.setState({ mode: 'ignoring', secs: 8 });
+        this.timers.push(setInterval(() => { const n = this.state.secs - 1; if (n <= 0) { this.stop(); this.setState({ mode: 'ignored', secs: 0 }); this.tell(null); } else this.setState({ secs: n }); }, 1000));
+      },
+      ignoreStrip: (eg ? 'اتجاهل ' : 'تجاهلنا ') + name + (eg ? ' — مش هسألك عنه تاني' : ' — لن نسألك عنه مجددًا'), secs: s.secs ? s.secs.toLocaleString('en-US') : '',
       undoLabel: eg ? 'تراجع' : 'تراجع',
-      undo: () => { this.setState({ mode: 'ask', kind: null, who: null, made: false }); this.tell(null); },
-      sheet: s.sheet,
-      sheetTitle: s.step === 'who' ? (eg ? 'مين صاحب الحساب 4821؟' : 'من صاحب الحساب 4821؟') : (eg ? 'الفلوس دي من ' : 'هذا المبلغ من ') + name,
-      stepWho: s.step === 'who', stepKind: s.step === 'kind',
-      newBox: 'display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 18px; ' + (isNew ? 'background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'background: rgba(25,61,51,0.04)'),
-      newTitle: eg ? 'شخص جديد (الاسم من الكشف)' : 'شخص جديد (الاسم من الرسالة)',
-      nameLabel: eg ? 'اسم الشخص' : 'اسم الشخص', newName: s.newName,
-      typeName: (e) => this.setState({ newName: e.target.value, who: 'new' }),
-      pickNew: () => this.setState({ who: 'new' }),
-      circles,
-      orLabel: eg ? 'أو واحد من أشخاصك' : 'أو أحد أشخاصك',
-      people,
-      noWho: !s.who || (isNew && !s.newName.trim()),
-      nextLabel: eg ? 'التالي' : 'التالي', nextStyle: primary(!!s.who && !(isNew && !s.newName.trim())),
-      toKind: () => { if (s.who) this.setState({ step: 'kind' }); },
-      kindQ: eg ? 'الفلوس دي إيه؟' : 'ما نوع هذا المبلغ؟',
-      kinds, noKind: !s.kind,
-      saveLabel: eg ? 'اربط وسجّل' : 'اربط وسجّل', saveStyle: primary(!!s.kind),
-      save: () => { if (!s.kind) return; this.setState({ sheet: false, mode: 'person', made: isNew }); this.tell(s.kind); },
-      closeSheet: () => this.setState({ sheet: false })
+      undo: () => { this.stop(); this.setState({ mode: 'ask', pick: null, label: '', extra: null }); this.tell(null); },
+      doneStyle: 'border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; color: ' + done[2] + '; background: ' + done[3],
+      doneTitle: done[0], doneBody: done[1], doneBtn: s.mode === 'ignored' ? (eg ? 'رجّعه' : 'استعِده') : (eg ? 'تراجع' : 'تراجع'),
+      sheet: !!s.sheet, sheetTitle: sheets[0], sheetSub: sheets[1],
+      subPerson: s.sheet === 'person', subChips: s.sheet === 'company' || s.sheet === 'dues', subLabel: s.sheet === 'label',
+      wwDir: out ? 'صادر' : 'وارد', wwAmt: amt, wwCat: eg ? 'تحويل' : 'تحويل', partyName: name, spaceName: eg ? 'مصر' : 'السعودية',
+      onPerson: this.onPerson, onLater: this.onLater,
+      chips, labelHint: eg ? 'مثلًا: إيجار الشقة' : 'مثلًا: إيجار الشقة', labelText: s.label,
+      typeLabel: (e) => this.setState({ label: e.target.value }),
+      hasNote: !!note, note,
+      hasSave: s.sheet !== 'person', cantSave: !ok,
+      saveLabel: s.sheet === 'dues' ? (eg ? 'احفظ القاعدة' : 'احفظ القاعدة') : (eg ? 'احفظ' : 'احفظ'),
+      saveStyle: 'height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%);' + (ok ? '' : ' opacity: 0.45; cursor: default'),
+      save: saveIt,
+      closeSheet: () => this.setState({ sheet: null })
     };
   }
 }

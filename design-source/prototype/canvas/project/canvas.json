@@ -1177,6 +1177,38 @@
       "y": 30500,
       "w": 390,
       "h": 844
+    },
+    "CategorySheet.dc.html": {
+      "is_interactive": true,
+      "title": "تصنيف العملية · CategorySheet (مربعات بمقاس واحد · «إيه الصنف؟» بعد «شراء» · «مع مين؟»)",
+      "x": 0,
+      "y": 31500,
+      "w": 390,
+      "h": 844
+    },
+    "WithWho.dc.html": {
+      "is_interactive": true,
+      "title": "مع مين؟ · WithWho (الشخص + المعنى — جوه التصنيف و«مَن هذا؟»)",
+      "x": 440,
+      "y": 31500,
+      "w": 390,
+      "h": 844
+    },
+    "SmsPending.dc.html": {
+      "is_interactive": true,
+      "title": "الرسايل المستنية · SmsPending (حسب الشكل · «أكّد الأشكال» بيكمّل في الخلفية)",
+      "x": 880,
+      "y": 31500,
+      "w": 390,
+      "h": 844
+    },
+    "SmsAway.dc.html": {
+      "is_interactive": true,
+      "title": "التسجيل في الخلفية · SmsAway (شاشة القفل والإشعار من غير أرقام)",
+      "x": 1320,
+      "y": 31500,
+      "w": 390,
+      "h": 844
     }
   },
   "createdOnFiles": {
@@ -1481,7 +1513,11 @@
     "BalanceWhy.dc.html",
     "BalanceFix.dc.html",
     "TopSpending.dc.html",
-    "BnplSheet.dc.html"
+    "BnplSheet.dc.html",
+    "CategorySheet.dc.html",
+    "WithWho.dc.html",
+    "SmsPending.dc.html",
+    "SmsAway.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"

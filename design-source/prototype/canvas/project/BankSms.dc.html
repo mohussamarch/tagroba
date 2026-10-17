@@ -56,6 +56,7 @@ body{margin:0}
 
     <sc-if value="{{showWaiting}}" hint-placeholder-val="{{ true }}">
       <dc-import name="SmsWaiting" space="{{spaceName}}" on-record="{{onRecord}}" hint-size="350px,560px"></dc-import>
+      <a href="SmsPending.dc.html" class="m-press" style="min-height: 52px; display: flex; align-items: center; gap: 10px; padding: 0 14px; border-radius: 16px; text-decoration: none; color: #08634F; font-size: 14px; font-weight: 700; background: rgba(8,99,79,0.08)"><span style="flex: 1 1 auto">{{pendingLink}}</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#08634F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
     </sc-if>
 
     <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
@@ -198,7 +199,7 @@ class Component extends DCLogic {
       gearLabel: eg ? 'إعداد القراية' : 'إعداد القراءة',
       statusBtn: st === 'خطأ' ? (eg ? 'رجّع الإذن' : 'أعد الإذن') : (eg ? 'الصق رسالة' : 'الصق رسالة'),
       isLoading: st === 'بيحمّل',
-      showWaiting: live, spaceName: eg ? 'مصر' : 'السعودية', onRecord: this.onRecord,
+      pendingLink: eg ? 'كل الرسايل المستنية — متجمّعة حسب الشكل' : 'كل الرسائل المنتظرة — مجمّعة حسب الشكل', showWaiting: live, spaceName: eg ? 'مصر' : 'السعودية', onRecord: this.onRecord,
       isEmpty: st === 'فاضي',
       emptyTitle: eg ? 'مفيش رسايل النهارده' : 'لا رسائل اليوم',
       emptyBody: eg ? 'أول ما رسالة من البنك توصل، هتتسجل هنا لوحدها.' : 'حين تصل رسالة من البنك ستُسجَّل هنا تلقائيًا.',

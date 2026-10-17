@@ -74,9 +74,13 @@
   | `HomeQuick` | الرئيسية — «محتاجة مراجعة» · «آخر العمليات» · «ليك وعليك» · «استثماراتك النهارده» |
   | `BalanceFix` | جوه `BalanceWhy` — «صلّح رصيدي» (4 خطوات) و«حدّث الرصيد» (آخر خطوتين) — `RepairOldSms` · `MergeDuplicates` · `BalanceCheckpoint` |
   | `BnplSheet` | لوحة بتطلع لوحدها مع أول خصم من مزوّد تقسيط (تابي · تمارا …) أو خصم مبلغه مختلف — وفي النموذج من «الأقساط» |
+  | `CategorySheet` | لوحة اختيار التصنيف من أي عملية («تصنيف العملية») وبعد نوع «شراء» («إيه الصنف؟») — بتفتح `WithWho` لو التصنيف محتاج شخص |
+  | `WithWho` | «مع مين؟» — جوه `CategorySheet` وجوه `TransferParty` («شخص أعرفه») |
+  | `SmsAway` | شاشة القفل والإشعار وقت «أكّد الأشكال» في الخلفية (عرض بس — في التطبيق ده إشعار النظام) |
 - **شاشات:**
   - `OwedToYou` و`YouOwe`: «لك» و«عليك» بالكامل.
   - `SmsWaiting`.
+  - `SmsPending`: «الرسايل المستنية» كاملة متجمّعة حسب الشكل (من رابط في `BankSms`) — `ConfirmShapes` بيكمّل في الخلفية.
   - `TopSpending`: «أكتر ما صرفت عليه» كاملة جوه العمليات (من كارت `HomeBars`) — `TopCategories`.
   - `BalanceWhy`: «افهم رصيدك» من جديد (`BalanceWhyScreen` في كوتلن — `explainWalletBalance` + `withRematchPairs`)، بتتفتح من `WalletDetail`.
   - `StatementColumns`: تحديد أعمدة الكشف يدويًا.

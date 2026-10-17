@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>تسجيل في الخلفية — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.sa-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1)}
+.sa-press:active{transform:scale(.97)}
+.sa-drop{animation:sa-drop 520ms cubic-bezier(.18,.9,.28,1.04) both}
+.sa-bar{animation:sa-bar 1400ms cubic-bezier(.4,0,.6,1) infinite}
+@keyframes sa-drop{from{opacity:0;transform:translateY(-24px)}to{opacity:1;transform:none}}
+@keyframes sa-bar{from{transform:translateX(120%)}to{transform:translateX(-220%)}}
+@media (prefers-reduced-motion: reduce){.sa-press{transition:none}.sa-drop{animation:none}.sa-bar{animation:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #F5C46B}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; padding: 64px 16px 0; box-sizing: border-box; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #FFFFFF; background: radial-gradient(120% 70% at 70% 10%, #2E5A4C 0%, #14302A 55%, #0B1D19 100%)">
+  <span style="font-size: 15px; font-weight: 500; opacity: 0.85">{{date}}</span>
+  <span dir="ltr" style="font-size: 76px; font-weight: 500; line-height: 1.1; letter-spacing: 1px; font-variant-numeric: tabular-nums">{{time}}</span>
+  <span style="margin-top: 6px; font-size: 12px; opacity: 0.6">{{caption}}</span>
+
+  <div style="align-self: stretch; margin-top: 40px; display: flex; flex-direction: column; gap: 10px">
+    <sc-if value="{{running}}" hint-placeholder-val="{{ true }}">
+      <div role="status" style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: rgba(255,255,255,0.14); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px)">
+        <span style="display: flex; align-items: center; gap: 8px; font-size: 12px; opacity: 0.8"><span aria-hidden="true" style="width: 20px; height: 20px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #08634F; background: #DCEBD6">م</span>{{app}} · {{nowLabel}}</span>
+        <span style="font-size: 14px; font-weight: 700; line-height: 1.6">{{runText}}</span>
+        <span aria-hidden="true" style="height: 4px; border-radius: 2px; overflow: hidden; background: rgba(255,255,255,0.18)"><span class="sa-bar" style="display: block; width: 40%; height: 100%; border-radius: 2px; background: #9FE0C8"></span></span>
+      </div>
+    </sc-if>
+    <sc-if value="{{finished}}" hint-placeholder-val="{{ false }}">
+      <button type="button" class="sa-press sa-drop" onClick="{{open}}" style="border: 0; border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; font: inherit; text-align: right; color: #FFFFFF; cursor: pointer; background: rgba(255,255,255,0.18); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px)">
+        <span style="display: flex; align-items: center; gap: 8px; font-size: 12px; opacity: 0.8"><span aria-hidden="true" style="width: 20px; height: 20px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #08634F; background: #DCEBD6">م</span>{{app}} · {{nowLabel}}</span>
+        <span style="font-size: 14px; font-weight: 700; line-height: 1.6">{{doneText}}</span>
+      </button>
+    </sc-if>
+  </div>
+  <span style="position: absolute; bottom: 40px; left: 24px; right: 24px; text-align: center; font-size: 12px; line-height: 1.7; opacity: 0.6">{{rule}}</span>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"phase":{"editor":"enum","options":["بيسجّل","خلص","وقف"],"default":"خلص","section":"الحالة"},"waiting":{"editor":"boolean","default":true,"section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const phase = this.props.phase ?? 'خلص';
+    const waiting = this.props.waiting !== false;
+    // نصوص الإشعار نفسها اللي في 0.5.2 (TextsR052) — على شاشة القفل من غير أي رقم
+    const done = phase === 'وقف'
+      ? (eg ? 'تسجيل رسايل البنك وقف قبل ما يخلص — افتح التطبيق وجرّب تاني' : 'توقف تسجيل رسائل البنك قبل أن يكتمل — افتح التطبيق وأعد المحاولة')
+      : waiting ? (eg ? 'خلّصنا تسجيل الأشكال اللي أكدتها، وفيه رسايل لسه مستنية تأكيدك' : 'اكتمل تسجيل الأشكال التي أكدتها، وبقيت رسائل تنتظر تأكيدك')
+        : (eg ? 'خلّصنا تسجيل رسايل البنك بالأشكال اللي أكدتها' : 'اكتمل تسجيل رسائل البنك بالأشكال التي أكدتها');
+    return {
+      date: eg ? 'السبت 17 أكتوبر' : 'السبت 17 أكتوبر', time: '1:24',
+      caption: eg ? '(كده شكلها وإنت سايب التطبيق)' : '(هكذا تبدو وأنت خارج التطبيق)',
+      app: eg ? 'مصروفي' : 'مصروفي', nowLabel: eg ? 'دلوقتي' : 'الآن',
+      running: phase === 'بيسجّل', finished: phase !== 'بيسجّل',
+      runText: eg ? 'بنسجّل رسايل البنك في الخلفية' : 'نسجّل رسائل البنك في الخلفية',
+      doneText: done,
+      open: () => { if (typeof this.props.onOpen === 'function') this.props.onOpen(); },
+      rule: eg ? 'على شاشة القفل مفيش ولا رقم ولا اسم محل — العدّ جوه الصفحة بس.' : 'لا أرقام ولا أسماء متاجر على شاشة القفل — العدّ داخل الصفحة فقط.'
+    };
+  }
+}
+</script>
+</body>
+</html>
