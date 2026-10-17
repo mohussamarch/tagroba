@@ -16,21 +16,27 @@ body{margin:0}
 .cs-press:active{transform:scale(.95)}
 .cs-veil{animation:cs-fade 220ms cubic-bezier(.2,.7,.3,1) both}
 .cs-up{animation:cs-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+.cs-pop{animation:cs-pop 380ms cubic-bezier(.18,.9,.28,1.08) 80ms both}
+.cs-lift{animation:cs-lift 360ms cubic-bezier(.18,.9,.28,1.08) both}
+.cs-grow{animation:cs-grow 260ms cubic-bezier(.2,.7,.3,1) both}
 .cs-in{animation:cs-in 300ms cubic-bezier(.2,.7,.3,1) backwards}
 @keyframes cs-fade{from{opacity:0}to{opacity:1}}
 @keyframes cs-up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes cs-pop{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
+@keyframes cs-lift{from{transform:none}to{transform:scale(1.06)}}
+@keyframes cs-grow{from{transform:scaleY(0)}to{transform:none}}
 @keyframes cs-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-@media (prefers-reduced-motion: reduce){.cs-press{transition:none}.cs-press:active{transform:none}.cs-up,.cs-in{animation:cs-fade 150ms both}}
+@media (prefers-reduced-motion: reduce){.cs-press{transition:none}.cs-press:active{transform:none}.cs-up,.cs-pop,.cs-in,.cs-grow{animation:cs-fade 150ms both}.cs-lift{animation:none;transform:none}}
 :focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
 input::placeholder{color:#8A9A95}
 .cs-lbl{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 </style>
 </helmet>
-<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: SAR, 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: #F4F2EA">
+<div dir="rtl" ref="{{setRoot}}" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: SAR, 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: #F4F2EA">
   <div style="padding: 56px 20px 0; display: flex; flex-direction: column; gap: 10px">
     <span style="font-size: 13px; font-weight: 700; color: #637570">{{bgTitle}}</span>
     <div style="border-radius: 22px; padding: 16px; display: flex; flex-direction: column; gap: 14px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
-      <span style="display: flex; align-items: center; gap: 12px"><span aria-hidden="true" style="{{op.icBox}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{op.icColor}}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{op.ic}}"></path></svg></span><span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 15px; font-weight: 700">{{op.name}}</span><span style="font-size: 12px; color: #637570">{{op.when}}</span></span><span style="{{op.amtStyle}}">{{op.amount}}</span></span>
+      <span style="display: flex; align-items: center; gap: 12px"><span aria-hidden="true" style="{{op.icBox}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#08634F" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{op.ic}}"></path></svg></span><span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 15px; font-weight: 700">{{op.name}}</span><span style="font-size: 12px; color: #637570">{{op.when}}</span></span><span style="{{op.amtStyle}}">{{op.amount}}</span></span>
       <button type="button" class="cs-press" onClick="{{reopen}}" style="display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 6px 12px; border: 0; border-radius: 16px; font: inherit; color: #193D33; cursor: pointer; background: rgba(25,61,51,0.04)">
         <span style="font-size: 13px; color: #637570">{{catLabel}}</span>
         <span style="{{curStyle}}">{{curName}}</span>
@@ -84,7 +90,7 @@ input::placeholder{color:#8A9A95}
               <span style="font-size: 13px; font-weight: 700; color: #637570">{{g.title}}</span>
               <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px">
                 <sc-for list="{{g.tiles}}" as="t" hint-placeholder-count="4">
-                  <button type="button" class="cs-press" onClick="{{t.pick}}" aria-label="{{t.aria}}" style="{{t.style}}">
+                  <button type="button" class="cs-press" onClick="{{t.pick}}" aria-label="{{t.aria}}" aria-haspopup="{{t.popup}}" style="{{t.style}}">
                     <span aria-hidden="true" style="{{t.box}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{t.color}}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{t.ic}}"></path></svg></span>
                     <span class="cs-lbl" style="font-size: 12px; line-height: 1.35; font-weight: 500; text-align: center">{{t.label}}</span>
                   </button>
@@ -93,6 +99,28 @@ input::placeholder{color:#8A9A95}
             </div>
           </sc-for>
         </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{hasTree}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; z-index: 12">
+      <button type="button" class="cs-veil" onClick="{{closeTree}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.20); backdrop-filter: blur(9px) saturate(0.85); -webkit-backdrop-filter: blur(9px) saturate(0.85)"></button>
+      <span aria-hidden="true" class="cs-grow" style="{{tree.line}}"></span>
+      <div aria-hidden="true" class="cs-lift" style="{{tree.tile}}">
+        <span style="{{tree.box}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{tree.color}}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{tree.ic}}"></path></svg></span>
+        <span class="cs-lbl" style="font-size: 12px; line-height: 1.35; font-weight: 700; text-align: center">{{tree.label}}</span>
+      </div>
+      <div role="menu" aria-label="{{tree.label}}" class="cs-pop" style="{{tree.list}}">
+        <sc-for list="{{tree.items}}" as="it" hint-placeholder-count="4">
+          <span style="position: relative; display: block">
+            <span aria-hidden="true" style="{{it.branch}}"></span>
+            <button type="button" role="menuitem" class="cs-press" onClick="{{it.pick}}" style="{{it.style}}">
+              <span aria-hidden="true" style="{{it.box}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{it.color}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="{{it.ic}}"></path></svg></span>
+              <span style="flex: 1 1 auto; min-width: 0; text-align: right; font-size: 14px; font-weight: 700">{{it.label}}</span>
+            </button>
+          </span>
+        </sc-for>
       </div>
     </div>
   </sc-if>
@@ -130,28 +158,37 @@ class Component extends DCLogic {
   constructor(props) {
     super(props);
     this.state = this.fresh(props.mode);
+    this.setRoot = (el) => { this.root = el; };
     this.whoDone = (r) => { if (r && typeof r.person === 'string') this.finish(this.state.picked, r); };
     this.whoLater = () => this.finish(this.state.picked, 'later');
   }
   fresh(mode) {
     const m = mode ?? 'تصنيف عادي';
     const who = m.indexOf('مع') === 0;
-    return { open: true, q: '', main: null, step: who ? 'who' : 'pick', picked: who ? this.tile(CATS.find((c) => c[0] === 'm23'), m === 'مع مين؟ وارد' ? 1 : 0, false) : null, cur: null, prev: null, strip: '' };
+    return { open: true, q: '', tree: null, step: who ? 'who' : 'pick', picked: who ? this.tile(CATS.find((c) => c[0] === 'm23'), m === 'مع مين؟ وارد' ? 1 : 0) : null, cur: null, prev: null, strip: '' };
   }
   componentDidUpdate(prev) { if (prev.mode !== this.props.mode) this.setState(this.fresh(this.props.mode)); }
   eg() { return (this.props.space ?? 'السعودية') === 'مصر'; }
   hex(h, s, l) { s /= 100; l /= 100; const a = s * Math.min(l, 1 - l); const f = (n) => { const k = (n + h / 30) % 12; return Math.round((l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1))) * 255).toString(16).padStart(2, '0'); }; return ('#' + f(0) + f(8) + f(4)).toUpperCase(); }
   col(hsl, i) { const [h, s, l0] = hsl; const l = l0 + (i == null ? 0 : [7, -6, 12, -10, 16, -3, 10][i % 7]); return this.hex(h, s, Math.max(22, Math.min(h >= 35 && h <= 110 ? 40 : 52, l))); }
   // تصنيف (رئيسي أو فرعي) ⇐ { الاسم · الأيقونة · اللون · محتاج «مع مين؟» }
-  tile(c, si, general) {
-    const eg = this.eg();
-    if (si == null) return { id: c[0], name: eg && c[3] ? c[3] : c[2], label: general ? (eg ? 'عام' : 'عام') : (eg && c[3] ? c[3] : c[2]), ic: ICONS[c[4]] || '', color: this.col(c[5]), subs: general ? 0 : c[6].length, group: c[1], who: c[0] === 'm23' };
+  tile(c, si) {
+    const eg = this.eg(), main = eg && c[3] ? c[3] : c[2];
+    if (si == null) return { id: c[0], name: main, ic: ICONS[c[4]] || '', color: this.col(c[5]), subs: c[6].length, who: c[0] === 'm23', c };
     const s = c[6][si];
-    return { id: c[0] + '.' + si, name: eg && s[2] ? s[2] : s[0], label: eg && s[2] ? s[2] : s[0], ic: ICONS[s[1]] || '', color: this.col(c[5], si), subs: 0, group: c[1], parent: eg && c[3] ? c[3] : c[2], who: c[0] === 'm23' || s[0] === 'تحويل لأشخاص' };
+    return { id: c[0] + '.' + si, name: eg && s[2] ? s[2] : s[0], ic: ICONS[s[1]] || '', color: this.col(c[5], si), subs: 0, parent: main, who: c[0] === 'm23' || s[0] === 'تحويل لأشخاص' };
   }
-  pick(t) {
-    if (t.subs) return this.setState({ main: t.id, q: '' });
-    if (t.who) return this.setState({ picked: t, step: 'who', q: '' });
+  // الرئيسي اللي ليه فرعيات: شجرة فرعياته في نافذة متوصلة بالمربع نفسه والباقي ضباب (طلب المالك 2026-10-17)
+  pick(t, el) {
+    if (t.subs) {
+      let r = { top: 300, left: 236, w: 74, h: 98 };
+      if (el && this.root && el.getBoundingClientRect) {
+        const rr = this.root.getBoundingClientRect(), b = el.getBoundingClientRect(), k = rr.width / 390 || 1;
+        r = { top: (b.top - rr.top) / k, left: (b.left - rr.left) / k, w: b.width / k, h: b.height / k };
+      }
+      return this.setState({ tree: Object.assign({ t }, r) });
+    }
+    if (t.who) return this.setState({ picked: t, step: 'who', q: '', tree: null });
     this.finish(t, null);
   }
   finish(t, link) {
@@ -159,76 +196,95 @@ class Component extends DCLogic {
     const eg = this.eg();
     let msg = (eg ? 'اتصنّفت «' : 'صُنّفت «') + t.name + '»';
     if (link === 'later') msg += eg ? ' — مستنية تربطها بشخص' : ' — تنتظر ربطها بشخص';
-    else if (link) msg += ' · ' + (eg ? 'مع ' : 'مع ') + link.person + ' · ' + link.meaning;
-    this.setState({ open: false, prev: this.state.cur, cur: t, strip: msg, main: null, step: 'pick' });
+    else if (link) msg += ' · مع ' + link.person + ' · ' + link.meaning;
+    this.setState({ open: false, tree: null, prev: this.state.cur, cur: t, strip: msg, step: 'pick' });
     if (typeof this.props.onPick === 'function') this.props.onPick({ category: t.name, link });
   }
   norm(x) { return String(x).replace(/[ً-ْـ]/g, '').replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').trim(); }
+  treeVals(T) {
+    const eg = this.eg(), t = T.t, c = t.c;
+    const kids = [Object.assign({}, t, { subs: 0, label: eg ? 'عام — من غير فرعي' : 'عام — بلا فرعي' })].concat(c[6].map((x, i) => this.tile(c, i)));
+    const W = 204, step = 56, H = kids.length * step - 8, cx = T.left + T.w / 2, right = cx > 195;
+    const below = T.top + T.h + 14 + H <= 830 || T.top - 14 - H < 14;
+    const top = Math.max(14, Math.min(830 - H, below ? T.top + T.h + 14 : T.top - 14 - H));
+    const left = right ? cx - 16 - W : cx + 16;
+    const lineTop = below ? T.top + T.h - 4 : top + 24, lineBot = below ? top + H - 24 : T.top + 4;
+    const glow = '; box-shadow: 0 0 0 1px rgba(255,255,255,0.7)';
+    return {
+      label: t.name, ic: t.ic, color: t.color,
+      tile: 'position: absolute; top: ' + T.top.toFixed(1) + 'px; left: ' + T.left.toFixed(1) + 'px; width: ' + T.w.toFixed(1) + 'px; height: ' + T.h.toFixed(1) + 'px; box-sizing: border-box; padding: 9px 2px 6px; border-radius: 18px; display: flex; flex-direction: column; align-items: center; gap: 6px; background: #FFFFFF; box-shadow: inset 0 0 0 2px ' + t.color + ', 0 18px 40px rgba(16,45,53,0.24)',
+      box: 'width: 40px; height: 40px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: ' + t.color + '1F',
+      line: 'position: absolute; left: ' + (cx - 1).toFixed(1) + 'px; top: ' + lineTop.toFixed(1) + 'px; width: 2px; height: ' + Math.max(0, lineBot - lineTop).toFixed(1) + 'px; border-radius: 1px; transform-origin: ' + (below ? 'top' : 'bottom') + '; background: ' + t.color + glow,
+      list: 'position: absolute; top: ' + top.toFixed(1) + 'px; left: ' + left.toFixed(1) + 'px; width: ' + W + 'px; display: flex; flex-direction: column; gap: 8px; transform-origin: ' + (below ? 'top' : 'bottom') + ' ' + (right ? 'right' : 'left'),
+      items: kids.map((k, i) => ({
+        label: k.label || k.name, ic: k.ic, color: k.color,
+        branch: 'position: absolute; top: 23px; ' + (right ? 'right: -16px' : 'left: -16px') + '; width: 16px; height: 2px; background: ' + t.color + glow,
+        box: 'width: 32px; height: 32px; border-radius: 11px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: ' + k.color + '1F',
+        style: 'width: 100%; height: 48px; display: flex; align-items: center; gap: 10px; padding: 0 10px; box-sizing: border-box; border: 0; border-radius: 16px; font: inherit; color: #193D33; cursor: pointer; background: linear-gradient(145deg, rgba(255,255,255,0.97), rgba(244,249,244,0.92)); box-shadow: inset 0 1px 0 #FFFFFF, 0 10px 24px rgba(16,45,53,0.16)' + (i ? '' : '; outline: 1.5px dashed ' + t.color + '80; outline-offset: -3px'),
+        pick: () => { if (k.who) this.setState({ picked: k, step: 'who', tree: null }); else this.finish(k, null); }
+      }))
+    };
+  }
   renderVals() {
     const eg = this.eg();
-    const mode = this.props.mode ?? 'تصنيف عادي';
-    const buy = mode === 'شراء';
+    const mode = this.props.mode ?? 'تصنيف عادي', buy = mode === 'شراء';
     const s = this.state, k = eg ? 3 : 1;
     const fmt = (m) => { const f = m % 100; return String((m - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; };
     const money = (m, sign) => eg ? '⁦' + sign + fmt(m) + '⁩ ج.م' : '⁦' + sign + '⃁ ' + fmt(m) + '⁩';
     // مخترعة · العملية اللي بتتصنّف
     const OP = {
       'تصنيف عادي': [eg ? 'كافيه المرسى' : 'مقهى المرسى', 'coffee', 2300, false],
-      'شراء': [eg ? 'متجر إلكتروني' : 'متجر إلكتروني', 'package', 18900, false],
+      'شراء': ['متجر إلكتروني', 'package', 18900, false],
       'مع مين؟ صادر': [eg ? 'تحويل لحساب آخره 4821' : 'تحويل لحساب ينتهي بـ 4821', 'send', 50000, false],
       'مع مين؟ وارد': [eg ? 'تحويل من حساب آخره 4821' : 'تحويل من حساب ينتهي بـ 4821', 'send', 30000, true]
-    }[mode] || [];
+    }[mode] || ['', 'coffee', 0, false];
+    const opAmt = money(OP[2] * k, OP[3] ? '+' : '−');
     const tileStyle = (t, on) => 'display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 6px; height: 98px; padding: 9px 2px 6px; border: 0; border-radius: 18px; font: inherit; color: #193D33; cursor: pointer; ' + (on ? 'background: ' + t.color + '1A; box-shadow: inset 0 0 0 1.5px ' + t.color : 'background: rgba(25,61,51,0.035)');
     const box = (t, n) => 'width: ' + n + 'px; height: ' + n + 'px; border-radius: ' + Math.round(n * 0.36) + 'px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: ' + t.color + '1F';
-    const view = (t) => ({ label: t.label, aria: t.name, ic: t.ic, color: t.color, box: box(t, 40), style: tileStyle(t, !!s.cur && s.cur.id === t.id), pick: () => this.pick(t) });
+    const view = (t) => ({ label: t.name, aria: t.name, ic: t.ic, color: t.color, box: box(t, 40), style: tileStyle(t, !!s.cur && s.cur.id === t.id), popup: t.subs ? 'menu' : 'false', pick: (e) => this.pick(t, e && e.currentTarget) });
     const byId = (id) => CATS.find((c) => c[0] === id);
     const groups = GROUPS.filter((g) => !(buy && g[0] === 'money'));
-    let sections = [];
-    const main = s.main ? byId(s.main) : null;
-    if (main) {
-      sections = [{ title: eg ? 'اختار الفرعي' : 'اختر الفرعي', tiles: [view(this.tile(main, null, true))].concat(main[6].map((x, i) => view(this.tile(main, i)))) }];
-    } else {
-      const recent = [['m1', 1], ['m2', 0], ['m9', 0], ['m11', 0]].map(([id, i]) => view(this.tile(byId(id), i)));
-      sections = [{ title: eg ? 'آخر اللي استخدمته' : 'آخر ما استخدمته', tiles: recent }].concat(groups.map((g) => ({
-        title: eg ? g[2] : g[1], tiles: CATS.filter((c) => c[1] === g[0]).map((c) => view(this.tile(c)))
-      })));
-    }
-    const q = this.norm(s.q);
-    const results = [];
+    const recent = [['m1', 1], ['m2', 0], ['m9', 0], ['m11', 0]].map(([id, i]) => view(this.tile(byId(id), i)));
+    const sections = [{ title: eg ? 'آخر اللي استخدمته' : 'آخر ما استخدمته', tiles: recent }].concat(groups.map((g) => ({
+      title: eg ? g[2] : g[1], tiles: CATS.filter((c) => c[1] === g[0]).map((c) => view(this.tile(c)))
+    })));
+    const q = this.norm(s.q), results = [];
     if (q) CATS.filter((c) => !(buy && c[1] === 'money')).forEach((c) => {
-      const t = this.tile(c);
+      const t = Object.assign(this.tile(c), { subs: 0 });
       const gName = (GROUPS.find((g) => g[0] === c[1]) || [])[eg ? 2 : 1] || '';
       if (this.norm(t.name).includes(q)) results.push({ label: t.name, path: gName, ic: t.ic, color: t.color, box: box(t, 40), pick: () => this.pick(t) });
       c[6].forEach((x, i) => { const st = this.tile(c, i); if (this.norm(st.name).includes(q)) results.push({ label: st.name, path: (eg ? 'في ' : 'ضمن ') + st.parent, ic: st.ic, color: st.color, box: box(st, 40), pick: () => this.pick(st) }); });
     });
     const isWho = s.step === 'who' && !!s.picked;
-    const opIc = ICONS[OP[1]] || '';
     return {
-      bgTitle: eg ? 'العملية' : 'العملية',
-      op: { name: OP[0], when: eg ? 'النهارده 1:12 م' : 'اليوم 1:12 م', ic: opIc, icColor: '#08634F', icBox: 'width: 40px; height: 40px; border-radius: 20px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: #DCEBD6',
-        amount: money(OP[2] * k, OP[3] ? '+' : '−'), amtStyle: 'flex-shrink: 0; font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (OP[3] ? '#08634F' : '#BE3D48') },
-      catLabel: eg ? 'التصنيف' : 'التصنيف',
+      setRoot: this.setRoot,
+      bgTitle: 'العملية',
+      op: { name: OP[0], when: eg ? 'النهارده 1:12 م' : 'اليوم 1:12 م', ic: ICONS[OP[1]] || '', icBox: 'width: 40px; height: 40px; border-radius: 20px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: #DCEBD6',
+        amount: opAmt, amtStyle: 'flex-shrink: 0; font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (OP[3] ? '#08634F' : '#BE3D48') },
+      catLabel: 'التصنيف',
       curName: s.cur ? s.cur.name : (eg ? 'من غير تصنيف — دوس تختار' : 'بلا تصنيف — اضغط للاختيار'),
       curStyle: 'flex: 1 1 auto; text-align: left; font-size: 14px; font-weight: 700; color: ' + (s.cur ? s.cur.color : '#956000'),
-      reopen: () => this.setState({ open: true, strip: '', step: 'pick', main: null }),
+      reopen: () => this.setState({ open: true, strip: '', step: 'pick', tree: null }),
       hasStrip: !!s.strip && !s.open, strip: s.strip,
-      canUndo: !!s.cur, undoLabel: eg ? 'تراجع' : 'تراجع',
+      canUndo: !!s.cur, undoLabel: 'تراجع',
       undo: () => this.setState({ cur: s.prev, prev: null, strip: eg ? 'رجعت زي ما كانت' : 'عادت كما كانت' }),
       open: s.open,
-      close: () => this.setState({ open: false, main: null, q: '', step: 'pick' }),
-      title: isWho ? (eg ? 'مع مين؟' : 'مع من؟') : main ? this.tile(main).name : buy ? (eg ? 'إيه الصنف؟' : 'ما الصنف؟') : (eg ? 'تصنيف العملية' : 'تصنيف العملية'),
-      sub: isWho ? '«' + s.picked.name + '» · ' + money(OP[2] * k, OP[3] ? '+' : '−') : main ? main[6].length + (eg ? ' فرعيات · أو «عام»' : ' فرعيات · أو «عام»') : OP[0] + ' · ' + money(OP[2] * k, OP[3] ? '+' : '−'),
-      hasBack: !!main || isWho, backLabel: eg ? 'رجوع' : 'رجوع',
-      back: () => this.setState(isWho ? { step: 'pick', picked: null } : { main: null }),
-      isBuy: buy && !main && !isWho, skipLabel: eg ? 'تخطّي' : 'تخطَّ',
+      close: () => this.setState({ open: false, tree: null, q: '', step: 'pick' }),
+      title: isWho ? (eg ? 'مع مين؟' : 'مع من؟') : buy ? (eg ? 'إيه الصنف؟' : 'ما الصنف؟') : 'تصنيف العملية',
+      sub: isWho ? '«' + s.picked.name + '» · ' + opAmt : OP[0] + ' · ' + opAmt,
+      hasBack: isWho, backLabel: 'رجوع',
+      back: () => this.setState({ step: 'pick', picked: null }),
+      isBuy: buy && !isWho, skipLabel: eg ? 'تخطّي' : 'تخطَّ',
       skip: () => this.setState({ open: false, strip: eg ? 'اتسجلت «شراء» من غير صنف — تقدر تصنّفها بعدين' : 'سُجّلت «شراء» بلا صنف — يمكنك تصنيفها لاحقًا' }),
       buyBody: eg ? 'اخترت «شراء» — حدّد الصنف عشان يدخل ميزانيته.' : 'اخترت «شراء» — حدّد الصنف ليدخل ميزانيته.',
-      showSearch: !isWho && !main, searchHint: eg ? 'دوّر على تصنيف' : 'ابحث عن تصنيف', q: s.q,
-      typeQ: (e) => this.setState({ q: e.target.value }),
+      showSearch: !isWho, searchHint: eg ? 'دوّر على تصنيف' : 'ابحث عن تصنيف', q: s.q,
+      typeQ: (e) => this.setState({ q: e && e.target ? e.target.value : '' }),
       isWho, whoDir: OP[3] ? 'وارد' : 'صادر', whoAmt: OP[2] * k, whoCat: isWho ? s.picked.name : '', spaceName: eg ? 'مصر' : 'السعودية',
       whoDone: this.whoDone, whoLater: this.whoLater,
       isResults: !isWho && !!q, results, noResults: !!q && !results.length, noResultsText: eg ? 'مفيش تصنيف بالاسم ده' : 'لا يوجد تصنيف بهذا الاسم',
-      isGrid: !isWho && !q, sections
+      isGrid: !isWho && !q, sections,
+      hasTree: !!s.tree && s.open, tree: s.tree ? this.treeVals(s.tree) : { label: '', ic: '', color: '#08634F', tile: '', box: '', line: '', list: '', items: [] },
+      closeTree: () => this.setState({ tree: null })
     };
   }
 }
