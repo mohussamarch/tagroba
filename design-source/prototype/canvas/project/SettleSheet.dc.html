@@ -44,10 +44,15 @@ body{margin:0}
             <button type="button" role="radio" aria-checked="{{hw.on}}" class="ss-press" onClick="{{hw.pick}}" style="{{hw.style}}">{{hw.label}}</button>
           </sc-for>
         </div>
-        <sc-if value="{{linkMode}}" hint-placeholder-val="{{ false }}">
-          <div class="ss-in" style="{{candStyle}}">
-            <span style="font-size: 14px; font-weight: 700">{{candTitle}}</span>
-            <span style="font-size: 12px; color: #637570">{{candSub}}</span>
+        <sc-if value="{{linkMode}}" hint-placeholder-val="{{ true }}">
+          <div class="ss-in" role="radiogroup" aria-label="{{candGroup}}" style="display: flex; flex-direction: column; gap: 8px">
+            <sc-for list="{{cands}}" as="cd" hint-placeholder-count="3">
+              <button type="button" role="radio" aria-checked="{{cd.on}}" class="ss-press" onClick="{{cd.pick}}" style="{{cd.style}}">
+                <span style="display: flex; align-items: center; gap: 10px"><span aria-hidden="true" style="{{cd.radio}}"></span><span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; text-align: right"><span style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap"><span style="font-size: 14px; font-weight: 700">{{cd.name}}</span><sc-if value="{{cd.best}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 9px; color: #FFFFFF; background: #08634F">{{cd.bestLabel}}</span></sc-if></span><span style="font-size: 12px; color: #637570">{{cd.sub}}</span></span><span style="{{cd.amtStyle}}">{{cd.amount}}</span></span>
+                <sc-if value="{{cd.best}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; line-height: 1.6; color: #08634F; text-align: right">{{cd.why}}</span></sc-if>
+              </button>
+            </sc-for>
+            <a href="Operations.dc.html" class="ss-press" style="align-self: flex-start; min-height: 44px; display: flex; align-items: center; padding: 0 12px; border-radius: 14px; font-size: 13px; font-weight: 700; color: #08634F; text-decoration: none; background: rgba(8,99,79,0.08)">{{searchOps}}</a>
           </div>
         </sc-if>
         <sc-if value="{{freeMode}}" hint-placeholder-val="{{ true }}">
@@ -58,6 +63,7 @@ body{margin:0}
               <span style="font-size: 14px; color: #637570">{{currency}}</span>
             </div>
             <button type="button" class="ss-press" onClick="{{fillAll}}" style="align-self: flex-start; height: 44px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{fillLabel}}</button>
+            <span style="font-size: 12px; line-height: 1.6; color: #637570">{{cashNote}}</span>
           </div>
         </sc-if>
         <sc-if value="{{over}}" hint-placeholder-val="{{ false }}">
@@ -79,8 +85,8 @@ const withCur = (v, c) => (c === '\u20C1' ? '\u2066\u20C1\u00A0' + v + '\u2069' 
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    // how: free (من غير عملية) · link (العملية اللي مستنية سؤال «ده سداد؟»)
-    this.state = { open: false, how: 'free', amount: '', custody: false };
+    // how: link (عملية متسجلة — الأقرب متعلّم) · cash (كاش — بتتسجل في محفظة الكاش) · مفيش دفع من غير عملية (طلب المالك 2026-10-17)
+    this.state = { open: false, how: 'link', pick: 0, amount: '', custody: false };
   }
   toMinor(text) { const t = String(text || '').replace(/[٠-٩۰-۹]/g, (d) => ('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10)).replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
   fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
@@ -96,15 +102,20 @@ class Component extends DCLogic {
     const candAmount = Number(this.props.candAmount) || 0;
     const hasCand = !!candLabel && candAmount > 0;
     const link = s.how === 'link';
-    const amt = link ? (hasCand ? candAmount : null) : this.toMinor(s.amount);
+    const k = eg ? 3 : 1, wl = eg ? 'حساب المرتب' : 'حساب الراتب';
+    // مخترعة · العمليات المتسجلة اللي ممكن تكون هي (نفس الشخص والاتجاه، مبلغ قريب، الأحدث) — الأولى الأقرب
+    const C = (lak ? [[(eg ? who + ' حوّلك' : 'تحويل من ' + who), eg ? 'امبارح' : 'أمس', 30000 * k], [eg ? 'تحويل جالك' : 'تحويل وارد', '9 أكتوبر', 15000 * k], [eg ? 'إيداع في البنك' : 'إيداع في البنك', '2 أكتوبر', 30000 * k]]
+      : [['تحويل ل' + who, eg ? 'امبارح' : 'أمس', 20000 * k], [eg ? 'تحويل لحساب آخره 4821' : 'تحويل لحساب ينتهي بـ 4821', '10 أكتوبر', 50000 * k], ['سحب كاش', '6 أكتوبر', 20000 * k]]);
+    if (hasCand) C[0] = [candLabel, eg ? 'النهارده' : 'اليوم', candAmount];
+    const amt = link ? (C[s.pick] ? C[s.pick][2] : null) : this.toMinor(s.amount);
     const extra = amt != null && amt > remaining ? amt - remaining : 0;
     const okAmount = amt != null && amt > 0 && (extra === 0 || s.custody);
     const err = amt != null && amt <= 0 ? (eg ? 'اكتب مبلغ أكبر من صفر.' : 'اكتب مبلغًا أكبر من صفر.')
       : extra && !s.custody ? (eg ? 'المبلغ ما يزيدش عن المتبقي — أو سجّل الزيادة أمانة.' : 'لا يتجاوز المتبقي — أو سجّل الزيادة أمانة.')
-      : link && !hasCand ? (eg ? 'مفيش عملية مع ' + who + ' مستنية تتربط.' : 'لا عملية مع ' + who + ' بانتظار الربط.') : '';
+      : '';
     const verb = lak ? (eg ? 'تحصيل' : 'تحصيل') : (eg ? 'سداد' : 'سداد');
     const chip = (on) => 'flex: 1 1 0; min-height: 44px; padding: 0 10px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'color: #193D33; background: rgba(25,61,51,0.06)');
-    const hows = [['free', eg ? 'من غير عملية' : 'بلا عملية'], ['link', eg ? 'عملية موجودة' : 'عملية موجودة']].map(([id, label]) => ({
+    const hows = [['link', eg ? 'عملية متسجلة' : 'عملية مسجّلة'], ['cash', 'كاش']].map(([id, label]) => ({
       label, on: s.how === id ? 'true' : 'false', style: chip(s.how === id), pick: () => this.setState({ how: id, custody: false })
     }));
     // الزيادة أمانة منفصلة: لك = أمانة عندك له (custody_payable) · عليك = أمانة لك عنده (مفيش نوع ليها في كوتلن — سؤال)
@@ -115,15 +126,21 @@ class Component extends DCLogic {
       hasWhy: offline || remaining <= 0,
       why: offline ? (eg ? 'التسوية بتستنى النت — مفيش تسجيل مؤقت يتشال بعدين.' : 'التسوية تنتظر الاتصال — لا تسجيل مؤقت يُلغى لاحقًا.') : (eg ? 'الدين ده خلص.' : 'سُدّد هذا الدين بالكامل.'),
       triggerStyle: 'height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); ' + (offline || remaining <= 0 ? 'opacity: 0.45; cursor: default' : 'cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)'),
-      openSheet: () => { if (!offline && remaining > 0) this.setState({ open: true, how: 'free', amount: '', custody: false }); },
+      openSheet: () => { if (!offline && remaining > 0) this.setState({ open: true, how: 'link', pick: 0, amount: '', custody: false }); },
       open: s.open,
       title: verb + (lak ? (eg ? ' من ' : ' من ') : (eg ? ' ل' : ' ل')) + who,
       remainingLine: (eg ? 'المتبقي ' : 'المتبقي ') + withCur(this.fmt(remaining), cur),
-      howLabel: eg ? 'وصلت إزاي؟' : 'كيف تمّت؟', hows,
+      howLabel: lak ? (eg ? 'وصلت إزاي؟' : 'كيف وصلت؟') : (eg ? 'دفعتها إزاي؟' : 'كيف دفعتها؟'), hows,
       linkMode: link, freeMode: !link,
-      candTitle: hasCand ? candLabel + ' · ' + withCur(this.fmt(candAmount), cur) : (eg ? 'مفيش عملية مستنية' : 'لا عملية بانتظار الربط'),
-      candSub: hasCand ? (eg ? 'العملية دي كانت مستنية سؤال «ده ' + verb + '؟» — ربطها بيجاوب عليه.' : 'كانت هذه العملية بانتظار سؤال «هل هي ' + verb + '؟» — ربطها يجيب عنه.') : (eg ? 'لما تيجي حوالة من ' + who + ' أو ليه هنسألك عنها.' : 'حين تصل حوالة من ' + who + ' أو إليه نسألك عنها.'),
-      candStyle: 'border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; ' + (hasCand ? 'background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'background: rgba(25,61,51,0.04)'),
+      candGroup: eg ? 'أنهي عملية؟' : 'أي عملية؟',
+      cands: C.map(([name, when, m], i) => { const on = s.pick === i; return { name, sub: when + ' · ' + wl, amount: withCur((lak ? '+' : '\u2212') + this.fmt(m), cur), on: on ? 'true' : 'false', best: i === 0,
+        bestLabel: eg ? 'غالبًا دي' : 'غالبًا هي', why: eg ? 'نفس الشخص ونفس الاتجاه، والمبلغ قريب من المتبقي' : 'الشخص نفسه والاتجاه نفسه، والمبلغ قريب من المتبقي',
+        amtStyle: 'flex-shrink: 0; font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (lak ? '#08634F' : '#193D33'),
+        radio: 'width: 20px; height: 20px; box-sizing: border-box; border-radius: 10px; flex-shrink: 0; ' + (on ? 'border: 6px solid #08634F; background: #FFFFFF' : 'border: 1.5px solid #9AA9A4'),
+        style: 'display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border: 0; border-radius: 16px; font: inherit; color: #193D33; cursor: pointer; ' + (on ? 'background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'background: rgba(25,61,51,0.04)'),
+        pick: () => this.setState({ pick: i, custody: false }) }; }),
+      searchOps: eg ? 'مش لاقيها؟ دوّر في العمليات' : 'لا تجدها؟ ابحث في العمليات',
+      cashNote: lak ? (eg ? 'هتتسجل داخلة محفظة الكاش.' : 'تُسجَّل داخلة إلى محفظة الكاش.') : (eg ? 'هتتسجل خارجة من محفظة الكاش.' : 'تُسجَّل خارجة من محفظة الكاش.'),
       amountLabel: eg ? 'المبلغ' : 'المبلغ', amountText: s.amount, currency: cur,
       typeAmount: (e) => this.setState({ amount: e.target.value, custody: false }),
       fillLabel: (eg ? 'المتبقي كله ' : 'المتبقي كاملًا ') + this.fmt(remaining),
@@ -136,11 +153,11 @@ class Component extends DCLogic {
       custodyStyle: 'min-height: 44px; padding: 0 12px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; text-align: right; ' + (s.custody ? 'color: #FFFFFF; background: #08634F' : 'color: #6B4600; background: rgba(255,255,255,0.75)'),
       toggleCustody: () => this.setState({ custody: !s.custody }),
       err: s.amount || link ? err : '',
-      cannot: !okAmount || (link && !hasCand),
+      cannot: !okAmount,
       saveLabel: (eg ? 'سجّل ال' : 'سجّل ال') + verb + (okAmount ? ' · ' + this.fmt(Math.min(amt, remaining)) : ''),
-      saveStyle: 'height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); ' + (okAmount && !(link && !hasCand) ? 'cursor: pointer' : 'opacity: 0.45; cursor: default'),
+      saveStyle: 'height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); ' + (okAmount ? 'cursor: pointer' : 'opacity: 0.45; cursor: default'),
       save: () => {
-        if (!okAmount || (link && !hasCand)) return;
+        if (!okAmount) return;
         this.setState({ open: false });
         if (typeof this.props.onSave === 'function') this.props.onSave(Math.min(amt, remaining), extra, link);
       },
