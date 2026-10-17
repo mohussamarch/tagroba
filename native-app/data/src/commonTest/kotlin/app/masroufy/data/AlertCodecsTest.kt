@@ -53,7 +53,9 @@ class AlertCodecsTest {
         val bare = entry.copy(openedAt = null, spaceLabel = null, decision = entry.decision.copy(deliverAt = null, factors = emptyList()))
         val stored = roundTrip(AlertCodecs.alertInbox, bare)
         for (f in listOf("openedAt", "spaceLabel", "deliverAtDate", "deliverAtHour")) assertFalse(f in stored, f)
-        assertEquals(setOf("openedAt", "spaceLabel", "deliverAtDate", "deliverAtHour"), AlertCodecs.alertInbox.omittedFields(bare))
+        assertEquals(setOf("openedAt", "spaceLabel", "deliverAtDate", "deliverAtHour", "soonDays"), AlertCodecs.alertInbox.omittedFields(bare))
+        // r051-f: «قرّب» قبل بيوم بيتخزن مع السطر ⇒ «ليه اتبعت» = «ميعاده بكرة» على أي جهاز
+        assertEquals(1L, roundTrip(AlertCodecs.alertInbox, entry.copy(soonDays = 1))["soonDays"])
         // رقم حساب كامل في النص ما يوصلش فايربيز (CLAUDE.md #11) — والمفاتيح زي ما هي
         val withAccount = entry.copy(title = "تحويل لحساب 1234567890123", body = "من حساب ٩٨٧٦٥٤٣٢١")
         val safe = AlertCodecs.alertInbox.toStore(withAccount)

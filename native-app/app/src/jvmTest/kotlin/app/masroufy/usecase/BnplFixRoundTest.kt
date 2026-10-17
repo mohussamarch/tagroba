@@ -51,13 +51,13 @@ class BnplFixRoundTest {
         reviewState = ReviewState.NEEDS_REVIEW, isCashTagged = false, createdAt = "2026-10-16T08:00:00.000Z", updatedAt = "x", rawMerchantName = merchant,
     )
 
-    /** نفس المستودعات بس بتسيب الدور (`yield`) قبل كل قراية ⇒ أي فحص وكتابة من غير قفل بيتداخلوا زي الجوال الحقيقي. */
+    /** نفس المستودعات بس بتسيب الدور (`yield`) بعد كل قراية (النتيجة ممكن تبقى قديمة) ⇒ أي فحص وكتابة من غير قفل بيتداخلوا زي الجوال الحقيقي. */
     private class YieldingTxns(private val d: MemoryTransactionRepository) : TransactionRepository by d {
-        override suspend fun findByIds(ids: List<Id>): List<Transaction> { yield(); return d.findByIds(ids) }
+        override suspend fun findByIds(ids: List<Id>): List<Transaction> = d.findByIds(ids).also { yield() }
     }
 
     private class YieldingPayments(private val d: MemoryInstallmentPaymentRepository) : InstallmentPaymentRepository by d {
-        override suspend fun listByTransactionIds(transactionIds: List<Id>): List<InstallmentPayment> { yield(); return d.listByTransactionIds(transactionIds) }
+        override suspend fun listByTransactionIds(transactionIds: List<Id>): List<InstallmentPayment> = d.listByTransactionIds(transactionIds).also { yield() }
     }
 
     private class World(seed: List<Transaction>, rosca: List<RoscaEntry> = emptyList()) {
