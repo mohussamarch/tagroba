@@ -18,15 +18,17 @@ body{margin:0}
 .cs-up{animation:cs-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
 .cs-pop{animation:cs-pop 380ms cubic-bezier(.18,.9,.28,1.08) 80ms both}
 .cs-lift{animation:cs-lift 360ms cubic-bezier(.18,.9,.28,1.08) both}
-.cs-grow{animation:cs-grow 260ms cubic-bezier(.2,.7,.3,1) both}
+.cs-thread{animation:cs-draw 560ms cubic-bezier(.2,.7,.3,1) 60ms forwards}
+.cs-node{animation:cs-node 380ms cubic-bezier(.18,.9,.28,1.12) both}
 .cs-in{animation:cs-in 300ms cubic-bezier(.2,.7,.3,1) backwards}
 @keyframes cs-fade{from{opacity:0}to{opacity:1}}
 @keyframes cs-up{from{transform:translateY(100%)}to{transform:none}}
 @keyframes cs-pop{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
 @keyframes cs-lift{from{transform:none}to{transform:scale(1.06)}}
-@keyframes cs-grow{from{transform:scaleY(0)}to{transform:none}}
+@keyframes cs-draw{to{stroke-dashoffset:0}}
+@keyframes cs-node{from{opacity:0;transform:scale(.55)}to{opacity:1;transform:none}}
 @keyframes cs-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-@media (prefers-reduced-motion: reduce){.cs-press{transition:none}.cs-press:active{transform:none}.cs-up,.cs-pop,.cs-in,.cs-grow{animation:cs-fade 150ms both}.cs-lift{animation:none;transform:none}}
+@media (prefers-reduced-motion: reduce){.cs-press{transition:none}.cs-press:active{transform:none}.cs-up,.cs-pop,.cs-in,.cs-node{animation:cs-fade 150ms both}.cs-thread{animation:none;stroke-dashoffset:0!important}.cs-lift{animation:none;transform:none}}
 :focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
 input::placeholder{color:#8A9A95}
 .cs-lbl{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
@@ -106,20 +108,19 @@ input::placeholder{color:#8A9A95}
   <sc-if value="{{hasTree}}" hint-placeholder-val="{{ false }}">
     <div style="position: absolute; inset: 0; z-index: 12">
       <button type="button" class="cs-veil" onClick="{{closeTree}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.20); backdrop-filter: blur(9px) saturate(0.85); -webkit-backdrop-filter: blur(9px) saturate(0.85)"></button>
-      <span aria-hidden="true" class="cs-grow" style="{{tree.line}}"></span>
-      <div aria-hidden="true" class="cs-lift" style="{{tree.tile}}">
+      <svg width="390" height="844" viewBox="0 0 390 844" aria-hidden="true" fill="none" stroke-linecap="round" style="position: absolute; left: 0; top: 0; pointer-events: none">
+        <sc-for list="{{tree.threads}}" as="th" hint-placeholder-count="4"><path class="cs-thread" d="{{th.d}}" stroke="{{tree.color}}" stroke-width="2" stroke-opacity="0.85" style="{{th.dash}}"></path></sc-for>
+      </svg>
+      <div aria-hidden="true" class="cs-pop" style="{{tree.tile}}">
         <span style="{{tree.box}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{tree.color}}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{tree.ic}}"></path></svg></span>
         <span class="cs-lbl" style="font-size: 12px; line-height: 1.35; font-weight: 700; text-align: center">{{tree.label}}</span>
       </div>
-      <div role="menu" aria-label="{{tree.label}}" class="cs-pop" style="{{tree.list}}">
+      <div role="menu" aria-label="{{tree.label}}" style="position: absolute; inset: 0; pointer-events: none">
         <sc-for list="{{tree.items}}" as="it" hint-placeholder-count="4">
-          <span style="position: relative; display: block">
-            <span aria-hidden="true" style="{{it.branch}}"></span>
-            <button type="button" role="menuitem" class="cs-press" onClick="{{it.pick}}" style="{{it.style}}">
-              <span aria-hidden="true" style="{{it.box}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{it.color}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="{{it.ic}}"></path></svg></span>
-              <span style="flex: 1 1 auto; min-width: 0; text-align: right; font-size: 14px; font-weight: 700">{{it.label}}</span>
-            </button>
-          </span>
+          <button type="button" role="menuitem" class="cs-press cs-node" onClick="{{it.pick}}" style="{{it.style}}">
+            <span aria-hidden="true" style="{{it.box}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="{{it.color}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="{{it.ic}}"></path></svg></span>
+            <span class="cs-lbl" style="font-size: 11px; line-height: 1.3; font-weight: 700; text-align: center">{{it.label}}</span>
+          </button>
         </sc-for>
       </div>
     </div>
@@ -203,24 +204,25 @@ class Component extends DCLogic {
   norm(x) { return String(x).replace(/[ً-ْـ]/g, '').replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').trim(); }
   treeVals(T) {
     const eg = this.eg(), t = T.t, c = t.c;
-    const kids = [Object.assign({}, t, { subs: 0, label: eg ? 'عام — من غير فرعي' : 'عام — بلا فرعي' })].concat(c[6].map((x, i) => this.tile(c, i)));
-    const W = 204, step = 56, H = kids.length * step - 8, cx = T.left + T.w / 2, right = cx > 195;
-    const below = T.top + T.h + 14 + H <= 830 || T.top - 14 - H < 14;
-    const top = Math.max(14, Math.min(830 - H, below ? T.top + T.h + 14 : T.top - 14 - H));
-    const left = right ? cx - 16 - W : cx + 16;
-    const lineTop = below ? T.top + T.h - 4 : top + 24, lineBot = below ? top + H - 24 : T.top + 4;
-    const glow = '; box-shadow: 0 0 0 1px rgba(255,255,255,0.7)';
+    const kids = [Object.assign({}, t, { subs: 0, label: 'عام', general: true })].concat(c[6].map((x, i) => this.tile(c, i)));
+    const n = kids.length, NW = 78, NH = 66, HW = 96, HH = 104, hx = 195, hy = 404;
+    const rx = n <= 4 ? 118 : n <= 6 ? 132 : 150, ry = Math.round(rx * 1.18);
+    const spots = kids.map((_, j) => -Math.PI / 2 + (2 * Math.PI * j) / n);
+    const pos = spots.map((a) => [hx + rx * Math.cos(a) - NW / 2, hy + ry * Math.sin(a) - NH / 2]);
+    const threads = pos.map(([x, y], i) => {
+      const ex = x + NW / 2, ey = y + NH / 2, dx = ex - hx, dy = ey - hy, len = Math.hypot(dx, dy) || 1;
+      const nx = -dy / len, ny = dx / len, amp = (i % 2 ? 1 : -1) * Math.min(18, len * 0.16);
+      const c1 = [hx + dx * 0.3 + nx * amp, hy + dy * 0.3 + ny * amp], c2 = [hx + dx * 0.7 - nx * amp, hy + dy * 0.7 - ny * amp], D = Math.round(len * 1.3 + 24);
+      return { d: 'M' + hx.toFixed(1) + ' ' + hy.toFixed(1) + ' C' + c1.map((v) => v.toFixed(1)).join(' ') + ' ' + c2.map((v) => v.toFixed(1)).join(' ') + ' ' + ex.toFixed(1) + ' ' + ey.toFixed(1), dash: 'stroke-dasharray: ' + D + '; stroke-dashoffset: ' + D + '; animation-delay: ' + (40 + i * 35) + 'ms' };
+    });
     return {
-      label: t.name, ic: t.ic, color: t.color,
-      tile: 'position: absolute; top: ' + T.top.toFixed(1) + 'px; left: ' + T.left.toFixed(1) + 'px; width: ' + T.w.toFixed(1) + 'px; height: ' + T.h.toFixed(1) + 'px; box-sizing: border-box; padding: 9px 2px 6px; border-radius: 18px; display: flex; flex-direction: column; align-items: center; gap: 6px; background: #FFFFFF; box-shadow: inset 0 0 0 2px ' + t.color + ', 0 18px 40px rgba(16,45,53,0.24)',
+      label: t.name, ic: t.ic, color: t.color, threads,
+      tile: 'position: absolute; top: ' + (hy - HH / 2) + 'px; left: ' + (hx - HW / 2) + 'px; width: ' + HW + 'px; height: ' + HH + 'px; box-sizing: border-box; padding: 12px 4px 8px; border-radius: 18px; display: flex; flex-direction: column; align-items: center; gap: 6px; background: #FFFFFF; box-shadow: inset 0 0 0 2px ' + t.color + ', 0 18px 40px rgba(16,45,53,0.24)',
       box: 'width: 40px; height: 40px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: ' + t.color + '1F',
-      line: 'position: absolute; left: ' + (cx - 1).toFixed(1) + 'px; top: ' + lineTop.toFixed(1) + 'px; width: 2px; height: ' + Math.max(0, lineBot - lineTop).toFixed(1) + 'px; border-radius: 1px; transform-origin: ' + (below ? 'top' : 'bottom') + '; background: ' + t.color + glow,
-      list: 'position: absolute; top: ' + top.toFixed(1) + 'px; left: ' + left.toFixed(1) + 'px; width: ' + W + 'px; display: flex; flex-direction: column; gap: 8px; transform-origin: ' + (below ? 'top' : 'bottom') + ' ' + (right ? 'right' : 'left'),
       items: kids.map((k, i) => ({
         label: k.label || k.name, ic: k.ic, color: k.color,
-        branch: 'position: absolute; top: 23px; ' + (right ? 'right: -16px' : 'left: -16px') + '; width: 16px; height: 2px; background: ' + t.color + glow,
-        box: 'width: 32px; height: 32px; border-radius: 11px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: ' + k.color + '1F',
-        style: 'width: 100%; height: 48px; display: flex; align-items: center; gap: 10px; padding: 0 10px; box-sizing: border-box; border: 0; border-radius: 16px; font: inherit; color: #193D33; cursor: pointer; background: linear-gradient(145deg, rgba(255,255,255,0.97), rgba(244,249,244,0.92)); box-shadow: inset 0 1px 0 #FFFFFF, 0 10px 24px rgba(16,45,53,0.16)' + (i ? '' : '; outline: 1.5px dashed ' + t.color + '80; outline-offset: -3px'),
+        box: 'width: 30px; height: 30px; border-radius: 15px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: ' + k.color + '1F' + (k.general ? '; box-shadow: inset 0 0 0 1.5px ' + k.color + '80' : ''),
+        style: 'pointer-events: auto; position: absolute; left: ' + pos[i][0].toFixed(1) + 'px; top: ' + pos[i][1].toFixed(1) + 'px; width: ' + NW + 'px; min-height: ' + NH + 'px; box-sizing: border-box; padding: 7px 3px 6px; display: flex; flex-direction: column; align-items: center; gap: 4px; border: 0; border-radius: 18px; font: inherit; color: #193D33; cursor: pointer; animation-delay: ' + (60 + i * 35) + 'ms; background: linear-gradient(145deg, rgba(255,255,255,0.97), rgba(244,249,244,0.92)); box-shadow: inset 0 1px 0 #FFFFFF, 0 10px 22px rgba(16,45,53,0.18)' + (k.general ? '; outline: 1.5px dashed ' + t.color + '80; outline-offset: -3px' : ''),
         pick: () => { if (k.who) this.setState({ picked: k, step: 'who', tree: null }); else this.finish(k, null); }
       }))
     };
@@ -283,7 +285,7 @@ class Component extends DCLogic {
       whoDone: this.whoDone, whoLater: this.whoLater,
       isResults: !isWho && !!q, results, noResults: !!q && !results.length, noResultsText: eg ? 'مفيش تصنيف بالاسم ده' : 'لا يوجد تصنيف بهذا الاسم',
       isGrid: !isWho && !q, sections,
-      hasTree: !!s.tree && s.open, tree: s.tree ? this.treeVals(s.tree) : { label: '', ic: '', color: '#08634F', tile: '', box: '', line: '', list: '', items: [] },
+      hasTree: !!s.tree && s.open, tree: s.tree ? this.treeVals(s.tree) : { label: '', ic: '', color: '#08634F', tile: '', box: '', threads: [], items: [] },
       closeTree: () => this.setState({ tree: null })
     };
   }
