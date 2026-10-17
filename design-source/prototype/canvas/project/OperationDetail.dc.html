@@ -68,7 +68,7 @@ body{margin:0}
         <div style="{{f.rowStyle}}">
           <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px">
             <span style="font-size: 12px; color: #637570">{{f.label}}</span>
-            <span style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap"><span style="font-size: 15px; font-weight: 700">{{f.value}}</span><sc-if value="{{f.hasChip}}" hint-placeholder-val="{{ false }}"><span style="{{f.chipStyle}}">{{f.chip}}</span></sc-if></span>
+            <span style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap"><span style="{{f.valueStyle}}">{{f.value}}</span><sc-if value="{{f.hasChip}}" hint-placeholder-val="{{ false }}"><span style="{{f.chipStyle}}">{{f.chip}}</span></sc-if></span>
             <sc-if value="{{f.hasHint}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #637570">{{f.hint}}</span></sc-if>
           </span>
           <sc-for list="{{f.acts}}" as="a" hint-placeholder-count="0">
@@ -90,20 +90,7 @@ body{margin:0}
   </div>
 
   <sc-if value="{{catOpen}}" hint-placeholder-val="{{ false }}">
-    <div style="position: absolute; inset: 0; z-index: 9">
-      <button type="button" class="d-veil" onClick="{{closeCat}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
-      <div role="dialog" aria-modal="true" aria-label="{{catTitle}}" class="d-up" style="position: absolute; left: 0; right: 0; bottom: 0; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 12px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
-        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
-        <span style="font-size: 17px; font-weight: 700">{{catTitle}}</span>
-        <sc-if value="{{askPick}}" hint-placeholder-val="{{ true }}">
-          <div style="display: flex; flex-wrap: wrap; gap: 8px">
-            <sc-for list="{{cats}}" as="c" hint-placeholder-count="6">
-              <button type="button" class="m-press" onClick="{{c.pick}}" style="{{c.style}}">{{c.label}}</button>
-            </sc-for>
-          </div>
-        </sc-if>
-      </div>
-    </div>
+    <div style="position: absolute; inset: 0; z-index: 9"><dc-import name="CategorySheet" embedded="{{true}}" title="{{catTitle}}" op-name="{{catOpName}}" op-amount="{{catOpAmt}}" op-in="{{catOpIn}}" space="{{spaceName}}" on-pick="{{onCatPick}}" on-close="{{onCatClose}}" hint-size="390px,844px"></dc-import></div>
   </sc-if>
 
   <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
@@ -130,8 +117,12 @@ class Component extends DCLogic {
     this.state = { cat: null, catSt: fromSms ? 'sug' : 'ok', sheet: false, kind: null, toast: '', linkedSum: L.reduce((t, x) => t + x.amt, 0) }; // linkedSum: مجموع العمليات التابعة بالهللة
     this.timers = [];
     this.onKind = (kind) => this.setState({ kind });
+    // لوحة التصنيف الجديدة بكل التصنيفات (بدل الـ6 شرايح) — الاسم واللون بيرجعوا من اللوحة
+    this.onCatPick = (r) => { if (!r || typeof r.category !== 'string') return; this.setState({ catName: r.category, catColor: r.color || null, catSt: 'ok', sheet: false }); this.say((this.eg() ? 'تمام — اتصنّفت «' : 'تم — صُنّفت «') + r.category + '»'); };
+    this.onCatClose = () => this.setState({ sheet: false });
   }
   componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  eg() { return (this.props.space ?? 'السعودية') === 'مصر'; }
   say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
   toMinor(text) { const t = String(text || '').replace(/[٠-٩۰-۹]/g, (d) => '٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10).replace(/٫/g, '.').replace(/[^0-9.]/g, ''); if (!t) return 0; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
   fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
@@ -142,10 +133,11 @@ class Component extends DCLogic {
     const s = this.state;
     const cur = eg ? 'ج.م' : '\u20C1';
     const CATS = { food: eg ? 'أكل وقهوة' : 'مطاعم وقهوة', shop: eg ? 'بقالة' : 'بقالة وسوبرماركت', car: eg ? 'مواصلات' : 'مواصلات', gift: 'هدايا', home: eg ? 'بيت' : 'منزل', other: 'أخرى' };
+    const catNm = s.catName || (s.cat ? CATS[s.cat] : null), tint = (c) => 'font-size: 15px; font-weight: 700; color: ' + (c || '#193D33');
     // مخترعة · بالوحدة الصغرى
     const T = {
       sms: { name: eg ? 'مطعم الفول' : 'مطعم الريف', sub: eg ? 'النهارده 12:40 م · صرف' : 'اليوم 12:40 م · مدين', amt: eg ? -18500 : -4200, icon: 'food' },
-      cash: { name: s.cat ? CATS[s.cat] + (eg ? ' (كاش)' : ' (كاش)') : (eg ? 'صرف كاش مش متسجّل' : 'صرف كاش غير مسجّل'), sub: eg ? 'النهارده · من عدّ الكاش' : 'اليوم · من عدّ الكاش', amt: eg ? -18000 : -6000, icon: 'cash' },
+      cash: { name: catNm ? catNm + ' (كاش)' : (eg ? 'صرف كاش مش متسجّل' : 'صرف كاش غير مسجّل'), sub: eg ? 'النهارده · من عدّ الكاش' : 'اليوم · من عدّ الكاش', amt: eg ? -18000 : -6000, icon: 'cash' },
       party: { name: eg ? 'حوالة جاتلك' : 'حوالة واردة', sub: eg ? 'النهارده 9:15 ص · من حساب آخره 4821' : 'اليوم 9:15 ص · من حساب ينتهي بـ 4821', amt: eg ? 450000 : 150000, icon: 'move' }
     }[v];
     const P = v === 'sms' && pickName === 'حسب اللي اتداس' ? this.picked : null;
@@ -156,19 +148,19 @@ class Component extends DCLogic {
     const act = (label, go, strong) => ({ label, go, style: 'height: 36px; padding: 0 12px; flex-shrink: 0; border: 0; border-radius: 12px; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; ' + (strong ? 'color: #FFFFFF; background: #08634F' : 'color: #08634F; background: rgba(8,99,79,0.08)') });
     const field = (label, value, o) => Object.assign({ label, value, hasChip: false, chip: '', chipStyle: '', hasHint: false, hint: '', acts: [] }, o || {});
     const openCat = () => this.setState({ sheet: true });
-    const catValue = s.cat ? CATS[s.cat] : P ? P.sub.split(' · ')[0] : CATS.food;
+    const catValue = catNm || (P ? P.sub.split(' · ')[0] : CATS.food), catTint = tint(s.catColor || (catNm || P ? null : '#C55D1F'));
     const srcSms = !P || this.fromSms;
     const fields = v === 'sms' ? [
       field(eg ? 'المحفظة' : 'المحفظة', eg ? 'حساب المرتب' : 'حساب الراتب'),
       field('التصنيف', catValue, s.catSt === 'sug'
-        ? { hasChip: true, chip: 'مقترح', chipStyle: chipS('#956000', '#FBF0DD'), hasHint: true, hint: eg ? 'من قاعدة عامة — محتاج تأكيدك' : 'من قاعدة عامة — يحتاج تأكيدك', acts: [act(eg ? 'غيّر' : 'غيّر', openCat), act(eg ? 'تمام' : 'تأكيد', () => { this.setState({ catSt: 'ok' }); this.say(eg ? 'اتأكد التصنيف' : 'تأكّد التصنيف'); }, true)] }
-        : { hasChip: true, chip: eg ? 'مؤكد' : 'مؤكد', chipStyle: chipS('#08634F', '#DCEBD6'), acts: [act(eg ? 'غيّر' : 'غيّر', openCat)] }),
+        ? { hasChip: true, chip: 'مقترح', valueStyle: catTint, chipStyle: chipS('#956000', '#FBF0DD'), hasHint: true, hint: eg ? 'من قاعدة عامة — محتاج تأكيدك' : 'من قاعدة عامة — يحتاج تأكيدك', acts: [act(eg ? 'غيّر' : 'غيّر', openCat), act(eg ? 'تمام' : 'تأكيد', () => { this.setState({ catSt: 'ok' }); this.say(eg ? 'اتأكد التصنيف' : 'تأكّد التصنيف'); }, true)] }
+        : { hasChip: true, chip: eg ? 'مؤكد' : 'مؤكد', valueStyle: catTint, chipStyle: chipS('#08634F', '#DCEBD6'), acts: [act(eg ? 'غيّر' : 'غيّر', openCat)] }),
       dir === 'tied' ? field('النوع', eg ? 'تابعة لمصروف' : 'تابعة لمصروف', { hasHint: true, hint: P.sub.split(' · ')[0] + (eg ? ' — مش بتتحسب دخل، والمصروف بيتحسب بالصافي' : ' — لا تُحسب دخلًا، والمصروف يُحسب بالصافي') }) : field('النوع', dir === 'in' ? 'دخل' : dir === 'move' ? (eg ? 'تحويل بين محافظك' : 'تحويل بين محافظك') : 'مصروف حقيقي'),
       srcSms ? field('المصدر', eg ? 'رسالة البنك' : 'رسالة البنك', { hasChip: true, chip: eg ? 'اتسجلت لوحدها' : 'سُجّلت تلقائيًا', chipStyle: chipS('#08634F', '#DCEBD6'), hasHint: true, hint: eg ? 'كشف الحساب لما ييجي هيتدمج معاها، مش هيكررها' : 'حين يصل كشف الحساب تُدمج معه ولا تتكرر' })
         : field('المصدر', eg ? 'كشف الحساب' : 'كشف الحساب', { hasChip: true, chip: eg ? 'اتستورد' : 'مستورد', chipStyle: chipS('#2469BA', 'rgba(36,105,186,0.10)') })
     ].filter((f) => !((dir === 'move' || dir === 'tied') && f.label === 'التصنيف')) : v === 'cash' ? [
       field('المحفظة', eg ? 'الكاش' : 'الكاش'),
-      field('التصنيف', s.cat ? CATS[s.cat] : (eg ? 'من غير تصنيف' : 'بلا تصنيف'), s.cat ? {} : { acts: [act(eg ? 'صنّفها' : 'صنّفها', openCat, true)] }),
+      field('التصنيف', catNm || (eg ? 'من غير تصنيف' : 'بلا تصنيف'), catNm ? { valueStyle: tint(s.catColor), acts: [act(eg ? 'غيّر' : 'غيّر', openCat)] } : { acts: [act(eg ? 'صنّفها' : 'صنّفها', openCat, true)] }),
       field('النوع', eg ? 'مصروف حقيقي' : 'مصروف حقيقي', { hasHint: true, hint: eg ? 'داخل في صرف الشهر' : 'داخل في صرف الشهر' }),
       field('المصدر', eg ? 'عدّ الكاش' : 'عدّ الكاش', { hasHint: true, hint: eg ? 'كان المفروض معاك ' + this.fmt(270000 - T.amt) + ' ولقيت ' + this.fmt(270000) : 'كان المتوقع ' + this.fmt(90000 - T.amt) + ' ووجدت ' + this.fmt(90000) })
     ] : [
@@ -176,25 +168,18 @@ class Component extends DCLogic {
       field('النوع', s.kind || (eg ? 'مستني تقول مين ده' : 'بانتظار تحديد الطرف'), s.kind ? {} : { hasChip: true, chip: eg ? 'مستني' : 'بانتظارك', chipStyle: chipS('#956000', '#FBF0DD') }),
       field('المصدر', eg ? 'كشف الحساب' : 'رسالة البنك', { hasChip: true, chip: eg ? 'اتستورد' : 'سُجّلت تلقائيًا', chipStyle: chipS('#08634F', '#DCEBD6') })
     ];
-    const cats = Object.keys(CATS).map((k) => ({
-      label: CATS[k], style: 'height: 44px; padding: 0 16px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; cursor: pointer; ' + (s.cat === k ? 'font-weight: 700; color: #FFFFFF; background: #08634F' : 'color: #193D33; background: rgba(25,61,51,0.06)'),
-      pick: () => {
-        if (v === 'cash') { this.setState({ cat: k, sheet: false }); this.say(eg ? 'تمام — النقطة الحمرا اتشالت' : 'تم — أُزيلت النقطة الحمراء'); }
-        else { this.setState({ cat: k, catSt: 'ok', sheet: false }); this.say((eg ? 'تمام — «' : 'تم — «') + T.name + (eg ? '» هيتصنّف «' : '» سيُصنَّف «') + CATS[k] + (eg ? '» على طول' : '» دائمًا')); }
-      }
-    }));
     return {
       title: eg ? 'تفاصيل العملية' : 'تفاصيل العملية',
       tile: 'position: relative; width: 56px; height: 56px; border-radius: 18px; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 1px 0 rgba(255,255,255,0.7); ' + ({ shop: 'background: rgba(56,102,167,0.12); color: #3866A7', car: 'background: rgba(77,116,124,0.12); color: #4D747C', income: 'background: rgba(19,118,77,0.12); color: #13764D', food: 'background: rgba(163,106,33,0.12); color: #A36A21', cash: 'background: rgba(99,117,112,0.12); color: #637570', move: 'background: rgba(36,105,186,0.12); color: #2469BA', own: 'background: rgba(99,117,112,0.12); color: #637570' }[T.icon]),
       isFood: T.icon === 'food', isCash: T.icon === 'cash', isMove: T.icon === 'move' || T.icon === 'own', isShop: T.icon === 'shop', isCar: T.icon === 'car', isIncome: T.icon === 'income',
-      redDot: v === 'cash' && !s.cat,
+      redDot: v === 'cash' && !catNm,
       name: T.name, sub: T.sub,
       amount: (T.amt < 0 ? '−' : '+') + withCur(this.fmt(T.amt), cur),
       amountStyle: 'font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (T.amt < 0 ? '#BE3D48' : dir === 'tied' ? '#637570' : '#13764D'),
       hasNet: T.amt < 0 && s.linkedSum > 0, netLine: (eg ? 'الصافي ' : 'الصافي ') + withCur(this.fmt(-T.amt - s.linkedSum), cur) + (eg ? ' · فيه عملية تابعة' : ' · فيها عملية تابعة'),
       showLinked: T.amt < 0 && v !== 'party', spentMinor: -T.amt, linkedItems: P && P.linked && Array.isArray(P.linked.items) ? P.linked.items : [], onLinked: (x) => { this.setState({ linkedSum: x ? x.sum : 0 }); this.say(x && x.count ? (eg ? 'اتربطت — المصروف بقى بالصافي' : 'رُبطت — المصروف صار بالصافي') : (eg ? 'اتفك الربط — رجعت زي ما كانت' : 'فُكّ الربط — عادت كما كانت')); },
       lockLine: v === 'cash' ? (eg ? 'المبلغ من فرق العدّ' : 'المبلغ من فرق العدّ') : (eg ? 'التاريخ والاتجاه جايين من البنك، ما بيتعدلوش' : 'التاريخ والاتجاه من البنك ولا يُعدَّلان'),
-      cashOpen: v === 'cash' && !s.cat,
+      cashOpen: v === 'cash' && !catNm,
       cashTitle: eg ? 'دي مش عملية اتسجلت' : 'هذه ليست عملية مسجّلة',
       cashBody: eg ? 'ده فرق عدّ الكاش. داخل في صرف الشهر بنقطة حمرا لحد ما تقول اتصرف في إيه.' : 'هذا فرق عدّ الكاش. يدخل في صرف الشهر بنقطة حمراء حتى تحدد فيمَ صُرف.',
       cashBtn: eg ? 'اتصرف في إيه؟' : 'فيمَ صُرف؟',
@@ -204,13 +189,13 @@ class Component extends DCLogic {
       onPerson: (p) => { if (p && p.person) this.say((eg ? 'اتربطت بـ' : 'رُبطت بـ') + p.person); },
       onLinks: (p) => { if (p) this.say(p.event ? (eg ? 'اتربطت بـ«' : 'رُبطت بـ«') + p.event + '» (' + p.sharePercent.toLocaleString('en-US') + '%)' : (eg ? 'اتحفظ الربط' : 'حُفظ الربط')); },
       isParty: v === 'party', partyAmt: eg ? 450000 : 150000, spaceName: eg ? 'مصر' : 'السعودية', onKind: this.onKind,
-      fields: fields.map((f, i) => Object.assign(f, { rowStyle: 'display: flex; align-items: center; gap: 8px; padding: 12px 0;' + (i === fields.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);') })),
+      fields: fields.map((f, i) => Object.assign(f, { valueStyle: f.valueStyle || tint(null), rowStyle: 'display: flex; align-items: center; gap: 8px; padding: 12px 0;' + (i === fields.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);') })),
       linkTitle: eg ? 'اربطها بـ' : 'اربطها بـ',
       links: eg ? ['شخص', 'مشروع', 'حدث'] : ['شخص', 'مشروع', 'حدث'],
       linkSoon: eg ? 'الربط بيتبني في خطوة جاية.' : 'الربط يُبنى في خطوة قادمة.',
       catOpen: s.sheet,
       catTitle: (v === 'cash' ? (eg ? 'اتصرف في إيه؟' : 'فيمَ صُرف؟') : (eg ? 'تصنيف «' : 'تصنيف «') + T.name + '»'),
-      askPick: true, cats,
+      catOpName: T.name, catOpAmt: Math.abs(T.amt), catOpIn: T.amt > 0, onCatPick: this.onCatPick, onCatClose: this.onCatClose,
       closeCat: () => this.setState({ sheet: false }),
       hasToast: !!s.toast, toast: s.toast
     };

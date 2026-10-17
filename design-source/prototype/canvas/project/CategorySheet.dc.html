@@ -14,17 +14,14 @@
 body{margin:0}
 .cs-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
 .cs-press:active{transform:scale(.95)}
-.cs-veil{animation:cs-fade 220ms cubic-bezier(.2,.7,.3,1) both}
-.cs-up{animation:cs-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+.cs-veil{animation:cs-fade 220ms cubic-bezier(.2,.7,.3,1) both}.cs-up{animation:cs-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
 .cs-pop{animation:cs-pop 380ms cubic-bezier(.18,.9,.28,1.08) 80ms both}
 .cs-lift{animation:cs-lift 360ms cubic-bezier(.18,.9,.28,1.08) both}
 .cs-thread{animation:cs-draw 560ms cubic-bezier(.2,.7,.3,1) 60ms forwards}
 .cs-node{animation:cs-node 380ms cubic-bezier(.18,.9,.28,1.12) both}
 .cs-in{animation:cs-in 300ms cubic-bezier(.2,.7,.3,1) backwards}
-@keyframes cs-fade{from{opacity:0}to{opacity:1}}
-@keyframes cs-up{from{transform:translateY(100%)}to{transform:none}}
-@keyframes cs-pop{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
-@keyframes cs-lift{from{transform:none}to{transform:scale(1.06)}}
+@keyframes cs-fade{from{opacity:0}to{opacity:1}}@keyframes cs-up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes cs-pop{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}@keyframes cs-lift{from{transform:none}to{transform:scale(1.06)}}
 @keyframes cs-draw{to{stroke-dashoffset:0}}
 @keyframes cs-node{from{opacity:0;transform:scale(.55)}to{opacity:1;transform:none}}
 @keyframes cs-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
@@ -34,8 +31,8 @@ input::placeholder{color:#8A9A95}
 .cs-lbl{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 </style>
 </helmet>
-<div dir="rtl" ref="{{setRoot}}" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: SAR, 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: #F4F2EA">
-  <div style="padding: 56px 20px 0; display: flex; flex-direction: column; gap: 10px">
+<div dir="rtl" ref="{{setRoot}}" style="{{rootStyle}}">
+  <sc-if value="{{showBg}}" hint-placeholder-val="{{ true }}"><div style="padding: 56px 20px 0; display: flex; flex-direction: column; gap: 10px">
     <span style="font-size: 13px; font-weight: 700; color: #637570">{{bgTitle}}</span>
     <div style="border-radius: 22px; padding: 16px; display: flex; flex-direction: column; gap: 14px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
       <span style="display: flex; align-items: center; gap: 12px"><span aria-hidden="true" style="{{op.icBox}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#08634F" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{op.ic}}"></path></svg></span><span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 15px; font-weight: 700">{{op.name}}</span><span style="font-size: 12px; color: #637570">{{op.when}}</span></span><span style="{{op.amtStyle}}">{{op.amount}}</span></span>
@@ -44,7 +41,7 @@ input::placeholder{color:#8A9A95}
         <span style="{{curStyle}}">{{curName}}</span>
       </button>
     </div>
-  </div>
+  </div></sc-if>
 
   <sc-if value="{{hasStrip}}" hint-placeholder-val="{{ false }}">
     <div role="status" class="cs-in" style="position: absolute; left: 16px; right: 16px; bottom: 28px; z-index: 4; display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 16px; border-radius: 18px; color: #FFFFFF; background: rgba(25,61,51,0.94); box-shadow: 0 12px 28px rgba(25,61,51,0.28)">
@@ -199,7 +196,8 @@ class Component extends DCLogic {
     if (link === 'later') msg += eg ? ' — مستنية تربطها بشخص' : ' — تنتظر ربطها بشخص';
     else if (link) msg += ' · مع ' + link.person + ' · ' + link.meaning;
     this.setState({ open: false, tree: null, prev: this.state.cur, cur: t, strip: msg, step: 'pick' });
-    if (typeof this.props.onPick === 'function') this.props.onPick({ category: t.name, link });
+    if (typeof this.props.onPick === 'function') this.props.onPick({ category: t.name, color: t.color, link });
+    if (this.props.embedded && typeof this.props.onClose === 'function') this.props.onClose();
   }
   norm(x) { return String(x).replace(/[ً-ْـ]/g, '').replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').trim(); }
   treeVals(T) {
@@ -243,6 +241,7 @@ class Component extends DCLogic {
       'مع مين؟ صادر': [eg ? 'تحويل لحساب آخره 4821' : 'تحويل لحساب ينتهي بـ 4821', 'send', 50000, false],
       'مع مين؟ وارد': [eg ? 'تحويل من حساب آخره 4821' : 'تحويل من حساب ينتهي بـ 4821', 'send', 30000, true]
     }[mode] || ['', 'coffee', 0, false];
+    if (this.props.embedded && this.props.opName) OP.splice(0, 4, String(this.props.opName), 'coffee', Math.abs(Number(this.props.opAmount) || 0), !!this.props.opIn);
     const opAmt = money(OP[2] * k, OP[3] ? '+' : '−');
     const tileStyle = (t, on) => 'display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 6px; height: 98px; padding: 9px 2px 6px; border: 0; border-radius: 18px; font: inherit; color: #193D33; cursor: pointer; ' + (on ? 'background: ' + t.color + '1A; box-shadow: inset 0 0 0 1.5px ' + t.color : 'background: rgba(25,61,51,0.035)');
     const box = (t, n) => 'width: ' + n + 'px; height: ' + n + 'px; border-radius: ' + Math.round(n * 0.36) + 'px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: ' + t.color + '1F';
@@ -262,7 +261,8 @@ class Component extends DCLogic {
     });
     const isWho = s.step === 'who' && !!s.picked;
     return {
-      setRoot: this.setRoot,
+      setRoot: this.setRoot, showBg: !this.props.embedded,
+      rootStyle: 'width: 390px; height: 844px; position: relative; overflow: hidden; font-family: SAR, \'Noto Sans Arabic\', Tahoma, sans-serif; color: #193D33; background: ' + (this.props.embedded ? 'transparent' : '#F4F2EA'),
       bgTitle: 'العملية',
       op: { name: OP[0], when: eg ? 'النهارده 1:12 م' : 'اليوم 1:12 م', ic: ICONS[OP[1]] || '', icBox: 'width: 40px; height: 40px; border-radius: 20px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: #DCEBD6',
         amount: opAmt, amtStyle: 'flex-shrink: 0; font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (OP[3] ? '#08634F' : '#BE3D48') },
@@ -270,12 +270,12 @@ class Component extends DCLogic {
       curName: s.cur ? s.cur.name : (eg ? 'من غير تصنيف — دوس تختار' : 'بلا تصنيف — اضغط للاختيار'),
       curStyle: 'flex: 1 1 auto; text-align: left; font-size: 14px; font-weight: 700; color: ' + (s.cur ? s.cur.color : '#956000'),
       reopen: () => this.setState({ open: true, strip: '', step: 'pick', tree: null }),
-      hasStrip: !!s.strip && !s.open, strip: s.strip,
+      hasStrip: !!s.strip && !s.open && !this.props.embedded, strip: s.strip,
       canUndo: !!s.cur, undoLabel: 'تراجع',
       undo: () => this.setState({ cur: s.prev, prev: null, strip: eg ? 'رجعت زي ما كانت' : 'عادت كما كانت' }),
       open: s.open,
-      close: () => this.setState({ open: false, tree: null, q: '', step: 'pick' }),
-      title: isWho ? (eg ? 'مع مين؟' : 'مع من؟') : buy ? (eg ? 'إيه الصنف؟' : 'ما الصنف؟') : 'تصنيف العملية',
+      close: () => { this.setState({ open: false, tree: null, q: '', step: 'pick' }); if (this.props.embedded && typeof this.props.onClose === 'function') this.props.onClose(); },
+      title: isWho ? (eg ? 'مع مين؟' : 'مع من؟') : buy ? (eg ? 'إيه الصنف؟' : 'ما الصنف؟') : (this.props.title || 'تصنيف العملية'),
       sub: isWho ? '«' + s.picked.name + '» · ' + opAmt : OP[0] + ' · ' + opAmt,
       hasBack: isWho, backLabel: 'رجوع',
       back: () => this.setState({ step: 'pick', picked: null }),
