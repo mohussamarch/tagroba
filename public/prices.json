@@ -1,122 +1,122 @@
 {
-  "generatedAt": "2026-10-18T06:51:39.909Z",
+  "generatedAt": "2026-10-19T07:10:46.468Z",
   "baseCurrency": "SAR",
   "prices": {
     "USD_SAR": {
       "name": "الدولار الأمريكي",
       "unit": "دولار",
       "pricePerUnitMinor": 375,
-      "asOf": "2026-10-18",
+      "asOf": "2026-10-19",
       "source": "Yahoo Finance — SAR=X"
     },
     "GOLD_24K_GRAM": {
       "name": "ذهب عيار 24",
       "unit": "جرام",
-      "pricePerUnitMinor": 50262,
-      "asOf": "2026-10-18",
+      "pricePerUnitMinor": 50518,
+      "asOf": "2026-10-19",
       "source": "gold-api.com (XAU) + Yahoo (SAR=X)"
     },
     "GOLD_22K_GRAM": {
       "name": "ذهب عيار 22",
       "unit": "جرام",
-      "pricePerUnitMinor": 46074,
-      "asOf": "2026-10-18",
+      "pricePerUnitMinor": 46308,
+      "asOf": "2026-10-19",
       "source": "gold-api.com (XAU) + Yahoo (SAR=X)"
     },
     "GOLD_21K_GRAM": {
       "name": "ذهب عيار 21",
       "unit": "جرام",
-      "pricePerUnitMinor": 43979,
-      "asOf": "2026-10-18",
+      "pricePerUnitMinor": 44203,
+      "asOf": "2026-10-19",
       "source": "gold-api.com (XAU) + Yahoo (SAR=X)"
     },
     "GOLD_18K_GRAM": {
       "name": "ذهب عيار 18",
       "unit": "جرام",
-      "pricePerUnitMinor": 37697,
-      "asOf": "2026-10-18",
+      "pricePerUnitMinor": 37888,
+      "asOf": "2026-10-19",
       "source": "gold-api.com (XAU) + Yahoo (SAR=X)"
     },
     "SILVER_GRAM": {
       "name": "فضة",
       "unit": "جرام",
-      "pricePerUnitMinor": 689,
-      "asOf": "2026-10-18",
+      "pricePerUnitMinor": 698,
+      "asOf": "2026-10-19",
       "source": "gold-api.com (XAG) + Yahoo (SAR=X)"
     },
     "GOLD_24K_GRAM_EGP": {
       "name": "ذهب عيار 24 بالجنيه",
       "unit": "جرام",
       "currency": "EGP",
-      "pricePerUnitMinor": 715257,
-      "asOf": "2026-10-18",
+      "pricePerUnitMinor": 719721,
+      "asOf": "2026-10-19",
       "source": "gold-api.com (XAU) + Yahoo (EGP=X)"
     },
     "GOLD_22K_GRAM_EGP": {
       "name": "ذهب عيار 22 بالجنيه",
       "unit": "جرام",
       "currency": "EGP",
-      "pricePerUnitMinor": 655652,
-      "asOf": "2026-10-18",
+      "pricePerUnitMinor": 659745,
+      "asOf": "2026-10-19",
       "source": "gold-api.com (XAU) + Yahoo (EGP=X)"
     },
     "GOLD_21K_GRAM_EGP": {
       "name": "ذهب عيار 21 بالجنيه",
       "unit": "جرام",
       "currency": "EGP",
-      "pricePerUnitMinor": 625850,
-      "asOf": "2026-10-18",
+      "pricePerUnitMinor": 629756,
+      "asOf": "2026-10-19",
       "source": "gold-api.com (XAU) + Yahoo (EGP=X)"
     },
     "GOLD_18K_GRAM_EGP": {
       "name": "ذهب عيار 18 بالجنيه",
       "unit": "جرام",
       "currency": "EGP",
-      "pricePerUnitMinor": 536443,
-      "asOf": "2026-10-18",
+      "pricePerUnitMinor": 539791,
+      "asOf": "2026-10-19",
       "source": "gold-api.com (XAU) + Yahoo (EGP=X)"
     },
     "SILVER_GRAM_EGP": {
       "name": "فضة بالجنيه",
       "unit": "جرام",
       "currency": "EGP",
-      "pricePerUnitMinor": 9806,
-      "asOf": "2026-10-18",
+      "pricePerUnitMinor": 9938,
+      "asOf": "2026-10-19",
       "source": "gold-api.com (XAG) + Yahoo (EGP=X)"
     },
     "2222.SR": {
       "name": "أرامكو السعودية",
       "unit": "سهم",
-      "pricePerUnitMinor": 2528,
-      "asOf": "2026-10-15",
+      "pricePerUnitMinor": 2580,
+      "asOf": "2026-10-18",
       "source": "Yahoo Finance — 2222.SR"
     },
     "1120.SR": {
       "name": "الراجحي",
       "unit": "سهم",
-      "pricePerUnitMinor": 6100,
-      "asOf": "2026-10-15",
+      "pricePerUnitMinor": 6115,
+      "asOf": "2026-10-18",
       "source": "Yahoo Finance — 1120.SR"
     },
     "2010.SR": {
       "name": "سابك",
       "unit": "سهم",
-      "pricePerUnitMinor": 4456,
-      "asOf": "2026-10-15",
+      "pricePerUnitMinor": 4572,
+      "asOf": "2026-10-18",
       "source": "Yahoo Finance — 2010.SR"
     },
     "7010.SR": {
       "name": "الاتصالات السعودية",
       "unit": "سهم",
-      "pricePerUnitMinor": 4212,
-      "asOf": "2026-10-15",
+      "pricePerUnitMinor": 4230,
+      "asOf": "2026-10-18",
       "source": "Yahoo Finance — 7010.SR"
     },
     "1180.SR": {
       "name": "الأهلي السعودي",
       "unit": "سهم",
-      "pricePerUnitMinor": 3710,
-      "asOf": "2026-10-15",
+      "pricePerUnitMinor": 3758,
+      "asOf": "2026-10-18",
       "source": "Yahoo Finance — 1180.SR"
     }
   },
