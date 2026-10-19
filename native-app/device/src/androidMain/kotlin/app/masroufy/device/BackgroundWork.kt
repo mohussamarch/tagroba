@@ -20,7 +20,6 @@ import app.masroufy.core.TextKey
 import app.masroufy.core.outgoingText
 import app.masroufy.core.uiText
 import app.masroufy.usecase.RunBackgroundCycle
-import java.util.Calendar
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -86,12 +85,8 @@ object MasroufyBackground {
         }
     }
 
-    /** الساعة المحلية بتوقيت الجوال — نفس اللي المحرك بيتعلم بيه ساعاتك. */
-    fun localNow(): LocalMoment {
-        val c = Calendar.getInstance()
-        val date = "%04d-%02d-%02d".format(c.get(Calendar.YEAR), c.get(Calendar.MONTH) + 1, c.get(Calendar.DAY_OF_MONTH))
-        return LocalMoment(date, c.get(Calendar.HOUR_OF_DAY))
-    }
+    /** الساعة المحلية بتوقيت الجوال — نفس اللي المحرك بيتعلم بيه ساعاتك. من غير لغة الجوال ولا تقويمه ([LocalClock] — عطل شاومي). */
+    fun localNow(): LocalMoment = LocalClock.now()
 }
 
 class MasroufyCycleWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {

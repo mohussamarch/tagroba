@@ -54,7 +54,6 @@ import kotlinx.coroutines.withTimeoutOrNull
 import app.masroufy.perf.PerfTrace
 import java.lang.ref.WeakReference
 import java.time.ZoneId
-import java.util.Calendar
 
 /**
  * **التجميع** (composition root — CLAUDE.md #6، زي `app/container.ts`): بيتعمل مرة في `MasroufyApplication`.
@@ -167,7 +166,7 @@ class AppContainer(private val context: Context, private val problems: ProblemLo
      * كلمات صفحات الـPDF. الخلفية (من غير [space]) بتاخد الصندوق لوحدها.
      */
     private fun envFor(uid: String, space: Space? = null) = DeviceEnv(
-        clock = clock, ids = ids, today = { MasroufyBackground.localNow().date }, hourNow = { Calendar.getInstance().get(Calendar.HOUR_OF_DAY) },
+        clock = clock, ids = ids, today = { MasroufyBackground.localNow().date }, hourNow = { MasroufyBackground.localNow().hour },
         nowMillis = nowMillis, interactions = AndroidAlertInteractionStore(context, uid), usualHours = AndroidUsualHoursStore(context, uid),
         seenAlerts = AndroidSeenAlerts(context, uid), http = PlatformHttpText(), feedCache = AndroidFeedCache(context),
         smsInbox = space?.let { AndroidSmsInbox(context, uid) },

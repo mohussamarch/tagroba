@@ -24,7 +24,7 @@ import app.masroufy.core.outgoingText
 import app.masroufy.core.uiText
 import app.masroufy.port.DeviceNotifier
 import app.masroufy.port.NoticeOutcome
-import java.util.Calendar
+import java.util.GregorianCalendar
 import java.util.concurrent.TimeUnit
 
 /**
@@ -69,10 +69,10 @@ class AndroidDeviceNotifier(private val context: Context) : DeviceNotifier {
             return NotificationManagerCompat.from(context).areNotificationsEnabled()
         }
 
-        /** من دلوقتي لأول الساعة [at] بتوقيت الجوال (`Calendar` — شغال من أندرويد 7 من غير `java.time`). */
+        /** من دلوقتي لأول الساعة [at] بتوقيت الجوال (`GregorianCalendar` صريح — مش `Calendar.getInstance()` اللي بيمشي على تقويم اللغة: تايلاندي ⇒ سنة 2026 بوذي ⇒ ميعاد غلط). */
         internal fun millisUntil(at: LocalMoment, nowMillis: Long = System.currentTimeMillis()): Long {
             val (y, m, d) = at.date.split("-").map { it.toInt() }
-            val target = Calendar.getInstance().apply {
+            val target = GregorianCalendar().apply {
                 clear()
                 set(y, m - 1, d, at.hour, 0, 0)
             }
