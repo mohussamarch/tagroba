@@ -6,6 +6,7 @@ import app.masroufy.core.EconomicKind
 import app.masroufy.core.Id
 import app.masroufy.core.MatchingState
 import app.masroufy.core.SmsParseResult
+import app.masroufy.core.TextKey
 import app.masroufy.core.rememberMerchant
 import app.masroufy.port.CategoryRepository
 import app.masroufy.port.IdGenerator
@@ -77,10 +78,13 @@ class ReviewSmsInbox internal constructor(private val deps: ReviewSmsInboxDeps) 
             when (val parsed = item.parsed) {
                 is SmsParseResult.Ok -> {
                     val sender = smsSenderKey(item.sender)
-                    val legs = legRowsOf(parsed.row, wallets)
+                    val legs = distinctLegLines(legRowsOf(parsed.row, wallets))
                     for (leg in legs) {
-                        if (router != null) draft.add(item.id, sender, leg, router.targetFor(leg, sender))
-                        else if (legs.size == 1 || legWallet(leg, sender, wallets, mapping)?.id == target.walletId) draft.add(item.id, sender, leg, target)
+                        // مراجعة r06 sms-1: رِجل تحويل بين حساباتك مالهاش محفظة من حق المرسل ده ⇒ بتستنى لوحدها (ما بتتسجلش في محفظة المرسل)
+                        val stray = legs.size > 1 && !(router?.routes(leg, sender) ?: routesTo(leg, sender, wallets, mapping))
+                        val wait = if (stray) TextKey.SMS_WAIT_OTHER_ACCOUNT else null
+                        if (router != null) draft.add(item.id, sender, leg, router.targetFor(leg, sender), wait)
+                        else if (legs.size == 1 || legWallet(leg, sender, wallets, mapping)?.id == target.walletId) draft.add(item.id, sender, leg, target, wait)
                     }
                 }
                 is SmsParseResult.Rejected -> draft.failed += SmsFailed(item.id, item.sender, item.receivedAt.take(10), parsed.reason)

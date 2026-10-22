@@ -71,6 +71,19 @@ internal fun notMineDigits(all: List<Wallet>): Set<String> = all.flatMap { it.no
 /** sms-fix: صفوف الرسالة بعد قاعدة «من:/الى:» (`SmsAccountLegs.kt`) — اتجاه ومحفظة كل رِجل من أرقام الرسالة نفسها. */
 internal fun legRowsOf(row: SmsRow, all: List<Wallet>): List<SmsRow> = smsLegRows(row, smsLegVerdict(row, ownDigits(all), notMineDigits(all)))
 
+/**
+ * مراجعة r06 sms-1: رقم سطر مختلف لرِجل الداخل في «تحويل بين حساباتك» — الرجلين لو وقعوا على نفس المحفظة (رِجل مالهاش محفظة) كانوا
+ * بيكتبوا فوق بعض (`smsRows` وأسباب الانتظار بالسطر). الرقم ده بيبقى ترتيب العملية جوه يومها (`sourceOrder`) لو المالك أكّدها.
+ */
+internal const val IN_LEG_LINE_OFFSET = 1_000_000
+
+internal fun distinctLegLines(legs: List<SmsRow>): List<SmsRow> =
+    if (legs.size < 2) legs else legs.mapIndexed { i, leg -> if (i == 0) leg else leg.copy(lineNumber = leg.lineNumber + IN_LEG_LINE_OFFSET * i) }
+
+/** الرِجل ليها محفظة بأرقامها من حق [senderKey] ([accountWallet]) — من غير الرجوع لمحفظة المرسل. */
+internal fun routesTo(leg: SmsRow, senderKey: String, all: List<Wallet>, mapping: Map<String, String>): Boolean =
+    accountWallet(leg, senderKey, all, mapping, senderWallet(all, senderKey, mapping)) != null
+
 /** sms-fix: محفظة رِجل في التسجيل التلقائي — نفس قاعدة [routeSender]. */
 internal fun legWallet(leg: SmsRow, senderKey: String, all: List<Wallet>, mapping: Map<String, String>): Wallet? {
     val base = senderWallet(all, senderKey, mapping)
@@ -106,6 +119,9 @@ internal class ScreenRouter private constructor(
     private val movesCash: Boolean,
 ) {
     private val base = all.firstOrNull { it.id == screen.walletId }
+
+    /** [row] ليها محفظة بأرقام حسابها (ممكن تبقى محفظة الشاشة نفسها)؟ */
+    fun routes(row: SmsRow, senderKey: String): Boolean = accountWallet(row, senderKey, all, mapping, base) != null
 
     /** هدف تسجيل [row] من [senderKey]: محفظة أرقام حسابها لو غير محفظة الشاشة، وإلا الشاشة نفسها. */
     fun targetFor(row: SmsRow, senderKey: String): SmsReviewTarget {

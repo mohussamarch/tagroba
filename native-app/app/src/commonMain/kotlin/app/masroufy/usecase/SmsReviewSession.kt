@@ -77,12 +77,12 @@ internal class SmsSessionDraft(private val snapshot: LearnSnapshot) {
      * صف رسالة مفهومة رايح [target]. الجولة السادسة: حساب تاني ⇒ تستنى. الجولة السابعة: الاسترداد (§75-6) والسحب (§75-4) بيستنوا. S1: «ده
      * راتبك؟» (§75-2) وبعدها الشكل اللي لسه ما اتأكدش (§77-A — `SmsLearning.kt`).
      */
-    suspend fun add(messageId: String, sender: String, row: SmsRow, target: SmsReviewTarget) {
+    suspend fun add(messageId: String, sender: String, row: SmsRow, target: SmsReviewTarget, forcedWait: TextKey? = null) {
         rowsByWallet.getOrPut(target.walletId) { target to mutableListOf() }.second += row
         messageByLine[row.lineNumber] = messageId
         senderByLine[row.lineNumber] = sender
         val question = snapshot.salaryQuestion(row, sender)?.also { questionByLine[row.lineNumber] = it }
-        val wait = if (row.shape.clear) learnWaitOf(row, target, sender, question, snapshot) else TextKey.SMS_WAIT_UNKNOWN_SHAPE
+        val wait = forcedWait ?: if (row.shape.clear) learnWaitOf(row, target, sender, question, snapshot) else TextKey.SMS_WAIT_UNKNOWN_SHAPE
         shapeByLine[row.lineNumber] = if (wait != null) SmsShape.KeywordFallback else row.shape
         if (wait != null) waitByLine[row.lineNumber] = wait
     }
