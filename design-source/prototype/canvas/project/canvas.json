@@ -1249,6 +1249,14 @@
       "y": 33500,
       "w": 350,
       "h": 140
+    },
+    "BnplSplit.dc.html": {
+      "is_interactive": true,
+      "title": "خصم فيه أكتر من قسط · BnplSplit (تابي/تمارا المجمّع)",
+      "x": 840,
+      "y": 33500,
+      "w": 390,
+      "h": 844
     }
   },
   "createdOnFiles": {
@@ -1562,7 +1570,8 @@
     "CoinLoader.dc.html",
     "PullRefresh.dc.html",
     "MoneyWhat.dc.html",
-    "RefundWait.dc.html"
+    "RefundWait.dc.html",
+    "BnplSplit.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"
