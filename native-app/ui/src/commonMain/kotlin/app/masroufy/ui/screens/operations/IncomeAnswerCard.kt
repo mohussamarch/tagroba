@@ -128,7 +128,6 @@ fun IncomeKindCard(transactionId: Id, onChanged: () -> Unit) {
     val d = done
     if (d != null) {
         IncomeDoneBox(d, onUndone = { done = null; onChanged() }, onChanged = onChanged)
-        if (d.refund) RefundPickList(transactionId, onChanged)
         return
     }
     // PLAN-0.6 §7: تحويل من حساب جهة الشغل مش راتب ⇒ «الفلوس دي إيه؟»

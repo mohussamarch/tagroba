@@ -141,8 +141,8 @@ fun OperationDetailScreen(transactionId: Id, openPerson: Boolean = false) {
                 personFlowItems(person, v, personWindow) { u -> unlinkPerson(u.transactionId, t(UiKey.PLINK_UNDONE)) }
                 kindDone?.let { k -> item(key = "kind-undo") { KindUndoStrip(k, onClear = { kindDone = null }, onChanged = { reload++ }) } }
                 item(key = "hero") { DetailHero(v) }
-                item(key = "quick-links") { QuickLinksSection(v.id, onChanged = { reload++ }) }
                 if (v.flow == LinkFlow.PURCHASE && !s.locked && deps.payerKinds != null) item(key = "await-refund") { AwaitRefundToggle(v.transaction) { reload++ } }
+                item(key = "quick-links") { QuickLinksSection(v.id, onChanged = { reload++ }) }
                 (linkedView as? app.masroufy.usecase.LinkedInflowsView.Inflow)?.let { li ->
                     item(key = "linked-parent") { LinkedParentBanner(li, unlinks) { linkStep { l, show -> confirm(l, show) } } }
                 }
