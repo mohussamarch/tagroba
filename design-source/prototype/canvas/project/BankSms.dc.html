@@ -41,7 +41,12 @@ body{margin:0}
 
     <div style="{{statusStyle}}">
       <span aria-hidden="true" style="{{statusDot}}"></span>
-      <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 13px; font-weight: 700">{{statusTitle}}</span><span style="font-size: 12px">{{statusBody}}</span></span>
+      <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 13px; font-weight: 700">{{statusTitle}}</span><span style="font-size: 12px">{{statusBody}}</span>
+        <sc-if value="{{hasLastRead}}" hint-placeholder-val="{{ true }}"><span style="margin-top: 4px; display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>{{lastRead}}</span></sc-if>
+        <sc-if value="{{missed}}" hint-placeholder-val="{{ false }}"><span style="margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap">
+          <button type="button" class="m-press" onClick="{{readNow}}" aria-busy="{{readingAria}}" style="height: 40px; box-sizing: border-box; padding: 0 12px; border-radius: 14px; display: flex; align-items: center; gap: 6px; font: inherit; font-size: 13px; font-weight: 700; text-decoration: none; cursor: pointer; border: 0; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)"><sc-if value="{{reading}}" hint-placeholder-val="{{ false }}"><dc-import name="CoinLoader" size="22" row="{{ true }}" tone="على أخضر" text="{{readingLabel}}" hint-size="90px,22px"></dc-import></sc-if><sc-if value="{{notReading}}" hint-placeholder-val="{{ true }}">{{readNowLabel}}</sc-if></button>
+          <a href="BankSmsSettings.dc.html" class="m-press" style="height: 40px; box-sizing: border-box; padding: 0 12px; border-radius: 14px; display: flex; align-items: center; gap: 6px; font: inherit; font-size: 13px; font-weight: 700; text-decoration: none; cursor: pointer; color: #08634F; background: rgba(255,255,255,0.85)">{{keepLabel}}</a>
+        </span></sc-if></span>
       <sc-if value="{{hasStatusBtn}}" hint-placeholder-val="{{ false }}">
         <a href="{{statusHref}}" class="m-press" style="height: 44px; box-sizing: border-box; padding: 0 12px; border-radius: 14px; display: flex; align-items: center; font-size: 13px; font-weight: 700; color: #08634F; text-decoration: none; background: rgba(255,255,255,0.85); flex-shrink: 0">{{statusBtn}}</a>
       </sc-if>
@@ -121,13 +126,14 @@ body{margin:0}
   </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","فاضي","بيحمّل","خطأ","غير متاح"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","فاضي","بيحمّل","خطأ","غير متاح"],"default":"عادي","section":"الحالة"},"bg":{"editor":"enum","options":["شغالة","لسه ما قراش","فاتته رسايل"],"default":"شغالة","section":"القراية في الخلفية"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   constructor(props) {
     super(props);
     const eg = (props.space ?? 'السعودية') === 'مصر';
     // مخترعة. المبلغ بالوحدة الصغرى · st: ok مؤكد · sug مقترح من قاعدة عامة · new محل جديد «غير مصنف»
     this.state = {
+      caught: false, reading: false,
       rows: eg ? [
         { id: 'a', name: 'مطعم الفول', cat: 'food', amt: 18500, t: '12:40 م', st: 'ok', sheen: true },
         { id: 'b', name: 'سوبرماركت الحي', cat: 'shop', amt: 124050, t: '10:15 ص', st: 'sug' },
@@ -184,16 +190,25 @@ class Component extends DCLogic {
       style: 'height: 44px; padding: 0 16px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; cursor: pointer; color: ' + C[k][1] + '; background: ' + C[k][2]
     }));
     const live = st === 'عادي' || st === 'خطأ';
+    // القراية في الخلفية (طلب جلسة كوتلن 2026-10-22): «آخر مرة قرا لوحده: …» = وقت آخر قراية في الخلفية · «فاتته رسايل» = لما التطبيق يتفتح ويلاقي رسايل بنك أحدث من آخر قراية وما اتقرتش لوحدها
+    const bg = this.state.caught ? 'شغالة' : (this.props.bg ?? 'شغالة');
     const status = {
-      ok: [eg ? 'القراية شغالة' : 'القراءة تعمل', eg ? 'الرسالة المفهومة بتتسجل وتتصنف لوحدها. آخر رسالة من دقيقتين.' : 'الرسالة المفهومة تُسجَّل وتُصنَّف تلقائيًا. آخر رسالة قبل دقيقتين.', '#08634F', '#DCEBD6'],
+      ok: [eg ? 'القراية شغالة' : 'القراءة تعمل', eg ? 'الرسالة المفهومة بتتسجل وتتصنف لوحدها.' : 'الرسالة المفهومة تُسجَّل وتُصنَّف تلقائيًا.', '#08634F', '#DCEBD6'],
       err: [eg ? 'القراية واقفة' : 'القراءة متوقفة', eg ? 'إذن الرسايل اتسحب من إعدادات الجوال.' : 'سُحب إذن الرسائل من إعدادات الجوال.', '#956000', '#FBF0DD'],
-      ios: [eg ? 'الآيفون ما بيسمحش' : 'الآيفون لا يسمح', eg ? 'أبل ما بتسمحش للبرامج تقرا الرسايل. تقدر تلصق الرسالة بإيدك.' : 'لا تسمح أبل بقراءة الرسائل. يمكنك لصق الرسالة يدويًا.', '#637570', 'rgba(25,61,51,0.06)']
-    }[st === 'خطأ' ? 'err' : st === 'غير متاح' ? 'ios' : 'ok'];
+      ios: [eg ? 'الآيفون ما بيسمحش' : 'الآيفون لا يسمح', eg ? 'أبل ما بتسمحش للبرامج تقرا الرسايل. تقدر تلصق الرسالة بإيدك.' : 'لا تسمح أبل بقراءة الرسائل. يمكنك لصق الرسالة يدويًا.', '#637570', 'rgba(25,61,51,0.06)'],
+      miss: [eg ? 'فيه رسايل فاتته' : 'رسائل فاتت القراءة', eg ? '3 رسايل من البنك وصلت وما اتقرتش لوحدها. الجوال غالبًا موقّف مصروفي عشان يوفّر البطارية.' : 'وصلت 3 رسائل من البنك ولم تُقرأ تلقائيًا. على الأرجح أوقف الجوال مصروفي لتوفير البطارية.', '#956000', '#FBF0DD'],
+      never: [eg ? 'القراية شغالة' : 'القراءة تعمل', eg ? 'أول رسالة من البنك توصل هتتقرا وتتسجل لوحدها.' : 'أول رسالة تصل من البنك ستُقرأ وتُسجَّل تلقائيًا.', '#08634F', 'rgba(8,99,79,0.08)']
+    }[st === 'خطأ' ? 'err' : st === 'غير متاح' ? 'ios' : bg === 'فاتته رسايل' ? 'miss' : bg === 'لسه ما قراش' ? 'never' : 'ok'];
     return {
       title: eg ? 'رسايل البنك' : 'رسائل البنك',
       statusStyle: 'display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 18px; color: ' + status[2] + '; background: ' + status[3],
       statusDot: 'width: 10px; height: 10px; border-radius: 5px; flex-shrink: 0; background: ' + status[2],
       statusTitle: status[0], statusBody: status[1],
+      hasLastRead: st === 'عادي' || st === 'خطأ', missed: st === 'عادي' && bg === 'فاتته رسايل',
+      lastRead: st === 'خطأ' ? (eg ? 'آخر مرة قرا لوحده: من 3 أيام' : 'آخر قراءة تلقائية: قبل 3 أيام') : bg === 'لسه ما قراش' ? (eg ? 'لسه ما قراش لوحده' : 'لم يقرأ تلقائيًا بعد') : this.props.bg === 'فاتته رسايل' ? (eg ? 'آخر مرة قرا لوحده: من يومين' : 'آخر قراءة تلقائية: قبل يومين') : (eg ? 'آخر مرة قرا لوحده: من 12 دقيقة' : 'آخر قراءة تلقائية: قبل 12 دقيقة'),
+      reading: this.state.reading, notReading: !this.state.reading, readingAria: this.state.reading ? 'true' : 'false',
+      readingLabel: eg ? 'بيقرا…' : 'جارٍ القراءة…', readNowLabel: eg ? 'اقراهم دلوقتي' : 'اقرأها الآن', keepLabel: eg ? 'خلّيه يشتغل في الخلفية' : 'اسمح بالعمل في الخلفية',
+      readNow: () => { if (this.state.reading) return; this.setState({ reading: true }); clearTimeout(this.rt); this.rt = setTimeout(() => { this.setState({ reading: false, caught: true }); this.say(eg ? 'اتقرت الـ3 رسايل واتسجلت' : 'قُرئت الرسائل الثلاث وسُجّلت'); }, 1400); },
       hasStatusBtn: st === 'خطأ' || st === 'غير متاح',
       statusHref: st === 'خطأ' ? 'BankSmsSettings.dc.html' : 'SmsPaste.dc.html',
       gearLabel: eg ? 'إعداد القراية' : 'إعداد القراءة',
