@@ -95,6 +95,7 @@ a{color:#08634F}a:hover{color:#064B40}
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DCEBD6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg>
             </button>
           </sc-if>
+          <sc-if value="{{hasAmount}}" hint-placeholder-val="{{ true }}"><dc-import name="HeroReserve" space="{{spaceName}}" total="{{totalMinor}}" hint-size="310px,48px"></dc-import></sc-if>
           <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: #DCEBD6; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.14)">
             <span>{{spentLine}}</span>
             <span>{{salaryLine}}</span>
@@ -223,7 +224,7 @@ class Component extends DCLogic {
       motionClass: this.slow() ? 'm-slow' : '',
       navStyle: this.props.navStyle ?? "زرار في النص",
       spaceName: eg ? 'مصر' : 'السعودية',
-      cashMinor: String(this.cash()),
+      cashMinor: String(this.cash()), totalMinor: String(this.total()),
       gearLabel: 'المزيد والإعدادات',
       profilePct: 60, meLabel: (eg ? 'ملفك — مكتمل ' : 'ملفك — مكتمل ') + (60).toLocaleString('en-US') + '%',
       greeting: (() => { let nm = 'محمد'; try { nm = (JSON.parse(window.sessionStorage.getItem('masroufy-profile') || 'null') || {}).name || nm; } catch (e) {} return eg ? 'مساء الخير يا ' + nm : 'مساء الخير، ' + nm; })(),

@@ -42,6 +42,11 @@ body{margin:0}
       <a href="Operations.dc.html" class="lp-press" style="align-self: flex-start; min-height: 44px; display: flex; align-items: center; padding: 0 12px; border-radius: 14px; font-size: 13px; font-weight: 700; color: #08634F; text-decoration: none; background: rgba(8,99,79,0.08)">{{searchLabel}}</a>
     </sc-if>
 
+    <sc-if value="{{isHold}}" hint-placeholder-val="{{ false }}">
+      <span style="border-radius: 14px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; background: rgba(25,61,51,0.04)"><span style="font-size: 14px; font-weight: 700">{{holdFrom}}</span><span style="font-size: 13px; color: #637570">{{holdHow}}</span></span>
+      <span style="border-radius: 12px; padding: 8px 10px; font-size: 13px; color: #08634F; background: rgba(8,99,79,0.07)">{{holdEffect}}</span>
+    </sc-if>
+
     <sc-if value="{{isCash}}" hint-placeholder-val="{{ false }}">
       <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700"><span style="flex: 1 1 auto">{{cashAmtLabel}}</span><input type="text" inputmode="decimal" value="{{cashAmt}}" onInput="{{typeAmt}}" aria-label="{{cashAmtLabel}}" style="width: 120px; height: 46px; box-sizing: border-box; padding: 0 12px; border: 0; border-radius: 14px; font: inherit; font-size: 16px; font-weight: 700; direction: ltr; text-align: left; color: #193D33; background: rgba(25,61,51,0.05)"><span style="font-weight: 500; color: #637570">{{cur}}</span></label>
       <span style="font-size: 14px; font-weight: 700">{{dateLabel}}</span>
@@ -58,7 +63,7 @@ body{margin:0}
   </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"place":{"editor":"enum","options":["سداد دين","دفع زيادة","الزكاة","الادخار"],"default":"الزكاة","section":"المكان"},"how":{"editor":"enum","options":["عملية","كاش"],"default":"عملية","section":"المكان"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"مصر","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"place":{"editor":"enum","options":["سداد دين","دفع زيادة","الزكاة","الادخار"],"default":"الزكاة","section":"المكان"},"how":{"editor":"enum","options":["تلقائي","حجز","عملية","كاش"],"default":"تلقائي","section":"المكان"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"مصر","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
 // «اربطها بعملية أو كاش» على كل مكان بيسجّل دفع (بند 6 من DESIGN-BRIEF-0.6 · قايمة جلسة كوتلن 2026-10-22): سداد دين · دفع زيادة · الزكاة · الادخار
 // «عملية» = قايمة العمليات اللي ممكن تكون هي والأقرب مختار «غالبًا» · «كاش» = عملية حقيقية في محفظة الكاش بالمبلغ والتاريخ. مفيش «من غير عملية». كلام قصير (قاعدة المالك)
 const fmt = (m) => { const a = Math.abs(m), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; };
@@ -66,7 +71,7 @@ const money = (m, eg) => (eg ? '⁦' + fmt(m) + '⁩ ج.م' : '⁦⃁ ' + fmt(m
 const plain = (m) => (m % 100 ? fmt(m) : fmt(m).slice(0, -3)).replace(/,/g, '');
 class Component extends DCLogic {
   constructor(props) { super(props); this.state = this.fresh(props); }
-  fresh(p) { return { how: p.how === 'كاش' ? 'cash' : 'op', pick: 0, date: 0, amt: null, done: false }; }
+  fresh(p) { return { how: p.how === 'كاش' ? 'cash' : p.how === 'حجز' ? 'hold' : ((p.place ?? 'الزكاة') === 'الادخار' && p.how !== 'عملية' ? 'hold' : 'op'), pick: 0, date: 0, amt: null, done: false }; }
   componentDidUpdate(prev) { if (prev.place !== this.props.place || prev.how !== this.props.how || prev.space !== this.props.space) this.setState(this.fresh(this.props)); }
   renderVals() {
     const eg = (this.props.space ?? 'مصر') === 'مصر', T = (sa, e) => (eg ? e : sa);
@@ -86,8 +91,10 @@ class Component extends DCLogic {
     const D = [T('اليوم', 'النهارده'), T('أمس', 'امبارح'), T('تاريخ آخر', 'تاريخ تاني')];
     return {
       title: P.title, sub: P.sub, amount: money(total, eg), hasExtra: !!P.extra, extra: P.extra || '', cur: eg ? 'ج.م' : '⃁',
-      modes: [['op', T('عملية مسجّلة', 'عملية متسجلة')], ['cash', T('كاش', 'كاش')]].map(([id, label]) => ({ label, on: s.how === id ? 'true' : 'false', style: seg(s.how === id), pick: () => this.setState({ how: id, done: false }) })),
-      isOp: s.how === 'op', isCash: s.how === 'cash', isDone: s.done,
+      modes: (place === 'الادخار' ? [['hold', T('حجز من رصيدي', 'حجز من رصيدي')]] : []).concat([['op', T('عملية مسجّلة', 'عملية متسجلة')], ['cash', T('كاش', 'كاش')]]).map(([id, label]) => ({ label, on: s.how === id ? 'true' : 'false', style: seg(s.how === id), pick: () => this.setState({ how: id, done: false }) })),
+      isOp: s.how === 'op', isCash: s.how === 'cash', isHold: s.how === 'hold',
+      holdFrom: T('من «بنك مصر»', 'من «بنك مصر»').replace('بنك مصر', eg ? 'بنك مصر' : 'مصرف الراجحي'), holdHow: T('المبلغ يبقى في حسابك، ويُحجز للخطة', 'الفلوس فاضلة في حسابك، وتتحجز للخطة'),
+      holdEffect: T('ينقص «يمكنك صرف» في الرئيسية', 'هتقلّ من «تقدر تصرف» في الرئيسية'), isDone: s.done,
       bestLabel: T('غالبًا هي', 'غالبًا دي'), searchLabel: T('ما وجدتها؟ ابحث', 'مش لاقيها؟ دوّر'),
       cands: P.cands.map(([name, date, m], i) => {
         const on = s.pick === i;
@@ -98,7 +105,7 @@ class Component extends DCLogic {
       cashAmtLabel: T('المبلغ', 'المبلغ'), cashAmt: amtTxt, typeAmt: (e) => this.setState({ amt: e && e.target ? e.target.value : '' }),
       dateLabel: T('متى؟', 'إمتى؟'), dates: D.map((label, i) => ({ label, on: s.date === i ? 'true' : 'false', style: chip(s.date === i), pick: () => this.setState({ date: i }) })),
       cashEffect: P.out ? T('ستخرج من محفظة الكاش', 'هتطلع من محفظة الكاش') : T('ستدخل محفظة الكاش', 'هتدخل محفظة الكاش'),
-      doneText: T('تم الربط', 'اتربطت'),
+      doneText: s.how === 'hold' ? T('تم الحجز', 'اتحجزت') : T('تم الربط', 'اتربطت'),
       saveLabel: T('احفظ', 'احفظ'), save: () => this.setState({ done: true }),
       cancelLabel: T('إلغاء', 'إلغاء'), reset: () => this.setState(this.fresh(this.props))
     };

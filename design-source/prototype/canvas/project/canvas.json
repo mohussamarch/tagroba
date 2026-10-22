@@ -1273,6 +1273,14 @@
       "y": 33500,
       "w": 390,
       "h": 844
+    },
+    "HeroReserve.dc.html": {
+      "is_interactive": true,
+      "title": "المحجوز للخطط · HeroReserve (في الكارت الرئيسي)",
+      "x": 2160,
+      "y": 33500,
+      "w": 350,
+      "h": 300
     }
   },
   "createdOnFiles": {
@@ -1589,7 +1597,8 @@
     "RefundWait.dc.html",
     "BnplSplit.dc.html",
     "CountryMark.dc.html",
-    "LinkPay.dc.html"
+    "LinkPay.dc.html",
+    "HeroReserve.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"
