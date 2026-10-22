@@ -84,3 +84,6 @@ internal fun placeKey(text: String): String = shapeKey(text).replace('ة', 'ه')
 
 /** كل الأماكن المعروفة (بلد أو مدينة) بعد [placeKey]. */
 internal val KNOWN_PLACES: Set<String> = (COUNTRY_NAMES + CITY_NAMES + SAUDI_CITIES + EGYPT_CITIES).map(::placeKey).toSet()
+
+/** المدن بس (من غير البلاد) بعد [placeKey] — لتنضيف اسم الكارت للعرض (`CardNames.kt`). */
+internal val KNOWN_CITIES: Set<String> = (CITY_NAMES + SAUDI_CITIES + EGYPT_CITIES).map(::placeKey).toSet()

@@ -110,6 +110,9 @@ class OperationsGraph(private val c: AreaContext) : OperationsDeps {
         app.masroufy.usecase.PayerKindDeps(r.transactions, r.incomeSources, incomeAnswers, employers, linkedInflows, clock, payday = { payday() }),
     )
 
+    // r06-darahim (§12-5): «مكرر؟» — «لأ، الاتنين صح» من التفاصيل (العلامة بتتكتب في دورة الخلفية)
+    override val duplicates = app.masroufy.usecase.DuplicateChargeAsks("", r.transactions, clock)
+
     // ردود «مَن هذا؟» الجديدة (طلبات المالك 2026-10-16): «مستحقات دايمًا» بنفس طريق «ده سداد؟» (`AnswerTransferAsks`)
     private val personLedger = app.masroufy.usecase.PersonLedgerRepos(r.obligations, r.settlements, r.allocations)
     private val transferAsks = app.masroufy.usecase.AnswerTransferAsks(

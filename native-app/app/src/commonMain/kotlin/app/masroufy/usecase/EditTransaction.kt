@@ -1,6 +1,9 @@
 package app.masroufy.usecase
 
+import app.masroufy.core.ExclusionScope
 import app.masroufy.core.Id
+import app.masroufy.core.Meal
+import app.masroufy.core.isExcludedFrom
 import app.masroufy.core.ReviewState
 import app.masroufy.core.Tag
 import app.masroufy.core.TextKey
@@ -131,7 +134,20 @@ class EditTransaction(private val deps: EditTransactionDeps) {
 
     /** استبعاد من الميزانية أو رجوع — الاستبعاد **ما بيلغيش** خصم المحفظة. */
     suspend fun setExcludedFromBudget(transactionId: Id, excluded: Boolean) {
-        deps.txns.update(transactionId, TransactionPatch(excludedFromBudget = excluded, updatedAt = deps.clock.nowIso()))
+        // r06-darahim (§12-3): العلامة القديمة كانت بتشيل من الاتنين ⇒ قبل ما تتغير، «برّه التقارير» بتتثبت على قيمتها الحالية
+        val old = deps.txns.findByIds(listOf(transactionId)).firstOrNull()
+        val pinReports = old?.takeIf { it.excludedFromReports == null }?.isExcludedFrom(ExclusionScope.REPORTS)
+        deps.txns.update(transactionId, TransactionPatch(excludedFromBudget = excluded, excludedFromReports = pinReports, updatedAt = deps.clock.nowIso()))
+    }
+
+    /** r06-darahim (§12-3): «برّه التقارير» — المجاميع وأعلى صرف والتوزيع ما بتحسبهاش. الميزانية ما بتتلمسش. */
+    suspend fun setExcludedFromReports(transactionId: Id, excluded: Boolean) {
+        deps.txns.update(transactionId, TransactionPatch(excludedFromReports = excluded, updatedAt = deps.clock.nowIso()))
+    }
+
+    /** r06-darahim (§12-2): وجبة المطعم — null = شيلها. */
+    suspend fun setMeal(transactionId: Id, meal: Meal?) {
+        deps.txns.update(transactionId, TransactionPatch(meal = meal, clearMeal = meal == null, updatedAt = deps.clock.nowIso()))
     }
 
     /**

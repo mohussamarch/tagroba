@@ -68,7 +68,7 @@ private val REQUIRED: Map<String, List<String>> = mapOf(
     ASSISTANT_UNKNOWN_GROUP to listOf("id", "text", "normalized", "askCount", "firstAskedAt", "lastAskedAt", "screen", "spaceId"),
     ALERT_DISMISSALS_GROUP to listOf("id", "threadKey", "dismissedAt"),
 )
-private val BOOLEANS = setOf("active", "archived", "enabled", "confirmed", "economicKindConfirmed", "categoryConfirmed", "notInStatement", "excludedFromBudget", "isCashTagged", "notifyEnabled", "hasInterest", "mine", "yearly", "saudiCompany", "done", "inAppWindow", "starred", "custodyHeld", "countedAsSpend", "openingUnknown")
+private val BOOLEANS = setOf("active", "archived", "enabled", "confirmed", "economicKindConfirmed", "categoryConfirmed", "notInStatement", "excludedFromBudget", "excludedFromReports", "duplicateAskPending", "isCashTagged", "notifyEnabled", "hasInterest", "mine", "yearly", "saudiCompany", "done", "inAppWindow", "starred", "custodyHeld", "countedAsSpend", "openingUnknown")
 private val NUMERIC = setOf("order", "priority", "sourceOrder", "cycleMonths", "originalRowIndex", "quantity", "thresholdPercent", "every", "cycleCount", "karat", "fineness", "month", "day", "year", "leadDays", "sharePercent", "expectedDayOfMonth", "payWeekday", "messageCount", "askCount")
 private val DATES = setOf("occurredAt", "openingAt", "periodStart", "periodEnd", "purchasedAt", "soldAt", "asOf", "nextDueAt", "firstDueAt", "hawlStart", "dueAt", "paidAt", "date", "startedAt", "endedAt", "occurrenceDate", "deadline")
 private val ENUMS: Map<String, Map<String, List<String>>> = mapOf(
@@ -99,6 +99,7 @@ private val ENUMS: Map<String, Map<String, List<String>>> = mapOf(
 private val OPTIONAL_ENUMS: Map<String, Map<String, List<String>>> = mapOf(
     "zakatFacts" to linkedMapOf("purpose" to listOf("wear", "saving"), "holding" to listOf("trading", "long_term"), "collectability" to listOf("strong", "doubtful")),
     PERSON_PROFILES_GROUP to mapOf("circle" to PersonCircle.entries.map { it.wire }),
+    "transactions" to mapOf("meal" to Meal.entries.map { it.wire }),
 )
 private val CURRENCY_CODE = Regex("[A-Z]{3}")
 private val LAST_FOUR = Regex("[0-9]{4}")

@@ -1,5 +1,6 @@
 package app.masroufy.usecase
 
+import app.masroufy.core.isExcludedFrom
 import app.masroufy.core.AlertCandidate
 import app.masroufy.core.Category
 import app.masroufy.core.DEFAULT_PAYDAY
@@ -164,6 +165,6 @@ class AdvisorSignals(private val deps: AdvisorSignalsDeps) {
 internal suspend fun spendLinesOf(rows: List<Transaction>, names: Map<Id, String>, allocations: AllocationRepository): List<SpendLine> {
     val counted = withEstimatedKinds(rows, names).transactions
     val shares = allocations.listByTransactionIds(counted.map { it.id })
-    return counted.filter { countsAsPersonalSpend(it, shares) && !it.excludedFromBudget }
+    return counted.filter { countsAsPersonalSpend(it, shares) && !it.isExcludedFrom(app.masroufy.core.ExclusionScope.REPORTS) }
         .map { SpendLine(it.id, it.occurredAt, it.categoryId, personalShareOf(it, shares), recurringKey(it)) }.filter { it.amountMinor > 0 }
 }

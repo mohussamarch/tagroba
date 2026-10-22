@@ -116,7 +116,40 @@ data class Transaction(
      * لكل مصروف ([linkedSharesOf]). [linkedExpenseId] = أول واحد. null = الداخلة كلها لمصروف واحد (الشكل القديم). بيتكتب لو موجود بس.
      */
     val linkedSplit: List<String>? = null,
+    /**
+     * r06-darahim (PLAN-0.6 §12-3): «برّه التقارير» — المجاميع وأعلى صرف والتوزيع ما بتحسبهاش. منفصلة عن «برّه الميزانية»
+     * ([excludedFromBudget]). null = **زي القديم**: العلامة القديمة الواحدة بتشيلها من الاتنين ([isExcludedFrom]). بتتكتب لو موجودة بس.
+     */
+    val excludedFromReports: Boolean? = null,
+    /** r06-darahim (§12-2): وجبة المطعم (علامة مش تصنيف) — مقترحة من ساعة العملية، والمالك يغيّرها أو يشيلها. null = مفيش. */
+    val meal: Meal? = null,
+    /**
+     * r06-darahim (§12-5): سؤال «مكرر؟» — true = مفتوح (خصم تاني من نفس المحل في خلال دقيقة) · false = المالك قال «الاتنين صح».
+     * null = ما اتسألش. عمرها ما بتمسح حاجة لوحدها. بتتكتب لو موجودة بس.
+     */
+    val duplicateAskPending: Boolean? = null,
 )
+
+/** r06-darahim (§12-2): وجبة على عملية مطعم — علامة للعرض، مش تصنيف. */
+enum class Meal(val wire: String) {
+    BREAKFAST("breakfast"), LUNCH("lunch"), DINNER("dinner"),
+
+    /** المالك شال الوجبة بإيده ⇒ الاقتراح ما يرجعش. */
+    NONE("none");
+
+    companion object {
+        fun fromWire(wire: String): Meal = entries.first { it.wire == wire }
+    }
+}
+
+/** مكان العلامة (§12-3): الميزانيات بتقرا «برّه الميزانية» · التقارير والمجاميع وأعلى صرف بتقرا «برّه التقارير». */
+enum class ExclusionScope { BUDGET, REPORTS }
+
+/** العلامة القديمة الواحدة ([Transaction.excludedFromBudget] من غير [Transaction.excludedFromReports]) = برّه الاتنين. */
+fun Transaction.isExcludedFrom(scope: ExclusionScope): Boolean = when (scope) {
+    ExclusionScope.BUDGET -> excludedFromBudget
+    ExclusionScope.REPORTS -> excludedFromReports ?: excludedFromBudget
+}
 
 enum class AllocationKind(val wire: String) {
     RECEIVABLE("receivable"), GIFT("gift");

@@ -107,7 +107,7 @@ class BankSmsModelTest {
         val ui = bankSmsUi(overview(), listOf(toPerson, shop), emptySet())
         assertEquals("TEST PERSON", ui.recorded[0].title)
         assertTrue(ui.recorded[0].party)
-        assertEquals("TEST SHOP", ui.recorded[1].title)
+        assertEquals("Test Shop", ui.recorded[1].title) // r06-darahim §12-4: اسم الكارت بيتعرض منضّف
         assertFalse(ui.recorded[1].party)
     }
 

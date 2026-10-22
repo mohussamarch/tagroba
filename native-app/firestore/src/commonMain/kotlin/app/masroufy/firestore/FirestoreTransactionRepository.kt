@@ -69,6 +69,9 @@ class FirestoreTransactionRepository(private val space: FirestoreSpace) : Transa
         if (patch.clearLinkedSplit) fields["linkedSplit"] = FieldValue.delete else patch.linkedSplit?.let { fields["linkedSplit"] = it }
         patch.supportAskPending?.let { fields["supportAskPending"] = it }
         patch.personRulesOff?.let { fields["personRulesOff"] = it }
+        patch.excludedFromReports?.let { fields["excludedFromReports"] = it }
+        if (patch.clearMeal) fields["meal"] = FieldValue.delete else patch.meal?.let { fields["meal"] = it.wire }
+        patch.duplicateAskPending?.let { fields["duplicateAskPending"] = it }
         if (fields.isEmpty()) return
         val safe = storeForm(codec.group, fields)
         space.updateDoc(codec.group, id, safe)

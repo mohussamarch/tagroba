@@ -30,4 +30,9 @@ enum class R06Key : TextRef {
 
     /** شاشة التحميل «بنجهّز فلوسك…» · السحب للتحديث: قبل الحد · عند الحد · بعد ما خلص. */
     LOADER_PREPARING, LOADER_PULL, LOADER_RELEASE, LOADER_DONE,
+
+    /** PLAN §12 (دراهم) — الوجبة · «برّه الميزانية» و«برّه التقارير» · سؤال «مكرر؟». */
+    MEAL_TITLE, MEAL_BREAKFAST, MEAL_LUNCH, MEAL_DINNER, MEAL_SUGGESTED, MEAL_CLEAR,
+    EXCLUDE_TITLE, EXCLUDE_BUDGET, EXCLUDE_REPORTS,
+    DUP_ASK_TITLE, DUP_ASK_BODY, DUP_ASK_REMOVE, DUP_ASK_KEEP, DUP_ASK_REMOVED, DUP_ASK_KEPT,
 }
