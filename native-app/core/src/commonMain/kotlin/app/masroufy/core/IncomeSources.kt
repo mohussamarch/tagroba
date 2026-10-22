@@ -65,6 +65,11 @@ data class IncomeSource(
     val payFrequency: PayFrequency = PayFrequency.MONTHLY,
     /** يوم القبض في الأسبوع للأسبوعي بس: 1 = الاتنين … 7 = الحد (ISO). null = لسه ما اتقالش. */
     val payWeekday: Int? = null,
+    /**
+     * PLAN-0.6 §7: رد «الفلوس دي إيه؟» محفوظ لكل حساب من حسابات الجهة («wire=مفتاح الطرف» — `PayerKinds.kt`): التحويل الجاي من الحساب ده
+     * اللي مش راتب بياخد نفس النوع لوحده. المالك يقدر يمسحها.
+     */
+    val payerKindRules: List<String> = emptyList(),
 )
 
 /** الأنواع اللي ليها «مرتب» من شغل (يوم مرتب · مرتب متوقع · «هتروح بيها الشغل؟» · «ده مرتب من …؟»). */

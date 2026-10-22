@@ -106,6 +106,11 @@ data class Transaction(
      * تاني. true بس — بتتكتب لو موجودة بس ⇒ المستندات القديمة زي ما هي.
      */
     val bnplDecided: Boolean? = null,
+    /**
+     * PLAN-0.6 §7: المالك علّم المشترى ده «مستني استرداد» (مصاريف شغل هتترجع) ⇒ **ما بيتحسبش من مصروفه** ([personalShareOf]) لحد ما
+     * الاسترداد يتربط بيه (`LinkInflows` — العلامة بتتشال، والمصروف بيتحسب بالصافي). true بس — بتتكتب لو موجودة بس.
+     */
+    val awaitingRefund: Boolean? = null,
 )
 
 enum class AllocationKind(val wire: String) {

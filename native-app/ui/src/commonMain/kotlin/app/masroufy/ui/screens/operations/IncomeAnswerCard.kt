@@ -46,7 +46,7 @@ import app.masroufy.usecase.SalaryAnswer
 import kotlinx.coroutines.launch
 
 /** نتيجة رد الداخل (البند 6): العنوان والسطر و«تراجع» ومعاينة «طبّق على اللي فات» لو فيه جهة. */
-data class IncomeDone(val title: String, val body: String, val undo: AnswerUndo, val retro: RetroPreview? = null)
+data class IncomeDone(val title: String, val body: String, val undo: AnswerUndo, val retro: RetroPreview? = null, val refund: Boolean = false)
 
 /** «راتب الدوام»: «راتب من الجهة» · الحساب اتربط ولا لأ · من غير جهة ⇒ زي أي دخل. أسامي الأنواع زي ما هي ([ruleFor]). */
 fun salaryDone(a: SalaryAnswer): IncomeDone {
@@ -128,8 +128,11 @@ fun IncomeKindCard(transactionId: Id, onChanged: () -> Unit) {
     val d = done
     if (d != null) {
         IncomeDoneBox(d, onUndone = { done = null; onChanged() }, onChanged = onChanged)
+        if (d.refund) RefundPickList(transactionId, onChanged)
         return
     }
+    // PLAN-0.6 §7: تحويل من حساب جهة الشغل مش راتب ⇒ «الفلوس دي إيه؟»
+    if (payerAskShown(transactionId, onDone = { done = it; onChanged() }, onChanged = onChanged)) return
     Column(
         Modifier.fillMaxWidth().clip(RoundedCornerShape(Radius.card)).background(Ink.alertBg).padding(horizontal = 16.dp, vertical = 14.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),

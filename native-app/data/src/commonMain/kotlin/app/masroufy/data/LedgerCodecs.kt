@@ -47,6 +47,8 @@ object LedgerCodecs {
                 opt("notInStatement", t.notInStatement)
                 // r051: ردّ لوحة «ادفع بعدين» — لو موجود بس
                 opt("bnplDecided", t.bnplDecided)
+                // PLAN-0.6 §7: «مستني استرداد» — لو موجودة بس
+                opt("awaitingRefund", t.awaitingRefund?.takeIf { it })
             }
         },
         { r ->
@@ -72,6 +74,7 @@ object LedgerCodecs {
                 explainsCheckpointId = r.strOrNull("explainsCheckpointId"),
                 notInStatement = r.boolOrNull("notInStatement"),
                 bnplDecided = r.boolOrNull("bnplDecided"),
+                awaitingRefund = r.boolOrNull("awaitingRefund"),
             )
         },
     )

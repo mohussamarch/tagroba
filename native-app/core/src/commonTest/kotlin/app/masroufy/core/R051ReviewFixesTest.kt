@@ -31,7 +31,7 @@ class R051ReviewFixesTest {
         val sole = listOf(job("e-1", listOf(companyKey)))
         assertEquals("e-1", employerOf(salary, sole)?.id, "العرض والسؤال بيفضلوا يشوفوا الجهة الوحيدة")
         assertEquals(salary, applyKnownPayerSalary(salary, sole, "now"), "بس النوع ما بيتأكدش لوحده — رد «ده راتبك؟» هو اللي بيقرر")
-        val fromCompany = fromAccount("t-acct", "2026-09-27")
+        val fromCompany = fromAccount("t-acct", "2026-09-27").copy(sourceOperationType = "حوالة رواتب") // PLAN-0.6 §7: بكلمة راتب
         assertTrue(applyKnownPayerSalary(fromCompany, sole, "now").economicKindConfirmed, "الحساب المعروف لسه بيأكد «راتب» زي الأول")
         val picked = listOf(job("e-1", listOf(companyKey, salaryTxnKey("t-new"))))
         assertEquals(EconomicKind.SALARY, applyKnownPayerSalary(salary, picked, "now").economicKind, "اختيار المالك للعملية دي بإيده بيأكد")

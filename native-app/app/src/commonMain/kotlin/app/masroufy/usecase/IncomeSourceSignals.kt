@@ -72,8 +72,13 @@ class IncomeSourceSignals(private val deps: IncomeSignalsDeps) {
         val now = deps.clock.nowIso()
         val changed = if (!yes) emptyList() else {
             val after = all.map { if (it.id == updated.id) updated else it }
-            everything().filter { transferPartyOf(it)?.key == current.party.key }
-                .mapNotNull { t -> applyKnownPayerSalary(t, after, now).takeIf { it != t } }
+            val payday = deps.profiles.load()?.payday
+            // PLAN-0.6 §7: العملية اللي اتسأل عنها راتب (المالك قال أيوه)، والباقي بشروط الراتب (كلمة راتب · مبلغ وميعاد قريبين)
+            everything().filter { transferPartyOf(it)?.key == current.party.key }.mapNotNull { t ->
+                val next = if (t.id == current.transactionId && !t.economicKindConfirmed) app.masroufy.core.asConfirmedSalary(t, now)
+                else applyKnownPayerSalary(t, after, now, payday)
+                next.takeIf { it != t }
+            }
         }
         deps.uow.run {
             deps.sources.saveMany(listOf(updated))
@@ -90,7 +95,8 @@ class IncomeSourceSignals(private val deps: IncomeSignalsDeps) {
         val sources = deps.sources.listAll()
         if (sources.none { it.payerKeys.isNotEmpty() }) return 0
         val now = deps.clock.nowIso()
-        val changed = everything().mapNotNull { t -> applyKnownPayerSalary(t, sources, now).takeIf { it != t } }
+        val payday = deps.profiles.load()?.payday
+        val changed = everything().mapNotNull { t -> applyKnownPayerSalary(t, sources, now, payday).takeIf { it != t } }
         if (changed.isNotEmpty()) deps.uow.run { deps.txns.saveMany(changed) }
         return changed.size
     }

@@ -106,6 +106,9 @@ class OperationsGraph(private val c: AreaContext) : OperationsDeps {
     override val incomeAnswers = employerCases.answers
     override val employers = employerCases.employers
     override val employerRetro = employerCases.retro
+    override val payerKinds = app.masroufy.usecase.PayerKindAnswers(
+        app.masroufy.usecase.PayerKindDeps(r.transactions, r.incomeSources, incomeAnswers, employers, linkedInflows, clock, payday = { payday() }),
+    )
 
     // ردود «مَن هذا؟» الجديدة (طلبات المالك 2026-10-16): «مستحقات دايمًا» بنفس طريق «ده سداد؟» (`AnswerTransferAsks`)
     private val personLedger = app.masroufy.usecase.PersonLedgerRepos(r.obligations, r.settlements, r.allocations)

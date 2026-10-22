@@ -46,7 +46,7 @@ data class IncomeAnswersDeps(
 )
 
 /** تراجع عن رد واحد: العملية قبل الرد + الحساب اللي الرد ده ربطه (لو ربط). */
-data class AnswerUndo(val before: KindSnapshot, val employerId: Id? = null, val attachedKey: String? = null)
+data class AnswerUndo(val before: KindSnapshot, val employerId: Id? = null, val attachedKey: String? = null, val rule: PayerRuleUndo? = null)
 
 /** نتيجة «راتب الدوام»: الجهة (بعد الربط) · الطرف (null = الرسالة من غير اسم ولا رقم) · معاينة الباقي (null = مفيش حاجة تانية). */
 data class SalaryAnswer(val employer: IncomeSource?, val party: TransferPartyRef?, val retro: RetroPreview?, val undo: AnswerUndo)
@@ -84,7 +84,7 @@ class IncomeAnswers(private val deps: IncomeAnswersDeps) {
 
     /** «عمل إضافي» · «بيعة» · أو نوع داخل تاني من [OTHER_KINDS] — للتحويل ده بس. */
     suspend fun markIncome(transactionId: Id, kind: EconomicKind): AnswerUndo {
-        if (kind != EconomicKind.FREELANCE && kind != EconomicKind.PERSONAL_SALE && kind !in OTHER_KINDS) {
+        if (kind != EconomicKind.FREELANCE && kind != EconomicKind.PERSONAL_SALE && kind !in OTHER_KINDS && kind !in app.masroufy.core.PAYER_ASK_KINDS) {
             throw IncomeSourceError(uiText(UiKey.EMPLOYER_ERR_KIND))
         }
         val t = incoming(transactionId, kind)
@@ -99,6 +99,8 @@ class IncomeAnswers(private val deps: IncomeAnswersDeps) {
             val employerId = undo.employerId
             val key = undo.attachedKey
             if (employerId != null && key != null) deps.employers.detach(employerId, key)
+            // PLAN-0.6 §7: قاعدة «الفلوس دي إيه؟» بترجع زي ما كانت
+            undo.rule?.let { deps.employers.setPayerRule(it.employerId, it.partyKey, it.previous) }
         }
     }
 
