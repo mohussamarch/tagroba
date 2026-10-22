@@ -121,15 +121,19 @@ class Component extends DCLogic {
     const open = (id) => {
       if (id === 'own') return this.decide('own', 'تحويل بين محافظك');
       if (id === 'salary') return this.decide('salary', 'راتب');
-      this.setState({ sheet: id, pick: null, label: '' });
+      this.setState({ sheet: id, pick: null, label: '', more: false });
     };
     const options = defs.map(([id, label, hint]) => ({ label, hint, ic: I[id], color: C[id], pick: () => open(id),
       box: 'width: 32px; height: 32px; border-radius: 11px; display: flex; align-items: center; justify-content: center; background: ' + C[id] + '1A' }));
     const chip = (on) => 'min-height: 40px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'color: #193D33; background: rgba(25,61,51,0.06)');
-    const companyKinds = out ? (eg ? ['فاتورة', 'رسوم', 'مشتريات', 'قسط تمويل', 'اشتراك', 'إيجار', 'تأمين', 'ضرايب', 'تبرع', 'مصروف تاني'] : ['فاتورة', 'رسوم', 'مشتريات', 'قسط تمويل', 'اشتراك', 'إيجار', 'تأمين', 'ضرائب', 'تبرع', 'مصروف آخر']) : (eg ? ['استرداد', 'تعويض', 'مكافأة', 'عمولة', 'أرباح', 'إيجار', 'بيع حاجة', 'منحة أو دعم', 'دخل تاني'] : ['استرداد', 'تعويض', 'مكافأة', 'عمولة', 'أرباح', 'إيجار', 'بيع غرض', 'منحة أو دعم', 'دخل آخر']); // رد المالك (ج) 2026-10-17 + «قليل اوي» 2026-10-22
+    // «شركة أو جهة» (المالك 2026-10-22): اختيارين + «حاجة تانية…» بتفتح قايمة كبيرة — بس حاجات ليها منطق متبني في البرنامج
+    const MORE = eg ? 'حاجة تانية…' : 'شيء آخر…';
+    const top = out ? ['فاتورة', 'مشتريات'] : ['استرداد', 'تعويض'];
+    const extra = out ? (eg ? ['رسوم', 'قسط تمويل', 'اشتراك', 'تقسيط (تابي/تمارا)', 'زكاة', 'إيداع ادخار', 'جمعية', 'سداد دين', 'مصروف تاني'] : ['رسوم', 'قسط تمويل', 'اشتراك', 'تقسيط (تابي/تمارا)', 'زكاة', 'إيداع ادخار', 'جمعية', 'سداد دين', 'مصروف آخر']) : (eg ? ['مرتب', 'مكافأة أو بدل', 'سلفة', 'دين رجعلي', 'جمعية', 'دخل تاني'] : ['راتب', 'مكافأة أو بدل', 'سلفة', 'دين عاد لي', 'جمعية', 'دخل آخر']);
+    const companyKinds = s.more ? top.concat(extra) : top.concat([MORE]);
     const people = ['ليلى', 'يوسف', 'خالد'];
     const list = s.sheet === 'company' ? companyKinds : s.sheet === 'dues' ? people : [];
-    const chips = list.map((label) => ({ label, on: s.pick === label ? 'true' : 'false', pick: () => this.setState({ pick: label }), style: chip(s.pick === label) }));
+    const chips = list.map((label) => ({ label, on: s.pick === label ? 'true' : 'false', pick: () => this.setState(label === MORE ? { more: true } : { pick: label }), style: chip(s.pick === label) }));
     const lbl = s.label.trim();
     const sheets = {
       person: [eg ? 'مين صاحب الحساب 4821؟' : 'من صاحب الحساب 4821؟', (eg ? 'الاسم في الرسالة «' : 'الاسم في الرسالة «') + name + '» · ' + money],
