@@ -29,8 +29,8 @@ body{margin:0}
       <span style="font-size: 12px; line-height: 1.7; color: #6B4600; border-radius: 12px; padding: 8px 10px; background: #FBF0DD">{{why}}</span>
       <div role="radiogroup" aria-label="{{title}}" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px">
         <sc-for list="{{tiles}}" as="t" hint-placeholder-count="4">
-          <button type="button" class="mw-press" onClick="{{t.pick}}" style="min-height: 92px; border: 0; border-radius: 18px; padding: 12px; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; font: inherit; text-align: right; color: #193D33; cursor: pointer; background: rgba(25,61,51,0.04)">
-            <span aria-hidden="true" style="{{t.box}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{t.color}}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="{{t.ic}}"></path></svg></span>
+          <button type="button" class="mw-press" onClick="{{t.pick}}" style="{{t.style}}">
+            <span aria-hidden="true" style="{{t.box}}"><sc-if value="{{t.isEmoji}}" hint-placeholder-val="{{ false }}"><span style="font-size: 18px; line-height: 1">{{t.emoji}}</span></sc-if><sc-if value="{{t.isIcon}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{t.color}}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="{{t.ic}}"></path></svg></sc-if></span>
             <span style="font-size: 14px; font-weight: 700">{{t.label}}</span>
             <span style="font-size: 11px; line-height: 1.5; color: #637570">{{t.hint}}</span>
           </button>
@@ -52,11 +52,13 @@ body{margin:0}
 
     <sc-if value="{{isOther}}" hint-placeholder-val="{{ false }}">
       <label style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; font-weight: 700; color: #637570">{{otherAsk}}</span><input type="text" value="{{name}}" onInput="{{typeName}}" placeholder="{{otherPh}}" style="height: 48px; box-sizing: border-box; padding: 0 14px; border: 1.5px solid rgba(25,61,51,0.14); border-radius: 16px; font: inherit; font-size: 15px; color: #193D33; background: #FFFFFF"></label>
+      <span style="font-size: 13px; font-weight: 700; color: #637570">{{emojiAsk}}</span>
+      <div role="radiogroup" aria-label="{{emojiAsk}}" style="display: flex; flex-wrap: wrap; gap: 6px"><sc-for list="{{emojis}}" as="em" hint-placeholder-count="12"><button type="button" role="radio" aria-checked="{{em.on}}" class="mw-press" onClick="{{em.pick}}" style="{{em.style}}">{{em.e}}</button></sc-for></div>
     </sc-if>
 
     <sc-if value="{{hasEffect}}" hint-placeholder-val="{{ false }}">
       <span style="font-size: 13px; line-height: 1.7; color: #08634F; border-radius: 12px; padding: 8px 10px; background: rgba(8,99,79,0.07)">{{effect}}</span>
-      <span style="font-size: 12px; line-height: 1.7; color: #637570">{{rule}}</span>
+      <button type="button" role="checkbox" aria-checked="{{ruleOn}}" class="mw-press" onClick="{{toggleRule}}" style="min-height: 52px; border: 0; border-radius: 14px; padding: 9px 10px; display: flex; align-items: flex-start; gap: 10px; font: inherit; text-align: right; color: #193D33; cursor: pointer; background: rgba(25,61,51,0.04)"><span aria-hidden="true" style="{{ruleTick}}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></span><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 13px; font-weight: 700">{{ruleTitle}}</span><span style="font-size: 12px; line-height: 1.6; color: #637570">{{rule}}</span></span></button>
       <div style="display: flex; gap: 8px">
         <button type="button" class="mw-press" onClick="{{back}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #193D33; cursor: pointer; background: rgba(25,61,51,0.06)">{{backLabel}}</button>
         <button type="button" class="mw-press" onClick="{{save}}" disabled="{{saveOff}}" style="{{saveStyle}}">{{saveLabel}}</button>
@@ -72,10 +74,10 @@ body{margin:0}
   </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"step":{"editor":"enum","options":["السؤال","استرداد مصاريف","مكافأة أو بدل","سلفة","حاجة تانية","اتحفظ"],"default":"السؤال","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"bare":{"editor":"boolean","default":false,"section":"الحالة"},"$preview":{"width":390,"height":620}}'>
+<script type="text/x-dc" data-dc-script data-props='{"step":{"editor":"enum","options":["السؤال","فيه اختيار محفوظ","استرداد مصاريف","مكافأة أو بدل","سلفة","حاجة تانية","اتحفظ"],"default":"السؤال","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"bare":{"editor":"boolean","default":false,"section":"الحالة"},"$preview":{"width":390,"height":620}}'>
 // «الفلوس دي إيه؟» — تحويل داخل مش واضح إنه راتب (بند 3 من DESIGN-BRIEF-0.6 · قرارات المالك 2026-10-17)
 // الراتب بيتعرف لوحده بس لو الرسالة فيها راتب/رواتب/مرتب، أو المبلغ قريب من راتب الجهة والميعاد قريب من يوم القبض — غير كده الكارت ده
-// الإجابة بتتحفظ قاعدة للي بيحوّل · «استرداد مصاريف» بيتربط بالمشترى الأصلي — اللي عليه «مستني استرداد» ما بيتحسبش مصروف
+// القاعدة اختيار تحت ومش متعلّمة من الأول (تعديل المالك 2026-10-22) · «حاجة تانية» = اسم + إيموجي، ويفضل اختيار ثابت في أسئلة نفس اللي بعته بس — مش لكل الناس · «استرداد مصاريف» بيتربط بالمشترى الأصلي — اللي عليه «مستني استرداد» ما بيتحسبش مصروف
 const KEYS = { 'استرداد مصاريف': 'refund', 'مكافأة أو بدل': 'bonus', 'سلفة': 'loan', 'حاجة تانية': 'other', 'اتحفظ': 'done' };
 class Component extends DCLogic {
   constructor(props) {
@@ -84,7 +86,7 @@ class Component extends DCLogic {
   }
   fresh(p) {
     const k = KEYS[p.step] || null;
-    return { pick: k === 'done' ? 'bonus' : k, done: k === 'done', sel: { a: true, b: true }, name: '' };
+    return { pick: k === 'done' ? 'bonus' : k, done: k === 'done', sel: { a: true, b: true }, name: '', emoji: '💼', rule: false, customs: p.step === 'فيه اختيار محفوظ' ? [{ e: '🎓', n: p.space === 'مصر' ? 'بدل كورس' : 'بدل دورة' }] : [] };
   }
   componentDidUpdate(prev) { if (prev.step !== this.props.step || prev.space !== this.props.space) this.setState(this.fresh(this.props)); }
   renderVals() {
@@ -110,14 +112,19 @@ class Component extends DCLogic {
     const k = s.pick;
     const nm = s.name.trim();
     const left = AMT - picked;
+    const cu = k && k[0] === 'c' ? s.customs[Number(k.slice(1))] : null;
+    const kindName = k === 'other' ? s.emoji + ' ' + (nm || '…') : cu ? cu.e + ' ' + cu.n : k ? L[k][0] : '';
     const eff = {
       refund: eg ? 'المشتريات اللي اخترتها هتبقى «اترد» وما بتتحسبش مصروف، والتحويل ده ما بيتحسبش دخل.' : 'المشتريات المختارة تصبح «مُستردّة» ولا تُحسب مصروفًا، ولا يُحسب هذا التحويل دخلًا.',
       bonus: eg ? 'هيتسجل دخل «مكافأة أو بدل» — مش مرتب، وما بيدخلش في حساب المرتب الجاي.' : 'سيُسجَّل دخلًا «مكافأة أو بدل» — ليس راتبًا، ولا يدخل في توقّع الراتب.',
       loan: (eg ? 'هيتسجل دين عليك لـ«' : 'سيُسجَّل دينًا عليك لـ«') + payer + (eg ? '» بـ' : '» بقيمة ') + fmt(AMT) + (eg ? ' — بيتقفل لما تسدده.' : ' — يُغلق عند السداد.'),
-      other: nm ? ((eg ? 'هيتسجل دخل باسم «' : 'سيُسجَّل دخلًا باسم «') + nm + '».') : (eg ? 'اكتب اسم للفلوس دي.' : 'اكتب اسمًا لهذا المبلغ.')
-    }[k];
-    const kindName = k === 'other' ? (nm || '…') : k ? L[k][0] : '';
-    const done = () => { if (typeof this.props.onDone === 'function') this.props.onDone({ kind: k, name: kindName, links: k === 'refund' ? B.filter((b) => s.sel[b[0]]).map((b) => b[0]) : [] }); this.setState({ done: true }); };
+      other: nm ? ((eg ? 'هيتسجل دخل باسم «' : 'سيُسجَّل دخلًا باسم «') + kindName + (eg ? '»، وهيفضل اختيار ثابت في أسئلة «' : '»، ويبقى خيارًا ثابتًا في أسئلة «') + payer + (eg ? '» بس.' : '» فقط.')) : (eg ? 'اكتب اسم للفلوس دي واختار إيموجي.' : 'اكتب اسمًا لهذا المبلغ واختر رمزًا.')
+    }[k] || (cu ? ((eg ? 'هيتسجل دخل باسم «' : 'سيُسجَّل دخلًا باسم «') + kindName + '».') : '');
+    const done = () => {
+      if (typeof this.props.onDone === 'function') this.props.onDone({ kind: cu ? 'other' : k, name: kindName, rule: s.rule, links: k === 'refund' ? B.filter((b) => s.sel[b[0]]).map((b) => b[0]) : [] });
+      const keep = k === 'other' && !s.customs.some((c) => c.n === nm) ? s.customs.concat([{ e: s.emoji, n: nm }]) : s.customs;
+      this.setState({ done: true, customs: keep });
+    };
     const saveOff = (k === 'refund' && picked === 0) || (k === 'other' && !nm);
     return {
       rootStyle: this.props.bare ? 'font-family: SAR, \'Noto Sans Arabic\', Tahoma, sans-serif; color: #193D33' : 'width: 390px; min-height: 620px; box-sizing: border-box; padding: 20px 16px; font-family: SAR, \'Noto Sans Arabic\', Tahoma, sans-serif; color: #193D33; background: #EFF3ED',
@@ -127,8 +134,14 @@ class Component extends DCLogic {
       amount: '+' + fmt(AMT),
       why: eg ? 'مش شبه المرتب: الرسالة ما فيهاش «راتب»، والمبلغ بعيد عن مرتبك المعتاد، والميعاد بعيد عن يوم القبض.' : 'لا يشبه الراتب: الرسالة بلا كلمة «راتب»، والمبلغ بعيد عن راتبك المعتاد، والموعد بعيد عن يوم الصرف.',
       isAsk: !s.done && !k, isRefund: !s.done && k === 'refund', isOther: !s.done && k === 'other', hasEffect: !s.done && !!k, isDone: s.done,
-      tiles: ['refund', 'bonus', 'loan', 'other'].map((id) => ({ label: L[id][0], hint: L[id][1], ic: I[id], color: C[id], pick: () => this.setState({ pick: id }),
-        box: 'width: 32px; height: 32px; border-radius: 11px; display: flex; align-items: center; justify-content: center; background: ' + C[id] + '1A' })),
+      tiles: (() => {
+        const tile = 'min-height: 92px; border: 0; border-radius: 18px; padding: 12px; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; font: inherit; text-align: right; color: #193D33; cursor: pointer; background: rgba(25,61,51,0.04)';
+        const box = (c) => 'width: 32px; height: 32px; border-radius: 11px; display: flex; align-items: center; justify-content: center; background: ' + c + '1A';
+        const base = ['refund', 'bonus', 'loan'].map((id) => ({ label: L[id][0], hint: L[id][1], ic: I[id], color: C[id], isIcon: true, isEmoji: false, emoji: '', style: tile, box: box(C[id]), pick: () => this.setState({ pick: id }) }));
+        const mine = s.customs.map((c, i) => ({ label: c.n, hint: (eg ? 'محفوظ لـ«' : 'محفوظ لـ«') + payer + '»', ic: '', color: '#08634F', isIcon: false, isEmoji: true, emoji: c.e, style: tile, box: box('#08634F'), pick: () => this.setState({ pick: 'c' + i }) }));
+        const odd = (base.length + mine.length) % 2 === 0;
+        return base.concat(mine, [{ label: L.other[0], hint: L.other[1], ic: I.other, color: C.other, isIcon: true, isEmoji: false, emoji: '', style: tile + (odd ? '; grid-column: 1 / -1; min-height: 64px' : ''), box: box(C.other), pick: () => this.setState({ pick: 'other' }) }]);
+      })(),
       refundAsk: eg ? 'ده استرداد لأنهي مشترى؟' : 'استرداد لأي مشترى؟',
       waitingLabel: eg ? 'مستني استرداد' : 'بانتظار الاسترداد',
       buys: B.map(([id, name, date, m, waiting]) => {
@@ -136,19 +149,25 @@ class Component extends DCLogic {
         return { name, date, waiting, amt: '−' + fmt(m), on: on ? 'true' : 'false',
           pick: () => this.setState((st) => ({ sel: Object.assign({}, st.sel, { [id]: !st.sel[id] }) })),
           style: 'min-height: 56px; border: 1.5px solid ' + (on ? '#08634F' : 'rgba(25,61,51,0.10)') + '; border-radius: 16px; padding: 8px 12px; display: flex; align-items: center; gap: 10px; font: inherit; color: #193D33; cursor: pointer; background: ' + (on ? 'rgba(8,99,79,0.05)' : '#FFFFFF'),
-          tick: 'width: 22px; height: 22px; border-radius: 7px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: ' + (on ? '#08634F' : 'rgba(25,61,51,0.10)') };
+          tick: 'width: 22px; height: 22px; border-radius: 7px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; box-sizing: border-box; ' + (on ? 'background: #08634F' : 'background: #FFFFFF; border: 1.5px solid rgba(25,61,51,0.28)') };
       }),
       sumLine: left === 0 ? (eg ? 'المختار ' + fmt(picked) + ' — مطابق للتحويل بالظبط' : 'المختار ' + fmt(picked) + ' — يطابق التحويل تمامًا') : left > 0 ? (eg ? 'المختار ' + fmt(picked) + ' · فاضل ' + fmt(left) + ' مش مربوط بمشترى' : 'المختار ' + fmt(picked) + ' · يتبقى ' + fmt(left) + ' بلا مشترى') : (eg ? 'المختار ' + fmt(picked) + ' — أكتر من التحويل بـ' + fmt(-left) : 'المختار ' + fmt(picked) + ' — يزيد على التحويل بـ' + fmt(-left)),
       sumStyle: 'font-size: 12px; font-weight: 700; color: ' + (left === 0 ? '#08634F' : '#956000'),
+      emojiAsk: eg ? 'واختار إيموجي' : 'واختر رمزًا',
+      emojis: ['💼', '🎁', '🧾', '🎓', '🏠', '🚗', '📱', '✈️', '🩺', '🍽️', '💡', '⭐'].map((e) => ({ e, on: s.emoji === e ? 'true' : 'false', pick: () => this.setState({ emoji: e }),
+        style: 'width: 44px; height: 44px; border-radius: 14px; font: inherit; font-size: 20px; line-height: 1; cursor: pointer; border: ' + (s.emoji === e ? '2px solid #08634F' : '1.5px solid rgba(25,61,51,0.10)') + '; background: ' + (s.emoji === e ? 'rgba(8,99,79,0.08)' : '#FFFFFF') })),
       otherAsk: eg ? 'اسمها إيه؟' : 'ما اسمه؟', otherPh: eg ? 'مثلًا: بيع موبايل قديم' : 'مثلًا: بيع جوال قديم', name: s.name,
       typeName: (e) => this.setState({ name: e && e.target ? e.target.value : '' }),
       effect: eff || '',
-      rule: k ? ((eg ? 'هتتحفظ قاعدة: أي تحويل جاي من «' : 'ستُحفظ قاعدة: أي تحويل يصل من «') + payer + (eg ? '» ومش شبه المرتب هيتسجل «' : '» ولا يشبه الراتب سيُسجَّل «') + kindName + (k === 'refund' ? (eg ? '» ويسألك تربطه بأنهي مشترى.' : '» مع سؤالك عن المشترى.') : (eg ? '» لوحده. تقدر تغيّرها من القواعد.' : '» تلقائيًا. يمكنك تغييرها من القواعد.'))) : '',
-      back: () => this.setState({ pick: null, done: false }), backLabel: eg ? 'رجوع' : 'رجوع',
+      ruleOn: s.rule ? 'true' : 'false', toggleRule: () => this.setState((st) => ({ rule: !st.rule })),
+      ruleTitle: eg ? 'خليها قاعدة للمرات الجاية' : 'اجعلها قاعدة للمرات القادمة',
+      ruleTick: 'width: 22px; height: 22px; border-radius: 7px; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; box-sizing: border-box; ' + (s.rule ? 'background: #08634F' : 'background: #FFFFFF; border: 1.5px solid rgba(25,61,51,0.28)'),
+      rule: !s.rule ? (eg ? 'من غيرها هيسألك تاني كل مرة يجي تحويل من «' + payer + '» مش شبه المرتب.' : 'من دونها سيسألك في كل مرة يصل تحويل من «' + payer + '» لا يشبه الراتب.') : k ? ((eg ? 'أي تحويل جاي من «' : 'أي تحويل يصل من «') + payer + (eg ? '» ومش شبه المرتب هيتسجل «' : '» ولا يشبه الراتب سيُسجَّل «') + kindName + (k === 'refund' ? (eg ? '» ويسألك تربطه بأنهي مشترى.' : '» مع سؤالك عن المشترى.') : (eg ? '» لوحده. تقدر تغيّرها من القواعد.' : '» تلقائيًا. يمكنك تغييرها من القواعد.'))) : '',
+      back: () => this.setState({ pick: null, done: false, name: '', rule: false }), backLabel: eg ? 'رجوع' : 'رجوع',
       save: () => { if (!saveOff) done(); }, saveOff,
       saveLabel: k === 'refund' ? (eg ? 'اربط واحفظ' : 'اربط واحفظ') : (eg ? 'احفظ' : 'احفظ'),
       saveStyle: 'flex: 1.4 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #FFFFFF; cursor: ' + (saveOff ? 'default' : 'pointer') + '; opacity: ' + (saveOff ? 0.45 : 1) + '; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)',
-      doneText: (eg ? 'اتسجّل «' : 'سُجّل «') + kindName + (eg ? '» — والقاعدة اتحفظت لـ«' : '» — وحُفظت القاعدة لـ«') + payer + '».',
+      doneText: (eg ? 'اتسجّل «' : 'سُجّل «') + kindName + '»' + (k === 'other' ? (eg ? ' وبقى من اختيارات «' : ' وأصبح من خيارات «') + payer + '»' : '') + (s.rule ? (eg ? ' — والقاعدة اتحفظت.' : ' — وحُفظت القاعدة.') : (eg ? ' — وهيسألك تاني المرة الجاية.' : ' — وسيسألك في المرة القادمة.')),
       undoLabel: eg ? 'تراجع' : 'تراجع'
     };
   }
