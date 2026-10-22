@@ -4,11 +4,10 @@ package app.masroufy.core
  * مفاتيح نصوص **الشاشات** (الهيكل والمكوّنات والمناطق — قيمها في `TextsShell*.kt` و`TextsArea*.kt` و`TextsMore*.kt`). اتفصلت عن
  * [TextKey] وقت الدمج (app-integration): الـenum الواحد وصل 4496 مفتاح، و`<clinit>` بتاعه عدّى حد الـJVM (64KB — «Method too large»).
  * كل enum بيستحمل حوالي 4000 مفتاح بالكتير ⇒ لو ده قرّب من 3800 اقسمه تاني (ARCHITECTURE §31.34). النوعين تحت [TextRef]، والجداول
- * والبحث (`Texts.of` · `t`) واحد. ⚠️ الـenum ده أطول من 300 سطر (ما ينفعش يتقسم إلا بنوع جديد)؛ النصوص نفسها مقسومة على ملفات.
+ * والبحث واحد. ⚠️ استثناء حد الـ300 سطر متسجل (ARCHITECTURE §31.45): enum واحد ما يتقسمش على ملفات؛ المفاتيح الجديدة في سطور مليانة.
  */
 enum class UiKey : TextRef {
     // الواجهة: الهيكل والمكوّنات المشتركة والدخول والقفل والتواريخ (ARCHITECTURE §31.31) — القيم في `TextsShell*.kt`.
-    // ⚠️ الـenum ده أطول من 300 سطر (ما ينفعش يتقسم)؛ النصوص نفسها مقسومة على ملفات.
     TAB_HOME, TAB_OPERATIONS, TAB_PEOPLE, TAB_INVESTMENT, SHELL_NAV, SHELL_GEAR, SHELL_BACK, SHELL_CLOSE, SHELL_NEW_DOT, SHELL_TAB_WITH_NEW,
     SHELL_OFFLINE, SHELL_OPENING, SHELL_OPENING_PROGRESS, SHELL_PENDING_SCREEN, SHELL_LOADING, SHELL_RETRY, SHELL_LOAD_FAILED, BADGE_APPROX,
     GREETING_MORNING_NAME, GREETING_EVENING_NAME, GREETING_MORNING, GREETING_EVENING, ME_PROFILE, ME_PROFILE_PERCENT,
@@ -101,8 +100,9 @@ enum class UiKey : TextRef {
     HOME_TOP_SUB, HOME_TOP_EMPTY, HOME_TOP_UNCATEGORIZED, HOME_GOALS_SUB, HOME_GOALS_OF, HOME_GOALS_EMPTY,
     HOME_REVIEW_COUNT, HOME_REVIEW_ACTION, HOME_REVIEW_NONE, HOME_RECENT_SUB,
     HOME_PEOPLE_SUB, HOME_PEOPLE_OWED, HOME_PEOPLE_OWE, HOME_INVEST_SUB, HOME_INVEST_NA,
-    // «أكثر ما صرفت عليه» في العمليات (OVERRIDES §100) — القيم في `TextsAreaHomeCards.kt`
-    TOP_SPEND_TITLE, TOP_SPEND_TOTAL, TOP_SPEND_COUNT, TOP_SPEND_PARTIAL, TOP_SPEND_UNKNOWN, TOP_SPEND_EMPTY, TOP_SPEND_EMPTY_BODY, TOP_SPEND_FAILED,
+    // «أكثر ما صرفت عليه» في العمليات (OVERRIDES §100 و§106، تصميم 0.5.1) — القيم في `TextsAreaHomeCards.kt`
+    TOP_SPEND_TITLE, TOP_SPEND_COUNT, TOP_SPEND_PARTIAL, TOP_SPEND_UNKNOWN, TOP_SPEND_EMPTY, TOP_SPEND_EMPTY_BODY, TOP_SPEND_FAILED, TOP_SPEND_CRUMB,
+    TOP_SPEND_RANGE, TOP_SPEND_RANGE_NOW, TOP_SPEND_SUMMARY, TOP_SPEND_EXCLUDED, TOP_SPEND_UP, TOP_SPEND_DOWN, TOP_SPEND_FOOT, TOP_SPEND_PERIOD,
 
     // ── منطقة «العمليات» (screens/operations) — القيم في `TextsAreaOperations.kt`
     OPERATIONS_FILTER, OPERATIONS_PERIOD, OPERATIONS_TAB_OPS, OPERATIONS_TAB_BUDGETS, OPERATIONS_TAB_DUES, OPERATIONS_ERROR_TITLE, OPERATIONS_ERROR_BODY,

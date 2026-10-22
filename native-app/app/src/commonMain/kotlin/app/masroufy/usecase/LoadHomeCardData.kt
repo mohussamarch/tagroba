@@ -22,6 +22,7 @@ import app.masroufy.core.walletBalancesOn
 import app.masroufy.port.ProfileRepository
 import app.masroufy.port.TransactionRepository
 import app.masroufy.port.WalletRepository
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * حالات استخدام كروت الرئيسية اللي فيها أرقام (اختيار المالك 2026-10-15 — `core/HomeCards.kt`). الشاشة بتعرض بس (CLAUDE.md #4).
@@ -102,14 +103,30 @@ class LoadTopCategories(private val homeScreen: LoadHomeScreen) {
         TopCategoriesView(rankSpend(data).rows.take(TOP_CATEGORIES_COUNT).map { TopCategoryRow(it.categoryId, it.name, it.amountMinor, it.barPercent) }, data.period)
 
     /**
-     * الترتيب كامل لشاشة «أكثر ما صرفت عليه»: الشهر المالي اللي فيه [today] (من يوم الراتب [payday]) أو اللي قبله بـ[monthsBack] —
-     * قراية واحدة للفترة بنفس `LoadHomeScreen` اللي الكارت بيقرا منه (من غير آخر ست فترات).
+     * الترتيب كامل لشاشة «أكثر ما صرفت عليه»: [months] شهور مالية بتنتهي بالشهر اللي قبل الشهر الحالي (اللي فيه [today]، من يوم الراتب
+     * [payday]) بـ[monthsBack] — «الشهر ده» (0، 1) · «الشهر اللي فات» (1، 1) · «آخر 3 شهور» (0، 3). كل شهر قراية بنفس `LoadHomeScreen`
+     * اللي الكارت بيقرا منه (من غير آخر ست فترات)، والشهور بتتجمع. «الشهر ده» بس بيقرا الشهر اللي قبله كمان عشان الفرق (التصميم) —
+     * والقراية دي اختيارية: لو فشلت الترتيب بيطلع من غير أسهم بدل ما الشاشة كلها تفشل (مراجعة r051 F2).
      */
-    suspend fun loadAll(today: IsoDate, payday: Int, monthsBack: Int = 0): TopSpendView {
+    suspend fun loadAll(today: IsoDate, payday: Int, monthsBack: Int = 0, months: Int = 1): TopSpendView {
+        require(monthsBack >= 0 && months >= 1) { "monthsBack=$monthsBack months=$months" }
         val current = periodForDate(today, payday)
-        val period = if (monthsBack == 0) current else shiftPeriod(current, -monthsBack, payday)
-        return rankSpend(homeScreen.load(LoadHomeScreenRequest(period, today, payday, includeHistory = false)))
+        val at = { back: Int -> if (back == 0) current else shiftPeriod(current, -back, payday) }
+        val read = { back: Int -> LoadHomeScreenRequest(at(back), today, payday, includeHistory = false) }
+        val data = (monthsBack until monthsBack + months).map { homeScreen.load(read(it)) }
+        val now = monthsBack == 0 && months == 1
+        val previous = if (now) orNone { homeScreen.load(read(1)) } else null
+        return rankSpendOver(data, previous, current = now)
     }
+}
+
+/** قراية اختيارية: أي خطأ ⇒ null (مش معروف ⇒ مفيش سهم)، والإلغاء بيعدّي زي ما هو. */
+private suspend fun <T> orNone(read: suspend () -> T): T? = try {
+    read()
+} catch (e: CancellationException) {
+    throw e
+} catch (_: Exception) {
+    null
 }
 
 /** سطر في «أهدافك»: [percent] null = المدّخر مش معروف ⇒ «غير متاح». */

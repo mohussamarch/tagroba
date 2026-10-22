@@ -1688,3 +1688,13 @@ Legacy v1 restoration remains a separate compatibility path; its coverage is exp
   `Dispatchers.Default` · `SmsHistorySection` بيعرض التقدم (مرة لكل صفحة على خيط الشاشة).
 - **القياس (`SmsConfirmScaleTest` — 3,600 رسالة مخترعة · 3,500 عملية):** قبل 75 ثانية · 16,332 سجل · 83 دفعة · 39,302 فهم — بعد ~8-11 ثانية ·
   2,880 سجل (= اللي اتسجل) · 19 دفعة · 3,800 فهم.
+
+### 31.45 «أكتر ما صرفت عليه» بتصميم المالك (0.5.1، فرع `r051-topspend2` — OVERRIDES §106)
+
+- `app/usecase/TopSpend.kt`: `rankSpendOver(months, previous, current)` — الترتيب على شهر أو أكتر + الفرق عن الشهر اللي فات (`SpendRankRow.changePercent`، null = مش معروف) + شريط الحصص (`TopSpendView.shares` · `restTenthPercent`). `rankSpend(data)` (كارت الرئيسية) = نفس الدالة على شهر واحد.
+- `LoadTopCategories.loadAll(today, payday, monthsBack, months)` في `LoadHomeCardData.kt`.
+- `ui/screens/operations/`: `TopSpendScreen.kt` (الحالة والقراية والمحفوظ لكل فترة) · `TopSpendParts.kt` (الشرايح · كارت المجموع · كارت السطور) · `TopSpendModel.kt` (الفترات · المدى · الملخص · نص الفرق).
+- `ScreenHeader`/`InnerScaffold` خدوا `subtitle` اختياري (سطر باهت تحت العنوان).
+- اختبارات: `TopSpendPeriodsTest` (app) · `TopSpendModelTest` و`TopSpendPngTest` (ui — الصور بس لو `TOPSPEND_PNG_DIR` متظبط).
+- **جولة إصلاح المراجعة (فرع `r051-topspend2-f`):** الفرق عن الشهر اللي فات بيتحسب بس لو **الشهرين** معروفين وكاملين (الشهر ده الجزئي مبالغه حد أدنى ⇒ مفيش سهم) · قراية الشهر اللي فات (للأسهم بس) اختيارية: لو فشلت الترتيب بيطلع من غير أسهم (`orNone` — الإلغاء بيعدّي) · `changePercent` بقى `Long` (الـ`toInt()` كان بيلف ويقلب الإشارة) · شرايح الفترة `FlowRow` (بتنزل سطر زي `flex-wrap`) ومجموعة اسمها «الفترة» (`TOP_SPEND_PERIOD`) · اسم التصنيف في السطر بيلف من غير حد سطور · اختبار السرعة = أسرع مرة من 3 (الحد 700 مللي ثانية زي ما هو) · `TopSpendLayoutTest` (ui: المجموعة واسمها في شجرة الوصول · ارتفاع الشرايح على 150dp · سطر الاسم الطويل).
+- **استثناء حد الـ300 سطر (CLAUDE.md #7) — `core/UiKeys.kt` (700 سطر) و`core/TextKeys.kt`:** كل واحد فيهم `enum` واحد، وكوتلن ما بيسمحش بتقسيم enum على ملفات؛ التقسيم الوحيد = نوع مفاتيح جديد تحت `TextRef` (زي `AskKey`) وده تغيير في الجداول والبحث واختبارات الاكتمال مش في الملف بس. النصوص نفسها مقسومة على ملفات `Texts*.kt` (كلها ≤300). القاعدة لحد ما المالك يقرر: المفاتيح الجديدة في سطور مليانة (من غير سطر تعليق لكل دفعة) عشان الملف ما يكبرش من غير لزوم — مفاتيح «أكتر ما صرفت عليه» الجديدة رجّعت `UiKeys.kt` لنفس الـ700 سطر اللي كان عليهم قبل الفرع. ❓ سؤال مفتوح للمالك في HANDOVER §7.
