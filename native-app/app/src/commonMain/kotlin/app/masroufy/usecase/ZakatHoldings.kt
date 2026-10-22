@@ -64,11 +64,15 @@ internal class ZakatHoldingsReader(private val deps: ManageZakatDeps) {
         }
 
         for (person in deps.people.listAll()) {
-            val obligations = deps.obligations.listByPerson(person.id).filter { it.currency == currency }
-            if (obligations.isEmpty()) continue
-            val settled = deps.settlements.listByObligations(obligations.map { it.id })
-            val dates = deps.txns.findByIds((obligations.mapNotNull { it.originTransactionId } + settled.map { it.transactionId }).distinct())
+            val all = deps.obligations.listByPerson(person.id).filter { it.currency == currency }
+            if (all.isEmpty()) continue
+            val settled = deps.settlements.listByObligations(all.map { it.id })
+            val dates = deps.txns.findByIds((all.mapNotNull { it.originTransactionId } + settled.map { it.transactionId }).distinct())
                 .associate { it.id to it.occurredAt }
+            // مراجعة r06 people-2: الموقف **يوم [asOf]** زي الجمعية — دين عمليته بعد اليوم ده ما كانش موجود، وتسوية بعده ما كانتش حصلت.
+            // الدين القديم (من غير عملية) والتسوية اللي عمليتها مش لاقيينها (يدوي) بيفضلوا.
+            val obligations = all.filter { o -> o.originTransactionId?.let { id -> dates[id]?.let { it <= asOf } } ?: true }
+            val settledAsOf = settled.filter { s -> dates[s.transactionId]?.let { it <= asOf } ?: true }
             for (o in obligations) {
                 if (collectedAfter != null && o.kind == ObligationKind.RECEIVABLE) {
                     for (s in settled.filter { it.obligationId == o.id }) {
@@ -76,7 +80,7 @@ internal class ZakatHoldingsReader(private val deps: ManageZakatDeps) {
                         if (on > collectedAfter && on <= asOf) out += ZakatHolding.CollectedReceivable(s.id, o.id, person.name, s.amountMinor, on, facts[o.id]?.collectability)
                     }
                 }
-                val remaining = remainingOfObligation(o, settled)
+                val remaining = remainingOfObligation(o, settledAsOf)
                 if (remaining <= 0) continue
                 when (o.kind) {
                     ObligationKind.RECEIVABLE -> out += ZakatHolding.Receivable(o.id, person.name, remaining, facts[o.id]?.collectability, o.originTransactionId?.let(dates::get))
