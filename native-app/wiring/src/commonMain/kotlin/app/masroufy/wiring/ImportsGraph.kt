@@ -8,6 +8,7 @@ import app.masroufy.core.countryPack
 import app.masroufy.core.dayIn
 import app.masroufy.core.dayNumberToIso
 import app.masroufy.core.parseCsv
+import app.masroufy.core.parseTimed
 import app.masroufy.core.parseIsoDate
 import app.masroufy.core.periodForDate
 import app.masroufy.core.toDayNumber
@@ -43,7 +44,10 @@ class ImportsGraph(private val c: AreaContext) : ImportsDeps {
     private val env = c.env
 
     /** قارئ رسايل البلد (حزمتها) — مصر والسعودية ليهم قارئ؛ بلد من غير قارئ ⇒ مفيش رسايل ولا لصق. */
-    private val parse: BankSmsParser? = countryPack(c.space.countryCode).smsReader?.let { reader -> reader::parse }
+    // r06-1e (§110-1): ومعاها ساعة الرسالة المخفية بتوقيت حزمة البلد (§88)
+    private val parse: BankSmsParser? = countryPack(c.space.countryCode).let { pack ->
+        pack.smsReader?.let { reader -> { m: app.masroufy.core.BankSmsMessage, n: Int -> reader.parseTimed(m, n, pack.timeZone) } }
+    }
 
     override val importer = ImportStatement(importDeps(r, env))
 
