@@ -142,7 +142,7 @@ class Component extends DCLogic {
       save: () => { if (!saveOff) this.setState({ done: true }); },
       backLabel: T('رجوع', 'رجوع'), back: () => { if (s.done) { this.setState({ done: false }); return; } if (typeof this.props.onBack === 'function') this.props.onBack(); },
       doneTitle: T('تم التوزيع', 'اتوزّع'), doneRows: rows,
-      doneNote: T('كل خطة عُلّم فيها قسط «دُفع» بالمبلغ ده، والمشترى الجديد اتعملت له خطة كل شهر، والدفعات التي قبل رقمها عُلّمت «دُفعت قبل ذلك» دون عمليات جديدة.', 'كل خطة اتعلّم فيها قسط «اتدفع» بالمبلغ ده، والمشترى الجديد اتعملّه خطة كل شهر، والدفعات اللي قبل رقمها اتعلّمت «اتدفعت قبل كده» من غير عمليات جديدة.'),
+      doneNote: T('كل خطة عُلّم فيها قسط «دُفع» بالمبلغ ده، والمشترى الجديد اتعملت له خطة كل شهر، وما قبلها «تم الدفع».', 'كل خطة اتعلّم فيها قسط «اتدفع» بالمبلغ ده، والمشترى الجديد اتعملّه خطة كل شهر، واللي قبلها «تم الدفع».'),
       finishLabel: T('تم', 'تمام'), finish: () => { if (typeof this.props.onDone === 'function') this.props.onDone({ parts: rows.map((r) => r.name) }); else this.setState(this.fresh(this.props)); }
     };
   }

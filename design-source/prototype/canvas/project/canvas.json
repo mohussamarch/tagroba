@@ -1257,6 +1257,14 @@
       "y": 33500,
       "w": 390,
       "h": 844
+    },
+    "CountryMark.dc.html": {
+      "is_interactive": true,
+      "title": "علامة البلد · CountryMark (3 أشكال للاختيار)",
+      "x": 1280,
+      "y": 33500,
+      "w": 390,
+      "h": 844
     }
   },
   "createdOnFiles": {
@@ -1571,7 +1579,8 @@
     "PullRefresh.dc.html",
     "MoneyWhat.dc.html",
     "RefundWait.dc.html",
-    "BnplSplit.dc.html"
+    "BnplSplit.dc.html",
+    "CountryMark.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"
