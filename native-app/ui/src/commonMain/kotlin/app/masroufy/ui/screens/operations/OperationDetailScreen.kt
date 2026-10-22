@@ -108,7 +108,8 @@ fun OperationDetailScreen(transactionId: Id, openPerson: Boolean = false) {
             val merchants = attempt { deps.merchants.listMerchants().map { it.merchant } }.orEmpty()
             val decided = attempt { app.masroufy.perf.PerfTrace.span("detail:zone") { deps.transfers.zone() }.rows.filter { it.decision != null }.map { it.party.key }.toSet() }.orEmpty()
             val locked = attempt { deps.spaceTransfers.legsIn(space.space.id).isLeg(transactionId) } ?: false
-            val view = detailView(detail.transaction, categories, attempt { deps.wallets() }.orEmpty(), merchants, decided, space.shell.today(), space.space.countryCode)
+            val employerPayer = attempt { deps.payerKinds?.view(transactionId) } != null
+            val view = detailView(detail.transaction, categories, attempt { deps.wallets() }.orEmpty(), merchants, decided, space.shell.today(), space.space.countryCode, employerPayer)
             DetailState.Ready(view, detail.tags, categories, locked)
         } } ?: DetailState.Failed
         (state as? DetailState.Ready)?.view?.askParty?.let { partyShown = it }

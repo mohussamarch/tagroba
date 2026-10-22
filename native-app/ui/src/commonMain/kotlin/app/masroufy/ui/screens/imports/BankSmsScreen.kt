@@ -84,7 +84,8 @@ fun BankSmsScreen() {
     var accountLine by remember { mutableStateOf<WaitLineUi?>(null) }
     // r05: الاختيار بيسجّل (4a) · صفحة الصندوق (4b) · كارت الطرف بعد التسجيل (4c) · جهة الشغل بعد «أيوه ده راتبي» (3b) · «ادفع بعدين»
     val changes = LocalDataChanges.current
-    val r05 = remember(deps) { SmsR05(deps, toaster, changes::changed) }
+    val payer = LocalSpace.current.operations.payerKinds
+    val r05 = remember(deps) { SmsR05(deps, toaster, changes::changed) { id -> payer?.view(id) != null } }
     DisposableEffect(deps) { onDispose { r05.flush() } }
 
     LaunchedEffect(deps, reload) {

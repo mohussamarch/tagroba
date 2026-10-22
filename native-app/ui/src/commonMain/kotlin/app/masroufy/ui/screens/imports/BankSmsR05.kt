@@ -92,7 +92,13 @@ class PendingPicks {
  * · كروت الطرف بعد التسجيل ([parties] — 4c) · جهة الشغل بعد «أيوه ده راتبي» ([employerTxn] — 3b) · «ادفع بعدين». كله بينادي `SmsDeps` بس.
  */
 @Stable
-class SmsR05(private val deps: ImportsDeps, private val toaster: Toaster, private val onChanged: () -> Unit = {}) {
+/** [employerPayer] 0.5.2: العملية من حساب مربوط بجهة شغل ⇒ مفيش «من هذا؟» (كارت «الفلوس دي إيه؟» تحت المرتب — `MoneyWhatPending`). */
+class SmsR05(
+    private val deps: ImportsDeps,
+    private val toaster: Toaster,
+    private val onChanged: () -> Unit = {},
+    private val employerPayer: suspend (String) -> Boolean = { false },
+) {
     val picks = PendingPicks()
     var skip by mutableStateOf(0)
     var parties by mutableStateOf(listOf<Triple<TransferPartyRef, String, Boolean>>())
@@ -120,6 +126,7 @@ class SmsR05(private val deps: ImportsDeps, private val toaster: Toaster, privat
         val r = deps.sms?.confirmMessages(listOf(line.messageId))
         confirmed(r)
         val id = r?.transactionIds?.firstOrNull() ?: return
+        if (runCatching { employerPayer(id) }.getOrDefault(false)) return
         val txn = deps.transactions.load(id).transaction
         transferPartyOf(txn)?.let { p -> parties = parties + Triple(p, id, txn.observedDirection == Direction.OUT) }
     }
