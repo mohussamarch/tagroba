@@ -115,8 +115,8 @@ fun BackupScreen() {
                         making = true
                         backupError = null
                         scope.launch {
-                            runCatching { b.create(more.nowIso()).toJsonText() }
-                                .onSuccess { text -> expected = text.encodeToByteArray().size.toLong(); saveJson(backupFileName(today), text) }
+                            runCatching { b.createText(more.nowIso()) }
+                                .onSuccess { made -> expected = made.utf8Bytes; saveJson(backupFileName(today), made.text) }
                                 .onFailure { Problems.report(ProblemCode.BACKUP_CREATE_FAILED, it); making = false; backupError = it.message ?: t(UiKey.BAK_FAILED) }
                         }
                     },

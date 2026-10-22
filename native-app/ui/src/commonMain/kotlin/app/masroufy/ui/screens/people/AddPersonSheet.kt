@@ -96,7 +96,7 @@ private fun AddPersonForm(done: () -> Unit) {
                     is PlanCheck.Bad -> err = c.message
                     is PlanCheck.Ok -> scope.launch {
                         busy = true
-                        val saved = runCatching { saveNewPerson(space.people, c.plan) }
+                        val saved = runCatching { saveNewPerson(space.people, c.plan, space.space.currency) }
                         busy = false
                         PeopleChanges.bump()
                         saved.onSuccess { toaster.show(t(UiKey.ADD_PERSON_ADDED, c.plan.name)); done() }.onFailure { err = it.message }

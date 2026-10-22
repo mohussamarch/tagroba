@@ -110,9 +110,10 @@ class DebtDetailModelTest {
         assertEquals(OpeningInput.NotPositive, openingInput(ObligationKind.RECEIVABLE, "0", Currency.SAR))
         assertEquals(OpeningInput.Ok(ObligationKind.LOAN_PAYABLE, 10_050), openingInput(ObligationKind.LOAN_PAYABLE, "100.50", Currency.SAR))
         val egypt = openingInput(ObligationKind.RECEIVABLE, "100", Currency.EGP)
-        assertIs<OpeningInput.CurrencyNotReady>(egypt, "`addOpeningDebt` بيحفظ بالريال ⇒ مصر مقفولة لحد ما حالة الاستخدام تاخد العملة")
+        // مراجعة r06 people-1: `addOpeningDebt` بياخد عملة البلد ⇒ مصر مفتوحة بالجنيه
+        assertEquals(OpeningInput.Ok(ObligationKind.RECEIVABLE, 10_000), egypt)
         useArabic(ArabicVariant.EGYPTIAN)
-        assertEquals("تسجيل الدين القديم بالجنيه لسه مش متاح.", egypt.errorText())
+        assertEquals("تسجيل الدين القديم بالجنيه لسه مش متاح.", OpeningInput.CurrencyNotReady.errorText())
         assertEquals("اختار: ليك عنده ولا عليك ليه.", OpeningInput.NoSide.errorText())
     }
 }

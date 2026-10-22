@@ -1,14 +1,8 @@
 package app.masroufy.wiring
 
 import app.masroufy.core.Id
-import app.masroufy.core.SpaceTransfer
-import app.masroufy.core.SpaceTransferError
-import app.masroufy.core.TextKey
 import app.masroufy.core.Transaction
 import app.masroufy.core.Wallet
-import app.masroufy.core.uiText
-import app.masroufy.port.SpaceLegWrite
-import app.masroufy.port.SpaceTransferWriter
 import app.masroufy.ui.screens.operations.OperationsDeps
 import app.masroufy.ui.screens.operations.SpaceWallets
 import app.masroufy.usecase.EditTransaction
@@ -34,10 +28,6 @@ import app.masroufy.usecase.ManageTransfersDeps
 import app.masroufy.usecase.ProjectsDeps
 import app.masroufy.usecase.SetEconomicKind
 import app.masroufy.usecase.SetEconomicKindDeps
-import app.masroufy.usecase.SpaceBook
-import app.masroufy.usecase.TransactionLinkRepos
-import app.masroufy.usecase.TransferBetweenSpaces
-import app.masroufy.usecase.TransferBetweenSpacesDeps
 
 /**
  * «العمليات» — كل حالة استخدام بتتبني من [AreaContext] بنفس اعتماداتها في اختبارات `:app`. رجول «التحويل لنفسك» ([spaceTransfers]`.legsIn`)
@@ -48,9 +38,7 @@ class OperationsGraph(private val c: AreaContext) : OperationsDeps {
     private val clock = c.env.clock
     private val ids = c.env.ids
 
-    override val spaceTransfers = TransferBetweenSpaces(
-        TransferBetweenSpacesDeps(r.spaceTransfers, c.session.spaceTransferWriter() ?: RefusingWriter, ::book, ids, clock),
-    )
+    override val spaceTransfers = spaceTransfersOf(c)
     private val legs = spaceTransfers.legsIn(c.space.id)
 
     override val personLinks = personLinksOf(r, ids, clock, legs)
@@ -137,33 +125,13 @@ class OperationsGraph(private val c: AreaContext) : OperationsDeps {
         LoadWithYouNow(r.wallets, r.transactions, c.space.currency).load(c.env.today()).wallets.map { it.wallet }
     }
 
-    override suspend fun spaceBooks(): List<SpaceWallets> = openSpaces().map { (s, repos) ->
+    override suspend fun spaceBooks(): List<SpaceWallets> = c.openSpaces().map { (s, repos) ->
         SpaceWallets(s, LoadWithYouNow(repos.wallets, repos.transactions, s.currency).load(c.env.today()).wallets.map { it.wallet }, s.id == c.space.id)
     }
 
     override suspend fun legOf(spaceId: String, transactionId: Id): Transaction? {
-        val repos = openSpaces().firstOrNull { it.first.id == spaceId }?.second ?: return null
+        val repos = c.openSpaces().firstOrNull { it.first.id == spaceId }?.second ?: return null
         val read = EditTransaction(EditTransactionDeps(repos.transactions, repos.categories, repos.tags, repos.transactionTags, repos.uow, ids, clock))
         return read.load(transactionId).transaction
     }
-
-    /** البلاد المفتوحة في الجلسة — والبلد الشغالة دايمًا منهم (الاختبار ممكن ما يدّيهاش). */
-    private fun openSpaces() = c.session.spaces().let { all -> if (all.any { it.first.id == c.space.id }) all else listOf(c.space to r) + all }
-
-    private suspend fun book(spaceId: String): SpaceBook? = openSpaces().firstOrNull { it.first.id == spaceId }?.let { (s, repos) ->
-        SpaceBook(
-            s, repos.transactions, repos.wallets,
-            TransactionLinkRepos(
-                repos.roscaEntries, repos.installmentPayments, repos.installmentPlans, repos.zakatPayments, repos.eventLinks, repos.projectLinks,
-                repos.allocations, repos.obligations, repos.settlements,
-            ),
-        )
-    }
-}
-
-/** الجلسة من غير كاتب البلدين ⇒ التسجيل والربط والفك بيرفضوا بـ«غير متاح» (ولا كتابة) بدل ما يتظاهروا إنهم نجحوا. */
-private object RefusingWriter : SpaceTransferWriter {
-    override suspend fun link(pair: SpaceTransfer, legs: List<SpaceLegWrite>) = throw SpaceTransferError(uiText(TextKey.NOT_AVAILABLE))
-
-    override suspend fun unlink(pair: SpaceTransfer, legs: List<SpaceLegWrite>) = throw SpaceTransferError(uiText(TextKey.NOT_AVAILABLE))
 }

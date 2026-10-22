@@ -104,7 +104,7 @@ class MoreGraph(private val c: AreaContext) : MoreDeps {
 
     override val exportCsv = ExportCsv(r.transactions)
 
-    override val fullBackup: FullBackup? = r.fullBackup?.let { FullBackup(it, r.spacesBackup) }
+    override val fullBackup: FullBackup? = r.fullBackup?.let { FullBackup(it, r.spacesBackup, c.env.work) }
 
     /** «افهم رصيدك» (بند المالك 3) — علامة «تعديل رصيد» بتتوصل مع فرع «حدّث الرصيد» (الافتراضي ولا عملية). */
     /**

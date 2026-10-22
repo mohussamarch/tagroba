@@ -109,7 +109,7 @@ class TransferPartyAnswersTest {
 
     @Test fun duesSettleWhatThePersonOwesAndUndoRemovesIt() = runBlocking<Unit> {
         val w = World(listOf(transfer("t-1", 30_000)))
-        w.people.addOpeningDebt("p-1", ObligationKind.RECEIVABLE, 100_000)
+        w.people.addOpeningDebt("p-1", ObligationKind.RECEIVABLE, 100_000, app.masroufy.core.Currency.SAR)
         val start = w.answers.markDues(party, "t-1", "p-1")
         assertTrue(start.settled)
         assertNull(start.choices)
@@ -135,7 +135,7 @@ class TransferPartyAnswersTest {
 
     @Test fun duesRuleSettlesLaterTransfersAndCanBeStopped() = runBlocking<Unit> {
         val w = World(listOf(transfer("t-1", 10_000)))
-        w.people.addOpeningDebt("p-1", ObligationKind.RECEIVABLE, 50_000)
+        w.people.addOpeningDebt("p-1", ObligationKind.RECEIVABLE, 50_000, app.masroufy.core.Currency.SAR)
         w.answers.markDues(party, "t-1", "p-1")
         w.txns.saveMany(listOf(transfer("t-2", 15_000, "2026-10-11")))
         assertEquals(true, w.answers.applyDues("t-2"))

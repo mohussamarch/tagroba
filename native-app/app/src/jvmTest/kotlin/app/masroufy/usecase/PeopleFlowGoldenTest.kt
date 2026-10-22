@@ -190,6 +190,7 @@ class PeopleFlowGoldenTest {
                             personId = action.field("personId").str,
                             kind = ObligationKind.fromWire(action.field("obligationKind").str),
                             amountMinor = action.field("amountMinor").jsonPrimitive.long,
+                            currency = app.masroufy.core.Currency.SAR,
                         )
                         JsonObject(mapOf("obligation" to obligationJson(obligation)) + stored())
                     }

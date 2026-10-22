@@ -68,7 +68,7 @@ class TransferAsksRepaymentTest {
     /** المالك ربط التحويل بالدين بنفسه (شاشة الأشخاص أو التطبيق القديم — بمعرّف تسوية عادي) ⇒ مفيش سؤال، ولا سداد تاني ولو بالجملة. */
     @Test fun aTransferTheOwnerAlreadySettledIsNotAskedOrSettledAgain() = runBlocking<Unit> {
         val w = World(listOf(transfer("t-in", Direction.IN, 30_000)))
-        val debt = w.people.addOpeningDebt("p-1", ObligationKind.RECEIVABLE, 100_000)
+        val debt = w.people.addOpeningDebt("p-1", ObligationKind.RECEIVABLE, 100_000, app.masroufy.core.Currency.SAR)
         w.people.settle(debt.id, "p-1", 30_000, transactionId = "t-in")
         assertEquals(70_000L, w.balance().receivableMinor)
         assertNull(w.answers.askOf("t-in"))
@@ -83,7 +83,7 @@ class TransferAsksRepaymentTest {
     /** دين قفلته تسوية التحويل نفسه بإيد المالك ⇒ السؤال ما بيفضلش معلّق للأبد ومرفوض «زيادة». */
     @Test fun aTransferThatClosedTheDebtByHandIsNotAskedForever() = runBlocking<Unit> {
         val w = World(listOf(transfer("t-in", Direction.IN, 30_000)))
-        val debt = w.people.addOpeningDebt("p-1", ObligationKind.RECEIVABLE, 30_000)
+        val debt = w.people.addOpeningDebt("p-1", ObligationKind.RECEIVABLE, 30_000, app.masroufy.core.Currency.SAR)
         w.people.settle(debt.id, "p-1", 30_000, transactionId = "t-in")
         assertEquals(0L, w.balance().receivableMinor)
         assertNull(w.answers.askOf("t-in"))
@@ -110,7 +110,7 @@ class TransferAsksRepaymentTest {
         assertEquals(EconomicKind.UNCLASSIFIED to false, w.kind("t-jan"))
 
         // الدين القديم من غير عملية (§27) بيتحسب دايمًا — والمفتوح في السؤال من غير السلفة اللي بعده
-        w.people.addOpeningDebt("p-1", ObligationKind.RECEIVABLE, 10_000)
+        w.people.addOpeningDebt("p-1", ObligationKind.RECEIVABLE, 10_000, app.masroufy.core.Currency.SAR)
         assertEquals(AskKind.DEBT_REPAYMENT, w.answers.askOf("t-jan"))
         assertEquals(10_000L, w.answers.question("t-jan")!!.openDebtMinor)
         assertFailsWith<TransferAskError>("300 أكبر من الـ100 اللي كانت مفتوحة يومها") { w.answers.answerDebtRepayment("t-jan", yes = true) }

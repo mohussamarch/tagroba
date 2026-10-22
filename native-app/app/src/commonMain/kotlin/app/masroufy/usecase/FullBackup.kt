@@ -24,6 +24,9 @@ import app.masroufy.core.pointLinesAtLiveBudgets
 import app.masroufy.core.uiText
 import app.masroufy.port.FullBackupPort
 import app.masroufy.port.SpacesBackupPort
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlin.coroutines.CoroutineContext
 
 /**
  * FullBackup — نقل `fullBackup.ts`: النسخة الشاملة (الإصدار 2) — عمل نسخة، ومعاينة استرجاعها، وتنفيذه **بالدمج**.
@@ -92,7 +95,34 @@ internal fun sameNumber(value: Any?, expected: Int): Boolean = when (value) {
     else -> false
 }
 
-class FullBackup(private val port: FullBackupPort, private val spaces: SpacesBackupPort? = null) {
+/** نص النسخة وحجمه بالبايت (UTF-8) — الشاشة بتقارن بيه حجم الملف اللي اتكتب. */
+class BackupText(val text: String, val utf8Bytes: Long)
+
+/** حجم [s] بالبايت لو اتكتب UTF-8 — من غير نسخة تانية من النص (النسخة ممكن تبقى ميجات). */
+internal fun utf8Size(s: String): Long {
+    var bytes = 0L
+    var i = 0
+    while (i < s.length) {
+        val c = s[i].code
+        bytes += when {
+            c < 0x80 -> 1
+            c < 0x800 -> 2
+            c in 0xD800..0xDBFF && i + 1 < s.length && s[i + 1].code in 0xDC00..0xDFFF -> { i++; 4 }
+            // نص مكسور (نص زوج بس): الكتابة على الجوال بتحط «?» مكانه — بايت واحد (زي `encodeToByteArray` على JVM)
+            c in 0xD800..0xDFFF -> 1
+            else -> 3
+        }
+        i++
+    }
+    return bytes
+}
+
+/** [work] (ARCHITECTURE §31.42 — مراجعة r06 arch-1): القراية والتجميع والكتابة برّه خيط الواجهة. */
+class FullBackup(
+    private val port: FullBackupPort,
+    private val spaces: SpacesBackupPort? = null,
+    private val work: CoroutineContext = Dispatchers.Default,
+) {
     @Suppress("UNCHECKED_CAST")
     private fun check(raw: String): FullBackupFile {
         if (raw.length > MAX_BACKUP_CHARS) throw IllegalArgumentException(uiText(TextKey.BACKUP_TOO_LARGE))
@@ -144,7 +174,15 @@ class FullBackup(private val port: FullBackupPort, private val spaces: SpacesBac
         checkBackupFinance(combined)
     }
 
-    suspend fun create(exportedAt: String): FullBackupFile {
+    suspend fun create(exportedAt: String): FullBackupFile = withContext(work) { createNow(exportedAt) }
+
+    /** النسخة كنص جاهز للحفظ وحجمه — التحويل لنص كمان برّه خيط الواجهة. */
+    suspend fun createText(exportedAt: String): BackupText = withContext(work) {
+        val text = createNow(exportedAt).toJsonText()
+        BackupText(text, utf8Size(text))
+    }
+
+    private suspend fun createNow(exportedAt: String): FullBackupFile {
         // ميزانيات قديمة بمعرّف عشوائي بتاخد مفتاح فترتها في النسخة بس · وفضة قديمة بتتصدّر «other» + العلامة (§69.9)
         // §77-D: ربط «اللي رجع» المكسور (تراجع التطبيق القديم) بيتصلح في الملف بقواعد `RepairReversals` بدل ما النسخة تقف
         val data = settleReversalLinks(normalizeLegacySilverAssets(normalizeBudgetIds(port.read())))
@@ -163,7 +201,9 @@ class FullBackup(private val port: FullBackupPort, private val spaces: SpacesBac
         return FullBackupFile(exportedAt, data, profile, hasProfile = true, checksum, counts + (SPACE_TRANSFERS_COUNT to transfers.size.toLong()), entries, transfers)
     }
 
-    suspend fun plan(raw: String): FullBackupPlan {
+    suspend fun plan(raw: String): FullBackupPlan = withContext(work) { planNow(raw) }
+
+    private suspend fun planNow(raw: String): FullBackupPlan {
         val file = check(raw)
         val existing = normalizeBudgetIds(port.read())
         val merge = settleMergedReversals(mergeFullBackupDetailed(settleReversalLinks(normalizeLegacySilverAssets(file.data)), existing), existing)
@@ -190,7 +230,9 @@ class FullBackup(private val port: FullBackupPort, private val spaces: SpacesBac
     }
 
     /** بيعيد الفحص على نص الملف نفسه (زي `JSON.stringify` في التطبيق الحالي)، وبيعيد الدمج على الموجود **دلوقتي**. */
-    suspend fun apply(input: FullBackupFile): FullBackupOutcome {
+    suspend fun apply(input: FullBackupFile): FullBackupOutcome = withContext(work) { applyNow(input) }
+
+    private suspend fun applyNow(input: FullBackupFile): FullBackupOutcome {
         val file = check(input.toJsonText())
         val live = port.read()
         val existing = normalizeBudgetIds(live)

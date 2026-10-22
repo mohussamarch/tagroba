@@ -66,7 +66,7 @@ class DeleteDebtTest {
     @Test fun oldDebtWithoutAnOperationIsDeletedAndTheBalancesAreAsIfItWasNeverWritten() = runBlocking<Unit> {
         val w = World()
         val never = w.state()
-        val debt = w.manage.addOpeningDebt(friend.id, ObligationKind.RECEIVABLE, 50_000)
+        val debt = w.manage.addOpeningDebt(friend.id, ObligationKind.RECEIVABLE, 50_000, app.masroufy.core.Currency.SAR)
         w.terms.save(DebtTerms(debt.id, friend.id, firstDueAt = "2026-11-01"))
         val removal = w.erase.delete(friend.id, debt.id)
         assertEquals(debt, removal.obligation)
@@ -76,7 +76,7 @@ class DeleteDebtTest {
 
     @Test fun undoBringsBackTheSameDebtWithTheSameIds() = runBlocking<Unit> {
         val w = World()
-        val debt = w.manage.addOpeningDebt(friend.id, ObligationKind.LOAN_PAYABLE, 30_000)
+        val debt = w.manage.addOpeningDebt(friend.id, ObligationKind.LOAN_PAYABLE, 30_000, app.masroufy.core.Currency.SAR)
         w.manage.settle(debt.id, friend.id, 10_000)
         w.terms.save(DebtTerms(debt.id, friend.id, firstDueAt = "2026-11-01"))
         val before = w.state()
@@ -88,7 +88,7 @@ class DeleteDebtTest {
     @Test fun repaymentsAreCountedInThePreviewAndRemovedWithTheDebt() = runBlocking<Unit> {
         val w = World()
         val never = w.state()
-        val debt = w.manage.addOpeningDebt(friend.id, ObligationKind.RECEIVABLE, 40_000)
+        val debt = w.manage.addOpeningDebt(friend.id, ObligationKind.RECEIVABLE, 40_000, app.masroufy.core.Currency.SAR)
         w.manage.settle(debt.id, friend.id, 15_000)
         w.manage.settle(debt.id, friend.id, 5_000)
         val preview = w.erase.preview(friend.id, debt.id)

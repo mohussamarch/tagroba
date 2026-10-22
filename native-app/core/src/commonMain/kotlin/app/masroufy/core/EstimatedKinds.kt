@@ -85,7 +85,11 @@ fun withEstimatedKinds(
             return@map t
         }
         val fallback = if (t.observedDirection == Direction.OUT) EconomicKind.PURCHASE else EconomicKind.SALARY
-        t.copy(economicKind = suggestion.kind ?: fallback)
+        // مراجعة r06 money-2 (قاعدة المالك: التحويلات ما تتحسبش مشتريات غير لما هو يقول): الخارج «أكتر من احتمال» بياخد أول احتمال
+        // من الاقتراح (تحويل لنفسك · سداد …) مش «شراء» بالتخمين. السياسة القديمة (ملف مرجع التطبيق القديم) زي ما هي.
+        val firstAlternative = suggestion.alternatives.firstOrNull()
+            .takeIf { policy == EstimatePolicy.OWNER_2026_10 && t.observedDirection == Direction.OUT }
+        t.copy(economicKind = suggestion.kind ?: firstAlternative ?: fallback)
     }
     return EstimatedView(view, estimatedCount, needsReviewCount, pendingIds, pendingMinor)
 }

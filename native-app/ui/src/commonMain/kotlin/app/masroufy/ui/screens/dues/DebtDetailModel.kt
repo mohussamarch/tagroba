@@ -148,7 +148,7 @@ fun SettleInput.errorText(remainingMinor: Halalas, currency: Currency): String? 
     SettleInput.OverRemaining -> t(UiKey.SETTLE_ERR_OVER, amountLabel(remainingMinor, currency))
 }
 
-/** «دين قديم»: لازم الاتجاه والمبلغ. ⚠️ `addOpeningDebt` بيحفظ بالريال دايمًا ⇒ في بلد عملتها غير الريال الحفظ مقفول (عشان ما يتسجلش رقم بعملة غلط). */
+/** «دين قديم»: لازم الاتجاه والمبلغ — بعملة البلد (مراجعة r06 people-1: `addOpeningDebt` بياخد العملة، فالقفل على غير الريال اتشال). */
 sealed interface OpeningInput {
     data object NoSide : OpeningInput
     data object BadAmount : OpeningInput
@@ -158,7 +158,6 @@ sealed interface OpeningInput {
 }
 
 fun openingInput(kind: ObligationKind?, text: String, spaceCurrency: Currency): OpeningInput {
-    if (spaceCurrency != Currency.SAR) return OpeningInput.CurrencyNotReady
     if (kind == null) return OpeningInput.NoSide
     val minor = tryParseMoney(text, spaceCurrency) ?: return OpeningInput.BadAmount
     return if (minor <= 0) OpeningInput.NotPositive else OpeningInput.Ok(kind, minor)

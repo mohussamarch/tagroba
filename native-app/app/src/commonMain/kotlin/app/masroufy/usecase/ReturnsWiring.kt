@@ -29,6 +29,13 @@ class ReturnsWiring(
 }
 
 /**
+ * كل تراجعات آثار وقت التسجيل لدفعة استيراد (كشف **أو** رسايل — نفس `RevertImportBatch`) ⇒ `RevertDeps.undoers` في التجميع (مراجعة r06 money-1):
+ * الدمج بيرجّع التاريخ والرصيد · «اللي رجع» وزوجه · «عمليات تابعة» · ميعاد الاشتراك. من غيرهم التراجع كان بيمسح ويسيب الطرف التاني متغيّر.
+ */
+fun importBatchUndoers(txns: TransactionRepository, recurring: app.masroufy.port.RecurringRepository, clock: Clock): List<BatchUndo> =
+    listOf(MergeUndo(txns, clock), ReversalUndo(txns, clock), LinkedUndo(txns, clock), SubscriptionChargeUndo(recurring, txns))
+
+/**
  * خط رسايل البنك **لازم** فيه آثار الشريحة S3 (`SmsLane.of`): من غير `ReturnedSmsEffect` «التحويل رجع» كان بيتسجل داخل عادي (بيتحسب
  * دخل بالتخمين)، ومن غير `ForeignSmsEffect` إجابة المبلغ المحلي كانت بتتسجل من غير المبلغ الأجنبي — في صمت. الناقص بيتضاف في الآخر
  * (بعد آثار الشرايح التانية). `ReturnedSmsEffect` المضاف **من غير الروابط** ⇒ عمره ما بيلغي أصلية لوحده (بيسأل «نلغي الاتنين؟»)؛ التجميع

@@ -83,8 +83,8 @@ class OverpayTest {
 
     @Test fun checkAsksOnlyForDebtsYouOwe() = runBlocking<Unit> {
         val w = World()
-        val onYou = w.people.addOpeningDebt("p-1", ObligationKind.LOAN_PAYABLE, 50_000)
-        val forYou = w.people.addOpeningDebt("p-1", ObligationKind.RECEIVABLE, 50_000)
+        val onYou = w.people.addOpeningDebt("p-1", ObligationKind.LOAN_PAYABLE, 50_000, app.masroufy.core.Currency.SAR)
+        val forYou = w.people.addOpeningDebt("p-1", ObligationKind.RECEIVABLE, 50_000, app.masroufy.core.Currency.SAR)
         assertEquals(20_000L, w.people.overpay.check(onYou.id, "p-1", 70_000)?.surplusMinor)
         assertNull(w.people.overpay.check(onYou.id, "p-1", 50_000))
         assertNull(w.people.overpay.check(forYou.id, "p-1", 70_000), "هو اللي دفعلك أكتر ⇒ الرفض زي ما هو")
@@ -95,7 +95,7 @@ class OverpayTest {
     /** «أمانة ليك عنده»: الدين اتقفل بالباقي بالظبط، والزيادة دين ليك معلّم أمانة — «لك» = 200 ومنها 200 أمانة. */
     @Test fun heldForYouClosesTheDebtAndOpensCustodyHeldForYou() = runBlocking<Unit> {
         val w = World()
-        val debt = w.people.addOpeningDebt("p-1", ObligationKind.LOAN_PAYABLE, 50_000)
+        val debt = w.people.addOpeningDebt("p-1", ObligationKind.LOAN_PAYABLE, 50_000, app.masroufy.core.Currency.SAR)
         val out = w.people.overpay.resolve(debt.id, "p-1", 70_000, OverpayChoice.HELD_FOR_YOU)
         assertEquals(listOf(50_000L), out.settled.map { it.amountMinor })
         val created = out.created!!
@@ -108,12 +108,12 @@ class OverpayTest {
 
     @Test fun newLoanIsAPlainReceivableAndSupportOnlyClosesTheDebt() = runBlocking<Unit> {
         val w = World()
-        val a = w.people.addOpeningDebt("p-1", ObligationKind.LOAN_PAYABLE, 50_000)
+        val a = w.people.addOpeningDebt("p-1", ObligationKind.LOAN_PAYABLE, 50_000, app.masroufy.core.Currency.SAR)
         val loan = w.people.overpay.resolve(a.id, "p-1", 80_000, OverpayChoice.NEW_LOAN).created!!
         assertFalse(loan.custodyHeld)
         assertEquals(30_000L, w.balance().receivableMinor)
         assertEquals(0L, w.balance().receivableCustodyMinor)
-        val b = w.people.addOpeningDebt("p-1", ObligationKind.CUSTODY_PAYABLE, 10_000)
+        val b = w.people.addOpeningDebt("p-1", ObligationKind.CUSTODY_PAYABLE, 10_000, app.masroufy.core.Currency.SAR)
         val support = w.people.overpay.resolve(b.id, "p-1", 15_000, OverpayChoice.SUPPORT)
         assertNull(support.created, "الدعم من غير عملية ⇒ مفيش دين")
         val bal = w.balance()
@@ -122,7 +122,7 @@ class OverpayTest {
 
     @Test fun wrongAmountWritesNothing() = runBlocking<Unit> {
         val w = World()
-        val debt = w.people.addOpeningDebt("p-1", ObligationKind.LOAN_PAYABLE, 50_000)
+        val debt = w.people.addOpeningDebt("p-1", ObligationKind.LOAN_PAYABLE, 50_000, app.masroufy.core.Currency.SAR)
         val out = w.people.overpay.resolve(debt.id, "p-1", 70_000, OverpayChoice.WRONG_AMOUNT)
         assertTrue(out.editAmount)
         assertEquals(0 to 1, w.settlements.all().size to w.obligations.all().size)
@@ -141,7 +141,7 @@ class OverpayTest {
     /** الحوالة: «أيوه، سداد» على 700 والمفتوح 500 ⇒ سؤال «دفعت أكتر» بالزيادة، بنفس رسالة الرفض القديمة ومن غير كتابة. */
     @Test fun aTransferOverTheOpenDebtAsksInsteadOfJustRefusing() = runBlocking<Unit> {
         val w = World(listOf(transfer("t-out", Direction.OUT, 70_000)))
-        w.people.addOpeningDebt("p-1", ObligationKind.LOAN_PAYABLE, 50_000)
+        w.people.addOpeningDebt("p-1", ObligationKind.LOAN_PAYABLE, 50_000, app.masroufy.core.Currency.SAR)
         assertEquals(AskKind.DEBT_REPAYMENT, w.answers.askOf("t-out"))
         val e = assertFailsWith<TransferAskOverpaid> { w.answers.answerDebtRepayment("t-out", yes = true) }
         assertEquals(20_000L, e.overpay.surplusMinor)
@@ -152,7 +152,7 @@ class OverpayTest {
 
     @Test fun aTransferHeldForYouSettlesAndKeepsTheExtraAsCustody() = runBlocking<Unit> {
         val w = World(listOf(transfer("t-out", Direction.OUT, 70_000)))
-        w.people.addOpeningDebt("p-1", ObligationKind.LOAN_PAYABLE, 50_000)
+        w.people.addOpeningDebt("p-1", ObligationKind.LOAN_PAYABLE, 50_000, app.masroufy.core.Currency.SAR)
         val answer = w.answers.answerOverpay("t-out", OverpayChoice.HELD_FOR_YOU)
         assertIs<DebtAnswer.Recorded>(answer)
         assertEquals(EconomicKind.DEBT_REPAID to true, w.kind("t-out"))
@@ -170,7 +170,7 @@ class OverpayTest {
 
     @Test fun aTransferSupportIsAGiftShareWithoutADebt() = runBlocking<Unit> {
         val w = World(listOf(transfer("t-out", Direction.OUT, 70_000)))
-        w.people.addOpeningDebt("p-1", ObligationKind.LOAN_PAYABLE, 50_000)
+        w.people.addOpeningDebt("p-1", ObligationKind.LOAN_PAYABLE, 50_000, app.masroufy.core.Currency.SAR)
         w.answers.answerOverpay("t-out", OverpayChoice.SUPPORT)
         assertEquals(listOf(AllocationKind.GIFT to 20_000L), w.shares().map { it.allocationKind to it.amountMinor })
         val b = w.balance()
@@ -191,7 +191,7 @@ class OverpayTest {
     @Test fun heldOrNewLoanIsNotSpending() = runBlocking<Unit> {
         for (choice in listOf(OverpayChoice.HELD_FOR_YOU, OverpayChoice.NEW_LOAN)) {
             val w = World(listOf(transfer("t-out", Direction.OUT, 70_000)))
-            w.people.addOpeningDebt("p-1", ObligationKind.LOAN_PAYABLE, 50_000)
+            w.people.addOpeningDebt("p-1", ObligationKind.LOAN_PAYABLE, 50_000, app.masroufy.core.Currency.SAR)
             w.answers.answerOverpay("t-out", choice)
             val month = w.money().load("2026-10-01", "2026-10-31")
             assertEquals(0L, month.expenseMinor, "$choice")
@@ -201,7 +201,7 @@ class OverpayTest {
 
     @Test fun aTransferWrongAmountWritesNothingAndStaysAsked() = runBlocking<Unit> {
         val w = World(listOf(transfer("t-out", Direction.OUT, 70_000)))
-        w.people.addOpeningDebt("p-1", ObligationKind.LOAN_PAYABLE, 50_000)
+        w.people.addOpeningDebt("p-1", ObligationKind.LOAN_PAYABLE, 50_000, app.masroufy.core.Currency.SAR)
         assertIs<DebtAnswer.FixAmount>(w.answers.answerOverpay("t-out", OverpayChoice.WRONG_AMOUNT))
         assertEquals(0 to 0, w.settlements.all().size to w.shares().size)
         assertEquals(AskKind.DEBT_REPAYMENT, w.answers.askOf("t-out"))
@@ -210,7 +210,7 @@ class OverpayTest {
 
     @Test fun aTransferNotOverTheDebtIsRefused() = runBlocking<Unit> {
         val w = World(listOf(transfer("t-out", Direction.OUT, 30_000)))
-        w.people.addOpeningDebt("p-1", ObligationKind.LOAN_PAYABLE, 50_000)
+        w.people.addOpeningDebt("p-1", ObligationKind.LOAN_PAYABLE, 50_000, app.masroufy.core.Currency.SAR)
         assertFailsWith<TransferAskError> { w.answers.answerOverpay("t-out", OverpayChoice.SUPPORT) }
         assertEquals(0, w.settlements.all().size)
     }

@@ -65,18 +65,17 @@ internal fun checkNewPerson(d: NewPersonDraft, currency: Currency): PlanCheck<Ne
         val side = d.side ?: return PlanCheck.Bad(t(UiKey.ADD_PERSON_NEED_SIDE))
         val minor = tryParseMoney(d.amount, currency)
         if (minor == null || minor <= 0) return PlanCheck.Bad(t(UiKey.ADD_PERSON_NEED_AMOUNT))
-        if (currency != Currency.SAR) return PlanCheck.Bad(t(UiKey.PPL_SAR_ONLY))
         debt = side.kind to minor
     }
     return PlanCheck.Ok(NewPersonPlan(name, d.circle, d.relation.trim().ifEmpty { null }, occasion, debt))
 }
 
 /** الكتابة بالترتيب — بترجع معرّف الشخص الجديد (أو بترمي رسالة حالة الاستخدام زي ما هي). */
-internal suspend fun saveNewPerson(deps: PeopleDeps, plan: NewPersonPlan): Id {
+internal suspend fun saveNewPerson(deps: PeopleDeps, plan: NewPersonPlan, currency: Currency): Id {
     val person = deps.people.addPerson(plan.name)
     if (plan.circle != null || plan.relation != null) deps.circles.setProfile(person.id, plan.circle, plan.relation)
     plan.occasion?.let { deps.occasions.add(it.copy(personId = person.id)) }
-    plan.debt?.let { (kind, minor) -> deps.people.addOpeningDebt(person.id, kind, minor) }
+    plan.debt?.let { (kind, minor) -> deps.people.addOpeningDebt(person.id, kind, minor, currency) }
     return person.id
 }
 
@@ -115,11 +114,10 @@ internal fun checkOldDebt(d: OldDebtDraft, currency: Currency): OldDebtCheck {
 
 /** كل سطر: الشخص الجديد بيتضاف الأول، وبعدين الدين من غير عملية (`addOpeningDebt` — ما بيدخلش المصروف ولا الدخل ولا الكاش). */
 internal suspend fun saveOldDebts(deps: PeopleDeps, rows: List<OldDebtRow>, currency: Currency) {
-    if (currency != Currency.SAR) throw IllegalStateException(t(UiKey.PPL_SAR_ONLY))
     val made = HashMap<String, Id>()
     for (r in rows) {
         // نفس الاسم الجديد في سطرين ⇒ شخص واحد
         val id = r.personId ?: made.getOrPut(r.name) { deps.people.addPerson(r.name).id }
-        deps.people.addOpeningDebt(id, r.side.kind, r.amountMinor)
+        deps.people.addOpeningDebt(id, r.side.kind, r.amountMinor, currency)
     }
 }

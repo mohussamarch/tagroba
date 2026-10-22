@@ -56,7 +56,9 @@ fun backgroundCycle(spaces: List<Pair<Space, SpaceRepositories>>, inbox: SmsInbo
     // §83-2: من آخر نقطة لكل بلد (إعدادات الحساب — نفس المخزن في كل البلاد)
     val catchUp = spaces.firstOrNull()?.let { (_, r) -> SmsCatchUp(inbox, r.assistant.settings, lanes.map { it.spaceId }, env.clock) }
     return RunBackgroundCycle(
-        BackgroundCycleDeps(sms = AutoRecordSms(AutoRecordSmsDeps(inbox, lanes, work = env.work)), candidates = null, engine = null, notifier = notifier, smsCatchUp = catchUp),
+        BackgroundCycleDeps(sms = AutoRecordSms(AutoRecordSmsDeps(inbox, lanes, work = env.work)), candidates = null, engine = null, notifier = notifier, smsCatchUp = catchUp,
+            openingDebtRepairs = spaces.map { (space, r) -> app.masroufy.usecase.RepairOpeningDebtCurrency(r.people, r.obligations, space.currency) },
+        ),
     )
 }
 

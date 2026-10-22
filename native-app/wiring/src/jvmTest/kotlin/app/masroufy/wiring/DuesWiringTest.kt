@@ -45,7 +45,7 @@ class DuesWiringTest {
 
     @Test fun anOldDebtWithADueDateAndAPartialSettlementReachTheScreens() = runBlocking<Unit> {
         val fahd = dues.people.addPerson("فهد")
-        val debt = dues.people.addOpeningDebt(fahd.id, ObligationKind.RECEIVABLE, 150_000)
+        val debt = dues.people.addOpeningDebt(fahd.id, ObligationKind.RECEIVABLE, 150_000, app.masroufy.core.Currency.SAR)
         dues.installments.setDebtTerms(DebtTerms(debt.id, fahd.id, "2026-12-01"))
         dues.people.settle(debt.id, fahd.id, 50_000)
 

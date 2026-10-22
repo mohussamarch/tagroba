@@ -179,7 +179,7 @@ class TransferAsksFlowTest {
 
     @Test fun incomingFromAPersonWhoOwesAsksRepayment() = runBlocking<Unit> {
         val w = World(listOf(transfer("t-in", Direction.IN, 30_000), transfer("t-big", Direction.IN, 60_000, "2026-10-06")))
-        w.people.addOpeningDebt("p-1", ObligationKind.RECEIVABLE, 50_000)
+        w.people.addOpeningDebt("p-1", ObligationKind.RECEIVABLE, 50_000, app.masroufy.core.Currency.SAR)
         assertEquals(listOf(AskKind.DEBT_REPAYMENT to "t-in", AskKind.DEBT_REPAYMENT to "t-big"), w.asks(), "مش «تحصيل دين» لوحده (§75-9)")
         val q = w.answers.question("t-in")!!
         assertEquals(uiText(TextKey.ASK_DEBT_COLLECTED) to 50_000L, q.title to q.openDebtMinor)
@@ -205,7 +205,7 @@ class TransferAsksFlowTest {
 
     @Test fun outgoingToAPersonHeOwesAsksRepayment() = runBlocking<Unit> {
         val w = World(listOf(transfer("t-pay", Direction.OUT, 40_000), transfer("t-more", Direction.OUT, 70_000, "2026-10-06")))
-        w.people.addOpeningDebt("p-1", ObligationKind.LOAN_PAYABLE, 100_000)
+        w.people.addOpeningDebt("p-1", ObligationKind.LOAN_PAYABLE, 100_000, app.masroufy.core.Currency.SAR)
         assertEquals(AskKind.DEBT_REPAYMENT, w.answers.askOf("t-pay"))
         assertEquals(uiText(TextKey.ASK_DEBT_REPAID), w.answers.question("t-pay")!!.title)
         val done = assertIs<DebtAnswer.Recorded>(w.answers.answerDebtRepayment("t-pay", yes = true))
@@ -221,7 +221,7 @@ class TransferAsksFlowTest {
 
     @Test fun bulkRepaymentSettlesTheOldestFirstAndRefusesTheSurplusAlone() = runBlocking<Unit> {
         val w = World(listOf(transfer("t-2", Direction.IN, 30_000, "2026-10-06"), transfer("t-1", Direction.IN, 30_000, "2026-10-04")))
-        w.people.addOpeningDebt("p-1", ObligationKind.RECEIVABLE, 50_000)
+        w.people.addOpeningDebt("p-1", ObligationKind.RECEIVABLE, 50_000, app.masroufy.core.Currency.SAR)
         val result = w.answers.confirmRepaymentAll(listOf("t-2", "t-1"))
         assertEquals(listOf("t-1"), result.answered, "الأقدم الأول")
         assertEquals(setOf("t-2"), result.refused.keys, "الباقي 200 والمبلغ 300 ⇒ مرفوض لوحده")
@@ -253,7 +253,7 @@ class TransferAsksFlowTest {
     /** معرّف عملية فيه حروف مش مسموحة في معرّف الطلب ⇒ بصمة ثابتة منه: عمليتين مختلفتين عمرهم ما ياخدوا نفس التسوية. */
     @Test fun unusualTransactionIdsNeverShareASettlement() = runBlocking<Unit> {
         val w = World(listOf(transfer("ت-١", Direction.IN, 10_000), transfer("ت-٢", Direction.IN, 15_000, "2026-10-06")))
-        w.people.addOpeningDebt("p-1", ObligationKind.RECEIVABLE, 50_000)
+        w.people.addOpeningDebt("p-1", ObligationKind.RECEIVABLE, 50_000, app.masroufy.core.Currency.SAR)
         assertIs<DebtAnswer.Recorded>(w.answers.answerDebtRepayment("ت-١", yes = true))
         assertIs<DebtAnswer.Recorded>(w.answers.answerDebtRepayment("ت-٢", yes = true))
         assertEquals(setOf(10_000L, 15_000L), w.settlements.all().map { it.amountMinor }.toSet())
