@@ -38,4 +38,7 @@ enum class R06Key : TextRef {
     /** r06-1b4 — خصم تابي/تمارا المجمّع (`BnplSplit`) و«الدفعة دي رقم كام؟» (BS_). */
     BS_CHOICE, BS_CHOICE_SUB, BS_HINT, BS_TITLE, BS_LEAD, BS_SUGG, BS_PLAN_SUB, BS_INST, BS_NEW_TITLE, BS_NEW_PH, BS_PAY, BS_DIVIDE, BS_AT,
     BS_REMOVE, BS_SUM_EXACT, BS_SUM_LEFT, BS_SUM_OVER, BS_SAVE, BS_BACK, BS_DONE, BS_DONE_NEW, BS_FINISH, BS_AT_Q, BS_TAG_BEFORE, BS_BEFORE_NOTE,
+
+    /** r06-1a3 — «القراية في الخلفية»: كارت «فيه رسايل فاتته» (AWAY_) — نصوصه في `TextsR06Away.kt`. */
+    AWAY_TITLE, AWAY_BODY, AWAY_READ, AWAY_READING, AWAY_KEEP, AWAY_DONE, AWAY_DONE_WAIT, AWAY_NEVER_BODY,
 }

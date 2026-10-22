@@ -48,7 +48,7 @@ import app.masroufy.ui.theme.Type
 
 /** سطر الحالة فوق (`BankSms`): تعمل (أخضر) · متوقفة أو الإذن مسحوب (كهرماني + زرار) · الآيفون (رمادي + «الصق رسالة»). null = بيحمّل. */
 @Composable
-fun SmsStatusBanner(status: SmsStatus?, onSettings: () -> Unit, onPaste: () -> Unit) {
+fun SmsStatusBanner(status: SmsStatus?, onSettings: () -> Unit, onPaste: () -> Unit, neverRead: Boolean = false) {
     if (status == null) return
     val (title, body) = when (status) {
         SmsStatus.READING -> UiKey.BANK_SMS_STATUS_OK to UiKey.BANK_SMS_STATUS_OK_BODY
@@ -71,7 +71,8 @@ fun SmsStatusBanner(status: SmsStatus?, onSettings: () -> Unit, onPaste: () -> U
         StatusDot(ink)
         Column(Modifier.weight(1f)) {
             BasicText(t(title), style = Type.of(13, FontWeight.Bold).copy(color = ink))
-            BasicText(t(body), style = Type.caption().copy(color = ink))
+            // r06-1a3: لسه الخلفية ما قرتش ⇒ الجسم بيطمّن إن أول رسالة هتتقرا لوحدها
+            BasicText(if (status == SmsStatus.READING && neverRead) t(app.masroufy.core.R06Key.AWAY_NEVER_BODY) else t(body), style = Type.caption().copy(color = ink))
         }
         val button = when (status) {
             SmsStatus.READING -> null
