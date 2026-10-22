@@ -92,11 +92,19 @@ class ManageEmployers(private val deps: ManageEmployersDeps) {
     }
 
     /** PLAN-0.6 §7: قاعدة «الفلوس دي إيه؟» للحساب [partyKey] على الجهة ([kind] null = امسحها). بيرجّع القاعدة اللي كانت (للتراجع). */
-    suspend fun setPayerRule(employerId: Id, partyKey: String, kind: app.masroufy.core.EconomicKind?): app.masroufy.core.EconomicKind? {
+    suspend fun setPayerRule(employerId: Id, partyKey: String, kind: app.masroufy.core.EconomicKind?, label: String? = null): app.masroufy.core.PayerRule? {
         val employer = find(deps.sources.listAll(), employerId)
-        val before = app.masroufy.core.payerRuleKind(employer, partyKey)
-        if (before != kind) deps.sources.saveMany(listOf(app.masroufy.core.withPayerRule(employer, partyKey, kind)))
+        val before = app.masroufy.core.payerRuleOf(employer, partyKey)
+        val after = kind?.let { app.masroufy.core.PayerRule(it, label?.takeIf { l -> l.isNotBlank() }) }
+        if (before != after) deps.sources.saveMany(listOf(app.masroufy.core.withPayerRule(employer, partyKey, kind, label)))
         return before
+    }
+
+    /** r06-1b3: اختيار «حاجة تانية» بيفضل محفوظ للحساب [partyKey] بس على الجهة (نفس الاسم موجود ⇒ ولا كتابة). */
+    suspend fun addPayerCustomKind(employerId: Id, partyKey: String, custom: app.masroufy.core.PayerCustomKind) {
+        val employer = find(deps.sources.listAll(), employerId)
+        val updated = app.masroufy.core.withPayerCustomKind(employer, partyKey, custom)
+        if (updated != employer) deps.sources.saveMany(listOf(updated))
     }
 
     /** شيل حساب من الجهة — العمليات اللي اتسجلت «راتب» قبل كده ما بتتلمسش (التراجع عنها من «طبّق على اللي فات» نفسه). */

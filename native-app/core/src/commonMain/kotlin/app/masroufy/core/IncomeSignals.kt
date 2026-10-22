@@ -74,8 +74,8 @@ fun applyKnownPayerSalary(t: Transaction, sources: List<IncomeSource>, nowIso: S
     val employer = employerByPayer(t, sources) ?: return t
     // PLAN-0.6 §7: اختيار المالك للعملية دي، أو كلمة راتب، أو مبلغ قريب + ميعاد قريب ⇒ راتب. غير كده قاعدة الحساب لو اتحفظت، وإلا يتسأل
     if (salaryTxnKey(t.id) in employer.payerKeys || salaryByPayerAllowed(t, employer, profilePayday)) return asConfirmedSalary(t, nowIso)
-    val kind = transferPartyOf(t)?.key?.let { payerRuleKind(employer, it) } ?: return t
-    return asConfirmedKind(t, kind, nowIso)
+    val rule = transferPartyOf(t)?.key?.let { payerRuleOf(employer, it) } ?: return t
+    return asConfirmedKind(t, rule.kind, nowIso, rule.label)
 }
 
 /** الرد على «ده مرتب من …؟» — المصدر بعد الرد. الرد مش بيلمس المبلغ المتوقع ولا أي رقم تاني. */

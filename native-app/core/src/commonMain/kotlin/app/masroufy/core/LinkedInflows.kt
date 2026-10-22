@@ -22,6 +22,53 @@ fun linkWindowEnd(expenseDate: IsoDate): IsoDate = dayNumberToIso(toDayNumber(pa
 /** الفلوس الداخلة دي تابعة لمصروف. */
 fun isLinkedInflow(t: Transaction): Boolean = t.linkedExpenseId != null && t.observedDirection == Direction.IN
 
+private const val SPLIT_SEP = '='
+
+/** r06-1b3: نصيب كل مصروف من الداخلة دي (بالترتيب) — داخلة لمصروف واحد ⇒ المبلغ كله ليه · مش تابعة ⇒ فاضية. */
+fun linkedSharesOf(t: Transaction): Map<Id, Halalas> {
+    if (!isLinkedInflow(t)) return emptyMap()
+    val split = t.linkedSplit ?: return mapOf(t.linkedExpenseId!! to t.amountMinor)
+    return buildMap {
+        for (part in split) {
+            val at = part.lastIndexOf(SPLIT_SEP)
+            val minor = if (at > 0) part.substring(at + 1).toLongOrNull() else null
+            if (minor != null && minor > 0) put(part.substring(0, at), minor)
+        }
+    }
+}
+
+/** الداخلة دي تابعة للمصروف [expenseId] (كلها أو جزء منها). */
+fun isLinkedTo(t: Transaction, expenseId: Id): Boolean = expenseId in linkedSharesOf(t)
+
+/** نصيب [expenseId] من الداخلة [t] (صفر لو مش تابعة ليه). */
+fun linkedShareTo(t: Transaction, expenseId: Id): Halalas = linkedSharesOf(t)[expenseId] ?: 0L
+
+/** الشكل المتخزن لـ[Transaction.linkedSplit]. */
+fun encodeLinkedSplit(shares: Map<Id, Halalas>): List<String> = shares.map { (id, minor) -> "$id$SPLIT_SEP$minor" }
+
+/**
+ * r06-1b3: توزيع الاسترداد [refundMinor] على المشتريات بالترتيب — كل واحد ياخد اللي فاضل فيه ([rooms]) لحد ما الاسترداد يخلص، واللي ما
+ * خدش حاجة بيتشال. أعداد صحيحة بس.
+ */
+fun splitRefund(refundMinor: Halalas, rooms: List<Pair<Id, Halalas>>): Map<Id, Halalas> {
+    var left = refundMinor
+    return buildMap {
+        for ((id, room) in rooms) {
+            if (left <= 0) break
+            val take = minOf(left, maxOf(0L, room))
+            if (take > 0) { put(id, take); left -= take }
+        }
+    }
+}
+
+/** سطر المجموع تحت قايمة المشتريات: [diffMinor] = التحويل − المختار (صفر مطابق · موجب فاضل · سالب زيادة). */
+data class RefundSum(val pickedMinor: Halalas, val diffMinor: Halalas)
+
+fun refundSumOf(transferMinor: Halalas, picked: List<Halalas>): RefundSum {
+    val total = sumMoney(picked)
+    return RefundSum(total, subtractMoney(transferMinor, total))
+}
+
 /** اللي اتخصم من المصروف بالعمليات التابعة (صفر لو مفيش). */
 fun linkedOffsetOf(t: Transaction): Halalas = if (t.observedDirection == Direction.OUT) t.linkedInflowMinor ?: 0L else 0L
 
@@ -56,7 +103,7 @@ enum class LinkRefusal {
 /** سبب رفض [inflow] كفلوس داخلة لـ[expense] من غير النظر للمبلغ — null = تنفع. */
 fun inflowRefusal(expense: Transaction, inflow: Transaction): LinkRefusal? = when {
     inflow.currency != expense.currency -> LinkRefusal.OTHER_CURRENCY
-    inflow.linkedExpenseId != null && inflow.linkedExpenseId != expense.id -> LinkRefusal.ALREADY_LINKED
+    inflow.linkedExpenseId != null && !isLinkedTo(inflow, expense.id) -> LinkRefusal.ALREADY_LINKED
     inflow.id == expense.id || inflow.observedDirection != Direction.IN || inflow.transferToWalletId != null ||
         inflow.reversalOfId != null || inflow.reversedById != null || inflow.suggestedKind != null ||
         inflow.economicKind == EconomicKind.INTERNAL_TRANSFER ||
@@ -75,7 +122,7 @@ fun linkRoomOf(expense: Transaction, allocations: List<PersonAllocation>): Halal
 fun checkLink(expense: Transaction, inflows: List<Transaction>, allocations: List<PersonAllocation>): LinkRefusal? {
     if (!canHaveLinkedInflows(expense)) return LinkRefusal.NOT_EXPENSE
     for (i in inflows) inflowRefusal(expense, i)?.let { return it }
-    val adding = sumMoney(inflows.filter { it.linkedExpenseId != expense.id }.map { it.amountMinor })
+    val adding = sumMoney(inflows.filter { !isLinkedTo(it, expense.id) }.map { it.amountMinor })
     return if (adding > linkRoomOf(expense, allocations)) LinkRefusal.OVER_EXPENSE else null
 }
 

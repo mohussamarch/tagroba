@@ -49,6 +49,8 @@ object LedgerCodecs {
                 opt("bnplDecided", t.bnplDecided)
                 // PLAN-0.6 §7: «مستني استرداد» — لو موجودة بس
                 opt("awaitingRefund", t.awaitingRefund?.takeIf { it })
+                // r06-1b3: استرداد موزّع على أكتر من مشترى — لو موجود بس
+                opt("linkedSplit", t.linkedSplit?.takeIf { it.isNotEmpty() })
             }
         },
         { r ->
@@ -75,6 +77,7 @@ object LedgerCodecs {
                 notInStatement = r.boolOrNull("notInStatement"),
                 bnplDecided = r.boolOrNull("bnplDecided"),
                 awaitingRefund = r.boolOrNull("awaitingRefund"),
+                linkedSplit = r.strings("linkedSplit"),
             )
         },
     )

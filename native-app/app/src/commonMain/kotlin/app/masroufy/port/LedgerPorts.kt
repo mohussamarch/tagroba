@@ -87,6 +87,9 @@ data class TransactionPatch(
     val clearLinkedExpenseId: Boolean = false,
     val linkedInflowMinor: Long? = null,
     val clearLinkedInflowMinor: Boolean = false,
+    /** r06-1b3: الاسترداد الموزّع على أكتر من مشترى (`Transaction.linkedSplit`) — `clear…` = فك. */
+    val linkedSplit: List<String>? = null,
+    val clearLinkedSplit: Boolean = false,
     /** §82-13 (مراجعة 0.3): علامة سؤال «سلفة ولا دعم؟» على «دعم» قديم — null = ما تتغيرش. */
     val supportAskPending: Boolean? = null,
     /** A2/F3: قواعد الحسابات المربوطة ما ترجعش تربط العملية دي لوحدها (Transaction.personRulesOff) — null = ما تتغيرش. */
