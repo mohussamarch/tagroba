@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>خريطة الربط — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div dir="rtl" style="width: 1500px; height: 1080px; position: relative; box-sizing: border-box; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: #EFF3ED; overflow: hidden">
+  <div style="position: absolute; top: 28px; right: 32px; left: 32px; display: flex; align-items: flex-end; gap: 24px">
+    <span style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 30px; font-weight: 700">العملية بتتربط بإيه؟</span><span style="font-size: 15px; color: #637570">كل خط = ربط. فوقه: بتربط منين. الكارت: بتلاقيه فين بعدين.</span></span>
+    <sc-for list="{{legend}}" as="l" hint-placeholder-count="3"><span style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700"><span style="{{l.dot}}"></span>{{l.label}}</span></sc-for>
+  </div>
+  <svg width="1500" height="1080" viewBox="0 0 1500 1080" aria-hidden="true" style="position: absolute; inset: 0">
+    <sc-for list="{{lines}}" as="ln" hint-placeholder-count="8"><line x1="750" y1="620" x2="{{ln.x}}" y2="{{ln.y}}" stroke="{{ln.c}}" stroke-width="2.5" stroke-dasharray="{{ln.dash}}" stroke-linecap="round"></line></sc-for>
+  </svg>
+  <sc-for list="{{tags}}" as="tg" hint-placeholder-count="8"><span style="{{tg.style}}">{{tg.text}}</span></sc-for>
+  <div style="position: absolute; left: 640px; top: 560px; width: 220px; height: 120px; border-radius: 26px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: 0 14px 30px rgba(8,99,79,0.25)"><span style="font-size: 24px; font-weight: 700">العملية</span><span style="font-size: 13px; opacity: 0.85">من رسالة البنك أو بإيدك</span></div>
+  <sc-for list="{{nodes}}" as="n" hint-placeholder-count="8">
+    <div style="{{n.style}}">
+      <span style="display: flex; align-items: center; gap: 8px"><span style="font-size: 22px">{{n.icon}}</span><span style="font-size: 17px; font-weight: 700">{{n.name}}</span></span>
+      <span style="font-size: 13px; line-height: 1.6; color: #3C5650">{{n.where}}</span>
+      <span style="{{n.noteStyle}}">{{n.note}}</span>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1500,"height":1080}}'>
+// خريطة الربط (طلب المالك 2026-10-23 «تهت … ومعرفتش أوصل لصفحة الإيجار» + طلب جلسة كوتلن: إزاي الحاجات بتتربط ببعض)
+// العملية في النص، وحواليها كل حاجة ممكن تتربط بيها: الخط فوقه «بتربط منين»، والكارت «بتلاقيها فين بعدين»
+// أخضر = الطريق واضح من الناحيتين · أصفر = من ناحية واحدة أو بعيد · أحمر متقطع = مالوش صفحة يرجعلها
+const K = { ok: '#08634F', far: '#956000', none: '#B0466A' };
+// [الاسم، الإيموجي، x، y، الحالة، بتربط منين (على الخط)، بتلاقيها فين، ملحوظة]
+const OY = 80;
+const N = [
+  ['الشخص', '👤', 1180, 150, 'ok', 'تفاصيل العملية ⇐ «اربطها بشخص»', 'الأشخاص ⇐ صفحته ⇐ العمليات معاه', 'الناحيتين'],
+  ['الدين أو السلفة', '🤝', 1240, 420, 'ok', '«سداد دين» ⇐ اربطها بعملية أو كاش', 'صفحة الشخص ⇐ الديون · أو المستحقات', 'الناحيتين'],
+  ['القسط (تابي · تمويل)', '🧾', 1180, 700, 'ok', 'رسالة البنك ⇐ «شكلها دفعة من تقسيط»', 'المستحقات ⇐ التقسيط ⇐ الخطة', 'الناحيتين'],
+  ['الاسترداد', '↩️', 750, 860, 'ok', '«الفلوس دي إيه؟» ⇐ استرداد ⇐ المشتريات', 'تفاصيل المشترى ⇐ «مستني استرداد»', 'الناحيتين'],
+  ['مصدر الدخل (المرتب)', '💼', 320, 700, 'far', 'نوع التحويل ⇐ «مرتب»', 'المزيد ⇐ حسابك ⇐ مصادر الدخل', '3 دوسات — ومفيش رجوع للعمليات'],
+  ['الأصل (الأرباح)', '📈', 260, 420, 'far', 'نوع التحويل ⇐ «أرباح»', 'الاستثمار ⇐ تفاصيل الأصل', 'الربط لسه مش مرسوم'],
+  ['خطة الادخار', '🎯', 320, 150, 'none', '«إيداع ادخار» أو «حجز من رصيدي»', 'مالهاش صفحة — بتبان في الكارت الرئيسي بس', 'محتاجة مكان'],
+  ['الزكاة', '🌙', 750, 175, 'far', '«زكاة» ⇐ اربطها بعملية أو كاش', 'الاستثمار ⇐ الزكاة', 'مكانها مش محسوم']
+];
+N.forEach((n) => { n[3] += OY; });
+class Component extends DCLogic {
+  renderVals() {
+    const W = 270;
+    return {
+      legend: [['ok', 'واضح من الناحيتين'], ['far', 'ناحية واحدة أو بعيد'], ['none', 'مالوش صفحة']].map(([k, label]) => ({ label, dot: 'width: 14px; height: 14px; border-radius: 7px; background: ' + K[k] })),
+      lines: N.map(([, , x, y, k]) => ({ x, y, c: K[k], dash: k === 'none' ? '8 8' : 'none' })),
+      tags: N.map(([, , x, y, k, from]) => {
+        const mx = (750 + x) / 2, my = (620 + y) / 2;
+        return { text: from, style: 'position: absolute; left: ' + (mx - 120) + 'px; top: ' + (my - 16) + 'px; width: 240px; text-align: center; font-size: 12px; font-weight: 700; line-height: 1.5; padding: 4px 8px; border-radius: 10px; box-sizing: border-box; color: ' + K[k] + '; background: #EFF3ED' };
+      }),
+      nodes: N.map(([name, icon, x, y, k, , where, note]) => ({ name, icon, where, note,
+        style: 'position: absolute; left: ' + (x - W / 2) + 'px; top: ' + (y - 60) + 'px; width: ' + W + 'px; box-sizing: border-box; border-radius: 20px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; background: #FFFFFF; box-shadow: inset 4px 0 0 ' + K[k] + (k === 'none' ? ', inset 0 0 0 1.5px ' + K[k] : '') + ', 0 8px 20px rgba(29,54,53,0.07)',
+        noteStyle: 'font-size: 12px; font-weight: 700; color: ' + K[k] }))
+    };
+  }
+}
+</script>
+</body>
+</html>

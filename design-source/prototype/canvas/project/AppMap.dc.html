@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>خريطة البرنامج — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div dir="rtl" style="width: 1500px; min-height: 1000px; box-sizing: border-box; padding: 28px 32px; display: flex; flex-direction: column; gap: 18px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: #EFF3ED">
+  <div style="display: flex; align-items: flex-end; gap: 24px">
+    <span style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 30px; font-weight: 700">خريطة البرنامج</span><span style="font-size: 15px; color: #637570">كل شاشة ومنين توصلها. الرقم = كام دوسة من الشريط تحت.</span></span>
+    <sc-for list="{{legend}}" as="l" hint-placeholder-count="4"><span style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700"><span style="{{l.dot}}"></span>{{l.label}}</span></sc-for>
+  </div>
+
+  <div style="align-self: center; border-radius: 22px; padding: 12px 28px; font-size: 17px; font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)">شريط التنقل تحت · «اسأل مصروفي» فوق · زرار «+»</div>
+  <div aria-hidden="true" style="height: 18px; margin: -18px 9% 0; border: 2px solid rgba(8,99,79,0.35); border-bottom: 0; border-radius: 18px 18px 0 0"></div>
+
+  <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; align-items: start">
+    <sc-for list="{{tabs}}" as="t" hint-placeholder-count="5">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <span style="align-self: center; font-size: 19px; font-weight: 700; padding: 8px 20px; border-radius: 16px; background: #FFFFFF; box-shadow: 0 1px 2px rgba(29,54,53,0.05), 0 10px 22px rgba(29,54,53,0.08)">{{t.name}}</span>
+        <sc-for list="{{t.items}}" as="it" hint-placeholder-count="6">
+          <div style="{{it.style}}">
+            <span style="display: flex; align-items: center; gap: 8px"><span style="{{it.depthStyle}}">{{it.depth}}</span><span style="flex: 1 1 auto; font-size: 15px; font-weight: 700">{{it.name}}</span></span>
+            <sc-if value="{{it.hasNote}}" hint-placeholder-val="{{ false }}"><span style="{{it.noteStyle}}">{{it.note}}</span></sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="border-radius: 22px; padding: 16px 20px; display: flex; flex-direction: column; gap: 8px; background: #FFFFFF">
+    <span style="font-size: 18px; font-weight: 700">اللي محتاج قرار</span>
+    <sc-for list="{{issues}}" as="is" hint-placeholder-count="5"><span style="display: flex; gap: 10px; font-size: 15px; line-height: 1.7"><span style="{{is.dot}}"></span><span>{{is.text}}</span></span></sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1500,"height":1000}}'>
+// خريطة البرنامج (طلب المالك 2026-10-23: «تهت جدا في استخدام البرنامج» — «ارسم خريطة البرنامج») — من SCREENS.md §1 + اللي اتصمم 2026-10-22
+// الألوان: أخضر = موجود ومكانه واضح · أصفر = بعيد (3 دوسات أو أكتر) أو مكانه مش محسوم · أحمر = مالوش مكان · أزرق = جديد اتصمم ومستني يتحط
+const K = { ok: ['#08634F', 'rgba(8,99,79,0.06)'], far: ['#956000', '#FBF0DD'], none: ['#B0466A', 'rgba(176,70,106,0.08)'], new: ['#2469BA', 'rgba(36,105,186,0.08)'] };
+const TABS = [
+  ['الرئيسية', [['الرئيسية', 0, 'ok', 'الرصيد · تقدر تصرف · المحجوز'], ['الكاش', 1, 'ok'], ['الجرس والتنبيهات', 1, 'ok'], ['التقويم والقادم', 1, 'ok'], ['اختار الشهر', 1, 'ok', 'دخل ومصروف كل شهر'], ['البلد', 1, 'ok']]],
+  ['العمليات', [['العمليات', 0, 'ok'], ['تفاصيل العملية', 1, 'ok', 'التصنيف · مستني استرداد'], ['محتاجة مراجعة', 1, 'new', 'كارت واحد'], ['رسايل البنك', 2, 'ok', 'الفلوس دي إيه؟'], ['التحويلات', 2, 'far', 'مكانها مش محسوم'], ['الميزانيات', 1, 'ok'], ['المستحقات', 1, 'ok', 'ديون · جمعيات · أقساط · اشتراكات'], ['التقسيط (تابي)', 2, 'ok']]],
+  ['الأشخاص', [['الأشخاص', 0, 'ok'], ['صفحة الشخص', 1, 'ok'], ['سداد أو تحصيل', 2, 'ok', 'اربطها بعملية أو كاش'], ['الأحداث والمناسبات', 1, 'ok']]],
+  ['الاستثمار', [['الاستثمار', 0, 'ok'], ['تفاصيل الأصل', 1, 'ok', 'الأرباح تتربط هنا'], ['الزكاة', 1, 'far', 'جوه الاستثمار؟'], ['التحليلات', 1, 'ok'], ['الحاسبات', 1, 'ok'], ['خطط الادخار', 9, 'none', 'مالهاش صفحة في الخريطة']]],
+  ['المزيد', [['حسابك', 1, 'ok'], ['مصادر الدخل', 3, 'far', 'المرتب والإيجار هنا — بعيد'], ['المحافظ', 3, 'far'], ['التصنيفات والقواعد', 3, 'far'], ['الاستيراد والنسخة', 3, 'far'], ['الإعدادات', 2, 'ok', 'المظهر · إخفاء الأرقام'], ['الأسئلة الشائعة', 2, 'new', 'جديد'], ['المشاريع', 2, 'far', 'مكانها مش محسوم'], ['الإيجار', 9, 'none', 'مالوش مكان']]]
+];
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      legend: [['ok', 'مكانه واضح'], ['far', 'بعيد أو مش محسوم'], ['none', 'مالوش مكان'], ['new', 'جديد']].map(([k, label]) => ({ label, dot: 'width: 14px; height: 14px; border-radius: 7px; background: ' + K[k][0] })),
+      tabs: TABS.map(([name, items]) => ({ name, items: items.map(([n, d, k, note]) => ({
+        name: n, depth: d === 9 ? '؟' : String(d), hasNote: !!note, note: note || '',
+        style: 'border-radius: 16px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; margin-inline-start: ' + Math.min(d === 9 ? 0 : d, 3) * 12 + 'px; background: #FFFFFF; box-shadow: inset 4px 0 0 ' + K[k][0] + (k === 'none' ? ', inset 0 0 0 1.5px ' + K[k][0] : ''),
+        depthStyle: 'min-width: 24px; height: 24px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: ' + K[k][0] + '; background: ' + K[k][1],
+        noteStyle: 'font-size: 12px; font-weight: 700; color: ' + K[k][0]
+      })) })),
+      issues: [
+        ['none', 'خطط الادخار والإيجار مالهمش صفحة — لازم يتحطوا في مكان قبل ما يترسموا.'],
+        ['far', 'مصادر الدخل والمحافظ والتصنيفات على بعد 3 دوسات جوه «المزيد» — ممكن يطلعوا مكان أقرب.'],
+        ['far', 'الزكاة جوه «الاستثمار» — هل مكانها صح؟'],
+        ['far', 'التحويلات والمشاريع مكانهم لسه مش محسوم.'],
+        ['new', 'الأسئلة الشائعة هتبقى في «المزيد»، وشريط النصايح بيظهر فوق أي صفحة أول مرة.']
+      ].map(([k, text]) => ({ text, dot: 'width: 12px; height: 12px; margin-top: 8px; border-radius: 6px; flex-shrink: 0; background: ' + K[k][0] }))
+    };
+  }
+}
+</script>
+</body>
+</html>

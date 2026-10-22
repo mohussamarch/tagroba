@@ -1297,6 +1297,30 @@
       "y": 33500,
       "w": 390,
       "h": 300
+    },
+    "AppMap.dc.html": {
+      "is_interactive": true,
+      "title": "خريطة البرنامج · AppMap (التنقل)",
+      "x": 3440,
+      "y": 33500,
+      "w": 1500,
+      "h": 1250
+    },
+    "LinkMap.dc.html": {
+      "is_interactive": true,
+      "title": "العملية بتتربط بإيه · LinkMap (الربط)",
+      "x": 5000,
+      "y": 33500,
+      "w": 1500,
+      "h": 1080
+    },
+    "TipStrip.dc.html": {
+      "is_interactive": true,
+      "title": "شريط النصايح · TipStrip (فوق أي صفحة)",
+      "x": 6560,
+      "y": 33500,
+      "w": 358,
+      "h": 80
     }
   },
   "createdOnFiles": {
@@ -1616,7 +1640,10 @@
     "LinkPay.dc.html",
     "HeroReserve.dc.html",
     "NightPrivacy.dc.html",
-    "ReviewEntry.dc.html"
+    "ReviewEntry.dc.html",
+    "AppMap.dc.html",
+    "LinkMap.dc.html",
+    "TipStrip.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"
