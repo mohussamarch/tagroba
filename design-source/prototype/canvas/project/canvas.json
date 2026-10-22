@@ -1265,6 +1265,14 @@
       "y": 33500,
       "w": 390,
       "h": 844
+    },
+    "LinkPay.dc.html": {
+      "is_interactive": true,
+      "title": "اربطها بعملية أو كاش · LinkPay (سداد · زيادة · زكاة · ادخار)",
+      "x": 1720,
+      "y": 33500,
+      "w": 390,
+      "h": 844
     }
   },
   "createdOnFiles": {
@@ -1580,7 +1588,8 @@
     "MoneyWhat.dc.html",
     "RefundWait.dc.html",
     "BnplSplit.dc.html",
-    "CountryMark.dc.html"
+    "CountryMark.dc.html",
+    "LinkPay.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"
