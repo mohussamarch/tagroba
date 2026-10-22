@@ -34,6 +34,8 @@ data class DueItem(
     val currency: Currency,
     val flow: DueFlow,
     val status: DueStatus,
+    /** r051: كام يوم قبل الميعاد التنبيه بيبدأ («قرّب») — null = من غير تنبيه (المواعيد بتفضل في «المستحقات» و«القادم»). */
+    val alertDays: Int? = DUE_SOON_DAYS,
 )
 
 fun dueStatusOf(dueAt: IsoDate, today: IsoDate): DueStatus = when {
@@ -56,7 +58,9 @@ fun roscaDueItems(r: Rosca, entries: List<RoscaEntry>, today: IsoDate, until: Is
 
 fun installmentDueItems(p: InstallmentPlan, payments: List<InstallmentPayment>, today: IsoDate, until: IsoDate): List<DueItem> {
     val paid = sumMoney(payments.filter { it.planId == p.id }.map { it.amountMinor })
+    val alertDays = when (p.remindDayBefore) { true -> 1; false -> null; null -> DUE_SOON_DAYS }
     return items(DueSource.INSTALLMENT, p.id, p.name, p.currency, DueFlow.PAY, today, unpaidInstallments(installmentSchedule(p), paid, until))
+        .map { if (alertDays == DUE_SOON_DAYS) it else it.copy(alertDays = alertDays) }
 }
 
 /** دين ليه مواعيد. «لك عنده» = هتستلم؛ القرض والأمانة = هتدفع. */

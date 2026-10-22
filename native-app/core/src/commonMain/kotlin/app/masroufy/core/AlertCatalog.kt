@@ -129,6 +129,8 @@ data class AlertCandidate(
     val spaceId: String = DEFAULT_SPACE_ID,
     /** اسم البلد **جوه التطبيق بس** (مش على شاشة القفل) — `null` = حساب ببلد واحدة أو تنبيه على مستوى الحساب. */
     val spaceLabel: String? = null,
+    /** r051: «قرّب» بيتبعت قبل الميعاد بكام يوم (`DueItem.alertDays` — يوم للخطط اللي «فكّرني قبل كل دفعة بيوم») ⇒ «ليه اتبعت». null = [DUE_SOON_DAYS]. */
+    val soonDays: Int? = null,
 ) {
     val eventKey: String get() = "$threadKey|${kind.wire}"
 }

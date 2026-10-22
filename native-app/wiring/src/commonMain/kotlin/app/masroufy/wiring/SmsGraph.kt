@@ -26,7 +26,7 @@ import app.masroufy.usecase.AddOperationResult
 import app.masroufy.usecase.AutoRecordResult
 import app.masroufy.usecase.AutoRecordSms
 import app.masroufy.usecase.AutoRecordSmsDeps
-import app.masroufy.usecase.BnplAnswer
+
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
@@ -100,9 +100,6 @@ internal class SmsGraph(
 
     override suspend fun confirmMessages(ids: List<String>, categories: Map<String, Id>, isSalary: Boolean?) = extras.confirm(ids, categories, isSalary)
 
-    override suspend fun bnplAsks() = extras.bnplAsks()
-
-    override suspend fun bnplAnswer(answer: BnplAnswer) = extras.bnplAnswer(answer)
 
     override suspend fun overview(record: Boolean): SmsOverview = work {
         val auto = auto()

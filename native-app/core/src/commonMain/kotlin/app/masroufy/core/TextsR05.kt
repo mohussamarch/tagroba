@@ -41,6 +41,8 @@ internal val MSA_R05_TEXTS: Map<TextRef, String> = mapOf(
     UiKey.PURCHASE_ASK_RECENT to "آخر ما استخدمته",
     UiKey.PURCHASE_ASK_SKIP to "تخطَّ",
     UiKey.PURCHASE_ASK_DONE to "صُنّفت «{0}»",
+    // r051-f: سبب تنبيه «قرّب» للخطة اللي «فكّرني قبل كل دفعة بيوم» شغال فيها
+    TextKey.ALERT_WHY_DUE_TOMORROW to "موعده غدًا",
 )
 
 internal val EGYPTIAN_R05_TEXTS: Map<TextRef, String> = mapOf(
@@ -79,6 +81,8 @@ internal val EGYPTIAN_R05_TEXTS: Map<TextRef, String> = mapOf(
     UiKey.PURCHASE_ASK_RECENT to "آخر اللي استخدمته",
     UiKey.PURCHASE_ASK_SKIP to "تخطّي",
     UiKey.PURCHASE_ASK_DONE to "اتصنّفت «{0}»",
+    // r051-f: سبب تنبيه «قرّب» للخطة اللي «فكّرني قبل كل دفعة بيوم» شغال فيها
+    TextKey.ALERT_WHY_DUE_TOMORROW to "ميعاده بكرة",
 )
 
 internal val ENGLISH_R05_TEXTS: Map<TextRef, String> = mapOf(
@@ -117,4 +121,6 @@ internal val ENGLISH_R05_TEXTS: Map<TextRef, String> = mapOf(
     UiKey.PURCHASE_ASK_RECENT to "Recently used",
     UiKey.PURCHASE_ASK_SKIP to "Skip",
     UiKey.PURCHASE_ASK_DONE to "Categorised “{0}”",
+    // r051-f: سبب تنبيه «قرّب» للخطة اللي «فكّرني قبل كل دفعة بيوم» شغال فيها
+    TextKey.ALERT_WHY_DUE_TOMORROW to "It is due tomorrow",
 )

@@ -51,6 +51,15 @@ interface DuesDeps {
 
     /** «امسح» لدين اتسجل غلط (§6.5 بند 12) — `preview` · `delete` · `restore`. `null` ⇒ البند ما بيظهرش في القايمة السريعة. */
     val deleteDebt: app.masroufy.usecase.DeleteDebt? get() = null
+
+    /**
+     * r051 — «ادفع بعدين»: الربط اللي لوحده والأسئلة والردود (`settle` · `answer` · `undoAutoLink` · `preview`) — الهيكل بيناديها برّه خيط
+     * الشاشة (`BnplHost`). `null` ⇒ اللوحة ما بتطلعش.
+     */
+    val bnpl: app.masroufy.usecase.BnplCharges? get() = null
+
+    /** r051 — قسم «مشتريات بالتقسيط» في «الأقساط» (`load`). `null` ⇒ القسم ما بيظهرش والخطط في القايمة العادية. */
+    val bnplPlans: app.masroufy.usecase.LoadBnplPlans? get() = null
 }
 
 /** «لك» أو «عليك» أو الاتنين — فلتر شاشة الديون (الكارت المضغوط بيصفّي، والضغط تاني يرجّع الكل). */

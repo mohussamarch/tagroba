@@ -66,6 +66,8 @@ data class InstallmentInput(
     /** r05 (BNPL): كل كام أسبوع (null = كل [cycleMonths] شهر) · تصنيف المشترى (null = «المستحقات ← تقسيط مشتريات»). */
     val cycleWeeks: Int? = null,
     val categoryId: Id? = null,
+    /** r051: «فكّرني قبل كل دفعة بيوم» (`InstallmentPlan.remindDayBefore`). */
+    val remindDayBefore: Boolean? = null,
 )
 
 /** [receivedMinor]: مبلغ عملية «مبلغ تمويل مستلم» المربوطة (null = لسه ما اتربطتش — مش صفر). */
@@ -128,6 +130,7 @@ class ManageInstallments(private val deps: ManageInstallmentsDeps) {
             dismissedTxnIds = existing?.dismissedTxnIds.orEmpty(),
             cycleWeeks = input.cycleWeeks,
             categoryId = input.categoryId,
+            remindDayBefore = input.remindDayBefore ?: existing?.remindDayBefore,
         )
         val plan = draft.copy(name = checkInstallmentPlan(draft).name)
         if (existing != null) {
@@ -201,9 +204,8 @@ class ManageInstallments(private val deps: ManageInstallmentsDeps) {
         return near.filter { it.id !in taken }.sortedWith(compareBy({ kotlin.math.abs(toDayNumber(parseIsoDate(it.occurredAt.take(10))) - day) }, { it.occurredAt }, { it.id }))
     }
 
-    /** r05 (BNPL «تخطّي»): قسط عادي تحت «المستحقات ← تقسيط مشتريات» من غير خطة — مصروف بنوعه (§56)، وما بيتسألش تاني. */
-    suspend fun markPlainInstallment(transactionId: Id) =
-        links.markKind(transactionId, EconomicKind.PURCHASE, DuesCategories.PURCHASE_PLANS)
+    /** r051: العمليات من [ids] المربوطة بأي حاجة (جمعية · قسط · تمويل مستلم · زكاة · نقطة · رجل تحويل) ⇒ ما تتعرضش للربط تاني. */
+    suspend fun linkedElsewhere(ids: List<Id>): Set<Id> = links.taken(ids)
 
     /** مبلغ التمويل اللي نزل في الحساب (§59) — مرة واحدة لكل خطة تمويل، وبالعملية كلها. */
     suspend fun linkReceived(planId: Id, transactionId: Id): InstallmentPlan {

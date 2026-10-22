@@ -29,6 +29,9 @@ import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.CategoryInk
 import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
+import app.masroufy.usecase.BnplPlanView
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * «الأقساط» (`Installments`): البطاقة البترولية بالمتبقي عليك في الأقساط (`DuesTotals.installmentsLeftMinor`) · كارت لكل خطة (الجهة والنوع ·
@@ -40,18 +43,26 @@ fun InstallmentsScreen() {
     val deps = space.dues
     val nav = LocalNavigator.current
     val quick = rememberQuickMenu()
+    // r051: القراية برّه خيط الشاشة مرة لكل فتحة · خطط «ادفع بعدين» في قسمها («مشتريات بالتقسيط») ومتعدودة في البطاقة فوق
     val load = rememberLoad(deps) {
         val today = space.shell.today()
-        val totals = deps.loadDues.load(today, deps.period(today), space.space.currency, null).totals
-        installmentsUi(deps.installments.list(today), totals, today, space.space.currency)
+        withContext(Dispatchers.Default) {
+            val totals = deps.loadDues.load(today, deps.period(today), space.space.currency, null).totals
+            val bnpl = deps.bnplPlans?.load(today).orEmpty()
+            val ids = bnpl.map { it.plan.id }.toSet()
+            // السطر تحت المبلغ بيعدّ الكروت اللي فوق بس، وخطط «ادفع بعدين» لوحدها («و 2 مشتريات بالتقسيط» — `Installments.dc.html`)
+            val plans = deps.installments.list(today).filter { it.plan.id !in ids }
+            InstallmentsLoaded(installmentsUi(plans, totals, today, space.space.currency, bnplCount = bnpl.size), bnpl, today)
+        }
     }
     DuesScaffold(t(UiKey.INSTALLMENTS_TITLE), actions = { TonalButton(t(UiKey.INSTALLMENTS_NEW), { nav.push(InstallmentEditRoute()) }, height = 44.dp) }) {
         when (val s = load.value) {
             Load.Loading -> item { LoadingBlocks(130, 200) }
             Load.Failed -> item { LoadFailed(load::reload) }
             is Load.Ready -> {
-                val ui = s.value
-                if (ui.cards.isEmpty()) {
+                val ui = s.value.ui
+                val bnpl = s.value.bnpl
+                if (ui.cards.isEmpty() && bnpl.isEmpty()) {
                     item {
                         EmptyState(t(UiKey.INSTALLMENTS_EMPTY_TITLE), t(UiKey.INSTALLMENTS_EMPTY_BODY), action = {
                             PrimaryButton(t(UiKey.INSTALLMENTS_NEW), { nav.push(InstallmentEditRoute()) })
@@ -73,12 +84,23 @@ fun InstallmentsScreen() {
                         PlanCard(c, onLongClick = long, onClick = quick.guardTap { nav.push(InstallmentDetailRoute(c.planId)) })
                     }
                 }
+                if (bnpl.isNotEmpty()) {
+                    item(key = "bnpl-title") { BnplSectionTitle() }
+                    for (v in bnpl) item(key = "bnpl-" + v.plan.id) {
+                        QuickTarget(quick, v.plan.name, { planQuickItems(v.plan.id, nav) }, subtitle = bnplName(v.provider)) { long ->
+                            BnplPlanCard(v, s.value.today, onClick = quick.guardTap { nav.push(InstallmentDetailRoute(v.plan.id)) }, onLongClick = long)
+                        }
+                    }
+                }
                 item(key = "note") { BasicText(t(UiKey.INSTALLMENTS_NOTE), style = Type.caption().copy(color = Ink.muted)) }
             }
         }
     }
     QuickMenuHost(quick)
 }
+
+/** «الأقساط» بعد القراية: الخطط العادية ([ui]) وخطط «ادفع بعدين» ([bnpl]) والنهارده. */
+private class InstallmentsLoaded(val ui: InstallmentsUi, val bnpl: List<BnplPlanView>, val today: String)
 
 @Composable
 private fun PlanCard(c: PlanCardUi, onLongClick: () -> Unit, onClick: () -> Unit) {

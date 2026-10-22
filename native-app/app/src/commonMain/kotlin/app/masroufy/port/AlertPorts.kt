@@ -65,6 +65,8 @@ data class AlertInboxEntry(
     val openedAt: String? = null,
     /** اسم البلد جوه الصفحة (§64) — `null` = بلد واحدة أو تنبيه على مستوى الحساب. **مش في نص شاشة القفل.** */
     val spaceLabel: String? = null,
+    /** r051: «قرّب» قبل الميعاد بكام يوم (`AlertCandidate.soonDays`) ⇒ «ليه اتبعت» بيقول «بكرة» أو «خلال 3 أيام». */
+    val soonDays: Int? = null,
 )
 
 interface AlertInboxStore {

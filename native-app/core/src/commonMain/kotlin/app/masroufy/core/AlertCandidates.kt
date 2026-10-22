@@ -9,7 +9,7 @@ package app.masroufy.core
 /** المستحقات: «قرّب» (خلال [DUE_SOON_DAYS]) ⇒ النهارده ⇒ «عدّى». [monthScale] = سقف الشهر بعملة البند (null = مش معروف). */
 fun dueAlertCandidates(items: List<DueItem>, today: IsoDate, monthScale: (Currency) -> Halalas?): List<AlertCandidate> =
     items.mapNotNull { item ->
-        val stage = alertStage(item.dueAt, today, DUE_SOON_DAYS) ?: return@mapNotNull null
+        val stage = alertStage(item.dueAt, today, item.alertDays ?: return@mapNotNull null) ?: return@mapNotNull null
         val days = daysBetween(today, item.dueAt)
         val title = when (stage) {
             AlertStage.SOON -> uiText(TextKey.ALERT_DUE_SOON_TITLE, item.title, days.toString())
@@ -25,6 +25,7 @@ fun dueAlertCandidates(items: List<DueItem>, today: IsoDate, monthScale: (Curren
             flow = item.flow,
             amountMinor = item.amountMinor,
             monthScaleMinor = monthScale(item.currency),
+            soonDays = item.alertDays.takeIf { stage == AlertStage.SOON },
         )
     }
 

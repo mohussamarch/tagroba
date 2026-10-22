@@ -33,7 +33,7 @@ import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
 import app.masroufy.usecase.AddOperationResult
-import app.masroufy.usecase.BnplAnswer
+import app.masroufy.ui.app.LocalDataChanges
 import app.masroufy.core.SmsKind
 import app.masroufy.ui.screens.operations.EmployerPickSheet
 import app.masroufy.ui.screens.operations.TransferPartyCard
@@ -77,7 +77,8 @@ fun BankSmsScreen() {
     // OVERRIDES §91-1: «أيوه، ده حسابي» ⇒ لوحة اختيار المحفظة
     var accountLine by remember { mutableStateOf<WaitLineUi?>(null) }
     // r05: الاختيار بيسجّل (4a) · صفحة الصندوق (4b) · كارت الطرف بعد التسجيل (4c) · جهة الشغل بعد «أيوه ده راتبي» (3b) · «ادفع بعدين»
-    val r05 = remember(deps) { SmsR05(deps, toaster) }
+    val changes = LocalDataChanges.current
+    val r05 = remember(deps) { SmsR05(deps, toaster, changes::changed) }
     DisposableEffect(deps) { onDispose { r05.flush() } }
 
     LaunchedEffect(deps, reload) {
@@ -92,12 +93,13 @@ fun BankSmsScreen() {
             val today = runCatching { sms.recordedToday() }.getOrDefault(emptyList())
             ui = withContext(Dispatchers.Default) { bankSmsUi(overview, today, emptySet()) }
             failure = null
-            r05.bnplAsks = runCatching { sms.bnplAsks() }.getOrDefault(emptyList())
             val fresh = if (r05.skip > 0) emptyList() else runCatching { sms.recordNew() }.getOrDefault(emptyList())
             if (fresh.isNotEmpty()) {
                 val again = sms.overviewPage(record = false, skip = r05.skip)
                 val todayAgain = runCatching { sms.recordedToday() }.getOrDefault(today)
                 ui = withContext(Dispatchers.Default) { bankSmsUi(again, todayAgain, fresh.toSet()) }
+                // r051: عملية اتسجلت هنا ⇒ الهيكل يقرا تاني (لوحة «ادفع بعدين» بتطلع لوحدها — `BnplHost`)
+                changes.changed()
             }
         } catch (e: CancellationException) {
             throw e
@@ -123,7 +125,6 @@ fun BankSmsScreen() {
         }
     }
 
-    fun answerBnpl(a: BnplAnswer) = act { r05.answerBnpl(a) }
 
     val actions = WaitingActions(
         pickCategory = { picking = PickFor.Line(it) },
@@ -196,9 +197,7 @@ fun BankSmsScreen() {
             item(key = "history") { SmsHistorySection(history, currency, deps.smsToday()) { reload++ } }
         }
         if (r05.picks.items.isNotEmpty()) item(key = "picks") { PendingPicksPanel(r05.picks) }
-        if (r05.bnplAsks.isNotEmpty()) item(key = "bnpl") {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) { BnplAskCards(r05.bnplAsks, onOpen = { r05.bnplOpen = it }, onAnswer = ::answerBnpl) }
-        }
+
         for ((party, id, outgoing) in r05.parties) item(key = "party-$id") { TransferPartyCard(party, id, onChanged = { reload++ }, outgoing = outgoing) }
         if (u.status != SmsStatus.UNAVAILABLE && (u.live || u.trueWaiting > 0)) {
             smsWaitingItems(u, currency, categoryById, chosen, included, busy, handError, actions, r05.skip, r05.picks.ids)
@@ -273,7 +272,7 @@ fun BankSmsScreen() {
             }
         }
     }
-    BnplSheet(r05.bnplOpen, pickableCategories(categories), onDismiss = { r05.bnplOpen = null }, onSave = ::answerBnpl)
+
     val employer = r05.employerTxn
     if (employer != null && LocalSpace.current.operations.incomeAnswers != null) {
         EmployerPickSheet(true, employer, onDismiss = { r05.employerTxn = null }) { done -> r05.employerTxn = null; toaster.show(done.title, dark = true); reload++ }

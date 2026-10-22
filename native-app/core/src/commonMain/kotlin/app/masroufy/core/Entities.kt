@@ -101,6 +101,11 @@ data class Transaction(
      * دي «مش في الكشف» (`markStatementCovered`). true بس — بتتكتب لو موجودة بس ⇒ المستندات والنسخ القديمة زي ما هي.
      */
     val notInStatement: Boolean? = null,
+    /**
+     * r051 (تقسيط المشتريات — `BnplCharges`): المالك ردّ على لوحة «ادفع بعدين» للخصم ده («تخطّي» · «مش قسط — عملية عادية») ⇒ ما يتسألش
+     * تاني. true بس — بتتكتب لو موجودة بس ⇒ المستندات القديمة زي ما هي.
+     */
+    val bnplDecided: Boolean? = null,
 )
 
 enum class AllocationKind(val wire: String) {

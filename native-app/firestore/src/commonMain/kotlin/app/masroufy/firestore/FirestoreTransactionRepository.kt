@@ -56,6 +56,7 @@ class FirestoreTransactionRepository(private val space: FirestoreSpace) : Transa
         patch.walletId?.let { fields["walletId"] = it }
         patch.excludedFromBudget?.let { fields["excludedFromBudget"] = it }
         patch.isCashTagged?.let { fields["isCashTagged"] = it }
+        patch.bnplDecided?.let { fields["bnplDecided"] = it }
         patch.updatedAt?.let { fields["updatedAt"] = it }
         // الشريحة S3 (§75-6 · §77-D): الاقتراح وربط العملية اللي رجعت — آخر اسم الربط `Id` ⇒ `storeForm` ما بيقصّش المعرّف
         if (patch.clearSuggestedKind) fields["suggestedKind"] = FieldValue.delete else patch.suggestedKind?.let { fields["suggestedKind"] = it.wire }

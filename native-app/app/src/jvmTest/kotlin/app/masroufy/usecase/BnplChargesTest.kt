@@ -49,7 +49,7 @@ class BnplChargesTest {
                 MemoryUnitOfWork(listOf(payments, txns)), SequentialIdGenerator(), FixedClock("2026-10-16T09:00:00.000Z"), MemoryCategoryRepository(),
             ),
         )
-        val bnpl = BnplCharges(BnplChargesDeps(txns, plans, payments, installments, FixedClock("2026-10-16T09:00:00.000Z")) { today })
+        val bnpl = BnplCharges(BnplChargesDeps(txns, plans, payments, installments, FixedClock("2026-10-16T09:00:00.000Z"), { today }))
     }
 
     @Test fun providersAreRecognisedByNameOnly() {
@@ -109,16 +109,16 @@ class BnplChargesTest {
         assertTrue(w.bnpl.settle().asks.isEmpty())
     }
 
-    @Test fun anotherProviderIsANewPurchaseAndSkipKeepsItAsAPlainInstallment() = runBlocking<Unit> {
+    @Test fun anotherProviderIsANewPurchaseAndNotAnInstallmentIsNotAskedAgain() = runBlocking<Unit> {
         val w = World(listOf(charge("t1", 25_000, "2026-09-10"), charge("t2", 25_000, "2026-09-12", merchant = "Tamara")))
         w.bnpl.newPurchase("t1", BnplPurchase("جوال وهمي", null, 4))
         val ask = w.bnpl.settle().asks.single()
         assertEquals("t2", ask.transaction.id)
         assertEquals(BnplMatch.NewPurchase, ask.match, "a Tabby plan never takes a Tamara charge")
-        w.bnpl.skip("t2")
+        w.bnpl.notInstallment("t2")
         val t2 = w.txns.findByIds(listOf("t2")).single()
-        assertEquals(DuesCategories.PURCHASE_PLANS, t2.categoryId)
-        assertTrue(t2.economicKindConfirmed)
+        assertEquals(true, t2.bnplDecided)
+        assertNull(t2.categoryId, "the operation stays as it was")
         assertTrue(w.bnpl.settle().asks.isEmpty())
     }
 

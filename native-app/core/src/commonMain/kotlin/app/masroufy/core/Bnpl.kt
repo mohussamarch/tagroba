@@ -36,8 +36,11 @@ fun bnplProviderOf(name: String?): BnplProvider? {
 /** «كل قد إيه؟» — كل شهر (الافتراضي) أو كل أسبوعين. */
 enum class BnplCycle(val weeks: Int?) { MONTHLY(null), TWO_WEEKS(2) }
 
-/** خطة مفتوحة لنفس المزوّد: [remainingMinor] = الباقي عليها · [nextDueAt] = القسط الجاي (null = خلصت). */
-data class BnplOpenPlan(val plan: InstallmentPlan, val remainingMinor: Halalas, val nextDueAt: IsoDate?)
+/**
+ * خطة مفتوحة لنفس المزوّد: [remainingMinor] = الباقي عليها · [nextDueAt] = القسط الجاي (null = خلصت) · [paidCount] من [count] = الدفعات
+ * الكاملة (r051 — «فاضل 2 من 4» في «ده قسط من أنهي مشترى؟»).
+ */
+data class BnplOpenPlan(val plan: InstallmentPlan, val remainingMinor: Halalas, val nextDueAt: IsoDate?, val paidCount: Int = 0, val count: Int = 0)
 
 /** قسط واحد ممكن يختلف عن قسط الخطة بهللة واحدة (تقريب الإجمالي على العدد). */
 const val BNPL_AMOUNT_TOLERANCE: Halalas = 1
@@ -56,13 +59,17 @@ sealed interface BnplMatch {
 
 /**
  * المطابقة: خطط [provider] المفتوحة (فيها باقي) ⇒ اللي قسطها = [amountMinor] ±[BNPL_AMOUNT_TOLERANCE] ⇒ أقرب قسط جاي (لو أكتر من خطة بنفس
- * القسط). مفيش خطط ⇒ [BnplMatch.NewPurchase]. فيه خطط والمبلغ مختلف ⇒ [BnplMatch.AskWhich] (ما بنخمّنش).
+ * القسط). مفيش خطط ⇒ [BnplMatch.NewPurchase]. فيه خطط والمبلغ مختلف ⇒ [BnplMatch.AskWhich] (ما بنخمّنش). r051: خطة المالك رجّع
+ * ربطها اللي لوحده («تراجع» — [transactionId] في `dismissedTxnIds`) ما بتتربطش بيها لوحدها تاني، بس بتفضل في الاختيارات.
  */
-fun bnplMatch(provider: BnplProvider, amountMinor: Halalas, currency: Currency, open: List<BnplOpenPlan>): BnplMatch {
+fun bnplMatch(provider: BnplProvider, amountMinor: Halalas, currency: Currency, open: List<BnplOpenPlan>, transactionId: Id? = null): BnplMatch {
     assertHalalas(amountMinor)
     val mine = open.filter { bnplProviderOf(it.plan.provider) == provider && it.remainingMinor > 0 && it.plan.currency == currency }
     if (mine.isEmpty()) return BnplMatch.NewPurchase
-    val same = mine.filter { kotlin.math.abs(it.plan.installmentMinor - amountMinor) <= BNPL_AMOUNT_TOLERANCE && amountMinor <= it.remainingMinor + BNPL_AMOUNT_TOLERANCE }
+    val same = mine.filter {
+        kotlin.math.abs(it.plan.installmentMinor - amountMinor) <= BNPL_AMOUNT_TOLERANCE && amountMinor <= it.remainingMinor + BNPL_AMOUNT_TOLERANCE &&
+            (transactionId == null || transactionId !in it.plan.dismissedTxnIds)
+    }
     val best = same.minWithOrNull(compareBy({ it.nextDueAt ?: "9999-12-31" }, { it.plan.firstDueAt }, { it.plan.id }))
     return if (best != null) BnplMatch.NextInstallment(best.plan.id) else BnplMatch.AskWhich(mine.map { it.plan.id })
 }
