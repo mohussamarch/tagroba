@@ -61,6 +61,12 @@ fun backgroundCycle(spaces: List<Pair<Space, SpaceRepositories>>, inbox: SmsInbo
             openingDebtRepairs = spaces.map { (space, r) -> app.masroufy.usecase.RepairOpeningDebtCurrency(r.people, r.obligations, space.currency) },
             duplicateScans = spaces.map { (space, r) -> app.masroufy.usecase.DuplicateChargeAsks(space.id, r.transactions, env.clock) },
             categoryRepairs = spaces.map { (space, r) -> app.masroufy.usecase.RepairMissingDefaultSubs(r.categories, app.masroufy.seed.BundledSeeds, countryPack(space.countryCode)) },
+            // r06-1e (§110-2): قواعد محلات دراهم للحسابات الموجودة — مرة واحدة لكل بلد (علامة «خلص» في إعدادات الحساب)
+            ruleRepairs = spaces.map { (space, r) ->
+                app.masroufy.usecase.RepairDarahimRules(
+                    space.id, r.categories, r.rules, app.masroufy.seed.BundledSeeds, countryPack(space.countryCode), r.assistant.settings, env.clock,
+                )
+            },
         ),
     )
 }

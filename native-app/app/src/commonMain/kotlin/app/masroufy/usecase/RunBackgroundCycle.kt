@@ -37,6 +37,8 @@ data class BackgroundCycleDeps(
     val openingDebtRepairs: List<RepairOpeningDebtCurrency> = emptyList(),
     /** r06-darahim: الفرعيات الافتراضية الجديدة للحسابات القديمة — واحد لكل بلد، آمن التكرار. */
     val categoryRepairs: List<RepairMissingDefaultSubs> = emptyList(),
+    /** r06-1e (§110-2): قواعد محلات دراهم للحسابات الموجودة — بعد الفرعيات، مرة واحدة لكل بلد. */
+    val ruleRepairs: List<RepairDarahimRules> = emptyList(),
     /** r06-darahim (§12-5): علامة «مكرر؟» على آخر أيام — بعد التسجيل، واحد لكل بلد. بتعلّم بس، عمرها ما بتمسح. */
     val duplicateScans: List<DuplicateChargeAsks> = emptyList(),
     /** §75-7 (S4): لحاق خصومات الاشتراكات — واحد لكل بلد — بعد تسجيل الرسايل وقبل تجميع المرشحين (الاشتراك اللي اتدفع ما يطلعش «متأخر»). */
@@ -84,6 +86,7 @@ class RunBackgroundCycle(private val deps: BackgroundCycleDeps) {
         for (repair in deps.reversalRepairs) runCatchingNotCancel { repair.run() }
         for (repair in deps.openingDebtRepairs) runCatchingNotCancel { repair.run() }
         for (repair in deps.categoryRepairs) runCatchingNotCancel { repair.run() }
+        for (repair in deps.ruleRepairs) runCatchingNotCancel { repair.run() }
         for (scan in deps.duplicateScans) runCatchingNotCancel { scan.scanRecent() }
         var subscriptionsFailed = false
         for (match in deps.subscriptions) if (runCatchingNotCancel { match.catchUp(now.date) } == null) subscriptionsFailed = true

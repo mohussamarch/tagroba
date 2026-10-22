@@ -124,7 +124,14 @@ sealed interface UserSetting {
     ) : UserSetting {
         override val key: String get() = investDailyKey(spaceId)
     }
+
+    /** r06-1e: تصليح «مرة واحدة» خلص في البلد دي ([repair] اسمه الثابت) — `repairDone.<repair>.<spaceId>`. مفيش غير الاسم والبلد. */
+    data class RepairDone(val spaceId: String, val repair: String, override val updatedAt: String) : UserSetting {
+        override val key: String get() = repairDoneKey(repair, spaceId)
+    }
 }
+
+fun repairDoneKey(repair: String, spaceId: String) = "repairDone.$repair.$spaceId"
 
 fun investViewKey(spaceId: String) = "investView.$spaceId"
 
