@@ -89,7 +89,7 @@ internal class SmsGraph(
      */
     override suspend fun overviewPage(record: Boolean, skip: Int): SmsOverview = withContext(io) {
         if (skip <= 0) return@withContext overview(record)
-        val fresh = if (record) auto().runNew(memo).recordedTransactionIds.also { readMark() } else emptyList()
+        val fresh = if (record) auto().runNew(memo).recordedTransactionIds.also { readMark(it.isNotEmpty()) } else emptyList()
         inbox.page(skip)
         try {
             overview(record = false).copy(fresh = fresh)
@@ -98,13 +98,13 @@ internal class SmsGraph(
         }
     }
 
-    override suspend fun confirmMessages(ids: List<String>, categories: Map<String, Id>, isSalary: Boolean?) = extras.confirm(ids, categories, isSalary).also { readMark() }
+    override suspend fun confirmMessages(ids: List<String>, categories: Map<String, Id>, isSalary: Boolean?) = extras.confirm(ids, categories, isSalary).also { readMark(recorded = true) }
 
 
     override suspend fun overview(record: Boolean): SmsOverview = work {
         val auto = auto()
         // r051: الجديد بس (أو لفة كاملة صفحة صفحة لو حاجة اتغيرت من آخر مرة) · البنوك اللي مالهاش محفظة من غير معاينة ولا قفل
-        val result = if (record) auto.runNew(memo).also { readMark() } else null
+        val result = if (record) auto.runNew(memo).also { readMark(it.recordedTransactionIds.isNotEmpty()) } else null
         val view = manage.refresh()
         val unmapped = auto.unmappedQuick().filter { it.spaceId == space.id }
         val wallets = c.shell.addOptions().wallets
@@ -121,11 +121,15 @@ internal class SmsGraph(
         SmsOverview(view, unmapped, reviews.map { it.first }, senderWallets, result?.recordedTransactionIds.orEmpty())
     }
 
-    override suspend fun recordNew(): List<Id> = work { auto().runNew(memo).recordedTransactionIds.also { readMark() } }
+    override suspend fun recordNew(): List<Id> = work { auto().runNew(memo).recordedTransactionIds.also { readMark(it.isNotEmpty()) } }
 
-    /** 0.5.2: الشاشة قرت الصندوق — اللي كان فيه اتعاين (كارت «فيه رسايل فاتته» ما يعدّهوش). */
-    private fun readMark() {
+    /**
+     * 0.5.2: الشاشة قرت الصندوق — اللي كان فيه اتعاين (كارت «فيه رسايل فاتته» ما يعدّهوش). [recorded] ⇒ «مكرر؟» يتفحص على طول
+     * (`DuplicateChargeAsks`) زي دورة الخلفية — مش يستنى أول دورة.
+     */
+    private suspend fun readMark(recorded: Boolean = false) {
         runCatching { c.env.backgroundRead?.markAnyRead(c.env.nowMillis()) }
+        if (recorded) runCatching { app.masroufy.usecase.DuplicateChargeAsks(space.id, c.repos.transactions, c.env.clock).scanRecent() }
     }
 
     override suspend fun settings(): SmsOverview = work {

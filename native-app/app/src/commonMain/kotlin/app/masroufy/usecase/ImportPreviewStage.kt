@@ -112,6 +112,11 @@ internal suspend fun runPreview(deps: ImportStatementDeps, request: ImportReques
     for (row in outcome.rows) {
         val candidate = toCandidate(row, request.accountIdentity).copy(smsSource = request.sourceType == app.masroufy.core.ImportSourceType.SMS)
         var verdict = classifyCandidate(candidate, index, balanceUsed)
+        // 0.5.2 (§12-5): خصم تاني من نفس المحل في خلال الدقيقة ⇒ يتسجل و«مكرر؟» يتسأل (DuplicateChargeAsks) — مش «بانتظار تأكيدك»
+        val older = if (verdict.state == MatchingState.SIMILAR && candidate.smsSource) verdict.matchedTransactionId?.let { ledger.byId[it] } else null
+        if (older != null && app.masroufy.core.secondChargeWithinWindow(row.date, row.time, row.amountMinor, row.direction, row.merchantName, older)) {
+            verdict = DedupeVerdict(MatchingState.NEW, uiText(TextKey.DEDUPE_NEW))
+        }
         verdict.matchedBalanceKey?.let { key -> balanceUsed[key] = (balanceUsed[key] ?: 0) + 1 }
 
         val ref = candidate.sourceReference?.let { jsTrim(it) }

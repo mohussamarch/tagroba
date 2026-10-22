@@ -12,13 +12,15 @@ const val DUPLICATE_WINDOW_SECONDS = 60L
 private val CLOCK_SECONDS = Regex("^(\\d{1,2}):(\\d{2})(?::(\\d{2}))?")
 
 /** ثانية العملية من أول يوم 1970 (توقيتها المحلي — المقارنة بين عمليتين في نفس البلد)، أو null لو مالهاش ساعة. */
-fun operationSecondOf(t: Transaction): Long? {
-    if (t.datePrecision != "minute") return null
-    val m = CLOCK_SECONDS.find(t.sourceTime?.trim().orEmpty()) ?: return null
+fun operationSecondOf(t: Transaction): Long? = if (t.datePrecision != "minute") null else secondOn(t.occurredAt, t.sourceTime)
+
+/** ثانية اليوم [date] الساعة [time] («HH:mm» أو «HH:mm:ss») من أول 1970 — null لو الساعة ناقصة أو مش صالحة. */
+fun secondOn(date: IsoDate, time: String?): Long? {
+    val m = CLOCK_SECONDS.find(time?.trim().orEmpty()) ?: return null
     val (h, min) = m.groupValues[1].toInt() to m.groupValues[2].toInt()
     val s = m.groupValues[3].ifEmpty { "0" }.toInt()
     if (h > 23 || min > 59 || s > 59) return null
-    val day = runCatching { toDayNumber(parseIsoDate(t.occurredAt.take(10))) }.getOrNull() ?: return null
+    val day = runCatching { toDayNumber(parseIsoDate(date.take(10))) }.getOrNull() ?: return null
     return day.toLong() * 86_400L + h * 3_600L + min * 60L + s
 }
 
@@ -57,4 +59,18 @@ fun duplicateChargeIds(rows: List<Transaction>): Set<Id> {
         }
     }
     return out
+}
+
+/**
+ * 0.5.2 (§12-5 · OVERRIDES §109): رسالة خصم جديدة شبه خصم متسجل [older] (فحص الرسايل القديم: نفس الحساب واليوم والمبلغ) بس هي **خصم تاني من
+ * نفس المحل في خلال [DUPLICATE_WINDOW_SECONDS] ثانية** بمبلغ متقارب ⇒ تتسجل ويتسأل «مكرر؟» — مش تستنى تأكيد المالك. نفس الرسالة مرتين
+ * (نفس المرسل والوقت والنص) بتتشال قبل كده بالمرجع (`SMS:` + البصمة). من غير ساعة ⇒ false (يفضل الفحص القديم).
+ */
+fun secondChargeWithinWindow(date: IsoDate, time: String?, amountMinor: Halalas, direction: Direction, merchantName: String, older: Transaction): Boolean {
+    if (direction != Direction.OUT || older.observedDirection != Direction.OUT || older.transferToWalletId != null) return false
+    val name = normalizeText(merchantName)
+    if (name.isEmpty() || older.rawMerchantName?.let(::normalizeText) != name || !closeAmounts(amountMinor, older.amountMinor)) return false
+    val at = secondOn(date, time) ?: return false
+    val oAt = operationSecondOf(older) ?: return false
+    return (if (at > oAt) at - oAt else oAt - at) <= DUPLICATE_WINDOW_SECONDS
 }
