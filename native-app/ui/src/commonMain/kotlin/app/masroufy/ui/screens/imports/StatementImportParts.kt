@@ -64,7 +64,7 @@ internal fun PickBlock(pdf: List<SchemaId>, currency: Currency, picker: (() -> U
                 val press = rememberPress()
                 Box(
                     Modifier.fillMaxWidth().height(48.dp).alpha(if (picker != null) 1f else 0.45f).pressScale(press, picker != null).clip(RoundedCornerShape(16.dp))
-                        .background(Color.White).tap(press, picker != null, onClick = { picker?.invoke() }),
+                        .background(Ink.card).tap(press, picker != null, onClick = { picker?.invoke() }),
                     contentAlignment = Alignment.Center,
                 ) { BasicText(t(UiKey.STATEMENT_IMPORT_PICK_BUTTON), style = Type.of(15, FontWeight.Bold).copy(color = Ink.primary)) }
                 if (picker == null) BasicText(t(UiKey.STATEMENT_IMPORT_NO_PICKER), style = Type.caption().copy(color = Ink.onHeroMuted))

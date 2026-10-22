@@ -121,7 +121,7 @@ internal fun YearWheel(state: InvestFutureState) {
             }
             val press = rememberPress()
             Box(
-                Modifier.height(48.dp).shadow(10.dp, RoundedCornerShape(18.dp)).clip(RoundedCornerShape(18.dp)).background(Color.White)
+                Modifier.height(48.dp).shadow(10.dp, RoundedCornerShape(18.dp)).clip(RoundedCornerShape(18.dp)).background(Ink.card)
                     .tap(press) { state.closeWheel() }.padding(horizontal = 36.dp),
                 contentAlignment = Alignment.Center,
             ) { BasicText(t(FUT_WHEEL_DONE), style = Type.of(15, FontWeight.Bold).copy(color = Ink.primary)) }

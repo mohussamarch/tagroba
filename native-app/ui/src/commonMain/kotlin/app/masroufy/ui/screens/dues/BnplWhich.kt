@@ -76,7 +76,7 @@ private fun BnplChoice(title: String, sub: String?, on: Boolean, note: String?, 
     val press = rememberPress()
     val shape = RoundedCornerShape(18.dp)
     Column(
-        Modifier.fillMaxWidth().pressScale(press).clip(shape).background(Color.White)
+        Modifier.fillMaxWidth().pressScale(press).clip(shape).background(Ink.card)
             .insetRing(shape, if (on) 1.5.dp else 1.dp, if (on) Ink.primary else Ink.fieldEdge)
             .tap(press, onClick = onClick).semantics { role = Role.RadioButton; selected = on }
             .padding(horizontal = 14.dp, vertical = 12.dp),

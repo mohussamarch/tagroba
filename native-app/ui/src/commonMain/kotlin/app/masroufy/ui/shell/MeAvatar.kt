@@ -49,8 +49,8 @@ import kotlin.math.max
  * (لسه ما اتبنتش) ⇒ الشكل المحايد الوحيد في النموذج.
  */
 
-private val ringProgress = Ink.income
-private val ringTrack = Ink.tint(0x1F)
+private val ringProgress get() = Ink.income
+private val ringTrack get() = Ink.tint(0x1F)
 
 @Composable
 fun MeAvatar(size: Dp, percent: Int?, modifier: Modifier = Modifier, character: CharacterLook? = null) {

@@ -85,7 +85,7 @@ internal fun ErrorBanner(title: String, body: String, retryLabel: String, onRetr
         }
         val press = rememberPress()
         Box(
-            Modifier.height(48.dp).pressScale(press).clip(RoundedCornerShape(16.dp)).background(Color.White)
+            Modifier.height(48.dp).pressScale(press).clip(RoundedCornerShape(16.dp)).background(Ink.card)
                 .tap(press, onClick = onRetry).padding(horizontal = 14.dp),
             contentAlignment = Alignment.Center,
         ) { BasicText(retryLabel, style = Type.of(13, FontWeight.Bold).copy(color = Ink.primary)) }

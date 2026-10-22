@@ -34,7 +34,7 @@ import app.masroufy.ui.theme.LocalReduceMotion
 import app.masroufy.ui.theme.Type
 
 private val STILL_EASE = CubicBezierEasing(0.3f, 1.5f, 0.6f, 1f)
-private val MUTED = Ink.muted
+private val MUTED get() = Ink.muted
 
 /**
  * علامة التحميل «عملات بتترص» (قرار المالك 2026-10-22 — بدل دايرة أندرويد). **مكوّن واحد** لكل الأماكن: شاشة بتحمّل (112 + [text]) ·

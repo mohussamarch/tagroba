@@ -40,8 +40,8 @@ import app.masroufy.ui.theme.Type
 
 private val CARD = RoundedCornerShape(22.dp)
 private val PAD = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
-private val GOAL_GREY = Ink.muted
-private val WARN = Ink.focus
+private val GOAL_GREY get() = Ink.muted
+private val WARN get() = Ink.focus
 
 /** الكروت التلاتة تحت التشارت (`InvestFutureCards` — مواصفة §1.6): الدخل من غير شغل · المحطات والأهداف · البلدين (لو فيه بلدين). */
 @Composable

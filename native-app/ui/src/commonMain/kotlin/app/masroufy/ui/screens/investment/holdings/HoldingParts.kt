@@ -26,10 +26,10 @@ import androidx.compose.ui.unit.dp
 import app.masroufy.ui.theme.Ink
 
 /** قطع صغيرة مشتركة لملفات «حاجاتي» (بنفس قيم النموذج). */
-internal val SOFT_FILL = Ink.tint(0x0D)
-internal val CHIP_FILL = Ink.tint(0x0F)
+internal val SOFT_FILL get() = Ink.tint(0x0D)
+internal val CHIP_FILL get() = Ink.tint(0x0F)
 internal val ADD_FILL = Color(0x8CFFFFFF)
-internal val DASH = Ink.primary.copy(alpha = 0x66 / 255f)
+internal val DASH get() = Ink.primary.copy(alpha = 0x66 / 255f)
 internal val PLAN_THUMB = Color(0xFFB7791F)
 
 /** ضغطة باسم للقارئ (زرار). */

@@ -97,7 +97,7 @@ internal fun AssistantHistory(p: AskPresenter, onClose: () -> Unit, onCopied: (S
                 }
                 item(key = "l-${group.name}") {
                     val shape = RoundedCornerShape(20.dp)
-                    Column(Modifier.fillMaxWidth().layeredShadow(shape, listShadow).clip(shape).background(Color.White).innerSheen(shape, listShadow).padding(start = 2.dp, end = 4.dp)) {
+                    Column(Modifier.fillMaxWidth().layeredShadow(shape, listShadow).clip(shape).background(Ink.card).innerSheen(shape, listShadow).padding(start = 2.dp, end = 4.dp)) {
                         inGroup.forEachIndexed { i, row ->
                             HistoryRowView(row, current = row.conversation.id == p.view?.conversation?.id, onOpen = { go { p.openPast(row.conversation.id) } }) {
                                 go { p.deleteConversation(row) }
@@ -128,7 +128,7 @@ private fun MemoryCard(p: AskPresenter, onCopied: (String) -> Unit, go: (suspend
     var confirming by remember { mutableStateOf(false) }
     val shape = RoundedCornerShape(20.dp)
     Column(
-        Modifier.fillMaxWidth().layeredShadow(shape, listShadow).clip(shape).background(Color.White).innerSheen(shape, listShadow).padding(14.dp),
+        Modifier.fillMaxWidth().layeredShadow(shape, listShadow).clip(shape).background(Ink.card).innerSheen(shape, listShadow).padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         BasicText(t(AskKey.CHAT_MEMORY_TITLE), Modifier.semantics { heading() }, style = Type.bodyBold())

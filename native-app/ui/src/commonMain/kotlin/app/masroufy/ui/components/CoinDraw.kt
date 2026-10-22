@@ -31,8 +31,8 @@ private val INNER = listOf(Color(0xFFD9A93C), Color(0xFFF3D17A))
 private val INNER_STROKE = Color(0xFFB5832A)
 private val RING = Color(0xFFFFF4CC).copy(alpha = 0.55f)
 private val REED = Color(0xFFF6D98A).copy(alpha = 0.45f)
-private val GLINT = listOf(Color.White.copy(alpha = 0f), Color.White.copy(alpha = 0.85f), Color.White.copy(alpha = 0f))
-private val FLOOR = listOf(Ink.tint(0xFF).copy(alpha = 0.28f), Ink.tint(0xFF).copy(alpha = 0f))
+private val GLINT = listOf(Color.White.copy(alpha = 0f), Ink.card.copy(alpha = 0.85f), Color.White.copy(alpha = 0f))
+private val FLOOR get() = listOf(Ink.tint(0xFF).copy(alpha = 0.28f), Ink.tint(0xFF).copy(alpha = 0f))
 
 private val edgePath = Path().apply {
     moveTo(2f, 8f); lineTo(2f, 14f)

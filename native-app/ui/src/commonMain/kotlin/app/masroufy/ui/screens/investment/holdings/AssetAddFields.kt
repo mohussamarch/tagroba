@@ -105,7 +105,7 @@ private fun TypeButton(type: HoldingType, modifier: Modifier, onClick: () -> Uni
     ) {
         Box(
             Modifier.size(36.dp).shadow(4.dp, RoundedCornerShape(12.dp), ambientColor = SHADOW, spotColor = SHADOW).clip(RoundedCornerShape(12.dp))
-                .background(Color.White),
+                .background(Ink.card),
             contentAlignment = Alignment.Center,
         ) { LucideIcon(typeIcon(type), size = 20.dp, tint = Ink.primary) }
         BasicText(label, style = Type.of(12, FontWeight.Bold, 1.4))
@@ -208,7 +208,7 @@ private fun HoldField(spec: FieldSpec, value: String, bad: Boolean, onChange: (S
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         BasicText(spec.label, style = Type.of(13, FontWeight.Bold))
         Row(
-            Modifier.fillMaxWidth().height(48.dp).clip(RoundedCornerShape(16.dp)).background(Color.White)
+            Modifier.fillMaxWidth().height(48.dp).clip(RoundedCornerShape(16.dp)).background(Ink.card)
                 .insetBorder(if (bad) 1.5.dp else 1.dp, if (bad) Ink.expense else Ink.fieldEdge, 16.dp).padding(horizontal = 14.dp),
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {

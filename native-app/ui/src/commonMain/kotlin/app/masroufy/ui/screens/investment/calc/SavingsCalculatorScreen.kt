@@ -161,7 +161,7 @@ private fun ModeSwitch(mode: SavingsMode, onPick: (SavingsMode) -> Unit) {
             val press = rememberPress()
             val shape = RoundedCornerShape(16.dp)
             Column(
-                Modifier.weight(1f).heightIn(min = 48.dp).pressScale(press).clip(shape).then(if (on) Modifier.background(Color.White) else Modifier)
+                Modifier.weight(1f).heightIn(min = 48.dp).pressScale(press).clip(shape).then(if (on) Modifier.background(Ink.card) else Modifier)
                     .tap(press, role = Role.RadioButton) { onPick(m) }.semantics { selected = on }.padding(horizontal = 8.dp, vertical = 6.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,

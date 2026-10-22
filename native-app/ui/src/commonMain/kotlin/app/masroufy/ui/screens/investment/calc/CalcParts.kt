@@ -51,7 +51,7 @@ internal object CalcIcons {
 }
 
 /** كهرماني «غير متاح» / ملاحظة (النموذج: `#956000` و`#6B4600` على `#FBF0DD`). */
-internal val warnInk = Ink.focus
+internal val warnInk get() = Ink.focus
 internal val warnDeep = Color(0xFF6B4600)
 
 /** خانة رقم أو مبلغ (النموذج: عنوان 13 · خانة بيضا 48 · الوحدة على الشمال · سطر ملاحظة أو خطأ تحتها). */

@@ -202,7 +202,7 @@ private fun ChatHeader(title: String, subtitle: String, canStartNew: Boolean, on
 
 private val brandShadow = listOf(ShadowLayer(0.dp, 1.dp, 0.dp, Color(0x38FFFFFF), inset = true), ShadowLayer(0.dp, 8.dp, 18.dp, Color(0x40064B40)))
 private val boxShadow = listOf(ShadowLayer(0.dp, 10.dp, 26.dp, Color(0x1A1D3635)))
-private val boxShadowFocused = listOf(ShadowLayer(0.dp, 10.dp, 26.dp, Ink.primary.copy(alpha = 0x2E / 255f)))
+private val boxShadowFocused get() = listOf(ShadowLayer(0.dp, 10.dp, 26.dp, Ink.primary.copy(alpha = 0x2E / 255f)))
 
 /**
  * مستطيل الكتابة (طلب المالك: «واضح إن في مستطيل أدوس عليه علشان أكتب»): 52 بزاوية 18 أبيض بإطار باين 1.5 بيقوى لـ2 أخضر لما تدوس،
@@ -216,7 +216,7 @@ private fun InputBox(draft: String, onDraft: (String) -> Unit, onMic: () -> Unit
     val ring = if (focused) Modifier.insetRing(shape, 2.dp, Ink.primary) else Modifier.insetRing(shape, 1.5.dp, Ink.primary.copy(alpha = 0x40 / 255f))
     // المستطيل كله بزراره (الإرسال · الميكروفون) ما بيقفلش الكيبورد — الضغط برّاه بيقفله (`OutsideTapRoot`)
     Row(
-        Modifier.fillMaxWidth().height(52.dp).keepsKeyboard().layeredShadow(shape, if (focused) boxShadowFocused else boxShadow).clip(shape).background(Color.White)
+        Modifier.fillMaxWidth().height(52.dp).keepsKeyboard().layeredShadow(shape, if (focused) boxShadowFocused else boxShadow).clip(shape).background(Ink.card)
             .then(ring).padding(horizontal = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically,

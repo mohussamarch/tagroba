@@ -105,8 +105,8 @@ internal fun BnplBadge(p: BnplProvider, size: Dp = 56.dp, fontSize: Int = 15) {
     ) { BasicText(name, style = Type.of(fontSize, FontWeight.Bold).copy(color = tint.ink), maxLines = 1) }
 }
 
-internal val BnplGreen = Brush.linearGradient(listOf(Color(0xFF0A7A62), Ink.primary.copy(alpha = 0xFF / 255f)))
-private val ChipOff = Ink.tint(0x0F)
+internal val BnplGreen get() = Brush.linearGradient(listOf(Color(0xFF0A7A62), Ink.primary.copy(alpha = 0xFF / 255f)))
+private val ChipOff get() = Ink.tint(0x0F)
 
 /** شريحة اختيار بشكل اللوحة: المختارة خضرا بنص أبيض عريض، والباقي رمادي فاتح — ارتفاع 44 وحواف 14. */
 @Composable
@@ -173,7 +173,7 @@ internal fun BnplTag(state: BnplStepState, before: Boolean = false) {
 @Composable
 internal fun BnplDot(paid: Boolean) {
     val m = Modifier.size(12.dp).clip(CircleShape)
-    Box(if (paid) m.background(Ink.primary) else m.background(Color.White).border(2.dp, Ink.primary.copy(alpha = 0.45f), CircleShape))
+    Box(if (paid) m.background(Ink.primary) else m.background(Ink.card).border(2.dp, Ink.primary.copy(alpha = 0.45f), CircleShape))
 }
 
 /**

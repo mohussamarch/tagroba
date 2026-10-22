@@ -53,8 +53,8 @@ import app.masroufy.usecase.TopSpendView
  * مترتبة. كل الأرقام والنسب جاهزة من حالة الاستخدام — الأجزاء دي بتعرض بس.
  */
 
-private val SHARE_REST = Ink.tint(0x2E)
-private val ROW_TRACK = Ink.tint(0x12)
+private val SHARE_REST get() = Ink.tint(0x2E)
+private val ROW_TRACK get() = Ink.tint(0x12)
 private val CHIP_IDLE = Color(0xB3FFFFFF)
 
 /**

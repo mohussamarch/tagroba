@@ -127,7 +127,7 @@ internal fun StatusChip(text: String, chip: Chip, modifier: Modifier = Modifier,
         Chip.SOON -> if (onHero) Ink.amber to Ink.amber.copy(alpha = 0.16f) else Ink.focus to Ink.alertBg
         Chip.UPCOMING -> if (onHero) Ink.selected to Color(0x29DCEBD6) else Ink.primary to Ink.selected
         Chip.CALM -> if (onHero) Ink.onHeroMuted to Color(0x1FFFFFFF) else Ink.muted to Ink.muted.copy(alpha = 0.10f)
-        Chip.MUTED -> if (onHero) Ink.text to Color(0xCCFFFFFF) else Ink.muted to Ink.muted.copy(alpha = 0.12f)
+        Chip.MUTED -> if (onHero) Ink.text to Ink.card.copy(alpha = 0.8f) else Ink.muted to Ink.muted.copy(alpha = 0.12f)
     }
     Box(modifier.clip(RoundedCornerShape(12.dp)).background(bg).padding(horizontal = 8.dp, vertical = 2.dp)) {
         BasicText(text, style = Type.of(11, FontWeight.Bold).copy(color = ink), maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -238,7 +238,7 @@ internal fun DangerButton(text: String, onClick: () -> Unit, modifier: Modifier 
     val press = rememberPress()
     val shape = RoundedCornerShape(16.dp)
     Box(
-        modifier.height(48.dp).alpha(if (enabled) 1f else 0.45f).pressScale(press, enabled).clip(shape).background(Color.White)
+        modifier.height(48.dp).alpha(if (enabled) 1f else 0.45f).pressScale(press, enabled).clip(shape).background(Ink.card)
             .insetRing(shape, 1.dp, Ink.expense.copy(alpha = 0.25f)).tap(press, enabled, onClick = onClick).padding(horizontal = 14.dp),
         contentAlignment = Alignment.Center,
     ) { BasicText(text, style = Type.of(14, FontWeight.Bold).copy(color = Ink.expense, textAlign = TextAlign.Center)) }

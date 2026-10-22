@@ -117,7 +117,7 @@ fun DangerButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifie
     val shape = RoundedCornerShape(Radius.control)
     val press = rememberPress()
     Box(
-        modifier.height(height).pressScale(press).clip(shape).background(Color.White).insetRing(shape, 1.dp, Ink.expense.copy(alpha = 0x40 / 255f))
+        modifier.height(height).pressScale(press).clip(shape).background(Ink.card).insetRing(shape, 1.dp, Ink.expense.copy(alpha = 0x40 / 255f))
             .tap(press, onClick = onClick).padding(horizontal = 14.dp),
         contentAlignment = Alignment.Center,
     ) {
@@ -152,7 +152,7 @@ fun ErrorCard(title: String, body: String, onRetry: () -> Unit, modifier: Modifi
         BasicText(body, style = Type.of(13).copy(color = Ink.focus))
         val press = rememberPress()
         Box(
-            Modifier.height(44.dp).pressScale(press).clip(RoundedCornerShape(Radius.lensSmall)).background(Color(0xCCFFFFFF))
+            Modifier.height(44.dp).pressScale(press).clip(RoundedCornerShape(Radius.lensSmall)).background(Ink.card.copy(alpha = 0.8f))
                 .tap(press, onClick = onRetry).padding(horizontal = 16.dp),
             contentAlignment = Alignment.Center,
         ) { BasicText(t(UiKey.SHELL_RETRY), style = Type.of(14, FontWeight.Bold).copy(color = Ink.primary)) }

@@ -82,7 +82,7 @@ fun SmsStatusBanner(status: SmsStatus?, onSettings: () -> Unit, onPaste: () -> U
         if (button != null) {
             val press = rememberPress()
             Box(
-                Modifier.height(44.dp).pressScale(press).clip(RoundedCornerShape(14.dp)).background(Color.White.copy(alpha = 0.85f))
+                Modifier.height(44.dp).pressScale(press).clip(RoundedCornerShape(14.dp)).background(Ink.card.copy(alpha = 0.85f))
                     .tap(press, onClick = button.second).padding(horizontal = 12.dp),
                 contentAlignment = Alignment.Center,
             ) { BasicText(t(button.first), style = Type.of(13, FontWeight.Bold).copy(color = Ink.primary)) }

@@ -48,7 +48,7 @@ internal object MoneyWhatIcons {
     val ROTATE = Lucide("MW_ROTATE", "M3 12a9 9 0 1 0 3-6.7L3 8", "M3 3v5h5")
 }
 
-private val TileBg = ChipInk.greyBg
+private val TileBg get() = ChipInk.greyBg
 
 /** السطر الأصفر: ليه التحويل ده مش شبه المرتب. */
 @Composable

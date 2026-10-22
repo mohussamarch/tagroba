@@ -168,7 +168,7 @@ private fun PayLineRow(line: PayLine, checked: Boolean, currency: Currency, onTo
         val fill = when {
             line.done -> Modifier.clip(box).background(Ink.income)
             checked -> Modifier.clip(box).background(Ink.primary)
-            else -> Modifier.clip(box).background(Color.White).insetRing(box, 1.5.dp, Ink.faded)
+            else -> Modifier.clip(box).background(Ink.card).insetRing(box, 1.5.dp, Ink.faded)
         }
         Box(Modifier.size(24.dp).then(fill), contentAlignment = Alignment.Center) {
             if (checked) LucideIcon(Lucide.CHECK, size = 14.dp, tint = Color.White)

@@ -113,7 +113,7 @@ private fun TurnChip(modifier: Modifier, num: String, whenText: String?, on: Boo
     val press = rememberPress()
     val shape = RoundedCornerShape(16.dp)
     val surface = if (on) Modifier.background(Brush.linearGradient(listOf(Ink.heroStart, Ink.heroEnd)))
-    else Modifier.background(Color.White).insetRing(shape, 1.dp, Ink.fieldEdge)
+    else Modifier.background(Ink.card).insetRing(shape, 1.dp, Ink.fieldEdge)
     Column(
         modifier.height(56.dp).pressScale(press).clip(shape).then(surface).tap(press, onClick = onClick)
             .semantics { selected = on; contentDescription = listOfNotNull(num, whenText).joinToString(t(UiKey.DUES_COMMA)) },

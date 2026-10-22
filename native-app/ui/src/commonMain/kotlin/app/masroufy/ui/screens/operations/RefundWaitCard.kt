@@ -72,7 +72,7 @@ private fun RefundOffButton(onClick: () -> Unit) {
     val press = rememberPress()
     val shape = RoundedCornerShape(18.dp)
     Row(
-        Modifier.fillMaxWidth().heightIn(min = 60.dp).pressScale(press).clip(shape).background(Color.White)
+        Modifier.fillMaxWidth().heightIn(min = 60.dp).pressScale(press).clip(shape).background(Ink.card)
             .border(1.5.dp, Ink.transfer.copy(alpha = 0.35f), shape).tap(press, onClick = onClick).padding(horizontal = 12.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
