@@ -1212,11 +1212,27 @@
     },
     "Loaders.dc.html": {
       "is_interactive": true,
-      "title": "علامة التحميل · Loaders (3 أشكال: الشاشة · السحب للتحديث · الزرار)",
+      "title": "علامة التحميل · Loaders (عملات بتترص — الشاشة · السحب للتحديث · الزرار)",
       "x": 0,
       "y": 32500,
       "w": 390,
       "h": 844
+    },
+    "CoinLoader.dc.html": {
+      "is_interactive": true,
+      "title": "العملات · CoinLoader (المكوّن اللي بيتحط في كل مكان)",
+      "x": 440,
+      "y": 32500,
+      "w": 200,
+      "h": 160
+    },
+    "PullRefresh.dc.html": {
+      "is_interactive": true,
+      "title": "السحب للتحديث · PullRefresh (جوه العمليات والرئيسية)",
+      "x": 440,
+      "y": 32700,
+      "w": 390,
+      "h": 120
     }
   },
   "createdOnFiles": {
@@ -1526,7 +1542,9 @@
     "WithWho.dc.html",
     "SmsPending.dc.html",
     "SmsAway.dc.html",
-    "Loaders.dc.html"
+    "Loaders.dc.html",
+    "CoinLoader.dc.html",
+    "PullRefresh.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"

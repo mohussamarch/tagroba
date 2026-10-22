@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>علامة العملات — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+.cn-stage{position:relative;width:64px;height:64px;display:block;flex-shrink:0;transform-origin:center}
+.cn,.cn-still{position:absolute;left:8px;width:48px;height:22px;transform-origin:50% 100%;will-change:transform,opacity;backface-visibility:hidden}
+.cn{animation:cn-drop 2.4s infinite both}
+.cn-still{transition:transform 220ms cubic-bezier(.3,1.5,.6,1),opacity 160ms ease-out}
+.cn svg,.cn-still svg{display:block;overflow:visible}
+.cn-shine{transform:translateX(-30px);animation:cn-shine 2.4s cubic-bezier(.4,0,.2,1) infinite}
+.cn-floor{position:absolute;left:10px;bottom:4px;width:44px;height:8px;border-radius:50%;background:radial-gradient(closest-side,rgba(25,61,51,.28),rgba(25,61,51,0));transform-origin:center;animation:cn-floor 2.4s ease-in-out infinite}
+@keyframes cn-drop{
+0%{transform:translateY(-44px);opacity:0;animation-timing-function:cubic-bezier(.55,0,1,.45)}
+8%{opacity:1}
+22%{transform:translateY(0) scale(1.07,.8);animation-timing-function:cubic-bezier(0,.55,.45,1)}
+29%{transform:translateY(-5px) scale(.98,1.03);animation-timing-function:cubic-bezier(.55,0,1,.45)}
+35%{transform:translateY(0) scale(1,1)}
+78%{transform:translateY(0);opacity:1;animation-timing-function:cubic-bezier(.4,0,1,1)}
+92%,100%{transform:translateY(8px) scale(.96);opacity:0}}
+@keyframes cn-shine{0%,50%{transform:translateX(-30px)}72%,100%{transform:translateX(30px)}}
+@keyframes cn-floor{0%,10%{transform:scaleX(.55);opacity:.4}40%,78%{transform:scaleX(1);opacity:1}100%{transform:scaleX(.55);opacity:.4}}
+@media (prefers-reduced-motion: reduce){.cn{animation:none}.cn-shine{animation:none}.cn-floor{animation:none}.cn-still{transition:none}}
+</style>
+</helmet>
+<span role="img" aria-label="{{aria}}" style="{{wrap}}">
+  <svg width="0" height="0" aria-hidden="true" style="position: absolute">
+    <defs>
+      <linearGradient id="{{u.edge}}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C08A22"></stop><stop offset="1" stop-color="#7E5410"></stop></linearGradient>
+      <radialGradient id="{{u.top}}" cx="0.36" cy="0.3" r="0.8"><stop offset="0" stop-color="#FFF1BF"></stop><stop offset="0.45" stop-color="#F0C75C"></stop><stop offset="1" stop-color="#C9952B"></stop></radialGradient>
+      <linearGradient id="{{u.inner}}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D9A93C"></stop><stop offset="1" stop-color="#F3D17A"></stop></linearGradient>
+      <linearGradient id="{{u.glint}}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0"></stop><stop offset="0.5" stop-color="#FFFFFF" stop-opacity="0.85"></stop><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"></stop></linearGradient>
+      <clipPath id="{{u.face}}" clipPathUnits="userSpaceOnUse"><ellipse cx="24" cy="8" rx="22" ry="7"></ellipse></clipPath>
+    </defs>
+  </svg>
+  <span style="{{holder}}"><span class="cn-stage" style="{{scale}}">
+    <span class="cn-floor" style="{{floor}}"></span>
+    <sc-for list="{{coins}}" as="c" hint-placeholder-count="3">
+      <span class="{{c.cls}}" style="{{c.style}}"><svg width="48" height="22" viewBox="0 0 48 22">
+        <path d="M2 8v6a22 7 0 0 0 44 0V8a22 7 0 0 1-44 0z" fill="{{u.edgeUrl}}"></path>
+        <path d="M3 11.5a21 6.6 0 0 0 42 0" fill="none" stroke="#F6D98A" stroke-opacity="0.45" stroke-width="5" stroke-dasharray="0.9 1.9"></path>
+        <ellipse cx="24" cy="8" rx="22" ry="7" fill="{{u.topUrl}}"></ellipse>
+        <ellipse cx="24" cy="8" rx="15.5" ry="4.8" fill="{{u.innerUrl}}" stroke="#B5832A" stroke-width="0.8"></ellipse>
+        <ellipse cx="24" cy="8.6" rx="15.5" ry="4.8" fill="none" stroke="#FFF4CC" stroke-opacity="0.55" stroke-width="0.7"></ellipse>
+        <g clip-path="{{u.faceUrl}}"><rect class="cn-shine" x="14" y="-2" width="9" height="20" fill="{{u.glintUrl}}" style="{{c.shine}}" transform="skewX(-22)"></rect></g>
+      </svg></span>
+    </sc-for>
+  </span></span>
+  <sc-if value="{{hasText}}" hint-placeholder-val="{{ true }}"><span style="{{textStyle}}">{{text}}</span></sc-if>
+</span>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"size":{"editor":"number","default":64,"section":"العلامة"},"text":{"editor":"text","default":"بنجهّز فلوسك…","section":"العلامة"},"tone":{"editor":"enum","options":["فاتح","على أخضر"],"default":"فاتح","section":"العلامة"},"row":{"editor":"boolean","default":false,"section":"العلامة"},"count":{"editor":"number","default":-1,"section":"العلامة"},"$preview":{"width":200,"height":160}}'>
+// علامة التحميل «عملات بتترص» (اختيار المالك 2026-10-22) — مكوّن واحد بيتحط في كل مكان بيحمّل أو بيحدّث أو بيحفظ
+// size: مقاس العلامة بالبكسل · text: الكلام جنبها (فاضي = من غير كلام) · row: الكلام جنبها بدل ما يكون تحتها
+// count: من -1 لـ3 — -1 = الحركة شغالة · 0..3 = عدد العملات المرصوصة ثابتة (وانت بتسحب للتحديث بتترص واحدة واحدة)
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    window.__cnN = (window.__cnN || 0) + 1;
+    this.uid = 'cn' + window.__cnN + '-';
+  }
+  renderVals() {
+    const p = this.props;
+    const size = Number(p.size) > 0 ? Number(p.size) : 64;
+    const n = Number(p.count);
+    const live = !(n >= 0);
+    const onDark = p.tone === 'على أخضر';
+    const text = p.text == null ? '' : String(p.text);
+    const ids = ['edge', 'top', 'inner', 'glint', 'face'];
+    const u = {};
+    ids.forEach((k) => { u[k] = this.uid + k; u[k + 'Url'] = 'url(#' + this.uid + k + ')'; });
+    const coins = [0, 1, 2].map((i) => ({
+      cls: live ? 'cn' : 'cn-still',
+      style: 'bottom: ' + (8 + i * 7) + 'px; ' + (live ? 'animation-delay: ' + (i * 0.28).toFixed(2) + 's' : (i < n ? 'transform: translateY(0); opacity: 1' : 'transform: translateY(-16px); opacity: 0')),
+      shine: live ? 'animation-delay: ' + (0.9 + i * 0.12).toFixed(2) + 's' : 'animation: none'
+    }));
+    return {
+      u, coins,
+      aria: text || 'بيحمّل',
+      wrap: 'display: flex; align-items: center; justify-content: center; gap: ' + (p.row ? 8 : Math.round(size * 0.08)) + 'px; flex-direction: ' + (p.row ? 'row' : 'column'),
+      holder: 'width: ' + size + 'px; height: ' + size + 'px; display: flex; align-items: center; justify-content: center; flex-shrink: 0',
+      scale: 'transform: scale(' + (size / 64).toFixed(3) + ')',
+      floor: live ? '' : 'animation: none; opacity: ' + (n > 0 ? 1 : 0.4),
+      hasText: text !== '',
+      text,
+      textStyle: 'font-size: ' + (size >= 80 ? 14 : 12) + 'px; font-weight: ' + (size >= 80 || onDark ? 700 : 500) + '; line-height: 1.5; white-space: nowrap; color: ' + (onDark ? '#FFFFFF' : '#637570')
+    };
+  }
+}
+</script>
+</body>
+</html>

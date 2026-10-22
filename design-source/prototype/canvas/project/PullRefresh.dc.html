@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>السحب للتحديث — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div ref="{{setRoot}}" aria-live="polite" style="{{box}}">
+  <dc-import name="CoinLoader" size="34" row="{{ true }}" count="{{count}}" text="{{label}}" hint-size="150px,34px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"demo":{"editor":"boolean","default":false,"section":"الحالة"},"$preview":{"width":390,"height":120}}'>
+// السحب للتحديث بالعملات (طلب المالك 2026-10-22: «محتاجها في كله») — بيتحط أول حاجة جوه أي شاشة فيها .m-scroll
+// اسحب لتحت من أول الصفحة (بالصباع أو بالماوس، أو لفّ عجلة الماوس لفوق وانت في الأول): العملات بتترص واحدة واحدة مع السحب ⇐ سيب ⇐ الحركة تشتغل «بنحدّث…» ⇐ «اتحدّث دلوقتي»
+// demo: يفضل في حالة «بنحدّث…» (للوحة الثابتة)
+const FULL = 64, MAX = 120, BUSY = 60;
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { pull: 0, phase: 'idle', anim: false };
+    this.cur = { pull: 0, phase: 'idle' };
+    this.g = null;
+    this.setRoot = (el) => { this.root = el; };
+    this.onDown = (e) => { if (e.pointerType === 'mouse' && e.button === 0) this.begin(e.clientY); };
+    this.onMove = (e) => { if (e.pointerType === 'mouse') this.move(e.clientY, e); };
+    this.onUp = (e) => { if (e.pointerType === 'mouse') this.end(); };
+    this.onTs = (e) => { if (e.touches.length === 1) this.begin(e.touches[0].clientY); };
+    this.onTm = (e) => { if (e.touches.length === 1) this.move(e.touches[0].clientY, e); };
+    this.onTe = () => this.end();
+    this.onWheel = (e) => this.wheel(e);
+    this.onClick = (e) => { if (this.dragged) { e.preventDefault(); e.stopPropagation(); this.dragged = false; } };
+  }
+  componentDidMount() {
+    let p = this.root && this.root.parentElement;
+    while (p && !(p.querySelector && p.querySelector('.m-scroll'))) p = p.parentElement;
+    this.host = p; this.sc = p ? p.querySelector('.m-scroll') : null;
+    const sc = this.sc;
+    if (!sc) { this.apply(BUSY, 'busy', false); return; } // لوحده على اللوحة: يعرض «بنحدّث…»
+    sc.style.overscrollBehaviorY = 'contain';
+    sc.addEventListener('pointerdown', this.onDown);
+    sc.addEventListener('pointermove', this.onMove);
+    sc.addEventListener('pointerup', this.onUp);
+    sc.addEventListener('touchstart', this.onTs, { passive: true });
+    sc.addEventListener('touchmove', this.onTm, { passive: false });
+    sc.addEventListener('touchend', this.onTe);
+    sc.addEventListener('wheel', this.onWheel, { passive: true });
+    sc.addEventListener('click', this.onClick, true);
+    if (this.props.demo) this.hold();
+  }
+  componentDidUpdate(prev) { if (!!prev.demo !== !!this.props.demo) { if (this.props.demo) this.hold(); else this.apply(0, 'idle', true); } }
+  componentWillUnmount() {
+    clearTimeout(this.t); clearTimeout(this.wt);
+    const sc = this.sc;
+    if (!sc) return;
+    ['pointerdown', 'pointermove', 'pointerup', 'touchstart', 'touchmove', 'touchend', 'wheel'].forEach((n, i) => sc.removeEventListener(n, [this.onDown, this.onMove, this.onUp, this.onTs, this.onTm, this.onTe, this.onWheel][i]));
+    sc.removeEventListener('click', this.onClick, true);
+    sc.style.transform = '';
+  }
+  locked() { return this.cur.phase === 'busy' || this.cur.phase === 'done'; }
+  begin(y) {
+    if (!this.sc || this.locked() || this.sc.scrollTop > 0) { this.g = null; return; }
+    const h = this.host, r = h.getBoundingClientRect();
+    this.g = { y0: y, k: (r.height / (h.offsetHeight || 844)) || 1, on: false };
+  }
+  move(y, e) {
+    const g = this.g;
+    if (!g) return;
+    const dy = (y - g.y0) / g.k;
+    if (!g.on && dy < 6) return;
+    if (!g.on) { g.on = true; this.dragged = true; this.sc.style.userSelect = 'none'; if (e.pointerId != null && this.sc.setPointerCapture) { try { this.sc.setPointerCapture(e.pointerId); } catch (x) {} } }
+    if (e.cancelable && e.type === 'touchmove') e.preventDefault();
+    const pull = Math.max(0, Math.min(MAX, dy * 0.5));
+    this.apply(pull, pull >= FULL ? 'ready' : 'pull', false);
+  }
+  end() {
+    const g = this.g;
+    this.g = null;
+    if (!g) return;
+    if (this.sc) this.sc.style.userSelect = '';
+    if (!g.on) { this.dragged = false; return; }
+    this.release();
+  }
+  wheel(e) {
+    if (!this.sc || this.locked() || this.sc.scrollTop > 0 || e.deltaY >= 0) return;
+    const pull = Math.min(MAX, this.cur.pull + Math.min(40, -e.deltaY * 0.35));
+    this.apply(pull, pull >= FULL ? 'ready' : 'pull', false);
+    clearTimeout(this.wt);
+    this.wt = setTimeout(() => this.release(), 180);
+  }
+  release() { if (this.cur.pull >= FULL) this.hold(); else this.apply(0, 'idle', true); }
+  hold() {
+    clearTimeout(this.t);
+    this.apply(BUSY, 'busy', true);
+    if (this.props.demo) return;
+    this.t = setTimeout(() => {
+      this.apply(BUSY, 'done', false);
+      this.t = setTimeout(() => this.apply(0, 'idle', true), 900);
+    }, 1800);
+  }
+  apply(pull, phase, anim) {
+    this.cur = { pull, phase };
+    const sc = this.sc;
+    if (sc) {
+      sc.style.transition = anim ? 'transform 320ms cubic-bezier(.2,.8,.2,1)' : 'none';
+      sc.style.transform = pull ? 'translateY(' + pull.toFixed(1) + 'px)' : '';
+    }
+    this.setState({ pull, phase, anim });
+  }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const { pull, phase, anim } = this.state;
+    const L = eg
+      ? { pull: 'اسحب كمان للتحديث', ready: 'سيب عشان يحدّث', busy: 'بنحدّث…', done: 'اتحدّث دلوقتي' }
+      : { pull: 'اسحب للتحديث', ready: 'أفلت للتحديث', busy: 'جارٍ التحديث…', done: 'تم التحديث الآن' };
+    return {
+      setRoot: this.setRoot,
+      count: phase === 'busy' ? -1 : phase === 'done' ? 3 : Math.min(3, Math.floor(pull / 21.4)),
+      label: L[phase] || L.pull,
+      box: 'position: absolute; top: 0; left: 0; right: 0; height: ' + pull.toFixed(1) + 'px; display: flex; align-items: center; justify-content: center; overflow: hidden; pointer-events: none; z-index: 6; opacity: ' + Math.min(1, pull / 30).toFixed(2) + '; transition: ' + (anim ? 'height 320ms cubic-bezier(.2,.8,.2,1), opacity 320ms' : 'none')
+    };
+  }
+}
+</script>
+</body>
+</html>

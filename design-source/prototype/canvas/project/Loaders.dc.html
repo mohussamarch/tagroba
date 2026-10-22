@@ -9,81 +9,61 @@
 <x-dc>
 <helmet>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
-<style>
-body{margin:0}
-.cn-stage{position:relative;width:64px;height:64px;display:block;transform-origin:center}
-.cn{position:absolute;left:8px;width:48px;height:22px;transform-origin:50% 100%;will-change:transform,opacity;backface-visibility:hidden;animation:cn-drop 2.4s infinite both}
-.cn svg{display:block;overflow:visible}
-.cn-shine{transform:translateX(-30px);animation:cn-shine 2.4s cubic-bezier(.4,0,.2,1) infinite}
-.cn-floor{position:absolute;left:10px;bottom:4px;width:44px;height:8px;border-radius:50%;background:radial-gradient(closest-side,rgba(25,61,51,.28),rgba(25,61,51,0));transform-origin:center;animation:cn-floor 2.4s ease-in-out infinite}
-@keyframes cn-drop{
-0%{transform:translateY(-44px);opacity:0;animation-timing-function:cubic-bezier(.55,0,1,.45)}
-8%{opacity:1}
-22%{transform:translateY(0) scale(1.07,.8);animation-timing-function:cubic-bezier(0,.55,.45,1)}
-29%{transform:translateY(-5px) scale(.98,1.03);animation-timing-function:cubic-bezier(.55,0,1,.45)}
-35%{transform:translateY(0) scale(1,1)}
-78%{transform:translateY(0);opacity:1;animation-timing-function:cubic-bezier(.4,0,1,1)}
-92%,100%{transform:translateY(8px) scale(.96);opacity:0}}
-@keyframes cn-shine{0%,50%{transform:translateX(-30px)}72%,100%{transform:translateX(30px)}}
-@keyframes cn-floor{0%,10%{transform:scaleX(.55);opacity:.4}40%,78%{transform:scaleX(1);opacity:1}100%{transform:scaleX(.55);opacity:.4}}
-@media (prefers-reduced-motion: reduce){.cn{animation:none}.cn-shine{animation:none}.cn-floor{animation:none}}
-</style>
+<style>body{margin:0}</style>
 </helmet>
 <div dir="rtl" style="width: 390px; height: 844px; box-sizing: border-box; padding: 22px 16px; display: flex; flex-direction: column; gap: 14px; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: #F4F2EA">
-  <svg width="0" height="0" aria-hidden="true" style="position: absolute">
-    <defs>
-      <linearGradient id="cn-edge" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C08A22"></stop><stop offset="1" stop-color="#7E5410"></stop></linearGradient>
-      <radialGradient id="cn-top" cx="0.36" cy="0.3" r="0.8"><stop offset="0" stop-color="#FFF1BF"></stop><stop offset="0.45" stop-color="#F0C75C"></stop><stop offset="1" stop-color="#C9952B"></stop></radialGradient>
-      <linearGradient id="cn-inner" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D9A93C"></stop><stop offset="1" stop-color="#F3D17A"></stop></linearGradient>
-      <linearGradient id="cn-glint" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0"></stop><stop offset="0.5" stop-color="#FFFFFF" stop-opacity="0.85"></stop><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"></stop></linearGradient>
-      <clipPath id="cn-face" clipPathUnits="userSpaceOnUse"><ellipse cx="24" cy="8" rx="22" ry="7"></ellipse></clipPath>
-    </defs>
-  </svg>
   <span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 19px; font-weight: 700">{{title}}</span><span style="font-size: 12px; color: #637570">{{sub}}</span></span>
 
-  <sc-for list="{{spots}}" as="sp" hint-placeholder-count="3">
-    <div style="border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 1px 2px rgba(29,54,53,0.05), 0 12px 28px rgba(29,54,53,0.08)">
-      <span style="font-size: 13px; font-weight: 700; color: #637570">{{sp.label}}</span>
-      <div style="{{sp.box}}">
-        <span role="img" aria-label="{{loading}}" style="{{sp.holder}}"><span class="cn-stage" style="{{sp.scale}}">
-          <span class="cn-floor"></span>
-          <sc-for list="{{coins}}" as="c" hint-placeholder-count="3">
-            <span class="cn" style="{{c.style}}"><svg width="48" height="22" viewBox="0 0 48 22">
-              <path d="M2 8v6a22 7 0 0 0 44 0V8a22 7 0 0 1-44 0z" fill="url(#cn-edge)"></path>
-              <path d="M3 11.5a21 6.6 0 0 0 42 0" fill="none" stroke="#F6D98A" stroke-opacity="0.45" stroke-width="5" stroke-dasharray="0.9 1.9"></path>
-              <ellipse cx="24" cy="8" rx="22" ry="7" fill="url(#cn-top)"></ellipse>
-              <ellipse cx="24" cy="8" rx="15.5" ry="4.8" fill="url(#cn-inner)" stroke="#B5832A" stroke-width="0.8"></ellipse>
-              <ellipse cx="24" cy="8.6" rx="15.5" ry="4.8" fill="none" stroke="#FFF4CC" stroke-opacity="0.55" stroke-width="0.7"></ellipse>
-              <g clip-path="url(#cn-face)"><rect class="cn-shine" x="14" y="-2" width="9" height="20" fill="url(#cn-glint)" style="{{c.shine}}" transform="skewX(-22)"></rect></g>
-            </svg></span>
-          </sc-for>
-        </span></span>
-        <sc-if value="{{sp.hasText}}" hint-placeholder-val="{{ true }}"><span style="{{sp.textStyle}}">{{sp.text}}</span></sc-if>
-      </div>
+  <div style="{{card}}">
+    <span style="{{cap}}">{{t.screen}}</span>
+    <div style="height: 196px; border-radius: 18px; display: flex; align-items: center; justify-content: center; background: rgba(25,61,51,0.03)"><dc-import name="CoinLoader" size="112" text="{{t.screenText}}" hint-size="170px,150px"></dc-import></div>
+  </div>
+
+  <div style="{{card}}">
+    <span style="{{cap}}">{{t.pull}}</span>
+    <div style="display: flex; gap: 6px">
+      <sc-for list="{{frames}}" as="fr" hint-placeholder-count="4">
+        <div style="flex: 1 1 0; min-width: 0; height: 92px; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; background: rgba(25,61,51,0.04)">
+          <dc-import name="CoinLoader" size="38" count="{{fr.count}}" text="" hint-size="38px,38px"></dc-import>
+          <span style="font-size: 11px; line-height: 1.4; color: #637570; text-align: center">{{fr.label}}</span>
+        </div>
+      </sc-for>
     </div>
-  </sc-for>
-  <span style="font-size: 12px; line-height: 1.7; color: #637570">{{note}}</span>
+  </div>
+
+  <div style="{{card}}">
+    <span style="{{cap}}">{{t.button}}</span>
+    <div style="height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)"><dc-import name="CoinLoader" size="28" row="{{ true }}" tone="على أخضر" text="{{t.buttonText}}" hint-size="120px,28px"></dc-import></div>
+  </div>
+
+  <div style="border-radius: 16px; padding: 10px 12px; font-size: 12px; line-height: 1.7; color: #193D33; background: rgba(166,222,193,0.35)">{{t.tryIt}}</div>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
-// علامة التحميل والتحديث «عملات بتترص» (اختيار المالك 2026-10-22) — رسم احترافي + حركة ناعمة (طلبه: «ارسم العملات بشكل احترافي … موشن جرافيك حلو جدا … سلس كمان مش بيعلق»)
-// الحركة كلها transform وopacity بس (بتشتغل على كارت الشاشة من غير ما تعيد الرسم) · العملة بتقع بتسارع، تتفلطح لما تنزل، ترتد سنة، وتهدى · الرصّة بتنزل وتختفي وتبدأ من غير قفزة
+// علامة التحميل والتحديث «عملات بتترص» (اختيار المالك 2026-10-22) — المكوّن نفسه `CoinLoader` اللي متركّب في العمليات والرئيسية
+// المالك: «محتاجها في كله» ⇐ أي شاشة بتحمّل · السحب للتحديث (العملات بتترص واحدة واحدة مع السحب، وبعد ما يسيب الحركة تشتغل) · أي زرار وهو بيحفظ
 class Component extends DCLogic {
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
-    const row = 'display: flex; align-items: center; justify-content: center; gap: 10px; ';
-    const coins = [0, 1, 2].map((i) => ({ style: 'bottom: ' + (8 + i * 7) + 'px; animation-delay: ' + (i * 0.28).toFixed(2) + 's', shine: 'animation-delay: ' + (0.9 + i * 0.12).toFixed(2) + 's' }));
+    const t = eg ? {
+      screen: 'الشاشة وهي بتحمّل', screenText: 'بنجهّز فلوسك…',
+      pull: 'السحب للتحديث — بتترص وانت بتسحب',
+      button: 'جوه الزرار وهو بيحفظ', buttonText: 'بيتحفظ…',
+      tryIt: 'جرّبها في النموذج: افتح «العمليات» أو «الرئيسية» واسحب الصفحة لتحت بالماوس (دوس واسحب) أو لفّ عجلة الماوس لفوق وانت في أول الصفحة.'
+    } : {
+      screen: 'تحميل الشاشة', screenText: 'نجهّز أموالك…',
+      pull: 'السحب للتحديث — تتراص أثناء السحب',
+      button: 'داخل الزر أثناء الحفظ', buttonText: 'جارٍ الحفظ…',
+      tryIt: 'جرّبها في النموذج: افتح «العمليات» أو «الرئيسية» واسحب الصفحة للأسفل بالفأرة، أو أدر العجلة للأعلى وأنت في أول الصفحة.'
+    };
+    const fl = eg ? ['اسحب…', 'اسحب كمان…', 'سيب', 'بنحدّث…'] : ['اسحب…', 'اسحب أكثر…', 'أفلت', 'جارٍ التحديث…'];
     return {
+      t,
       title: eg ? 'علامة التحميل — عملات بتترص' : 'علامة التحميل — عملات تتراص',
-      sub: eg ? 'نفس العلامة في الشاشة وهي بتحمّل، والسحب للتحديث، والزرار وهو بيحفظ' : 'العلامة نفسها في تحميل الشاشة والسحب للتحديث والزر أثناء الحفظ',
-      loading: eg ? 'بيحمّل' : 'جارٍ التحميل',
-      coins,
-      spots: [
-        { label: eg ? 'الشاشة وهي بتحمّل' : 'تحميل الشاشة', box: row + 'flex-direction: column; height: 210px; border-radius: 18px; background: rgba(25,61,51,0.03)', holder: 'width: 112px; height: 112px; display: flex; align-items: center; justify-content: center', scale: 'transform: scale(1.75)', hasText: true, text: eg ? 'بنجهّز فلوسك…' : 'نجهّز أموالك…', textStyle: 'font-size: 14px; font-weight: 700; color: #637570' },
-        { label: eg ? 'السحب للتحديث' : 'السحب للتحديث', box: row + 'height: 52px; border-radius: 16px; background: rgba(25,61,51,0.04)', holder: 'width: 30px; height: 30px; display: flex; align-items: center; justify-content: center', scale: 'transform: scale(0.5)', hasText: true, text: eg ? 'بنحدّث…' : 'جارٍ التحديث…', textStyle: 'font-size: 13px; color: #637570' },
-        { label: eg ? 'جوه الزرار' : 'داخل الزر', box: row + 'height: 52px; border-radius: 16px; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)', holder: 'width: 26px; height: 26px; display: flex; align-items: center; justify-content: center', scale: 'transform: scale(0.42)', hasText: true, text: eg ? 'بيتحفظ…' : 'جارٍ الحفظ…', textStyle: 'font-size: 14px; font-weight: 700; color: #FFFFFF' }
-      ],
-      note: eg ? 'الحركة: العملة بتقع بتسارع، تتفلطح سنة لما تنزل وترتد، والتانية وراها بربع ثانية. لمعة بتعدّي على الرصّة، وبعدين الرصّة تنزل وتختفي وتبدأ من الأول من غير قفزة. لو «تقليل الحركة» شغال بتفضل ثابتة.' : 'الحركة: تسقط العملة بتسارع، تنضغط قليلًا عند الهبوط وترتد، والتالية بعدها بربع ثانية. لمعة تمر على الرصّة، ثم تنزل وتختفي وتبدأ من جديد بلا قفزة. مع «تقليل الحركة» تبقى ثابتة.'
+      sub: eg ? 'نفس العلامة في كل مكان بيحمّل أو بيحدّث أو بيحفظ' : 'العلامة نفسها في كل تحميل وتحديث وحفظ',
+      card: 'border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 1px 2px rgba(29,54,53,0.05), 0 12px 28px rgba(29,54,53,0.08)',
+      cap: 'font-size: 13px; font-weight: 700; color: #637570',
+      frames: [1, 2, 3, -1].map((count, i) => ({ count, label: fl[i] }))
     };
   }
 }
