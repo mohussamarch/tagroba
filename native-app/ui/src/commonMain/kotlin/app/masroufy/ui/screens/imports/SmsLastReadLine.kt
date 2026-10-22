@@ -18,11 +18,11 @@ import app.masroufy.ui.theme.Type
 data class LastReadState(val last: LastReadWhen?)
 
 /** نص «متى» بالأرقام 0-9 (الدالة صافية — `lastReadWhen`): «دلوقتي» · «من 5 دقيقة» · «من 3 ساعة» · «2026-10-22 14:05». */
-@Composable
-private fun whenText(w: LastReadWhen): String = when (w) {
+internal fun whenText(w: LastReadWhen): String = when (w) {
     LastReadWhen.JustNow -> t(R06Key.BANK_SMS_AGO_NOW)
-    is LastReadWhen.MinutesAgo -> t(R06Key.BANK_SMS_AGO_MIN, w.minutes.toString())
-    is LastReadWhen.HoursAgo -> t(R06Key.BANK_SMS_AGO_HOUR, w.hours.toString())
+    // 0.5.2: «قبل 3 دقائق» مش «3 دقيقة» — الجمع بالعربي 1 · 2 · 3-10 · 11+
+    is LastReadWhen.MinutesAgo -> countText(w.minutes, R06Key.BANK_SMS_AGO_MIN_ONE, R06Key.BANK_SMS_AGO_MIN_TWO, R06Key.BANK_SMS_AGO_MIN_FEW, R06Key.BANK_SMS_AGO_MIN)
+    is LastReadWhen.HoursAgo -> countText(w.hours, R06Key.BANK_SMS_AGO_HOUR_ONE, R06Key.BANK_SMS_AGO_HOUR_TWO, R06Key.BANK_SMS_AGO_HOUR_FEW, R06Key.BANK_SMS_AGO_HOUR)
     is LastReadWhen.At -> w.text
 }
 

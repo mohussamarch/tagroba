@@ -21,6 +21,8 @@ enum class R06Key : TextRef {
 
     /** «رسائل البنك» — سطر «آخر مرة قرا لوحده». */
     BANK_SMS_LAST_READ, BANK_SMS_NEVER_READ, BANK_SMS_AGO_NOW, BANK_SMS_AGO_MIN, BANK_SMS_AGO_HOUR,
+    /** 0.5.2: الجمع بالعربي (1 · 2 · 3-10 · 11+) — [BANK_SMS_AGO_MIN]/[BANK_SMS_AGO_HOUR] = 11 وأكتر. */
+    BANK_SMS_AGO_MIN_ONE, BANK_SMS_AGO_MIN_TWO, BANK_SMS_AGO_MIN_FEW, BANK_SMS_AGO_HOUR_ONE, BANK_SMS_AGO_HOUR_TWO, BANK_SMS_AGO_HOUR_FEW,
 
     /** اختيار ملف النسخة: كبير أوي · مش ملف نسخة. */
     BAK_PICK_TOO_BIG, BAK_PICK_NOT_BACKUP,
