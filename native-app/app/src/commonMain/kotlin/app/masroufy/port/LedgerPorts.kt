@@ -91,6 +91,13 @@ data class TransactionPatch(
     val supportAskPending: Boolean? = null,
     /** A2/F3: قواعد الحسابات المربوطة ما ترجعش تربط العملية دي لوحدها (Transaction.personRulesOff) — null = ما تتغيرش. */
     val personRulesOff: Boolean? = null,
+    /** r06-darahim: «برّه التقارير» (`Transaction.excludedFromReports`) — null = ما تتغيرش. */
+    val excludedFromReports: Boolean? = null,
+    /** r06-darahim: وجبة المطعم — `clearMeal` = شيلها · null = ما تتغيرش. */
+    val meal: app.masroufy.core.Meal? = null,
+    val clearMeal: Boolean = false,
+    /** r06-darahim: سؤال «مكرر؟» — true مفتوح · false اتجاوب · null = ما تتغيرش. */
+    val duplicateAskPending: Boolean? = null,
 )
 
 interface SourceRecordRepository {

@@ -147,6 +147,7 @@ fun OperationDetailScreen(transactionId: Id, openPerson: Boolean = false) {
                     item(key = "linked-parent") { LinkedParentBanner(li, unlinks) { linkStep { l, show -> confirm(l, show) } } }
                 }
                 if (v.unrecorded && v.category?.status == CategoryStatus.NONE) item(key = "cash") { CashDifferenceBox { picking = true } }
+                if (!s.locked && !v.unrecorded) item(key = "darahim") { DarahimDetailExtras(v.transaction, s.categories) { reload++ } } // §12: الوجبة والعلامتين
                 val party = v.askParty ?: partyShown
                 if (party != null) item(key = "party") { TransferPartyCard(party, v.id, onChanged = { reload++ }) }
                 // تغيير نوع تحويل داخل اتقرر (البند 6) — مش على رجل «التحويل لنفسك»
@@ -233,19 +234,6 @@ private fun DetailHero(v: DetailView) {
                 BasicText(t(if (v.unrecorded) UiKey.OPERATION_DETAIL_LOCK_CASH else UiKey.OPERATION_DETAIL_LOCK), style = Type.caption().copy(color = Ink.muted))
             }
         }
-    }
-}
-
-/** «هذه ليست عملية مسجّلة» — فرق عدّ الكاش بنقطة حمرا لحد ما تحدد فيمَ صُرف (§73). */
-@Composable
-private fun CashDifferenceBox(onPick: () -> Unit) {
-    Column(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(Radius.card)).background(Color(0x14BE3D48)).padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-        BasicText(t(UiKey.OPERATION_DETAIL_CASH_TITLE), style = Type.of(13, FontWeight.Bold).copy(color = Ink.expense))
-        BasicText(t(UiKey.OPERATION_DETAIL_CASH_BODY), style = Type.of(13))
-        PrimaryButton(t(UiKey.CATEGORY_PICKER_CASH_TITLE), onClick = onPick, modifier = Modifier.fillMaxWidth())
     }
 }
 

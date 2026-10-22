@@ -51,7 +51,7 @@ data class PeriodTotals(
 )
 
 /** مجاميع الفترة. المدخل عمليات الفترة بس — الدالة ما بتفلترش بالتاريخ. */
-fun computePeriodTotals(transactions: List<Transaction>, allocations: List<PersonAllocation>): PeriodTotals {
+fun computePeriodTotals(transactions: List<Transaction>, allocations: List<PersonAllocation>, scope: ExclusionScope = ExclusionScope.REPORTS): PeriodTotals {
     var income = 0L
     var expense = 0L
     var excluded = 0L
@@ -64,12 +64,12 @@ fun computePeriodTotals(transactions: List<Transaction>, allocations: List<Perso
         }
         // الاسترداد فلوس رجعت عن حاجة اتدفعت ⇒ بتنقّص المصروف نفسه، مش بتتحسب دخل (OVERRIDES §42)
         if (reducesExpense(t.economicKind)) {
-            if (t.excludedFromBudget) excluded = subtractMoney(excluded, t.amountMinor) else expense = subtractMoney(expense, t.amountMinor)
+            if (t.isExcludedFrom(scope)) excluded = subtractMoney(excluded, t.amountMinor) else expense = subtractMoney(expense, t.amountMinor)
             continue
         }
         if (!countsAsPersonalSpend(t, allocations)) continue
         val share = personalShareOf(t, allocations)
-        if (t.excludedFromBudget) excluded = addMoney(excluded, share) else expense = addMoney(expense, share)
+        if (t.isExcludedFrom(scope)) excluded = addMoney(excluded, share) else expense = addMoney(expense, share)
     }
     return PeriodTotals(income, expense, subtractMoney(income, expense), excluded)
 }

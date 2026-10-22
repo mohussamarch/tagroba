@@ -72,6 +72,9 @@ class MemoryTransactionRepository(seed: List<Transaction> = emptyList()) : Trans
             linkedInflowMinor = if (patch.clearLinkedInflowMinor) null else patch.linkedInflowMinor ?: old.linkedInflowMinor,
             supportAskPending = patch.supportAskPending ?: old.supportAskPending,
             personRulesOff = patch.personRulesOff ?: old.personRulesOff,
+            excludedFromReports = patch.excludedFromReports ?: old.excludedFromReports,
+            meal = if (patch.clearMeal) null else patch.meal ?: old.meal,
+            duplicateAskPending = patch.duplicateAskPending ?: old.duplicateAskPending,
         )
     }
 

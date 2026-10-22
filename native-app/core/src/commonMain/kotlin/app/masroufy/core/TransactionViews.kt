@@ -70,7 +70,7 @@ fun summarizeCash(wallet: Wallet, transactions: List<Transaction>, allocations: 
         }
         if (t.occurredAt >= periodStart && t.occurredAt <= periodEnd && isCashTransaction(t, wallet.id)) {
             inPeriod += t
-            if (t.observedDirection == Direction.OUT && t.transferToWalletId != wallet.id && countsAsPersonalSpend(t, allocations) && !t.excludedFromBudget) {
+            if (t.observedDirection == Direction.OUT && t.transferToWalletId != wallet.id && countsAsPersonalSpend(t, allocations) && !t.isExcludedFrom(ExclusionScope.REPORTS)) {
                 spent = addMoney(spent, personalShareOf(t, allocations))
             }
         }

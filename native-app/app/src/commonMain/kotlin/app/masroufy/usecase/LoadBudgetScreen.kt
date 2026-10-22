@@ -20,6 +20,7 @@ import app.masroufy.core.averageCompletedSpend
 import app.masroufy.core.budgetStatus
 import app.masroufy.core.buildCategoryLines
 import app.masroufy.core.categoryDistribution
+import app.masroufy.core.ExclusionScope
 import app.masroufy.core.computePeriodTotals
 import app.masroufy.core.dailyAllowance
 import app.masroufy.core.detectAnomaly
@@ -102,7 +103,7 @@ class LoadBudgetScreen(private val deps: LoadBudgetScreenDeps) {
         val estimatedSpend = estimated.estimatedCount - estimated.pendingIncomingCount
         val needsReviewSpend = estimated.needsReviewCount - estimated.pendingIncomingCount
 
-        val totals = computePeriodTotals(counted, allocations)
+        val totals = computePeriodTotals(counted, allocations, ExclusionScope.BUDGET)
         // الداخل المستني (§75-1) عمره ما بيبقى صرف ⇒ ما بيخلّيش الصرف «مش معروف»
         val coverage = assessCoverage(estimated.withoutPendingIncoming)
         // «المستحقات» برا الحد لو صاحب الحساب اختار كده — المصروف الشهري نفسه (الرئيسية) فيها دايمًا
@@ -125,7 +126,7 @@ class LoadBudgetScreen(private val deps: LoadBudgetScreenDeps) {
             val rowAllocations = deps.allocations.listByTransactionIds(rawRows.map { it.id })
             val view = withEstimatedKinds(rawRows, names)
             val rows = view.transactions
-            val t = computePeriodTotals(rows, rowAllocations)
+            val t = computePeriodTotals(rows, rowAllocations, ExclusionScope.BUDGET)
             val c = assessCoverage(view.withoutPendingIncoming)
 
             history += CompletedPeriodSpend(
@@ -139,7 +140,7 @@ class LoadBudgetScreen(private val deps: LoadBudgetScreenDeps) {
             // تاريخ كل تصنيف — من الفترات الموثوقة بس
             val slices = LinkedHashMap<Id, Halalas>()
             if (c.unclassified == 0 && rows.isNotEmpty()) {
-                for (slice in categoryDistribution(rows, rowAllocations).slices) {
+                for (slice in categoryDistribution(rows, rowAllocations, ExclusionScope.BUDGET).slices) {
                     val categoryId = slice.categoryId ?: continue
                     historyByCategory.getOrPut(categoryId) { mutableListOf() }.add(slice.amountMinor)
                     slices[categoryId] = slice.amountMinor
@@ -163,7 +164,7 @@ class LoadBudgetScreen(private val deps: LoadBudgetScreenDeps) {
         }
 
         val spendByCategory = LinkedHashMap<Id, Halalas>()
-        for (slice in categoryDistribution(counted, allocations).slices) {
+        for (slice in categoryDistribution(counted, allocations, ExclusionScope.BUDGET).slices) {
             val categoryId = slice.categoryId ?: continue
             spendByCategory[categoryId] = slice.amountMinor
         }

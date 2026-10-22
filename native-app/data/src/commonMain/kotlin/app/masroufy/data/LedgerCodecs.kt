@@ -16,6 +16,7 @@ import app.masroufy.core.PersonAllocation
 import app.masroufy.core.ReviewState
 import app.masroufy.core.Settlement
 import app.masroufy.core.SourceRecord
+import app.masroufy.core.Meal
 import app.masroufy.core.Transaction
 import app.masroufy.core.TransactionTag
 
@@ -49,6 +50,8 @@ object LedgerCodecs {
                 opt("bnplDecided", t.bnplDecided)
                 // PLAN-0.6 §7: «مستني استرداد» — لو موجودة بس
                 opt("awaitingRefund", t.awaitingRefund?.takeIf { it })
+                // r06-darahim (§12): «برّه التقارير» · الوجبة · سؤال «مكرر؟» — لو موجودين بس
+                opt("excludedFromReports", t.excludedFromReports); opt("meal", t.meal?.wire); opt("duplicateAskPending", t.duplicateAskPending)
             }
         },
         { r ->
@@ -75,6 +78,9 @@ object LedgerCodecs {
                 notInStatement = r.boolOrNull("notInStatement"),
                 bnplDecided = r.boolOrNull("bnplDecided"),
                 awaitingRefund = r.boolOrNull("awaitingRefund"),
+                excludedFromReports = r.boolOrNull("excludedFromReports"),
+                meal = r.strOrNull("meal")?.let { w -> Meal.entries.firstOrNull { it.wire == w } },
+                duplicateAskPending = r.boolOrNull("duplicateAskPending"),
             )
         },
     )

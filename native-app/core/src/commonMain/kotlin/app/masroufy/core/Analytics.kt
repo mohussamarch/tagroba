@@ -15,11 +15,11 @@ data class CategorySlice(
 data class CategoryDistribution(val slices: List<CategorySlice>, val totalMinor: Halalas)
 
 /** توزيع المصروف الشخصي على التصنيفات — كل عملية مرة واحدة بتصنيفها النهائي، واللي من غير تصنيف تحت null. */
-fun categoryDistribution(transactions: List<Transaction>, allocations: List<PersonAllocation> = emptyList()): CategoryDistribution {
+fun categoryDistribution(transactions: List<Transaction>, allocations: List<PersonAllocation> = emptyList(), scope: ExclusionScope = ExclusionScope.REPORTS): CategoryDistribution {
     val byCategory = LinkedHashMap<Id?, Pair<Halalas, Int>>()
     var total = 0L
     for (t in transactions) {
-        if (!countsAsPersonalSpend(t, allocations) || t.excludedFromBudget) continue
+        if (!countsAsPersonalSpend(t, allocations) || t.isExcludedFrom(scope)) continue
         val share = personalShareOf(t, allocations)
         if (share == 0L) continue
         val (amount, count) = byCategory[t.categoryId] ?: (0L to 0)

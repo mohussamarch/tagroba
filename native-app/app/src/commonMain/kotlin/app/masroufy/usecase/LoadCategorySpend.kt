@@ -1,5 +1,6 @@
 package app.masroufy.usecase
 
+import app.masroufy.core.isExcludedFrom
 import app.masroufy.core.AllocationKind
 import app.masroufy.core.DataCoverage
 import app.masroufy.core.Direction
@@ -72,7 +73,7 @@ class LoadCategorySpend(private val deps: LoadCategorySpendDeps) {
         val coverage = assessCoverage(mine)
         val unknown = coverage.total > 0 && coverage.unclassified == coverage.total
         val totals = computePeriodTotals(mine, allocations.filter { a -> mine.any { it.id == a.transactionId } })
-        val count = mine.count { countsAsPersonalSpend(it, allocations) && !it.excludedFromBudget }
+        val count = mine.count { countsAsPersonalSpend(it, allocations) && !it.isExcludedFrom(app.masroufy.core.ExclusionScope.REPORTS) }
         return CategorySpend(if (unknown) null else totals.personalExpenseMinor, count, coverage, 0)
     }
 
