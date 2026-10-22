@@ -1289,6 +1289,14 @@
       "y": 33500,
       "w": 390,
       "h": 844
+    },
+    "ReviewEntry.dc.html": {
+      "is_interactive": true,
+      "title": "محتاجة مراجعة · ReviewEntry (في العمليات)",
+      "x": 3000,
+      "y": 33500,
+      "w": 390,
+      "h": 300
     }
   },
   "createdOnFiles": {
@@ -1607,7 +1615,8 @@
     "CountryMark.dc.html",
     "LinkPay.dc.html",
     "HeroReserve.dc.html",
-    "NightPrivacy.dc.html"
+    "NightPrivacy.dc.html",
+    "ReviewEntry.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"

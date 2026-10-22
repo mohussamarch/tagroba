@@ -76,9 +76,7 @@ a{color:#08634F}a:hover{color:#064B40}
 
         <sc-if value="{{showList}}" hint-placeholder-val="{{ true }}">
           <div class="m-rise" style="display: flex; flex-direction: column; gap: 14px">
-            <sc-for list="{{banners}}" as="bn" hint-placeholder-count="3">
-              <a href="{{bn.href}}" class="m-press" style="{{bn.style}}"><span aria-hidden="true" style="{{bn.dot}}"></span><span style="flex: 1 1 auto; font-size: 13px; font-weight: 700">{{bn.text}}</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
-            </sc-for>
+            <dc-import name="ReviewEntry" bare="{{ true }}" space="{{spaceName}}" hint-size="350px,230px"></dc-import>
             <dc-import name="QuickAddStrip" space="{{spaceName}}" on-add="{{onQuick}}" hint-size="350px,150px"></dc-import>
             <div style="display: flex; gap: 10px">
               <div style="flex: 1 1 0; min-width: 0; border-radius: 18px; padding: 12px; display: flex; flex-direction: column; gap: 2px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
@@ -237,7 +235,6 @@ class Component extends DCLogic {
       M: menu ? menu.row : null, mTop: menu ? menu.top : 0, mH: menu ? menu.h : 56,
       filterLabel: eg ? 'فلترة العمليات' : 'تصفية العمليات',
       // الشرايط بتظهر بس لما يبقى فيه حاجة مستنياك (اختيار المالك 2026-10-08)
-      banners: [['BankSms', eg ? '4 رسايل من البنك مستنية تأكيدك' : '4 رسائل من البنك بانتظار تأكيدك', '#956000', '#FBF0DD'], ['ReviewQueue', eg ? '8 عمليات نوعها مش أكيد' : '8 عمليات نوعها غير مؤكد', '#2469BA', 'rgba(36,105,186,0.08)'], ['Transfers', eg ? 'طرفين مستنيين ردك' : 'طرفان بانتظار ردك', '#08634F', 'rgba(8,99,79,0.08)']].map(([to, text, c, bg]) => ({ href: to + '.dc.html', text, dot: 'width: 8px; height: 8px; border-radius: 4px; flex-shrink: 0; background: ' + c, style: 'display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 8px 14px; box-sizing: border-box; border-radius: 18px; text-decoration: none; color: #193D33; background: ' + bg })),
       menuItems: [
         { label: eg ? 'حدد' : 'تحديد', go: () => this.setState({ menu: null, sel: { first: menu ? menu.row.id : null } }) },
         { label: eg ? 'خصّص مبلغ لشخص' : 'تخصيص مبلغ لشخص', go: () => this.setState({ menu: null }) },
