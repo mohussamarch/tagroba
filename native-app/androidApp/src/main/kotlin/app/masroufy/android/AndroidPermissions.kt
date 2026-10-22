@@ -2,6 +2,9 @@ package app.masroufy.android
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.ComponentActivity
@@ -39,6 +42,12 @@ class AndroidPermissions(private val activity: ComponentActivity) : Permissions 
         val wait = CompletableDeferred<Boolean>().also { pending = it }
         notifications.launch(Manifest.permission.POST_NOTIFICATIONS)
         return wait.await()
+    }
+
+    override fun openBatterySettings() {
+        val battery = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+        val details = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${activity.packageName}"))
+        runCatching { activity.startActivity(battery) }.onFailure { runCatching { activity.startActivity(details) } }
     }
 
     private fun granted(context: Context, permission: String) = ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED

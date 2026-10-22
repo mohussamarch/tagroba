@@ -177,6 +177,11 @@ internal class SmsGraph(
         port.last()?.let { app.masroufy.core.lastReadWhen(it, c.env.nowMillis(), port.zoneOffsetMillis(it)) }
     }
 
+    override suspend fun missedWhileAway(inbox: app.masroufy.usecase.InboxView): Int = work {
+        val port = c.env.backgroundRead ?: return@work 0
+        app.masroufy.core.missedWhileAway(port.last(), inbox.messages.map { app.masroufy.core.isoInstantMillis(it.receivedAt) })
+    }
+
     override suspend fun readingOn(): Boolean = work { manage.refresh().let { it.enabled && it.permission } }
 
     override suspend fun enable(senders: List<String>): InboxView = work { manage.enable(senders) }

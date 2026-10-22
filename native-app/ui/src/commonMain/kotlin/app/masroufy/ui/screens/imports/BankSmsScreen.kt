@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import app.masroufy.core.Category
 import app.masroufy.core.TextKey
 import app.masroufy.core.Wallet
+import app.masroufy.ui.app.LocalPermissions
 import app.masroufy.ui.app.LocalSpace
 import app.masroufy.ui.components.EmptyState
 import app.masroufy.ui.components.Skeleton
@@ -67,6 +68,11 @@ fun BankSmsScreen() {
     val categoryById = remember(categories) { categories.associateBy { it.id } }
     var wallets by remember(deps) { mutableStateOf<List<Wallet>>(emptyList()) }
     var reload by remember(deps) { mutableStateOf(0) }
+    // r06-1a3 «القراية في الخلفية»: آخر قراية للخلفية (سطر الساعة) · كارت «فيه رسايل فاتته» (بيتحسب مرة عند الفتح من مسح الصندوق نفسه)
+    var lastRead by remember(deps) { mutableStateOf<LastReadState?>(null) }
+    var away by remember(deps) { mutableStateOf<AwayState>(AwayState.Hidden) }
+    var awayChecked by remember(deps) { mutableStateOf(false) }
+    val permissions = LocalPermissions.current
     var failure by remember(deps) { mutableStateOf<String?>(null) }
     val chosen = remember(deps) { mutableStateMapOf<String, String>() }
     var included by remember(deps) { mutableStateOf(emptySet<String>()) }
@@ -88,12 +94,19 @@ fun BankSmsScreen() {
         try {
             // r05 (4b · 4d): الصفحة المختارة من الصندوق، والشغل بره خيط الشاشة (`SmsScreenExtras`) — الهيكل بيظهر الأول
             // r051: الصفحة بتظهر الأول من غير تسجيل، وبعدين التسجيل لوحده للجديد بس (`recordNew`) — كانت الشاشة مستنية لفة كاملة على الصندوق
+            runCatching { sms.lastBackgroundRead() }.onSuccess { lastRead = LastReadState(it) }
             val overview = sms.overviewPage(record = false, skip = r05.skip)
+            if (!awayChecked && r05.skip == 0 && overview.inbox.enabled && overview.inbox.permission) {
+                awayChecked = true
+                val n = runCatching { sms.missedWhileAway(overview.inbox) }.getOrDefault(0)
+                if (n > 0) away = AwayState.Missed(n)
+            }
             if (r05.skip > 0 && r05.skip >= overview.inbox.count) { r05.skip = 0; reload++; return@LaunchedEffect }
             val today = runCatching { sms.recordedToday() }.getOrDefault(emptyList())
             ui = withContext(Dispatchers.Default) { bankSmsUi(overview, today, emptySet()) }
             failure = null
-            val fresh = if (r05.skip > 0) emptyList() else runCatching { sms.recordNew() }.getOrDefault(emptyList())
+            // r06-1a3: لو فيه رسايل فاتته الكارت بيستنى «اقراهم دلوقتي» — من غير ما القراية التلقائية تسبقه
+            val fresh = if (r05.skip > 0 || away.holdsAutoRecord) emptyList() else runCatching { sms.recordNew() }.getOrDefault(emptyList())
             if (fresh.isNotEmpty()) {
                 val again = sms.overviewPage(record = false, skip = r05.skip)
                 val todayAgain = runCatching { sms.recordedToday() }.getOrDefault(today)
@@ -125,6 +138,25 @@ fun BankSmsScreen() {
         }
     }
 
+
+    // r06-1a3: «اقراهم دلوقتي» = القراية العادية اللي في الشاشة (`recordNew`) — وقت الخلفية فوق ما بيتغيّرش
+    fun readAway() {
+        val a = away as? AwayState.Missed ?: return
+        away = AwayState.Reading(a.n)
+        scope.launch {
+            try {
+                val fresh = deps.sms?.recordNew().orEmpty()
+                away = AwayState.Done(fresh.size)
+                if (fresh.isNotEmpty()) changes.changed()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                away = a
+                toaster.show(e.message ?: t(UiKey.IMPORTS_LOAD_FAILED), dark = true)
+            }
+            reload++
+        }
+    }
 
     val actions = WaitingActions(
         pickCategory = { picking = PickFor.Line(it) },
@@ -170,9 +202,18 @@ fun BankSmsScreen() {
     ) {
         val u = ui
         item(key = "status") {
-            SmsStatusBanner(u?.status, onSettings = { nav.push(BankSmsSettingsRoute) }, onPaste = { nav.push(SmsPasteRoute) })
+            val a = away
+            if (a != AwayState.Hidden && u?.status == SmsStatus.READING) {
+                SmsAwayCard(a, onRead = ::readAway, onKeep = permissions::openBatterySettings)
+            } else {
+                SmsStatusBanner(
+                    u?.status, onSettings = { nav.push(BankSmsSettingsRoute) }, onPaste = { nav.push(SmsPasteRoute) },
+                    neverRead = lastRead?.last == null && lastRead != null,
+                )
+            }
         }
-        if (u?.status == SmsStatus.READING || u?.status == SmsStatus.PERMISSION) item(key = "last-read") { SmsLastReadLine(deps.sms, reload) }
+        val line = lastRead
+        if (line != null && (u?.status == SmsStatus.READING || u?.status == SmsStatus.PERMISSION)) item(key = "last-read") { SmsLastReadLine(line) }
         if (u == null && failure == null) {
             item(key = "loading") {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
