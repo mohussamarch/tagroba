@@ -1297,14 +1297,6 @@
       "y": 33500,
       "w": 390,
       "h": 300
-    },
-    "RentIncome.dc.html": {
-      "is_interactive": true,
-      "title": "الإيجار كدخل · RentIncome",
-      "x": 3440,
-      "y": 33500,
-      "w": 390,
-      "h": 844
     }
   },
   "createdOnFiles": {
@@ -1624,8 +1616,7 @@
     "LinkPay.dc.html",
     "HeroReserve.dc.html",
     "NightPrivacy.dc.html",
-    "ReviewEntry.dc.html",
-    "RentIncome.dc.html"
+    "ReviewEntry.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"
