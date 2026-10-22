@@ -20,13 +20,13 @@ class CrashReportPolicyTest {
 
     @Test
     fun syntheticReportCarriesOnlyTheCodeName() {
-        val c = CrashReportPolicy.toSend(ProblemCode.BACKGROUND_GAVE_UP, null)
+        val c = CrashSanitizer.sanitize(ProblemCodeReport(ProblemCode.BACKGROUND_GAVE_UP.name), ProblemCode.BACKGROUND_GAVE_UP.name)
         assertEquals("[BACKGROUND_GAVE_UP] ${ProblemCodeReport::class.java.name}", c.message)
     }
 
     @Test
     fun realErrorMessageNeverSurvives() {
-        val c = CrashReportPolicy.toSend(ProblemCode.SYNC_WRITE_FAILED, IllegalStateException("secret 123"))
+        val c = CrashSanitizer.sanitize(IllegalStateException("secret 123"), ProblemCode.SYNC_WRITE_FAILED.name)
         assertFalse(c.message.orEmpty().contains("secret"))
     }
 }

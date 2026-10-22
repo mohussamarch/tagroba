@@ -5,6 +5,7 @@ import android.os.Looper
 import android.os.Process
 import app.masroufy.core.ProblemCode
 import app.masroufy.device.CrashReportPolicy
+import app.masroufy.device.ProblemCodeReport
 import app.masroufy.device.CrashSanitizer
 import app.masroufy.port.CrashReportsPort
 import app.masroufy.problems.Problems
@@ -61,7 +62,7 @@ class AndroidCrashReports(context: Context) : CrashReportsPort {
     fun problem(code: ProblemCode, error: Throwable?) {
         // الوقعة نفسها بيبعتها معالج Crashlytics ([installCrashHandler]) — مش مرتين
         if (!CrashReportPolicy.shouldSend(code) || !isOn()) return
-        crashlytics?.recordException(CrashReportPolicy.toSend(code, error))
+        crashlytics?.recordException(CrashSanitizer.sanitize(error ?: ProblemCodeReport(code.name), code.name))
     }
 
     /**

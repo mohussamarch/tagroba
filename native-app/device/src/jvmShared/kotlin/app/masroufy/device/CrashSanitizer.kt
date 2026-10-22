@@ -38,11 +38,10 @@ class SanitizedCrash(typeName: String, cause: SanitizedCrash?) : RuntimeExceptio
 object CrashReportPolicy {
     fun shouldSend(code: ProblemCode): Boolean =
         code != ProblemCode.CRASH_MAIN && code != ProblemCode.CRASH_BACKGROUND && code.level != ProblemLevel.INFO
-
-    /** الخطأ الحقيقي (متنضف) لو فيه، وإلا خطأ صناعي رسالته **اسم الكود بس** — ولا بيانات. */
-    fun toSend(code: ProblemCode, error: Throwable?): SanitizedCrash =
-        CrashSanitizer.sanitize(error ?: ProblemCodeReport(code.name), code.name)
 }
 
-/** خطأ صناعي لمشكلة من غير خطأ حقيقي: الرسالة اسم الكود من القايمة الثابتة بس. */
+/**
+ * خطأ صناعي لمشكلة من غير خطأ حقيقي: الرسالة اسم الكود من القايمة الثابتة بس — بيعدّي على `CrashSanitizer.sanitize` في `CrashReports.kt`
+ * (`sanitize(error ?: ProblemCodeReport(code.name), code.name)`).
+ */
 class ProblemCodeReport(codeName: String) : RuntimeException(codeName)
