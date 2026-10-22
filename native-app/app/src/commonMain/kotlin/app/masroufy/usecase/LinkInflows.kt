@@ -94,6 +94,8 @@ class LinkInflows(private val deps: LinkInflowsDeps) {
             val now = deps.clock.nowIso()
             for (i in inflows) if (i.linkedExpenseId != expense.id) deps.txns.update(i.id, TransactionPatch(linkedExpenseId = expense.id, updatedAt = now))
             resum(expense, already + inflows, now)
+            // PLAN-0.6 §7: الاسترداد وصل ⇒ «مستني استرداد» بتتشال والمشترى بيتحسب بالصافي
+            if (expense.awaitingRefund == true) deps.txns.update(expense.id, TransactionPatch(awaitingRefund = false, updatedAt = now))
             null
         }
     }

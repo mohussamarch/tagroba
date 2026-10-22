@@ -89,16 +89,17 @@ class IncomeSignalsFlowTest {
     @Test fun afterOneYesEveryDepositFromThatCompanyIsSalaryButAHandChangeIsNeverOverwritten() = runBlocking<Unit> {
         // رد المالك §64: بعد ما يأكد مرة ⇒ أي تحويل من الشركة «مرتب» لوحده (المكافأة كمان) — واللي غيّره بإيده ما يتلمسش
         manage.add(IncomeSourceInput("مصدر وهمي", "2026-01-01"))
+        sources.saveMany(sources.listAll().map { it.copy(expectedMinor = 1_000_000, expectedDayOfMonth = 27) }) // PLAN-0.6 §7
         val first = deposit(star, "2026-01-27")
         val bonus = deposit(star, "2026-02-10", 300_000)
         val byHand = deposit(star, "2026-03-05", 50_000, EconomicKind.REFUND_RECEIVED, confirmed = true)
         val other = deposit(moon, "2026-02-01")
         txns.saveMany(listOf(first, bonus, byHand, other))
         val q = signals.payerQuestions().first { it.party.key == transferPartyOf(first)!!.key }
-        assertEquals(2, signals.answerPayer(q, yes = true))
+        assertEquals(1, signals.answerPayer(q, yes = true))
         suspend fun kindOf(id: String) = txns.findByIds(listOf(id)).single().let { it.economicKind to it.economicKindConfirmed }
         assertEquals(EconomicKind.SALARY to true, kindOf(first.id))
-        assertEquals(EconomicKind.SALARY to true, kindOf(bonus.id), "المكافأة مرتب (اختيار المالك)")
+        assertEquals(EconomicKind.UNCLASSIFIED to false, kindOf(bonus.id), "PLAN-0.6 §7: مبلغ تاني من نفس الحساب ⇒ بيتسأل «الفلوس دي إيه؟»")
         assertEquals(EconomicKind.REFUND_RECEIVED to true, kindOf(byHand.id), "اللي اتغيّر بإيده ما بيتكتبش فوقه")
         assertEquals(EconomicKind.UNCLASSIFIED to false, kindOf(other.id), "شركة تانية ما اتأكدتش")
         // إيداع جديد من طريق تاني (رسالة بنك) ⇒ «مرتب» لوحده، والمستخدم يقدر يغيّره بعدها ومحدش يرجّعه
@@ -113,6 +114,7 @@ class IncomeSignalsFlowTest {
 
     @Test fun anImportedDepositFromAKnownPayerIsSalaryByItself() = runBlocking<Unit> {
         manage.add(IncomeSourceInput("مصدر وهمي", "2026-01-01"))
+        sources.saveMany(sources.listAll().map { it.copy(expectedMinor = 1_000_000, expectedDayOfMonth = 27) }) // PLAN-0.6 §7
         txns.saveMany(listOf(deposit(star, "2026-01-27")))
         signals.answerPayer(signals.payerQuestions().single(), yes = true)
         val records = app.masroufy.memory.MemorySourceRecordRepository()

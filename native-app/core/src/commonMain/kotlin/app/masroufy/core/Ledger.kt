@@ -26,6 +26,8 @@ fun countsAsPersonalSpend(transaction: Transaction, allocations: List<PersonAllo
 /** نصيب المستخدم = المبلغ − اللي اتخصص للآخرين كـ**دين**. الهدية ما بتخصمش (spec/06). نوع مش مصروف ⇒ «الدعم» اللي جواه بس (§88). */
 fun personalShareOf(transaction: Transaction, allocations: List<PersonAllocation>): Halalas {
     if (!countsAsPersonalExpense(transaction.economicKind)) return givenAwayShareOf(transaction, allocations)
+    // PLAN-0.6 §7: «مستني استرداد» — مش من مصروفك لحد ما الفلوس ترجع
+    if (transaction.awaitingRefund == true && transaction.observedDirection == Direction.OUT) return 0L
     val mine = allocations.filter { it.transactionId == transaction.id }
     val allocatedTotal = sumMoney(mine.map { it.amountMinor })
     if (allocatedTotal > transaction.amountMinor) {

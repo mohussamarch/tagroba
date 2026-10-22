@@ -270,7 +270,7 @@ private fun checkIncomeSourceRow(row: Map<String, Any?>) {
     }
     row["expectedDayOfMonth"]?.let { if ((numberOf(it) ?: 0.0) !in 1.0..31.0) throw BackupError(uiText(TextKey.BACKUP_NUMBER_INVALID, "expectedDayOfMonth")) }
     row["payWeekday"]?.let { if ((numberOf(it) ?: 0.0) !in 1.0..7.0) throw BackupError(uiText(TextKey.BACKUP_NUMBER_INVALID, "payWeekday")) }
-    for (field in listOf("payerKeys", "declinedPayerKeys")) {
+    for (field in listOf("payerKeys", "declinedPayerKeys", "payerKindRules")) {
         val list = row[field] ?: continue
         if (list !is List<*> || list.any { it !is String }) throw BackupError(uiText(TextKey.BACKUP_TEXT_INVALID, "incomeSources", field))
     }

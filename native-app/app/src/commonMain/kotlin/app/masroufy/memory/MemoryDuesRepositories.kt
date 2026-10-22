@@ -61,6 +61,10 @@ class MemoryInstallmentPlanRepository(seed: List<InstallmentPlan> = emptyList())
         items[plan.id] = plan
     }
 
+    override suspend fun delete(id: Id) {
+        items.remove(id)
+    }
+
     override fun snapshot(): Any = LinkedHashMap(items)
 
     @Suppress("UNCHECKED_CAST")

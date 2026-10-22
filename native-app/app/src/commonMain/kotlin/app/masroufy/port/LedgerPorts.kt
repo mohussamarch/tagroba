@@ -72,6 +72,8 @@ data class TransactionPatch(
     val clearSuggestedKind: Boolean = false,
     /** r051: «اتردّ على لوحة ادفع بعدين» (`Transaction.bnplDecided`) — true بس (null = زي ما هو). */
     val bnplDecided: Boolean? = null,
+    /** PLAN-0.6 §7 «مستني استرداد» (`Transaction.awaitingRefund`): true = علّم · false = شيل العلامة · null = زي ما هو. */
+    val awaitingRefund: Boolean? = null,
     /** ربط العملية اللي رجعت بالأصلية (§77-D) — `clear…` = فك الربط (التراجع والتصليح). */
     val reversalOfId: Id? = null,
     val clearReversalOfId: Boolean = false,

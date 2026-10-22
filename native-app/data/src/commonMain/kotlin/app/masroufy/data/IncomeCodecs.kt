@@ -19,6 +19,7 @@ object IncomeCodecs {
                 req("currency", s.currency.name); req("startedAt", s.startedAt); opt("endedAt", s.endedAt)
                 opt("expectedDayOfMonth", s.expectedDayOfMonth); opt("expectedMinor", s.expectedMinor)
                 opt("payerKeys", s.payerKeys.takeIf { it.isNotEmpty() }); opt("declinedPayerKeys", s.declinedPayerKeys.takeIf { it.isNotEmpty() })
+                opt("payerKindRules", s.payerKindRules.takeIf { it.isNotEmpty() })
                 // الشهري (الافتراضي) ما بيتكتبش ⇒ مستند المصدر القديم هو هو، والقديم من غير الحقل = شهري (§65)
                 opt("payFrequency", s.payFrequency.takeIf { it != PayFrequency.MONTHLY }?.wire); opt("payWeekday", s.payWeekday)
                 req("createdAt", s.createdAt)
@@ -30,6 +31,7 @@ object IncomeCodecs {
                 currency = d.wire("currency", Currency::valueOf), startedAt = d.str("startedAt"), endedAt = d.strOrNull("endedAt"),
                 expectedDayOfMonth = d.intOrNull("expectedDayOfMonth"), expectedMinor = d.longOrNull("expectedMinor"), createdAt = d.str("createdAt"),
                 payerKeys = d.strings("payerKeys").orEmpty(), declinedPayerKeys = d.strings("declinedPayerKeys").orEmpty(),
+                payerKindRules = d.strings("payerKindRules").orEmpty(),
                 payFrequency = d.strOrNull("payFrequency")?.let { w -> PayFrequency.entries.first { it.wire == w } } ?: PayFrequency.MONTHLY,
                 payWeekday = d.intOrNull("payWeekday"),
             )

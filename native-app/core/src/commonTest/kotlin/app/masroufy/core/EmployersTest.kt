@@ -49,7 +49,8 @@ class EmployersTest {
     }
 
     @Test fun knownPayerSalaryOnlyInsideThePeriod() {
-        val inside = applyKnownPayerSalary(deposit("FAJRCO", "2222", "2026-05-27"), both, "now")
+        // PLAN-0.6 §7: «راتب» لوحده محتاج كلمة راتب أو مبلغ وميعاد قريبين
+        val inside = applyKnownPayerSalary(deposit("FAJRCO", "2222", "2026-05-27").copy(sourceOperationType = "حوالة رواتب"), both, "now")
         assertEquals(EconomicKind.SALARY to true, inside.economicKind to inside.economicKindConfirmed)
         val outside = deposit("FAJRCO", "2222", "2026-10-03")
         assertEquals(outside, applyKnownPayerSalary(outside, both, "now"), "برّه الفترة ما بيتلمسش")

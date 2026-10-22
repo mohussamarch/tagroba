@@ -127,6 +127,8 @@ class FirestoreInstallmentPlanRepository(private val space: FirestoreSpace) : In
     override suspend fun listAll(): List<InstallmentPlan> = space.select(codec)
 
     override suspend fun save(plan: InstallmentPlan) = space.saveAll(codec, listOf(plan))
+
+    override suspend fun delete(id: Id) = space.deleteAll(codec.group, listOf(id))
 }
 
 class FirestoreInstallmentPaymentRepository(private val space: FirestoreSpace) : InstallmentPaymentRepository {

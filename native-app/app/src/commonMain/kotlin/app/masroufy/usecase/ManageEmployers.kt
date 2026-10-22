@@ -91,6 +91,14 @@ class ManageEmployers(private val deps: ManageEmployersDeps) {
         return updated
     }
 
+    /** PLAN-0.6 §7: قاعدة «الفلوس دي إيه؟» للحساب [partyKey] على الجهة ([kind] null = امسحها). بيرجّع القاعدة اللي كانت (للتراجع). */
+    suspend fun setPayerRule(employerId: Id, partyKey: String, kind: app.masroufy.core.EconomicKind?): app.masroufy.core.EconomicKind? {
+        val employer = find(deps.sources.listAll(), employerId)
+        val before = app.masroufy.core.payerRuleKind(employer, partyKey)
+        if (before != kind) deps.sources.saveMany(listOf(app.masroufy.core.withPayerRule(employer, partyKey, kind)))
+        return before
+    }
+
     /** شيل حساب من الجهة — العمليات اللي اتسجلت «راتب» قبل كده ما بتتلمسش (التراجع عنها من «طبّق على اللي فات» نفسه). */
     suspend fun detach(employerId: Id, key: String): IncomeSource {
         val employer = find(deps.sources.listAll(), employerId)

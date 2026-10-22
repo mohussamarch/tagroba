@@ -92,7 +92,8 @@ class IncomeSignalsTest {
 
     @Test fun everyDepositFromAConfirmedPayerBecomesSalaryUnlessChangedByHand() {
         // رد المالك §64 (اختياره): بعد ما يأكد مرة ⇒ أي تحويل من الشركة «مرتب» — **جوه فترة المصدر** (قايمة المالك 2026-10-15 البند 7)
-        val sources = listOf(src("a", to = "2026-06-30", payers = listOf(starKey)))
+        // PLAN-0.6 §7: الراتب لوحده بشرط المبلغ والميعاد القريبين (أو كلمة راتب) — المرتب المكتوب 20,000 يوم 27
+        val sources = listOf(src("a", to = "2026-06-30", payers = listOf(starKey), day = 27, amount = 2_000_000))
         val auto = applyKnownPayerSalary(deposit(star, "2026-06-27", 2_000_000), sources, "now")
         assertEquals(Triple(EconomicKind.SALARY, true, ReviewState.CONFIRMED), Triple(auto.economicKind, auto.economicKindConfirmed, auto.reviewState))
         assertEquals("now", auto.updatedAt)

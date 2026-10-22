@@ -186,6 +186,36 @@ class ManageInstallments(private val deps: ManageInstallmentsDeps) {
         }
     }
 
+    /**
+     * PLAN-0.6 §8 «مجموع أكتر من قسط»: خصم واحد من تابي/تمارا بيدفع أقساط [existing] (خطة ⇒ القسط) + خطط جديدة [fresh] (أول قسط = الخصم ده،
+     * العدد). **المجموع لازم يساوي الخصم بالهللة** وإلا مرفوض. الخطط الجديدة والدفعات والنوع في وحدة عمل واحدة. بيرجّع معرّفات الخطط الجديدة.
+     */
+    suspend fun splitCharge(transactionId: Id, existing: List<Pair<Id, Halalas>>, fresh: List<Pair<InstallmentInput, Int>>): List<Id> {
+        if (existing.size + fresh.size < 2 || existing.any { it.second <= 0 } || existing.map { it.first }.distinct().size != existing.size ||
+            fresh.any { it.first.installmentMinor <= 0 || it.second < 1 }
+        ) throw InstallmentError(uiText(app.masroufy.core.R06Key.BNPL_MULTI_ERR_PARTS))
+        val plans = existing.map { find(it.first) }
+        val currency = plans.firstOrNull()?.currency ?: fresh.first().first.currency
+        val (txn, _) = links.check(transactionId, Direction.OUT, currency, plans.firstOrNull()?.name ?: fresh.first().first.name, null)
+        val total = sumMoney(existing.map { it.second } + fresh.map { it.first.installmentMinor })
+        if (total != txn.amountMinor) {
+            throw InstallmentError(uiText(app.masroufy.core.R06Key.BNPL_MULTI_ERR_SUM, formatMoney(total, txn.currency), formatMoney(txn.amountMinor, txn.currency)))
+        }
+        for ((plan, part) in plans.zip(existing)) {
+            if (plan.currency != txn.currency) throw InstallmentError(uiText(TextKey.DUE_TXN_CURRENCY, plan.name))
+            val room = subtractMoney(plan.totalMinor, paidOf(plan.id))
+            if (part.second > room) throw InstallmentError(uiText(TextKey.INSTALLMENT_OVER, formatMoney(room, plan.currency), formatMoney(part.second - room, plan.currency)))
+        }
+        return deps.uow.run {
+            val made = fresh.map { (input, count) -> saveCounted(input.copy(currency = txn.currency), count) }
+            val all = existing + made.map { it.id to it.installmentMinor }
+            deps.payments.saveMany(all.map { (planId, amount) -> InstallmentPayment(deps.ids.next("installmentpay"), planId, transactionId, amount) })
+            val first = plans.firstOrNull() ?: made.first()
+            links.markKind(transactionId, installmentPaymentKind(first), DuesCategories.forInstallment(InstallmentKind.PURCHASE_PLAN))
+            made.map { it.id }
+        }
+    }
+
     /** معرّف الخطة من عملية أول قسط (آمن من قص الأرقام زي `transferAskRequestId`). */
     private fun firstPaymentPlanId(txnId: Id): Id = "installment-" + transferAskRequestId(txnId).removePrefix("ask-")
 

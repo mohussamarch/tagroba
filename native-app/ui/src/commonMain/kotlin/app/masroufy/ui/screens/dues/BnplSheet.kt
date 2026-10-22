@@ -99,6 +99,7 @@ internal fun ColumnScope.BnplSheetContent(
     onOtherCategory: () -> Unit,
     onAnswer: (BnplAnswer) -> Unit,
     onLater: () -> Unit,
+    onMulti: (() -> Unit)? = null,
 ) {
     val t0 = s.ask.transaction
     val name = bnplName(s.ask.provider)
@@ -125,6 +126,8 @@ internal fun ColumnScope.BnplSheetContent(
         val later = if (s.setup) t(BnplKey.BNPL2_SKIP) else t(BnplKey.BNPL2_LATER)
         BnplQuietButton(later, onLater, Modifier.weight(1f))
     }
+    // PLAN-0.6 §8: الخصم ده مجموع كذا قسط ⇒ صفحة التوزيع
+    onMulti?.let { BnplQuietButton(t(app.masroufy.core.R06Key.BNPL_MULTI), it, Modifier.fillMaxWidth()) }
 }
 
 @OptIn(ExperimentalLayoutApi::class)

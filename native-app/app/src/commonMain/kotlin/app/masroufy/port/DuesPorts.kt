@@ -32,6 +32,9 @@ interface InstallmentPlanRepository {
     suspend fun listAll(): List<InstallmentPlan>
 
     suspend fun save(plan: InstallmentPlan)
+
+    /** PLAN-0.6 §8: «تراجع» عن توزيع خصم مجمّع بيمسح الخطط الجديدة اللي اتعملت فيه بس. */
+    suspend fun delete(id: Id)
 }
 
 interface InstallmentPaymentRepository {
