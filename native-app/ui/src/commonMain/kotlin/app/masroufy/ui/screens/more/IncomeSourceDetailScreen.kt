@@ -160,13 +160,13 @@ private fun CompareCard(c: SourceStartComparison?, loaded: Boolean) {
 
 @Composable
 private fun CompareBox(r: CompareRow) {
-    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color(0x0A193D33)).padding(horizontal = 12.dp, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Ink.tint(0x0A)).padding(horizontal = 12.dp, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             BasicText(t(r.label), Modifier.weight(1f), style = Type.of(13, FontWeight.Bold))
             val (ink, bg) = when (r.trend) {
                 Trend.GOOD -> Ink.income to Color(0x1A13764D)
-                Trend.BAD -> Ink.expense to Color(0x14BE3D48)
-                Trend.FLAT -> Ink.muted to Color(0x0F193D33)
+                Trend.BAD -> Ink.expense to Ink.expense.copy(alpha = 0x14 / 255f)
+                Trend.FLAT -> Ink.muted to Ink.tint(0x0F)
             }
             Box(Modifier.clip(RoundedCornerShape(12.dp)).background(bg).padding(horizontal = 10.dp, vertical = 2.dp)) {
                 BasicText(r.change, style = Type.of(13, FontWeight.Bold).copy(color = ink, textDirection = androidx.compose.ui.text.style.TextDirection.Ltr))

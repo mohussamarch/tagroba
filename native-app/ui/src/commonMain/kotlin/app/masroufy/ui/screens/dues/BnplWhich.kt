@@ -84,7 +84,7 @@ private fun BnplChoice(title: String, sub: String?, on: Boolean, note: String?, 
     ) {
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
             val dot = Modifier.size(20.dp).clip(CircleShape)
-            Box(if (on) dot.background(Color.White).border(6.dp, Ink.primary, CircleShape) else dot.border(2.dp, Color(0x4D193D33), CircleShape))
+            Box(if (on) dot.background(Color.White).border(6.dp, Ink.primary, CircleShape) else dot.border(2.dp, Ink.tint(0x4D), CircleShape))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 BasicText(title, style = Type.of(15, FontWeight.Bold))
                 if (sub != null) BasicText(sub, style = Type.of(12).copy(color = Ink.muted))

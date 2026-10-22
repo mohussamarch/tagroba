@@ -213,7 +213,7 @@ private fun SavedCard(r: SavedRowUi, onOpen: () -> Unit, onRename: () -> Unit, o
                 val press = rememberPress()
                 val label = t(UiKey.INHSAVED_DELETE_ONE, r.name)
                 Box(
-                    Modifier.size(44.dp).pressScale(press).clip(RoundedCornerShape(14.dp)).background(Color(0x14BE3D48))
+                    Modifier.size(44.dp).pressScale(press).clip(RoundedCornerShape(14.dp)).background(Ink.expense.copy(alpha = 0x14 / 255f))
                         .tap(press, label = label, onClick = onDelete).semantics { contentDescription = label },
                     contentAlignment = Alignment.Center,
                 ) { LucideIcon(Lucide.TRASH_2, size = 18.dp, tint = Ink.expense) }
@@ -236,7 +236,7 @@ private fun DangerButton(text: String, onClick: () -> Unit) {
 @Composable
 private fun UndoBar(u: Undo, modifier: Modifier, onUndo: () -> Unit) {
     Row(
-        modifier.padding(bottom = 28.dp, start = 20.dp, end = 20.dp).widthIn(max = 340.dp).clip(RoundedCornerShape(18.dp)).background(Color(0xEB193D33))
+        modifier.padding(bottom = 28.dp, start = 20.dp, end = 20.dp).widthIn(max = 340.dp).clip(RoundedCornerShape(18.dp)).background(Ink.tint(0xEB))
             .semantics { liveRegion = LiveRegionMode.Polite }.padding(start = 16.dp, end = 6.dp, top = 6.dp, bottom = 6.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically,

@@ -58,14 +58,17 @@ import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
 
 /** نوع الميعاد في الشبكة ولونه (النموذج: اشتراكات كهرماني · أقساط · جمعيات · ديون أزرق · أحداث وردي · الراتب أخضر مليان · فات موعده أحمر). */
-enum class MarkKind(val ink: Color, val bg: Color, val legend: TextRef) {
-    SUBSCRIPTION(Color(0xFF956000), Color(0x1F956000), UiKey.CAL_LEGEND_SUB),
-    INSTALLMENT(Color(0xFF4D747C), Color(0x244D747C), UiKey.CAL_LEGEND_INST),
-    ROSCA(Color(0xFF27785B), Color(0x2127785B), UiKey.CAL_LEGEND_ROSCA),
-    DEBT(Color(0xFF2469BA), Color(0x1F2469BA), UiKey.CAL_LEGEND_DEBT),
-    EVENT(Color(0xFFA55060), Color(0x1FA55060), UiKey.CAL_LEGEND_EVENT),
-    PAYDAY(Color(0xFFFFFFFF), Color(0xFF13764D), UiKey.CAL_LEGEND_PAY),
-    LATE(Color(0xFFBE3D48), Color(0x1FBE3D48), UiKey.CAL_LEGEND_LATE),
+enum class MarkKind(private val inkLazy: () -> Color, private val bgLazy: () -> Color, val legend: TextRef) {
+    SUBSCRIPTION({ Ink.focus }, { Color(0x1F956000) }, UiKey.CAL_LEGEND_SUB),
+    INSTALLMENT({ Color(0xFF4D747C) }, { Color(0x244D747C) }, UiKey.CAL_LEGEND_INST),
+    ROSCA({ Color(0xFF27785B) }, { Color(0x2127785B) }, UiKey.CAL_LEGEND_ROSCA),
+    DEBT({ Ink.transfer }, { Color(0x1F2469BA) }, UiKey.CAL_LEGEND_DEBT),
+    EVENT({ Color(0xFFA55060) }, { Color(0x1FA55060) }, UiKey.CAL_LEGEND_EVENT),
+    PAYDAY({ Color(0xFFFFFFFF) }, { Ink.income }, UiKey.CAL_LEGEND_PAY),
+    LATE({ Ink.expense.copy(alpha = 0xFF / 255f) }, { Ink.expense.copy(alpha = 0x1F / 255f) }, UiKey.CAL_LEGEND_LATE),
+    ;
+    val ink: Color get() = inkLazy()
+    val bg: Color get() = bgLazy()
 }
 
 /** ميعاد في يوم: [label] اسم قصير. [late] = فات ميعاده ⇒ أحمر. */
@@ -141,8 +144,8 @@ private fun DayCell(modifier: Modifier, year: Int, month: Int, day: Int, today: 
     val shape = RoundedCornerShape(12.dp)
     val bg = when {
         on -> Modifier.background(Ink.selected).insetRing(shape, 1.5.dp, Ink.primary)
-        isToday -> Modifier.background(Color(0x1208634F))
-        else -> Modifier.background(Color(0x08193D33))
+        isToday -> Modifier.background(Ink.primary.copy(alpha = 0x12 / 255f))
+        else -> Modifier.background(Ink.tint(0x08))
     }
     val shown = if (mine.size > 2) mine.take(1) else mine
     val aria = dayMonth(iso) + (if (isToday) "، " + t(UiKey.CAL_TODAY) else "") + "، " + (if (mine.isEmpty()) t(UiKey.CAL_NO_DATES) else mine.joinToString("، ") { it.label })
@@ -170,7 +173,7 @@ private fun DayCell(modifier: Modifier, year: Int, month: Int, day: Int, today: 
         }
         if (mine.size > 2) BasicText(
             t(UiKey.CAL_MORE, sentenceNumber(mine.size - 1)),
-            Modifier.fillMaxWidth().clip(RoundedCornerShape(6.dp)).background(Color(0x0F193D33)),
+            Modifier.fillMaxWidth().clip(RoundedCornerShape(6.dp)).background(Ink.tint(0x0F)),
             style = Type.of(10, FontWeight.Bold, 1.5).copy(color = Ink.muted, textAlign = TextAlign.Center),
         )
     }
@@ -180,7 +183,7 @@ private fun DayCell(modifier: Modifier, year: Int, month: Int, day: Int, today: 
 private fun Arrow(icon: Lucide, label: String, off: Boolean, onClick: () -> Unit) {
     val press = rememberPress()
     Box(
-        Modifier.size(48.dp).alpha(if (off) 0.35f else 1f).pressScale(press, !off).clip(RoundedCornerShape(16.dp)).background(Color(0x0D193D33))
+        Modifier.size(48.dp).alpha(if (off) 0.35f else 1f).pressScale(press, !off).clip(RoundedCornerShape(16.dp)).background(Ink.tint(0x0D))
             .tap(press, enabled = !off, label = label, onClick = onClick).semantics { contentDescription = label },
         contentAlignment = Alignment.Center,
     ) { LucideIcon(icon, size = 20.dp, modifier = Modifier.mirrorInLtr()) }

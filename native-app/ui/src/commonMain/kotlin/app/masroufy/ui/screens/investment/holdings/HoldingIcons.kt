@@ -1,5 +1,7 @@
 package app.masroufy.ui.screens.investment.holdings
 
+import app.masroufy.ui.theme.Ink
+
 import androidx.compose.ui.graphics.Color
 import app.masroufy.core.Currency
 import app.masroufy.core.Halalas
@@ -61,11 +63,11 @@ internal fun groupIcon(group: HoldingGroup): Lucide = when (group) {
 
 /** خلفية ولون صندوق الأيقونة لكل مجموعة (`BOX` في النموذج). */
 internal fun groupBox(group: HoldingGroup): Pair<Color, Color> = when (group) {
-    HoldingGroup.METAL -> Color(0x1F956000) to Color(0xFF956000)
-    HoldingGroup.PROPERTY -> Color(0xFFDCEBD6) to Color(0xFF08634F)
-    HoldingGroup.SHARES -> Color(0x1F2469BA) to Color(0xFF2469BA)
+    HoldingGroup.METAL -> Color(0x1F956000) to Ink.focus
+    HoldingGroup.PROPERTY -> Color(0xFFDCEBD6) to Ink.primary.copy(alpha = 0xFF / 255f)
+    HoldingGroup.SHARES -> Color(0x1F2469BA) to Ink.transfer
     HoldingGroup.COLLECTIBLES -> Color(0x14956000) to Color(0xFF7A5A1E)
-    HoldingGroup.PERSONAL, HoldingGroup.OTHER -> Color(0x12193D33) to Color(0xFF4F625C)
+    HoldingGroup.PERSONAL, HoldingGroup.OTHER -> Ink.tint(0x12) to Color(0xFF4F625C)
 }
 
 internal fun purposeColor(p: HoldingPurpose): Color = when (p) {

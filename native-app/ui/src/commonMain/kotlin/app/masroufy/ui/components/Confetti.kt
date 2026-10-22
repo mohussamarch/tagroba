@@ -1,5 +1,7 @@
 package app.masroufy.ui.components
 
+import app.masroufy.ui.theme.Ink
+
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.tween
@@ -24,7 +26,7 @@ import kotlin.random.Random
  * اللي بيحطها مسؤول: **ما تغطيش المبلغ ولا الأزرار** (حطها في مساحة فوق البطاقة)، وما تتكررش لو الشاشة اتفتحت تاني ([key]).
  * «تقليل الحركة» ⇒ ولا حاجة (الجملة بس — شغل الشاشة).
  */
-private val CONFETTI = listOf(Color(0xFFA6DEC1), Color(0xFF9BC5FF), Color(0xFFF3C96B), Color(0xFFFFA8AC), Color(0xFF08634F))
+private val CONFETTI = listOf(Color(0xFFA6DEC1), Color(0xFF9BC5FF), Color(0xFFF3C96B), Color(0xFFFFA8AC), Ink.primary.copy(alpha = 0xFF / 255f))
 
 private class Piece(val x: Float, val delay: Float, val drift: Float, val spin: Float, val color: Color)
 

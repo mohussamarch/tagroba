@@ -79,7 +79,7 @@ fun HeroBanks(now: WithYouNow, modifier: Modifier = Modifier) {
         BasicText(t(UiKey.HERO_BANKS_TITLE), Modifier.padding(start = 6.dp, end = 6.dp, bottom = 4.dp), style = Type.of(16, FontWeight.Bold))
         for (w in banks) BankLine(w, if (w.wallet.kind == "digital_wallet") t(UiKey.HERO_DIGITAL_SUB) else t(UiKey.HERO_BANK_SUB), now, bankForWallet(w.wallet, country), cash = false)
         for (w in now.cash) BankLine(w, t(UiKey.HERO_CASH_SUB), now, null, cash = true)
-        Box(Modifier.fillMaxWidth().padding(top = 4.dp).height(1.dp).background(Color(0x1F193D33)))
+        Box(Modifier.fillMaxWidth().padding(top = 4.dp).height(1.dp).background(Ink.tint(0x1F)))
         Row(
             Modifier.fillMaxWidth().padding(start = 6.dp, end = 6.dp, top = 6.dp, bottom = 2.dp),
             horizontalArrangement = Arrangement.SpaceBetween,

@@ -1,5 +1,10 @@
 package app.masroufy.ui.theme
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.runtime.Composable
@@ -15,6 +20,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalLayoutDirection
 import app.masroufy.core.Language
 import app.masroufy.core.Texts
+
+/** مدة انتقال المظهر فاتح/غامق (قرار المالك 2026-10-22: 300ms). */
+const val THEME_SWITCH_MS = 300
 
 /**
  * الخط (DESIGN-SYSTEM «الخط والأرقام»): **Noto Sans Arabic** (400 · 500 · 700) — على أندرويد من خدمة خطوط جوجل على الجهاز
@@ -50,6 +58,11 @@ object Type {
  */
 @Composable
 fun MasroufyTheme(reduceMotion: Boolean = false, content: @Composable () -> Unit) {
+    // المظهر: مظهر الجوال بيتتابع، والانتقال فاتح/غامق 300ms (من غير حركة لو «تقليل الحركة» شغال)
+    val systemDark = isSystemInDarkTheme()
+    SideEffect { Appearance.systemDark = systemDark }
+    val shown by animateFloatAsState(if (Appearance.isDark) 1f else 0f, tween(if (reduceMotion) 0 else THEME_SWITCH_MS), label = "theme")
+    SideEffect { Appearance.progress = shown }
     val direction = if (Texts.language == Language.EN) LayoutDirection.Ltr else LayoutDirection.Rtl
     CompositionLocalProvider(
         LocalFont provides rememberMasroufyFont(),

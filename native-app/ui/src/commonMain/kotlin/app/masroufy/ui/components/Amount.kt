@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import app.masroufy.core.Currency
 import app.masroufy.core.Halalas
+import app.masroufy.core.MoneyPrivacy
 import app.masroufy.core.NOT_AVAILABLE
 import app.masroufy.core.UiKey
 import app.masroufy.core.absMoney
@@ -42,18 +43,20 @@ import app.masroufy.ui.theme.Type
  * **الشاشة ما بتحسبش**: المبلغ جاي جاهز من حالة الاستخدام بالهللة، وده بيعرضه بس (`formatMoney` من `core`).
  * `null` ⇒ «غير متاح» (CLAUDE.md #10) — **عمره ما يبقى صفر**.
  */
-enum class AmountTone(val color: Color, val sign: String) {
+enum class AmountTone(private val colorLazy: () -> Color, val sign: String) {
     /** صرف: أحمر بـ«−». */
-    EXPENSE(Ink.expense, "−"),
+    EXPENSE({ Ink.expense }, "−"),
 
     /** دخل: أخضر بـ«+». */
-    INCOME(Ink.income, "+"),
+    INCOME({ Ink.income }, "+"),
 
     /** تحويل بين محافظك: لون التحويل المحايد من غير علامة، ورمز «منه فيه» مكانها في [AmountText] (HANDOVER §6.5-10 — `MoveLook.kt`). */
-    TRANSFER(Ink.transfer, ""),
+    TRANSFER({ Ink.transfer }, ""),
 
     /** رقم عادي (رصيد · مجموع): لون النص، والسالب بـ«−». */
-    PLAIN(Ink.text, ""),
+    PLAIN({ Ink.text }, ""),
+    ;
+    val color: Color get() = colorLazy()
 }
 
 /** نمط الأرقام الجدولية. */
@@ -63,7 +66,7 @@ fun TextStyle.tabular(): TextStyle = copy(fontFeatureSettings = "tnum", textDire
 fun amountLabel(minor: Halalas?, currency: Currency, tone: AmountTone = AmountTone.PLAIN, showCurrency: Boolean = true): String {
     if (minor == null) return NOT_AVAILABLE
     val number = trueMinus(amount(if (tone == AmountTone.EXPENSE || tone == AmountTone.INCOME) absMoney(minor) else minor, currency))
-    val signed = tone.sign + number
+    val signed = (if (MoneyPrivacy.isHidden) "" else tone.sign) + number
     return if (showCurrency) withCurrency(signed, currency) else signed
 }
 

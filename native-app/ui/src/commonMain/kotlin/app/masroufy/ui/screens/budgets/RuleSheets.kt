@@ -133,7 +133,7 @@ private fun MerchantSheet(sheet: RulesSheet.Merchant?, ui: RulesUi?, deps: Budge
             if (aliases.isNotEmpty()) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     aliases.forEach { a ->
-                        BasicText(a, Modifier.clip(RoundedCornerShape(12.dp)).background(Color(0x0F193D33)).padding(horizontal = 10.dp, vertical = 6.dp), style = Type.caption())
+                        BasicText(a, Modifier.clip(RoundedCornerShape(12.dp)).background(Ink.tint(0x0F)).padding(horizontal = 10.dp, vertical = 6.dp), style = Type.caption())
                     }
                 }
             }

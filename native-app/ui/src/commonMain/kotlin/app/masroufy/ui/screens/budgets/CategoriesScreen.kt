@@ -201,7 +201,7 @@ private fun MainRow(m: MainRowUi, isOpen: Boolean, onToggle: () -> Unit, onEdit:
 internal fun SmallIconButton(icon: Lucide, label: String, onClick: () -> Unit) {
     val press = rememberPress()
     Box(
-        Modifier.size(44.dp).pressScale(press).clip(RoundedCornerShape(14.dp)).background(Color(0x0F08634F))
+        Modifier.size(44.dp).pressScale(press).clip(RoundedCornerShape(14.dp)).background(Ink.primary.copy(alpha = 0x0F / 255f))
             .tap(press, role = Role.Button, label = label, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) { LucideIcon(icon, size = 20.dp, tint = Ink.primary) }

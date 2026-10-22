@@ -195,7 +195,7 @@ private fun LockPreview(title: String, body: String) {
     Column(Modifier.padding(top = 4.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         BasicText(t(UiKey.NOTIFICATIONS_LOCK_TITLE), style = Type.captionBold().copy(color = Ink.muted))
         Row(
-            Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Color(0xD1193D33)).padding(horizontal = 14.dp, vertical = 12.dp),
+            Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Ink.tint(0xD1)).padding(horizontal = 14.dp, vertical = 12.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -217,7 +217,7 @@ private fun LockPreview(title: String, body: String) {
 internal fun UndoBar(modifier: Modifier = Modifier, onUndo: () -> Unit) {
     Row(
         modifier.padding(start = 20.dp, end = 20.dp, bottom = 24.dp).fillMaxWidth().clip(RoundedCornerShape(18.dp))
-            .background(Color(0xEB193D33)).padding(start = 16.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
+            .background(Ink.tint(0xEB)).padding(start = 16.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

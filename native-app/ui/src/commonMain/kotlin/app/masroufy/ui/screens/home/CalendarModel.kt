@@ -30,7 +30,7 @@ const val CALENDAR_WINDOW_DAYS = 30
 const val CALENDAR_SHOWN = 6
 
 /** النبرة الصغيرة: أحمر فات · أخضر محجوز/هتستلم · كهرماني غير محجوز · رمادي بلا مبلغ. */
-enum class CalTone(val color: Color) { LATE(Ink.expense), GOOD(Ink.income), OPEN(Ink.focus), QUIET(Ink.muted) }
+enum class CalTone(private val colorLazy: () -> Color) { LATE({ Ink.expense }), GOOD({ Ink.income }), OPEN({ Ink.focus }), QUIET({ Ink.muted }); val color: Color get() = colorLazy() }
 
 data class CalRow(
     val key: String,

@@ -38,8 +38,8 @@ import kotlin.math.sin
 private const val ROPE_W = 318f
 private const val ROPE_H = 96f
 private const val TRACK_Y = 44f
-private val trackColor = Color(0x14193D33)
-private val tickColor = Color(0xFF193D33)
+private val trackColor = Ink.tint(0x14)
+private val tickColor = Ink.tint(0xFF)
 
 /** مكان التاريخ على المحور (هندسة رسم بس): 4 + (شهور من أول الفترة ÷ 12) × 310. */
 private fun ropeX(date: IsoDate, rope: IncomeRope): Float {

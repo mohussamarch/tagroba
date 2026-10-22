@@ -82,7 +82,7 @@ fun SavingsGrowthPanel(monthlyMinor: Halalas, months: Int, startMinor: Halalas, 
             BasicText(t(UiKey.SAVGROW_TITLE), style = Type.of(18, FontWeight.Bold))
             BasicText(ui.paidLine, style = Type.caption().copy(color = Ink.muted))
         }
-        Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Color(0x0D193D33)).padding(horizontal = 14.dp)) {
+        Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Ink.tint(0x0D)).padding(horizontal = 14.dp)) {
             CalcSwitchRow(t(UiKey.SAVGROW_TODAY), ui.todaySub, ui.todayOn, { todayMoney = !todayMoney }, subWarn = ui.todaySubWarn)
         }
         FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)) {
@@ -139,7 +139,7 @@ private fun GrowthRow(r: GrowthRowUi, currency: app.masroufy.core.Currency, onEd
             }
         }
         if (r.barPercent > 0) {
-            Box(Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)).background(Color(0x0F193D33))) {
+            Box(Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)).background(Ink.tint(0x0F))) {
                 Box(Modifier.fillMaxWidth(r.barPercent / 100f).height(6.dp).clip(RoundedCornerShape(3.dp)).background(ink))
             }
         }
@@ -152,7 +152,7 @@ private fun GrowthRow(r: GrowthRowUi, currency: app.masroufy.core.Currency, onEd
 
 /** لون كل نوع وأيقونته (النموذج: ذهب كهرماني · عقار أخضر · وديعة أزرق · أسهم أزرق غامق · كاش رمادي). */
 private fun classLook(cls: GrowthClass): Pair<Color, Lucide> = when (cls) {
-    GrowthClass.GOLD -> Color(0xFF956000) to Lucide.COINS
+    GrowthClass.GOLD -> Ink.focus to Lucide.COINS
     GrowthClass.REAL_ESTATE -> Ink.primary to Lucide.HOUSE
     GrowthClass.DEPOSIT -> Ink.transfer to Lucide.PIGGY_BANK
     GrowthClass.LOCAL_STOCKS -> Color(0xFF3866A7) to Lucide.TRENDING_UP

@@ -58,9 +58,9 @@ import app.masroufy.ui.theme.Type
 
 /** قطع البنّاء (character-spec §3): كارت القسم المقفول · القسم المفتوح بتبويباته · شبكة الاختيارات · الألوان · «قريب/الجسم كله». */
 
-private val green = Color(0xFF08634F)
-private val greenSoft = Color(0x1708634F)
-private val tabOff = Color(0xFF637570)
+private val green = Ink.primary.copy(alpha = 0xFF / 255f)
+private val greenSoft = Ink.primary.copy(alpha = 0x17 / 255f)
+private val tabOff = Ink.muted
 
 internal fun sectionIcon(section: CharacterSection): Lucide = when (section) {
     CharacterSection.FACE -> Lucide.SMILE
@@ -192,7 +192,7 @@ private fun OptionCell(o: OptionUi, modifier: Modifier, onPick: () -> Unit) {
 private fun ColorRow(label: String, colors: List<Color>, selected: Int, divider: Boolean, onPick: (Int) -> Unit) {
     Column(
         Modifier.fillMaxWidth().then(
-            if (divider) Modifier.drawBehind { drawRect(Color(0x1F193D33), Offset.Zero, androidx.compose.ui.geometry.Size(size.width, 1.dp.toPx())) }.padding(top = 14.dp)
+            if (divider) Modifier.drawBehind { drawRect(Ink.tint(0x1F), Offset.Zero, androidx.compose.ui.geometry.Size(size.width, 1.dp.toPx())) }.padding(top = 14.dp)
             else Modifier,
         ),
         verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -207,7 +207,7 @@ private fun ColorRow(label: String, colors: List<Color>, selected: Int, divider:
                     Modifier.size(44.dp).pressScale(press)
                         .then(if (on) Modifier.drawBehind { drawCircle(green, size.minDimension / 2f + 5.dp.toPx()); drawCircle(Color.White, size.minDimension / 2f + 3.dp.toPx()) } else Modifier)
                         .clip(CircleShape).background(c)
-                        .then(if (on) Modifier else Modifier.insetRing(CircleShape, 1.dp, Color(0x26193D33)))
+                        .then(if (on) Modifier else Modifier.insetRing(CircleShape, 1.dp, Ink.tint(0x26)))
                         .tap(press, role = Role.RadioButton, label = name, onClick = { onPick(i) }).semantics { this.selected = on },
                 )
             }

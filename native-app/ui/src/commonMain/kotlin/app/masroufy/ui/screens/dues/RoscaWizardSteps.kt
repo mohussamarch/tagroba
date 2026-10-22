@@ -163,7 +163,7 @@ private fun Stepper(count: Int, onStep: (Int) -> Unit) {
 private fun StepButton(icon: Lucide, label: String, onClick: () -> Unit) {
     val press = rememberPress()
     Box(
-        Modifier.size(52.dp).pressScale(press).clip(RoundedCornerShape(16.dp)).background(Color(0x1408634F))
+        Modifier.size(52.dp).pressScale(press).clip(RoundedCornerShape(16.dp)).background(Ink.primary.copy(alpha = 0x14 / 255f))
             .tap(press, label = label, onClick = onClick).semantics { contentDescription = label },
         contentAlignment = Alignment.Center,
     ) { LucideIcon(icon, size = 22.dp, tint = Ink.primary) }

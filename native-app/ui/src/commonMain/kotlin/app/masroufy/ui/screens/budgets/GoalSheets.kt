@@ -80,12 +80,12 @@ fun GoalDetailSheet(card: GoalCardUi?, deps: BudgetsDeps, today: String, onDismi
             Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Ink.selected).padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 BasicText(t(if (shown.linked) UiKey.GOAL_DETAIL_SAVED_LINKED else UiKey.GOAL_DETAIL_SAVED), style = Type.caption().copy(color = Ink.soft))
                 AmountText(shown.savedMinor, shown.currency, size = 26)
-                ProgressBar(shown.percent ?: 0, if (shown.reached) Ink.income else Ink.primary, track = Color(0x2408634F))
+                ProgressBar(shown.percent ?: 0, if (shown.reached) Ink.income else Ink.primary, track = Ink.primary.copy(alpha = 0x24 / 255f))
                 BasicText(detailProgressLine(shown), style = Type.captionBold().copy(color = Ink.primary))
             }
             if (confetti > 0) Confetti(Modifier.matchParentSize(), key = confetti)
         }
-        Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Color(0x0A193D33)).padding(horizontal = 14.dp, vertical = 2.dp)) {
+        Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Ink.tint(0x0A)).padding(horizontal = 14.dp, vertical = 2.dp)) {
             shown.stats.forEachIndexed { i, s ->
                 Row(Modifier.fillMaxWidth().padding(vertical = 9.dp), horizontalArrangement = Arrangement.SpaceBetween) {
                     BasicText(s.label, style = Type.of(13).copy(color = Ink.soft))

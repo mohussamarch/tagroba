@@ -136,8 +136,8 @@ fun SpaceSwitcher(modifier: Modifier = Modifier) {
 private fun SpaceRow(c: SpaceChoice, going: Boolean, onPick: () -> Unit) {
     val shape = RoundedCornerShape(18.dp)
     val press = rememberPress()
-    val surface = if (c.active) Modifier.layeredShadow(shape, Shadows.chip).clip(shape).background(Color.White).insetRing(shape, 1.5.dp, Color(0x8C08634F))
-    else Modifier.clip(shape).background(Color(0x0A193D33))
+    val surface = if (c.active) Modifier.layeredShadow(shape, Shadows.chip).clip(shape).background(Color.White).insetRing(shape, 1.5.dp, Ink.primary.copy(alpha = 0x8C / 255f))
+    else Modifier.clip(shape).background(Ink.tint(0x0A))
     val name = countryLabel(c.space)
     Row(
         Modifier.fillMaxWidth().defaultMinSize(minHeight = 72.dp).pressScale(press).then(surface)

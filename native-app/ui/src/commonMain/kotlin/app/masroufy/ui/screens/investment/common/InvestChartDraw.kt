@@ -1,5 +1,7 @@
 package app.masroufy.ui.screens.investment.common
 
+import app.masroufy.ui.theme.Ink
+
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -24,12 +26,12 @@ internal class ChartGeometry(val scale: ChartScale, val n: Int, val mini: Boolea
     val height = if (mini) 84 else 210
 }
 
-private val GRID = Color(0x1A193D33)
-private val GUIDE = Color(0x59193D33)
+private val GRID = Ink.tint(0x1A)
+private val GUIDE = Ink.tint(0x59)
 private val AMBER = Color(0xFFB7791F)
 private val PIN_BG = Color(0xFFF6E7C8)
-private val FLAG = Color(0xFF637570)
-private val PILL_EDGE = Color(0x1F193D33)
+private val FLAG = Ink.muted
+private val PILL_EDGE = Ink.tint(0x1F)
 
 /** الرسمة كلها بالترتيب: الشبكة · المساحة · الخطوط · العلامات · الأهداف · المحطات · الصباع · الكتابة (المحاور والحبوب). */
 internal fun DrawScope.drawChart(

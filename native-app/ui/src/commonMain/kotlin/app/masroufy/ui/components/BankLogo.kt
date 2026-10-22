@@ -40,7 +40,7 @@ class BankLogoPaint(val painter: Painter, val onDark: Boolean)
 @Composable
 internal expect fun bankLogoPaint(logo: String): BankLogoPaint?
 
-private val LOGO_DARK = Color(0xFF193D33)
+private val LOGO_DARK = Ink.tint(0xFF)
 
 /** ألوان الدايرة لما مفيش لوجو — من ألوان التصنيفات (ثابت لكل اسم عشان البنك يفضل بنفس لونه في كل شاشة). */
 private val TINTS = listOf(CategoryInk.shopping, CategoryInk.savings, CategoryInk.transport, CategoryInk.restaurants, CategoryInk.gifts, Ink.transfer)

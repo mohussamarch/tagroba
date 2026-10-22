@@ -85,7 +85,7 @@ internal fun OnbTopBar(s: OnbState, onBack: () -> Unit, onSkip: () -> Unit) {
 @Composable
 private fun Segment(on: Boolean, modifier: Modifier) {
     val fill by animateFloatAsState(if (on) 1f else 0f, app.masroufy.ui.theme.motion(app.masroufy.ui.theme.Springs.GENTLE))
-    Box(modifier.height(6.dp).clip(RoundedCornerShape(3.dp)).background(Color(0x1A193D33))) {
+    Box(modifier.height(6.dp).clip(RoundedCornerShape(3.dp)).background(Ink.tint(0x1A))) {
         Box(Modifier.fillMaxHeight().fillMaxWidth(fill).clip(RoundedCornerShape(3.dp)).background(Glass.primary))
     }
 }
@@ -104,7 +104,7 @@ internal fun OnbIllustration(step: OnbStep) {
     }
     Box(
         Modifier.size(width = 120.dp, height = 80.dp).clip(RoundedCornerShape(16.dp)).background(Glass.lensOnLight)
-            .insetRing(RoundedCornerShape(16.dp), 1.5.dp, Color(0x5908634F)),
+            .insetRing(RoundedCornerShape(16.dp), 1.5.dp, Ink.primary.copy(alpha = 0x59 / 255f)),
         contentAlignment = Alignment.Center,
     ) { LucideIcon(icon, size = 32.dp, tint = Ink.primary) }
 }
@@ -123,7 +123,7 @@ internal fun OnbOptionRow(o: OnbOption, on: Boolean, icon: Lucide?, onPick: () -
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(Modifier.size(40.dp).clip(RoundedCornerShape(12.dp)).background(Color(0x1408634F)), contentAlignment = Alignment.Center) {
+        Box(Modifier.size(40.dp).clip(RoundedCornerShape(12.dp)).background(Ink.primary.copy(alpha = 0x14 / 255f)), contentAlignment = Alignment.Center) {
             if (o.mark != null) BasicText(o.mark, style = Type.of(13, FontWeight.Bold).copy(color = Ink.primary))
             else if (icon != null) LucideIcon(icon, size = 20.dp, tint = Ink.primary)
         }
@@ -167,7 +167,7 @@ internal fun OnbRing() {
     Box(Modifier.size(132.dp).semantics { contentDescription = label }, contentAlignment = Alignment.Center) {
         Canvas(Modifier.fillMaxSize()) {
             val stroke = 8.dp.toPx()
-            drawCircle(Color(0x1A193D33), radius = size.minDimension / 2 - stroke / 2 - 2.dp.toPx(), center = Offset(size.width / 2, size.height / 2), style = Stroke(stroke))
+            drawCircle(Ink.tint(0x1A), radius = size.minDimension / 2 - stroke / 2 - 2.dp.toPx(), center = Offset(size.width / 2, size.height / 2), style = Stroke(stroke))
         }
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp)) {
             LucideIcon(Lucide.CHECK, size = 26.dp, tint = Ink.income)

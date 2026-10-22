@@ -93,7 +93,7 @@ internal fun BnplPlanCard(v: BnplPlanView, today: IsoDate, startOpen: Boolean = 
                     val fill = when (s.state) {
                         BnplStepState.PAID -> Ink.primary
                         BnplStepState.NEXT -> Color(0xFFF3C96B)
-                        BnplStepState.LATER -> Color(0x1A193D33)
+                        BnplStepState.LATER -> Ink.tint(0x1A)
                     }
                     Box(Modifier.weight(1f).height(8.dp).clip(RoundedCornerShape(4.dp)).background(fill))
                 }
@@ -104,13 +104,13 @@ internal fun BnplPlanCard(v: BnplPlanView, today: IsoDate, startOpen: Boolean = 
                 BasicText(bnplNextText(v, today), style = Type.of(12).copy(color = Ink.muted))
             }
             if (open) {
-                Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color(0x0A193D33)).padding(horizontal = 12.dp, vertical = 4.dp)) {
+                Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Ink.tint(0x0A)).padding(horizontal = 12.dp, vertical = 4.dp)) {
                     for (s in v.steps) BnplStepRow(t(BnplKey.BNPL2_STEP, sentenceNumber(s.number), dateText(s.dueAt, today)), s.state, s.amountMinor, p.currency, dot = false)
                 }
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                    val ink = if (p.remindDayBefore == false) Ink.muted else Color(0xFF13764D)
+                    val ink = if (p.remindDayBefore == false) Ink.muted else Ink.income
                     LucideIcon(Lucide.BELL, size = 14.dp, tint = ink)
                     BasicText(bnplRemindText(v), style = Type.of(12).copy(color = ink))
                 }

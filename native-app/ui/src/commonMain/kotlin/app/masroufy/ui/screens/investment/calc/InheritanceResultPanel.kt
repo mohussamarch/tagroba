@@ -39,7 +39,7 @@ import app.masroufy.ui.theme.Type
 
 /** ألوان الورثة (النموذج: نقطة غامقة + شريط فاتح بنفس الترتيب). */
 internal val HEIR_DOT = listOf(
-    Color(0xFF13764D), Color(0xFF2469BA), Color(0xFF956000), Color(0xFFBE3D48), Color(0xFF08634F), Color(0xFF6B5BA8), Color(0xFF4D747C), Color(0xFFA55060),
+    Ink.income, Ink.transfer, Ink.focus, Ink.expense.copy(alpha = 0xFF / 255f), Ink.primary.copy(alpha = 0xFF / 255f), Color(0xFF6B5BA8), Color(0xFF4D747C), Color(0xFFA55060),
 )
 internal val HEIR_BAR = listOf(
     Color(0xFFA6DEC1), Color(0xFF9BC5FF), Color(0xFFF3C96B), Color(0xFFFFA8AC), Color(0xFF7FC8AE), Color(0xFFC9BEF0), Color(0xFFA9C7CC), Color(0xFFE9B4C0),
@@ -78,7 +78,7 @@ private fun Computed(v: InheritanceView.Computed, ui: InheritanceResultUi) {
         }
     }
     if (v.claims.isNotEmpty()) {
-        Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(Color(0x0D193D33)).padding(horizontal = 16.dp, vertical = 6.dp)) {
+        Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(Ink.tint(0x0D)).padding(horizontal = 16.dp, vertical = 6.dp)) {
             v.claims.forEach { c ->
                 Row(Modifier.fillMaxWidth().heightIn(min = 40.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
                     BasicText(c.label, Modifier.weight(1f), style = Type.of(13))
@@ -129,8 +129,8 @@ private fun AskDistant(onAnswer: (Boolean) -> Unit) {
 @Composable
 private fun StopCard(v: InheritanceView.Stop) {
     val (ink, bg) = when (v.kind) {
-        StopKind.INVALID -> Ink.expense to Color(0x14BE3D48)
-        StopKind.UNSUPPORTED -> Ink.muted to Color(0x0F193D33)
+        StopKind.INVALID -> Ink.expense to Ink.expense.copy(alpha = 0x14 / 255f)
+        StopKind.UNSUPPORTED -> Ink.muted to Ink.tint(0x0F)
         StopKind.COURT -> warnInk to Ink.alertBg
     }
     Column(

@@ -215,7 +215,7 @@ private fun HistoryRowView(row: HistoryRow, current: Boolean, onOpen: () -> Unit
 private fun SearchBox(query: String, onQuery: (String) -> Unit) {
     val hint = t(UiKey.ASK_HISTORY_SEARCH)
     Row(
-        Modifier.fillMaxWidth().height(48.dp).keepsKeyboard().clip(RoundedCornerShape(16.dp)).background(Color(0x0D193D33)).padding(horizontal = 14.dp),
+        Modifier.fillMaxWidth().height(48.dp).keepsKeyboard().clip(RoundedCornerShape(16.dp)).background(Ink.tint(0x0D)).padding(horizontal = 14.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

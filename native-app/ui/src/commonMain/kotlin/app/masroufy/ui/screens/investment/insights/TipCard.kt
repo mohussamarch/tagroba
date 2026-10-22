@@ -45,7 +45,7 @@ internal object InsightIcons {
 private val tipTop = Color(0xFFFFFDF6)
 private val tipBottom = Color(0xFFFBF4E2)
 private val tipEdge = Color(0x38B7791F)
-private val amberInk = Color(0xFF956000)
+private val amberInk = Ink.focus
 
 /**
  * كارت النصيحة (`InvestTipCard.dc.html` وضع «واحدة»): خلفية كهرماني فاتح بحد رفيع · لمبة + «ليه دي» · النصيحة · «المصدر: …» ·

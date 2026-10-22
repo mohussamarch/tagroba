@@ -139,7 +139,7 @@ internal fun StatusChip(text: String, chip: Chip, modifier: Modifier = Modifier,
 internal fun CountBar(done: Int, total: Int, onHero: Boolean, fill: Color = if (onHero) Ink.heroProgress else Ink.primary) {
     val part = if (total <= 0) 0f else (done.coerceIn(0, total).toFloat() / total)
     val shape = RoundedCornerShape(4.dp)
-    Box(Modifier.fillMaxWidth().height(8.dp).clip(shape).background(if (onHero) Color(0x2EFFFFFF) else Color(0x14193D33))) {
+    Box(Modifier.fillMaxWidth().height(8.dp).clip(shape).background(if (onHero) Color(0x2EFFFFFF) else Ink.tint(0x14))) {
         if (part > 0f) Box(Modifier.fillMaxWidth(part).height(8.dp).clip(shape).background(fill))
     }
 }

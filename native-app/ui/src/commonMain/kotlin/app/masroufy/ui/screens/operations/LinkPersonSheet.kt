@@ -194,7 +194,7 @@ internal fun initialPersonAction(wanted: Boolean, meaningFlow: Boolean, statusLo
 @Composable
 internal fun EffectBox(lines: List<EffectLine>) {
     Column(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Color(0x0F08634F)).padding(horizontal = 14.dp, vertical = 10.dp),
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Ink.primary.copy(alpha = 0x0F / 255f)).padding(horizontal = 14.dp, vertical = 10.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         BasicText(t(UiKey.LINK_PERSON_EFFECT_TITLE), style = Type.of(12, FontWeight.Bold).copy(color = Ink.primary))

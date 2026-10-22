@@ -118,7 +118,7 @@ fun BellPopover(state: BellState?, onChanged: () -> Unit, modifier: Modifier = M
                 if (unread > 0) t(UiKey.BELL_MARK_READ) else t(UiKey.BELL_ALL_READ),
                 onClick = { scope.launch { shell.markAllRead(); onChanged() } },
                 enabled = unread > 0,
-                modifier = Modifier.weight(1f).clip(readShape).background(Color(0xCCFFFFFF)).insetRing(readShape, 1.dp, Color(0x2E08634F)),
+                modifier = Modifier.weight(1f).clip(readShape).background(Color(0xCCFFFFFF)).insetRing(readShape, 1.dp, Ink.primary.copy(alpha = 0x2E / 255f)),
             )
             PrimaryButton(t(UiKey.BELL_ALL), onClick = { open = false; nav.push(NotificationsRoute) }, modifier = Modifier.weight(1f))
         }

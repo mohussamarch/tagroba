@@ -69,7 +69,7 @@ private val CardShape = RoundedCornerShape(18.dp)
 @Composable
 private fun Tick(on: Boolean) {
     val m = Modifier.size(22.dp).clip(RoundedCornerShape(7.dp))
-    Box(if (on) m.background(Ink.primary) else m.background(Color.White).border(1.5.dp, Color(0x47193D33), RoundedCornerShape(7.dp)), contentAlignment = Alignment.Center) {
+    Box(if (on) m.background(Ink.primary) else m.background(Color.White).border(1.5.dp, Ink.tint(0x47), RoundedCornerShape(7.dp)), contentAlignment = Alignment.Center) {
         if (on) BasicText("✓", style = Type.of(13, FontWeight.Bold).copy(color = Color.White))
     }
 }
@@ -143,7 +143,7 @@ internal fun SplitAddButton(label: String, onClick: () -> Unit) {
 /** سطر المجموع: أخضر لو مطابق · بني لو فاضل أو زيادة. */
 @Composable
 internal fun SplitSumLine(text: String, exact: Boolean) =
-    BasicText(text, style = Type.of(13, FontWeight.Bold).copy(color = if (exact) Ink.primary else Color(0xFF956000)))
+    BasicText(text, style = Type.of(13, FontWeight.Bold).copy(color = if (exact) Ink.primary else Ink.focus))
 
 /** «غالبًا دول …» — سطر أخضر فاتح فوق الخطط. */
 @Composable

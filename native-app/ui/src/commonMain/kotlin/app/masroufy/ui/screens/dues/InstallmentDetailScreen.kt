@@ -132,7 +132,7 @@ private fun CellBox(cell: Cell, modifier: Modifier) {
         Cell.PAID -> Modifier.clip(shape).background(Ink.primary)
         Cell.LATE -> Modifier.clip(shape).background(Ink.alertBg).insetRing(shape, 1.5.dp, Ink.focus)
         Cell.NEXT -> Modifier.clip(shape).background(Color.White).insetRing(shape, 2.dp, Ink.primary)
-        Cell.UP -> Modifier.clip(shape).background(Color(0x14193D33))
+        Cell.UP -> Modifier.clip(shape).background(Ink.tint(0x14))
     }
     Box(modifier.then(m))
 }

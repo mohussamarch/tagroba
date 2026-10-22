@@ -128,7 +128,7 @@ private fun TurnRow(r: TurnRowUi, currency: Currency) {
             r.mine -> Modifier.background(Brush.linearGradient(listOf(Ink.heroStart, Ink.heroEnd))) to Color.White
             r.paid -> Modifier.background(Ink.selected) to Ink.primary
             r.late -> Modifier.background(Ink.alertBg).insetRing(CircleShape, 1.5.dp, Ink.focus.copy(alpha = 0.45f)) to Ink.focus
-            else -> Modifier.background(Color(0x0F193D33)) to Ink.muted
+            else -> Modifier.background(Ink.tint(0x0F)) to Ink.muted
         }
         Box(dot.then(bg), contentAlignment = Alignment.Center) { BasicText(r.num, style = Type.of(13, FontWeight.Bold).copy(color = ink)) }
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {

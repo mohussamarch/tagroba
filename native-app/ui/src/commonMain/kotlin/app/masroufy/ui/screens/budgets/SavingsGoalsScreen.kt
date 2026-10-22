@@ -173,7 +173,7 @@ fun StatsGrid(stats: List<GoalStat>) {
 private fun StarButton(starred: Boolean, onClick: () -> Unit) {
     val press = rememberPress()
     Box(
-        Modifier.size(44.dp).pressScale(press).clip(RoundedCornerShape(Radius.lensSmall)).background(if (starred) Ink.alertBg else Color(0x0A193D33))
+        Modifier.size(44.dp).pressScale(press).clip(RoundedCornerShape(Radius.lensSmall)).background(if (starred) Ink.alertBg else Ink.tint(0x0A))
             .tap(press, label = t(if (starred) UiKey.GOALS_STAR_REMOVE else UiKey.GOALS_STAR_ADD), onClick = onClick),
         contentAlignment = Alignment.Center,
     ) { LucideIcon(BudgetsIcons.STAR, size = 20.dp, tint = if (starred) Ink.focus else Ink.faded) }
@@ -184,7 +184,7 @@ private fun ArchivedSection(list: List<ArchivedUi>, open: Boolean, onToggle: () 
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         TonalButton(t(UiKey.GOALS_ARCHIVED, app.masroufy.core.sentenceNumber(list.size)), onToggle, height = 44.dp, muted = true)
         if (open) {
-            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(Radius.control)).background(Color(0x0A193D33)).padding(horizontal = 14.dp, vertical = 4.dp)) {
+            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(Radius.control)).background(Ink.tint(0x0A)).padding(horizontal = 14.dp, vertical = 4.dp)) {
                 for (a in list) {
                     Row(Modifier.fillMaxWidth().padding(vertical = 10.dp), horizontalArrangement = Arrangement.SpaceBetween) {
                         BasicText(a.name, style = Type.of(13).copy(color = Ink.muted))

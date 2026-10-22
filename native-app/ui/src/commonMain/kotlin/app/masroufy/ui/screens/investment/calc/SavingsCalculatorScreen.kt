@@ -155,7 +155,7 @@ private fun SavingsOutcome.matches(mode: SavingsMode): Boolean = (this is Saving
 @Composable
 private fun ModeSwitch(mode: SavingsMode, onPick: (SavingsMode) -> Unit) {
     val outer = RoundedCornerShape(20.dp)
-    Row(Modifier.fillMaxWidth().clip(outer).background(Color(0x0F193D33)).padding(4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+    Row(Modifier.fillMaxWidth().clip(outer).background(Ink.tint(0x0F)).padding(4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
         for ((m, key) in listOf(SavingsMode.TARGET to UiKey.SAVCALC_MODE_TARGET, SavingsMode.MONTHLY to UiKey.SAVCALC_MODE_MONTHLY)) {
             val on = m == mode
             val press = rememberPress()

@@ -148,7 +148,7 @@ private fun PairCard(p: PairView, onUnlink: () -> Unit) {
                 AmountText(leg.amountMinor, leg.currency, tone = AmountTone.TRANSFER)
             }
             Row(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Color(0x0A193D33)).padding(horizontal = 12.dp, vertical = 8.dp),
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Ink.tint(0x0A)).padding(horizontal = 12.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 BasicText(t(UiKey.SPACE_TRANSFER_SCREEN_RATE), style = Type.caption().copy(color = Ink.muted))

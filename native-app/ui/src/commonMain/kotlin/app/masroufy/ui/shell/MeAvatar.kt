@@ -1,5 +1,7 @@
 package app.masroufy.ui.shell
 
+import app.masroufy.ui.theme.Ink
+
 import app.masroufy.core.CharacterLayer
 import app.masroufy.core.CharacterLook
 import app.masroufy.core.UiKey
@@ -47,8 +49,8 @@ import kotlin.math.max
  * (لسه ما اتبنتش) ⇒ الشكل المحايد الوحيد في النموذج.
  */
 
-private val ringProgress = Color(0xFF13764D)
-private val ringTrack = Color(0x1F193D33)
+private val ringProgress = Ink.income
+private val ringTrack = Ink.tint(0x1F)
 
 @Composable
 fun MeAvatar(size: Dp, percent: Int?, modifier: Modifier = Modifier, character: CharacterLook? = null) {

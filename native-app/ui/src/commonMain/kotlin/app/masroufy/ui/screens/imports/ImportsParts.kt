@@ -44,12 +44,15 @@ import app.masroufy.ui.theme.Type
  */
 
 /** نبرة الشارة الصغيرة (11 عريض بزاوية 10) — جديد · مكرر · شبيه · تعارض · غير صالح · بمصدرين. */
-enum class TagTone(internal val ink: Color, internal val bg: Color) {
-    NEW(Ink.primary, Ink.selected),
-    MUTED(Ink.muted, Ink.muted.copy(alpha = 0.12f)),
-    AMBER(Ink.focus, Ink.alertBg),
-    DANGER(Ink.expense, Ink.expense.copy(alpha = 0.10f)),
-    BLUE(Ink.transfer, Ink.transfer.copy(alpha = 0.10f)),
+enum class TagTone(private val inkLazy: () -> Color, private val bgLazy: () -> Color) {
+    NEW({ Ink.primary }, { Ink.selected }),
+    MUTED({ Ink.muted }, { Ink.muted.copy(alpha = 0.12f) }),
+    AMBER({ Ink.focus }, { Ink.alertBg }),
+    DANGER({ Ink.expense }, { Ink.expense.copy(alpha = 0.10f) }),
+    BLUE({ Ink.transfer }, { Ink.transfer.copy(alpha = 0.10f) }),
+    ;
+    internal val ink: Color get() = inkLazy()
+    internal val bg: Color get() = bgLazy()
 }
 
 @Composable
@@ -60,10 +63,13 @@ fun Tag(text: String, tone: TagTone, modifier: Modifier = Modifier, bold: Boolea
 }
 
 /** لوحة ملونة من غير ظل (تنبيه كهرماني · تم نعناعي · رمادي هادي) — زاوية 22 وحشوة 14/16. */
-enum class PanelTone(internal val bg: Color, internal val title: Color) {
-    AMBER(Ink.alertBg, Ink.focus),
-    MINT(Ink.selected, Ink.primary),
-    QUIET(Ink.text.copy(alpha = 0.04f), Ink.text),
+enum class PanelTone(private val bgLazy: () -> Color, private val titleLazy: () -> Color) {
+    AMBER({ Ink.alertBg }, { Ink.focus }),
+    MINT({ Ink.selected }, { Ink.primary }),
+    QUIET({ Ink.text.copy(alpha = 0.04f) }, { Ink.text }),
+    ;
+    internal val bg: Color get() = bgLazy()
+    internal val title: Color get() = titleLazy()
 }
 
 @Composable

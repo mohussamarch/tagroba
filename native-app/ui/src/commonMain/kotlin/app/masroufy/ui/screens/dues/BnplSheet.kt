@@ -154,7 +154,7 @@ private fun BnplSetupBody(s: BnplSheetState, name: String, today: IsoDate, chips
     }
     // مفتاحها الخصم نفسه كمان ([s]): اللوحة بتفضل مفتوحة وهي بتنقل للسؤال الجاي ⇒ من غيره «خطتك» كانت بتفضل بأرقام الخصم اللي فات
     val plan = remember(s, s.split, s.cycle, s.at) { preview(s.split, s.cycle, s.at) }
-    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Color(0x0A193D33)).padding(horizontal = 14.dp, vertical = 12.dp)) {
+    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Ink.tint(0x0A)).padding(horizontal = 14.dp, vertical = 12.dp)) {
         Row(Modifier.fillMaxWidth().padding(bottom = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             BasicText(t(BnplKey.BNPL2_PLAN_TITLE), Modifier.weight(1f), style = Type.of(14, FontWeight.Bold))
             BasicText(t(BnplKey.BNPL2_PLAN_TOTAL, amountLabel(plan.totalMinor, plan.currency), amountLabel(plan.remainingMinor, plan.currency)), style = Type.of(12).copy(color = Ink.muted))

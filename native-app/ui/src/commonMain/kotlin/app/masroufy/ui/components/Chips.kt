@@ -52,7 +52,7 @@ fun SelectChip(
     val shape = RoundedCornerShape(Radius.control)
     val press = rememberPress()
     val surface = if (selected) Modifier.background(Ink.selected).insetRing(shape, 1.5.dp, Ink.primary)
-    else Modifier.background(Color.White).insetRing(shape, 1.dp, Ink.fieldEdge)
+    else Modifier.background(Ink.card).insetRing(shape, 1.dp, Ink.fieldEdge)
     Row(
         modifier
             .height(height)
@@ -71,10 +71,13 @@ fun SelectChip(
 }
 
 /** نوع الشارة: «تقريبي» كهرماني · «غير متاح» رمادي · معلومة خضرا («الحالية»). */
-enum class BadgeKind(internal val bg: Color, internal val ink: Color) {
-    APPROX(Ink.alertBg, Ink.focus),
-    NOT_AVAILABLE(Color(0x14193D33), Ink.muted),
-    INFO(Ink.selected, Ink.primary),
+enum class BadgeKind(private val bgLazy: () -> Color, private val inkLazy: () -> Color) {
+    APPROX({ Ink.alertBg }, { Ink.focus }),
+    NOT_AVAILABLE({ Ink.tint(0x14) }, { Ink.muted }),
+    INFO({ Ink.selected }, { Ink.primary }),
+    ;
+    internal val bg: Color get() = bgLazy()
+    internal val ink: Color get() = inkLazy()
 }
 
 @Composable
@@ -116,7 +119,7 @@ fun <T> SegmentedTabs(
 ) {
     val outer = RoundedCornerShape(Radius.control)
     val track = if (style == SegmentStyle.PRIMARY) Modifier.layeredShadow(outer, Shadows.chip).clip(outer).background(Glass.card).innerSheen(outer, Shadows.chip)
-    else Modifier.clip(outer).background(Color(0x0F193D33))
+    else Modifier.clip(outer).background(Ink.tint(0x0F))
     Row(modifier.then(track).padding(4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
         for ((value, label) in options) Segment(label, value == selected, style, enabled, height) { onSelect(value) }
     }
@@ -129,7 +132,7 @@ private fun RowScope.Segment(label: String, on: Boolean, style: SegmentStyle, en
     val surface = when {
         !on -> Modifier
         style == SegmentStyle.PRIMARY -> Modifier.layeredShadow(shape, Shadows.segment).clip(shape).background(Glass.primary).innerSheen(shape, Shadows.segment)
-        else -> Modifier.layeredShadow(shape, Shadows.chip).clip(shape).background(Color.White)
+        else -> Modifier.layeredShadow(shape, Shadows.chip).clip(shape).background(Ink.card)
     }
     val ink = when {
         !on -> Ink.muted

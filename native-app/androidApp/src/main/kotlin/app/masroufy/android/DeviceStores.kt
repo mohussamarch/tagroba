@@ -82,3 +82,14 @@ object NoFirebaseAuth : AuthPort {
 
     override suspend fun signOut() = Unit
 }
+
+/** المظهر وإخفاء الأرقام على الجهاز (SharedPreferences) — `Appearance.attach` في `MainActivity`. */
+class AndroidPrefStore(context: Context) : app.masroufy.ui.theme.PrefStore {
+    private val prefs = context.getSharedPreferences("appearance", Context.MODE_PRIVATE)
+
+    override fun read(key: String): String? = runCatching { prefs.getString(key, null) }.getOrNull()
+
+    override fun write(key: String, value: String?) {
+        runCatching { prefs.edit().apply { if (value == null) remove(key) else putString(key, value) }.apply() }
+    }
+}

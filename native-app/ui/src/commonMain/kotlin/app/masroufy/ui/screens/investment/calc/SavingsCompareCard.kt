@@ -69,7 +69,7 @@ private fun VerdictChip(text: String, tone: VerdictTone) {
     val (ink, bg) = when (tone) {
         VerdictTone.UNKNOWN -> Ink.muted to Color(0x1F637570)
         VerdictTone.ENOUGH -> Ink.income to Ink.selected
-        VerdictTone.SHORT -> Ink.expense to Color(0x1ABE3D48)
+        VerdictTone.SHORT -> Ink.expense to Ink.expense.copy(alpha = 0x1A / 255f)
     }
     BasicText(
         text,

@@ -1,5 +1,7 @@
 package app.masroufy.ui.components
 
+import app.masroufy.ui.theme.Ink
+
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Brush
@@ -30,7 +32,7 @@ private val INNER_STROKE = Color(0xFFB5832A)
 private val RING = Color(0xFFFFF4CC).copy(alpha = 0.55f)
 private val REED = Color(0xFFF6D98A).copy(alpha = 0.45f)
 private val GLINT = listOf(Color.White.copy(alpha = 0f), Color.White.copy(alpha = 0.85f), Color.White.copy(alpha = 0f))
-private val FLOOR = listOf(Color(0xFF193D33).copy(alpha = 0.28f), Color(0xFF193D33).copy(alpha = 0f))
+private val FLOOR = listOf(Ink.tint(0xFF).copy(alpha = 0.28f), Ink.tint(0xFF).copy(alpha = 0f))
 
 private val edgePath = Path().apply {
     moveTo(2f, 8f); lineTo(2f, 14f)

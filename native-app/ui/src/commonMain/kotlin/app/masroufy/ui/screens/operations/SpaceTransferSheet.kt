@@ -125,7 +125,7 @@ fun NewSpaceTransferSheet(visible: Boolean, books: List<SpaceWallets>, activeId:
 @Composable
 private fun LegForm(title: String, book: SpaceWallets?, wallet: Id?, onWallet: (Id) -> Unit, amount: String, onAmount: (String) -> Unit, amountLabel: String) {
     Column(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Color(0x0A193D33)).padding(12.dp),
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Ink.tint(0x0A)).padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         BasicText(title, style = Type.of(13, FontWeight.Bold))

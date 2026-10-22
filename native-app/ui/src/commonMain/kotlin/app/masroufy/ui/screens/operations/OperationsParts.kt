@@ -139,7 +139,7 @@ internal fun SmallAction(label: String, strong: Boolean = false, enabled: Boolea
     val press = rememberPress()
     Box(
         Modifier.height(36.dp).pressScale(press, enabled).clip(RoundedCornerShape(Radius.iconTile))
-            .background(if (strong) Ink.primary else Color(0x1408634F)).tap(press, enabled, onClick = onClick).padding(horizontal = 12.dp),
+            .background(if (strong) Ink.primary else Ink.primary.copy(alpha = 0x14 / 255f)).tap(press, enabled, onClick = onClick).padding(horizontal = 12.dp),
         contentAlignment = Alignment.Center,
     ) { BasicText(label, style = Type.of(12, FontWeight.Bold).copy(color = if (strong) Ink.onPrimary else Ink.primary)) }
 }
@@ -147,7 +147,7 @@ internal fun SmallAction(label: String, strong: Boolean = false, enabled: Boolea
 /** صندوق ملاحظة خفيف (`rgba(25,61,51,0.04)`) — «3 تحويلات بلا طرف…» · ملاحظة القفل. */
 @Composable
 internal fun NoteBox(text: String, modifier: Modifier = Modifier) {
-    Box(modifier.fillMaxWidth().clip(RoundedCornerShape(Radius.control)).background(Color(0x0A193D33)).padding(horizontal = 14.dp, vertical = 12.dp)) {
+    Box(modifier.fillMaxWidth().clip(RoundedCornerShape(Radius.control)).background(Ink.tint(0x0A)).padding(horizontal = 14.dp, vertical = 12.dp)) {
         BasicText(text, style = Type.of(12).copy(color = Ink.muted))
     }
 }
@@ -168,7 +168,7 @@ internal fun LinkCard(
 ) {
     FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.size(36.dp).clip(RoundedCornerShape(Radius.iconTile)).background(Color(0x1A08634F)), contentAlignment = Alignment.Center) {
+            Box(Modifier.size(36.dp).clip(RoundedCornerShape(Radius.iconTile)).background(Ink.primary.copy(alpha = 0x1A / 255f)), contentAlignment = Alignment.Center) {
                 LucideIcon(icon, size = 20.dp, tint = Ink.primary)
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -190,5 +190,5 @@ internal object ChipInk {
     val blue = Ink.transfer
     val blueBg = Color(0x1A2469BA)
     val grey = Ink.muted
-    val greyBg = Color(0x0F193D33)
+    val greyBg = Ink.tint(0x0F)
 }

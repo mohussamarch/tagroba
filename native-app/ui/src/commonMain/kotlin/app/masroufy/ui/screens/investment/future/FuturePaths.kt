@@ -47,8 +47,8 @@ import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
 
 private val MINUS = Lucide("MINUS", "M5 12h14")
-private val ROW_IDLE = Color(0x09193D33)
-private val CHIP_IDLE = Color(0x0F193D33)
+private val ROW_IDLE = Ink.tint(0x09)
+private val CHIP_IDLE = Ink.tint(0x0F)
 private val AMBER_BOX = Color(0x14B7791F)
 
 /**

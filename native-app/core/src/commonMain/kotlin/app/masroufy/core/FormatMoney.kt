@@ -81,9 +81,9 @@ fun formatMoney(
     showCurrency: Boolean = true,
     alwaysSign: Boolean = false,
     grouping: Boolean = true,
-    hidden: Boolean = false,
+    hidden: Boolean = MoneyPrivacy.isHidden,
 ): String {
-    val number = if (hidden) "••••" else formatAmount(amount, currency, alwaysSign, grouping)
+    val number = if (hidden) MoneyPrivacy.MASK else formatAmount(amount, currency, alwaysSign, grouping)
     return if (showCurrency) withCurrency(number, currency) else number
 }
 

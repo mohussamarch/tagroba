@@ -97,7 +97,7 @@ internal fun FutureChartCard(state: InvestFutureState) {
 @Composable
 private fun ModeToggle(todayMoney: Boolean, onPick: (Boolean) -> Unit) {
     Row(
-        Modifier.clip(RoundedCornerShape(14.dp)).background(Color(0x0F193D33)).padding(3.dp).semantics { contentDescription = t(FUT_MODE_A11Y) },
+        Modifier.clip(RoundedCornerShape(14.dp)).background(Ink.tint(0x0F)).padding(3.dp).semantics { contentDescription = t(FUT_MODE_A11Y) },
     ) {
         for ((value, key) in listOf(true to FUT_MODE_TODAY, false to FUT_MODE_THEN)) {
             val on = value == todayMoney

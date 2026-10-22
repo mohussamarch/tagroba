@@ -142,7 +142,7 @@ fun IncomeSourceEditSheet(visible: Boolean, s: IncomeSource, monthStart: Int, on
 @Composable
 private fun MonthStartBox(ask: Boolean, day: Int?, monthStart: Int, answer: Boolean?, onAnswer: (Boolean) -> Unit) {
     Column(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(if (ask) Ink.alertBg else Color(0x0F08634F)).padding(horizontal = 14.dp, vertical = 12.dp),
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(if (ask) Ink.alertBg else Ink.primary.copy(alpha = 0x0F / 255f)).padding(horizontal = 14.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         val head = when {
