@@ -24,7 +24,7 @@ import app.masroufy.ui.theme.Type
 @Composable
 internal fun CashDifferenceBox(onPick: () -> Unit) {
     Column(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(Radius.card)).background(Color(0x14BE3D48)).padding(horizontal = 16.dp, vertical = 14.dp),
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(Radius.card)).background(Ink.expense.copy(alpha = 0x14 / 255f)).padding(horizontal = 16.dp, vertical = 14.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         BasicText(t(UiKey.OPERATION_DETAIL_CASH_TITLE), style = Type.of(13, FontWeight.Bold).copy(color = Ink.expense))

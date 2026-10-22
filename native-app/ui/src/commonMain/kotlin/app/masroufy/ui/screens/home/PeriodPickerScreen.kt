@@ -176,7 +176,7 @@ private fun SoftArrow(icon: Lucide, label: String, enabled: Boolean, onClick: ()
     val press = rememberPress()
     Box(
         Modifier.size(48.dp).alpha(if (enabled) 1f else 0.35f).pressScale(press, enabled).clip(RoundedCornerShape(16.dp))
-            .background(Color(0x0D193D33)).tap(press, enabled, label = label, onClick = onClick),
+            .background(Ink.tint(0x0D)).tap(press, enabled, label = label, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) { LucideIcon(icon, size = 22.dp, contentDescription = label, modifier = Modifier.mirrorInLtr()) }
 }
@@ -189,8 +189,8 @@ private fun Tile(tile: PeriodTile, modifier: Modifier, onClick: () -> Unit) {
     // المختار: الأخضر الأساسي · الشهر الحالي (مش مختار): حد أخضر 1.5 · الباقي: رمادي خفيف
     val surface = when {
         tile.selected -> Modifier.background(Glass.primary)
-        tile.isNow -> Modifier.background(Color(0x0A193D33)).insetRing(shape, 1.5.dp, Ink.primary)
-        else -> Modifier.background(Color(0x0A193D33))
+        tile.isNow -> Modifier.background(Ink.tint(0x0A)).insetRing(shape, 1.5.dp, Ink.primary)
+        else -> Modifier.background(Ink.tint(0x0A))
     }
     Column(
         modifier.defaultMinSize(minHeight = 64.dp).alpha(if (open) 1f else 0.45f).pressScale(press, open).clip(shape).then(surface)

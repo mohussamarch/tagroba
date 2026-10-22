@@ -40,8 +40,8 @@ import app.masroufy.ui.theme.Type
 
 private val CARD = RoundedCornerShape(22.dp)
 private val PAD = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
-private val GOAL_GREY = Color(0xFF637570)
-private val WARN = Color(0xFF956000)
+private val GOAL_GREY get() = Ink.muted
+private val WARN get() = Ink.focus
 
 /** الكروت التلاتة تحت التشارت (`InvestFutureCards` — مواصفة §1.6): الدخل من غير شغل · المحطات والأهداف · البلدين (لو فيه بلدين). */
 @Composable
@@ -64,7 +64,7 @@ private fun PassiveCard(pr: FutureProjection) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             BasicText(t(FUT_PASSIVE_TITLE), style = Type.of(16, FontWeight.Bold))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                PassiveBox(t(FUT_PASSIVE_TODAY), wholeMoney(pr.passive.nowMinor, cur), null, Color(0x0A193D33), Modifier.weight(1f))
+                PassiveBox(t(FUT_PASSIVE_TODAY), wholeMoney(pr.passive.nowMinor, cur), null, Ink.tint(0x0A), Modifier.weight(1f))
                 PassiveBox(
                     t(FUT_YEAR_LINE, (pr.inputs.thisYear + pr.years).toString()), wholeMoney(pr.passive.atYearMinor, cur),
                     t(FUT_PASSIVE_ON_PATH, pathTitle(pr.selected, pr.inputs)), Color(0xFFE2EFE4), Modifier.weight(1f),

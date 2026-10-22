@@ -47,23 +47,27 @@ import app.masroufy.ui.theme.Space
 import app.masroufy.ui.theme.Type
 
 /** رمز نوع الميعاد ولونه (النموذج: اشتراك كهرماني · مناسبة وفرح وردي · قسط رمادي أزرق · يوم الراتب أخضر). */
-enum class UpcomingIcon(val icon: Lucide, val color: Color) {
-    SUBSCRIPTION(Lucide.RECEIPT, Color(0xFF956000)),
-    OCCASION(Lucide.GIFT, Color(0xFFA55060)),
-    EVENT(Lucide.GEM, Color(0xFFA55060)),
-    INSTALLMENT(Lucide.CAR, Color(0xFF4D747C)),
-    DEBT(Lucide.HAND_COINS, Color(0xFF2469BA)),
-    PAYDAY(Lucide.BANKNOTE, Color(0xFF13764D)),
-    OTHER(Lucide.CALENDAR, Color(0xFF637570)),
+enum class UpcomingIcon(val icon: Lucide, private val colorLazy: () -> Color) {
+    SUBSCRIPTION(Lucide.RECEIPT, { Ink.focus }),
+    OCCASION(Lucide.GIFT, { Color(0xFFA55060) }),
+    EVENT(Lucide.GEM, { Color(0xFFA55060) }),
+    INSTALLMENT(Lucide.CAR, { Color(0xFF4D747C) }),
+    DEBT(Lucide.HAND_COINS, { Ink.transfer }),
+    PAYDAY(Lucide.BANKNOTE, { Ink.income }),
+    OTHER(Lucide.CALENDAR, { Ink.muted }),
+    ;
+    val color: Color get() = colorLazy()
 }
 
 /** حالة الميعاد: محجوز (أخضر) · غير محجوز (أحمر) · بلا مبلغ · دخل متوقع · فات موعده. */
-enum class UpcomingStatus(val text: TextRef, val color: Color) {
-    HELD(UiKey.UPCOMING_HELD, Color(0xFF13764D)),
-    OPEN(UiKey.UPCOMING_OPEN, Color(0xFFBE3D48)),
-    NO_AMOUNT(UiKey.UPCOMING_NO_AMOUNT, Color(0xFF637570)),
-    INCOMING(UiKey.UPCOMING_INCOMING, Color(0xFF13764D)),
-    LATE(UiKey.UPCOMING_LATE, Color(0xFFBE3D48)),
+enum class UpcomingStatus(val text: TextRef, private val colorLazy: () -> Color) {
+    HELD(UiKey.UPCOMING_HELD, { Ink.income }),
+    OPEN(UiKey.UPCOMING_OPEN, { Ink.expense.copy(alpha = 0xFF / 255f) }),
+    NO_AMOUNT(UiKey.UPCOMING_NO_AMOUNT, { Ink.muted }),
+    INCOMING(UiKey.UPCOMING_INCOMING, { Ink.income }),
+    LATE(UiKey.UPCOMING_LATE, { Ink.expense.copy(alpha = 0xFF / 255f) }),
+    ;
+    val color: Color get() = colorLazy()
 }
 
 /** كارت «القادم» جاهز للعرض — الحالة والمبلغ من حالة الاستخدام (`LoadCalendar` + `reservationState`)، مش محسوبين هنا. */
@@ -128,7 +132,7 @@ private fun UpcomingCardView(c: UpcomingCard) {
                 }
                 BasicText(c.title, style = Type.of(16, FontWeight.Bold, 1.4).copy(textAlign = TextAlign.Center), maxLines = 2, overflow = TextOverflow.Ellipsis)
             }
-            Box(Modifier.fillMaxWidth().height(1.dp).background(Color(0x14193D33)))
+            Box(Modifier.fillMaxWidth().height(1.dp).background(Ink.tint(0x14)))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally)) {
                 BasicText(t(c.status.text), style = Type.captionBold().copy(color = c.status.color))
                 if (c.amountMinor != null && c.status != UpcomingStatus.NO_AMOUNT) {

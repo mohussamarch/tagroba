@@ -41,4 +41,6 @@ enum class R06Key : TextRef {
 
     /** r06-1a3 — «القراية في الخلفية»: كارت «فيه رسايل فاتته» (AWAY_) — نصوصه في `TextsR06Away.kt`. */
     AWAY_TITLE, AWAY_BODY, AWAY_READ, AWAY_READING, AWAY_KEEP, AWAY_DONE, AWAY_DONE_WAIT, AWAY_NEVER_BODY,
+    /** المظهر الليلي (فاتح · غامق · زي الجوال) وزرار إخفاء الأرقام — NP_ (التصميم NightPrivacy). */
+    NP_THEME_TITLE, NP_THEME_LIGHT, NP_THEME_DARK, NP_THEME_AUTO, NP_EYE_HIDE, NP_EYE_SHOW, NP_START_TITLE, NP_START_SUB,
 }

@@ -125,7 +125,7 @@ fun Modifier.mintSheen(play: Boolean): Modifier {
 @Composable
 fun Toast(text: String, modifier: Modifier = Modifier, dark: Boolean = false, action: String? = null, onAction: (() -> Unit)? = null) {
     val shape = RoundedCornerShape(if (dark) 18.dp else 22.dp)
-    val surface = if (dark) Modifier.clip(shape).background(Color(0xEB193D33))
+    val surface = if (dark) Modifier.clip(shape).background(Ink.tint(0xEB))
     else Modifier.layeredShadow(shape, Shadows.toast).clip(shape).background(Color(0xEBFFFFFF)).innerSheen(shape, Shadows.toast)
     androidx.compose.foundation.layout.Row(
         modifier.then(surface).semantics { liveRegion = LiveRegionMode.Polite }.padding(horizontal = 16.dp, vertical = 10.dp),

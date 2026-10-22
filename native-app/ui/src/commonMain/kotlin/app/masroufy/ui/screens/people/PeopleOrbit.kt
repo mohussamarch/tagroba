@@ -240,7 +240,7 @@ private fun RemoveX(label: String, modifier: Modifier, onClick: () -> Unit) {
     val press = rememberPress()
     Box(modifier.size(40.dp).tap(press, label = label, onClick = onClick), contentAlignment = Alignment.Center) {
         Box(Modifier.size(25.dp).clip(CircleShape).background(Ink.surface), contentAlignment = Alignment.Center) {
-            Box(Modifier.size(22.dp).clip(CircleShape).background(Color(0xEB193D33)), contentAlignment = Alignment.Center) {
+            Box(Modifier.size(22.dp).clip(CircleShape).background(Ink.tint(0xEB)), contentAlignment = Alignment.Center) {
                 Canvas(Modifier.size(12.dp)) {
                     val a = size.width * 0.25f
                     val b = size.width * 0.75f

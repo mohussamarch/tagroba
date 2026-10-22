@@ -183,7 +183,7 @@ private fun Tiles(ui: CategoryBudgetUi) {
             BasicText(ui.averageNote, style = Type.of(11).copy(color = Ink.muted))
         }
         Column(
-            Modifier.weight(1f).clip(RoundedCornerShape(Radius.control)).background(if (ui.anomalyAlert) Ink.alertBg else Color(0x0D193D33)).padding(12.dp),
+            Modifier.weight(1f).clip(RoundedCornerShape(Radius.control)).background(if (ui.anomalyAlert) Ink.alertBg else Ink.tint(0x0D)).padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
             BasicText(t(UiKey.CAT_BUDGET_ANOM_LABEL), style = Type.captionBold().copy(color = if (ui.anomalyAlert) Ink.focus else Ink.muted))

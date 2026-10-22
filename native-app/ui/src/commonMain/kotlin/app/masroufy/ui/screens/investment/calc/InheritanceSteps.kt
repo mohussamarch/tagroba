@@ -52,7 +52,7 @@ import app.masroufy.ui.theme.Type
 internal fun SavedButton(onClick: () -> Unit) {
     val press = rememberPress()
     Row(
-        Modifier.height(44.dp).pressScale(press).clip(RoundedCornerShape(16.dp)).background(Color(0x1408634F)).tap(press, onClick = onClick).padding(horizontal = 12.dp),
+        Modifier.height(44.dp).pressScale(press).clip(RoundedCornerShape(16.dp)).background(Ink.primary.copy(alpha = 0x14 / 255f)).tap(press, onClick = onClick).padding(horizontal = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -75,7 +75,7 @@ internal fun StepsBar(step: Int, onGo: (Int) -> Unit) {
                 Modifier.weight(1f).pressScale(press, done).tap(press, done, role = Role.Tab) { onGo(k) }.semantics { selected = on },
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                Box(Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)).then(if (on || done) Modifier.background(Glass.primary) else Modifier.background(Color(0x1A193D33))))
+                Box(Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)).then(if (on || done) Modifier.background(Glass.primary) else Modifier.background(Ink.tint(0x1A))))
                 BasicText(t(key), style = Type.of(11, if (on) FontWeight.Bold else FontWeight.Normal).copy(color = if (on) Ink.primary else if (done) Ink.text else Color(0xFF8A9A95)), maxLines = 1)
             }
         }
@@ -159,7 +159,7 @@ internal fun ItemsStep(d: InheritanceDraft, canBring: Boolean, onChange: (Inheri
 private fun RemoveButton(label: String, onClick: () -> Unit) {
     val press = rememberPress()
     Box(
-        Modifier.size(44.dp).pressScale(press).clip(RoundedCornerShape(14.dp)).background(Color(0x14BE3D48)).tap(press, label = label, onClick = onClick)
+        Modifier.size(44.dp).pressScale(press).clip(RoundedCornerShape(14.dp)).background(Ink.expense.copy(alpha = 0x14 / 255f)).tap(press, label = label, onClick = onClick)
             .semantics { contentDescription = label },
         contentAlignment = Alignment.Center,
     ) { LucideIcon(Lucide.TRASH_2, size = 18.dp, tint = Ink.expense) }

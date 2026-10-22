@@ -208,8 +208,8 @@ private fun AskBar(modifier: Modifier, backdrop: Backdrop, onAsk: () -> Unit, on
 private val micGlass = app.masroufy.ui.glass.cssLinear(145f, 0f to Color(0xFAFFFFFF), 0.55f to Color(0xCCE3EFE6), 1f to Color(0xE6C9E6D4))
 private val micShadow = listOf(
     app.masroufy.ui.glass.ShadowLayer(1.dp, 1.dp, 2.dp, Color.White, inset = true),
-    app.masroufy.ui.glass.ShadowLayer((-1).dp, (-2).dp, 3.dp, Color(0x2908634F), inset = true),
-    app.masroufy.ui.glass.ShadowLayer(0.dp, 3.dp, 8.dp, Color(0x2408634F)),
+    app.masroufy.ui.glass.ShadowLayer((-1).dp, (-2).dp, 3.dp, Ink.primary.copy(alpha = 0x29 / 255f), inset = true),
+    app.masroufy.ui.glass.ShadowLayer(0.dp, 3.dp, 8.dp, Ink.primary.copy(alpha = 0x24 / 255f)),
 )
 
 @Composable

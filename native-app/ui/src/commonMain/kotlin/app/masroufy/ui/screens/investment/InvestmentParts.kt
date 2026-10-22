@@ -44,7 +44,7 @@ import app.masroufy.ui.theme.Type
  */
 
 /** خلفية هادية `rgba(25,61,51,0.05)` (الخانات · الصفوف الثانوية). */
-internal val QuietFill = Ink.text.copy(alpha = 0.05f)
+internal val QuietFill get() = Ink.text.copy(alpha = 0.05f)
 
 /** شريط تنبيه كهرماني (`role=alert`): عنوان + سطر + زرار اختياري («أعد المحاولة»). */
 @Composable
@@ -60,7 +60,7 @@ internal fun AlertBanner(title: String, body: String?, action: String? = null, o
             if (body != null) BasicText(body, style = Type.caption().copy(color = Ink.focus))
         }
         if (action != null && onAction != null) {
-            Box(Modifier.clip(RoundedCornerShape(16.dp)).background(Color.White)) { TonalButton(action, onAction) }
+            Box(Modifier.clip(RoundedCornerShape(16.dp)).background(Ink.card)) { TonalButton(action, onAction) }
         }
     }
 }

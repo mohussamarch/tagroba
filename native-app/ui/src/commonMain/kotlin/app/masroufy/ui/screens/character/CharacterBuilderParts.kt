@@ -58,9 +58,9 @@ import app.masroufy.ui.theme.Type
 
 /** قطع البنّاء (character-spec §3): كارت القسم المقفول · القسم المفتوح بتبويباته · شبكة الاختيارات · الألوان · «قريب/الجسم كله». */
 
-private val green = Color(0xFF08634F)
-private val greenSoft = Color(0x1708634F)
-private val tabOff = Color(0xFF637570)
+private val green get() = Ink.primary.copy(alpha = 0xFF / 255f)
+private val greenSoft get() = Ink.primary.copy(alpha = 0x17 / 255f)
+private val tabOff get() = Ink.muted
 
 internal fun sectionIcon(section: CharacterSection): Lucide = when (section) {
     CharacterSection.FACE -> Lucide.SMILE
@@ -104,7 +104,7 @@ internal fun OpenSection(s: BuilderState, onChange: (BuilderState) -> Unit) {
     LaunchedEffect(s.section) { if (!reduce) shown.animateTo(1f, tween(320)) }
     val part = openPart(s)
     Column(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(26.dp)).background(Color.White).padding(16.dp),
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(26.dp)).background(Ink.card).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -192,7 +192,7 @@ private fun OptionCell(o: OptionUi, modifier: Modifier, onPick: () -> Unit) {
 private fun ColorRow(label: String, colors: List<Color>, selected: Int, divider: Boolean, onPick: (Int) -> Unit) {
     Column(
         Modifier.fillMaxWidth().then(
-            if (divider) Modifier.drawBehind { drawRect(Color(0x1F193D33), Offset.Zero, androidx.compose.ui.geometry.Size(size.width, 1.dp.toPx())) }.padding(top = 14.dp)
+            if (divider) Modifier.drawBehind { drawRect(Ink.tint(0x1F), Offset.Zero, androidx.compose.ui.geometry.Size(size.width, 1.dp.toPx())) }.padding(top = 14.dp)
             else Modifier,
         ),
         verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -207,7 +207,7 @@ private fun ColorRow(label: String, colors: List<Color>, selected: Int, divider:
                     Modifier.size(44.dp).pressScale(press)
                         .then(if (on) Modifier.drawBehind { drawCircle(green, size.minDimension / 2f + 5.dp.toPx()); drawCircle(Color.White, size.minDimension / 2f + 3.dp.toPx()) } else Modifier)
                         .clip(CircleShape).background(c)
-                        .then(if (on) Modifier else Modifier.insetRing(CircleShape, 1.dp, Color(0x26193D33)))
+                        .then(if (on) Modifier else Modifier.insetRing(CircleShape, 1.dp, Ink.tint(0x26)))
                         .tap(press, role = Role.RadioButton, label = name, onClick = { onPick(i) }).semantics { this.selected = on },
                 )
             }
@@ -218,7 +218,7 @@ private fun ColorRow(label: String, colors: List<Color>, selected: Int, divider:
 /** «قريب» / «الجسم كله» فوق المعاينة (أبيض 0.8 بزاوية 13 · المختار أبيض على أخضر). */
 @Composable
 internal fun ViewToggle(layer: CharacterLayer, onPick: (CharacterLayer) -> Unit, modifier: Modifier = Modifier) {
-    Row(modifier.clip(RoundedCornerShape(13.dp)).background(Color(0xCCFFFFFF)).padding(2.dp)) {
+    Row(modifier.clip(RoundedCornerShape(13.dp)).background(Ink.card.copy(alpha = 0.8f)).padding(2.dp)) {
         for ((l, key) in listOf(CharacterLayer.BUST to UiKey.CHAR_VIEW_CLOSE, CharacterLayer.FULL to UiKey.CHAR_VIEW_FULL)) {
             val on = l == layer
             val press = rememberPress()

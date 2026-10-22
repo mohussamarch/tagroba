@@ -104,7 +104,7 @@ internal fun YearWheel(state: InvestFutureState) {
                 Box(Modifier.fillMaxWidth().height(260.dp)) {
                     Box(
                         Modifier.padding(start = 16.dp, end = 16.dp, top = TOP_DP.dp).fillMaxWidth().height(ROW_DP.dp).clip(RoundedCornerShape(16.dp))
-                            .background(Ink.selected).border(1.5.dp, Color(0x5908634F), RoundedCornerShape(16.dp)),
+                            .background(Ink.selected).border(1.5.dp, Ink.primary.copy(alpha = 0x59 / 255f), RoundedCornerShape(16.dp)),
                     )
                     Column(Modifier.fillMaxWidth().height(260.dp).verticalScroll(scroll)) {
                         Spacer(Modifier.height(TOP_DP.dp))
@@ -121,7 +121,7 @@ internal fun YearWheel(state: InvestFutureState) {
             }
             val press = rememberPress()
             Box(
-                Modifier.height(48.dp).shadow(10.dp, RoundedCornerShape(18.dp)).clip(RoundedCornerShape(18.dp)).background(Color.White)
+                Modifier.height(48.dp).shadow(10.dp, RoundedCornerShape(18.dp)).clip(RoundedCornerShape(18.dp)).background(Ink.card)
                     .tap(press) { state.closeWheel() }.padding(horizontal = 36.dp),
                 contentAlignment = Alignment.Center,
             ) { BasicText(t(FUT_WHEEL_DONE), style = Type.of(15, FontWeight.Bold).copy(color = Ink.primary)) }

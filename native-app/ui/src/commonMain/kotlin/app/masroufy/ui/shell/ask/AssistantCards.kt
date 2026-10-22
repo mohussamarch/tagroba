@@ -58,7 +58,7 @@ class MessageActions(
     val period: (messageId: String, from: String, to: String) -> Unit = { _, _, _ -> },
 )
 
-private val mineShadow = listOf(ShadowLayer(0.dp, 8.dp, 18.dp, Color(0x3808634F)))
+private val mineShadow get() = listOf(ShadowLayer(0.dp, 8.dp, 18.dp, Ink.primary.copy(alpha = 0x38 / 255f)))
 
 /**
  * فقاعة (`AssistantMessage`): بتاعتك خضرا بعرض 80٪ بالكتير، ورد المساعد كارت أبيض 88٪ — النص + نوع الرد من المحرك ([AssistMessage.reply]):

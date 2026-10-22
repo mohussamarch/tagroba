@@ -185,7 +185,7 @@ private fun AliasesCard(v: MerchantView, saved: Boolean, onAdd: (String) -> Unit
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             BasicText(t(UiKey.MERCHANT_PROFILE_ALIASES), style = Type.of(15, FontWeight.Bold))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                for (a in v.aliases) BasicText(a, Modifier.clip(RoundedCornerShape(12.dp)).background(Color(0x0F193D33)).padding(horizontal = 10.dp, vertical = 6.dp), style = Type.of(13))
+                for (a in v.aliases) BasicText(a, Modifier.clip(RoundedCornerShape(12.dp)).background(Ink.tint(0x0F)).padding(horizontal = 10.dp, vertical = 6.dp), style = Type.of(13))
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
                 TextInput(text, { if (it.length <= 120) text = it; error = null }, Modifier.weight(1f), placeholder = t(UiKey.MERCHANT_PROFILE_ALIAS_HINT), enabled = saved)

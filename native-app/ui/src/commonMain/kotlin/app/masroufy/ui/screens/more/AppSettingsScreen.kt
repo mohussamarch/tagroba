@@ -101,6 +101,7 @@ fun AppSettingsScreen() {
                 lockError?.let { msg -> WarnBox(null, msg) { TonalButton(t(UiKey.MORE_RETRY), onClick = { toggleLock() }, height = 44.dp) } }
             }
         }
+        item(key = "appearance") { AppearanceSection() }
         item(key = "lang") { LanguageSection() }
         item(key = "islamic") {
             val p = profile
@@ -119,7 +120,7 @@ fun AppSettingsScreen() {
                 RowRuleSpaced()
                 BasicText(t(if (on) UiKey.APPS_ISL_LIST_ON else UiKey.APPS_ISL_LIST_OFF), style = Type.of(12, FontWeight.Bold).copy(color = Ink.muted))
                 for (k in listOf(UiKey.APPS_ISL_ZAKAT, UiKey.APPS_ISL_CALENDAR)) Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Box(Modifier.size(8.dp).clip(CircleShape).background(if (on) Ink.income else Color(0x40193D33)))
+                    Box(Modifier.size(8.dp).clip(CircleShape).background(if (on) Ink.income else Ink.tint(0x40)))
                     BasicText(t(k), style = Type.of(13).copy(color = if (on) Ink.text else Ink.muted, textDecoration = if (on) null else TextDecoration.LineThrough))
                 }
                 BasicText(t(UiKey.APPS_ISL_NOTE), style = Type.caption().copy(color = Ink.muted))
@@ -159,7 +160,7 @@ private fun LangRow(name: String, alt: String?, desc: String, on: Boolean, enabl
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(Modifier.size(22.dp).clip(CircleShape).insetRing(CircleShape, 1.5.dp, if (on) Ink.primary else Color(0x4D193D33)), contentAlignment = Alignment.Center) {
+        Box(Modifier.size(22.dp).clip(CircleShape).insetRing(CircleShape, 1.5.dp, if (on) Ink.primary else Ink.tint(0x4D)), contentAlignment = Alignment.Center) {
             if (on) Box(Modifier.size(12.dp).clip(CircleShape).background(Ink.primary))
         }
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {

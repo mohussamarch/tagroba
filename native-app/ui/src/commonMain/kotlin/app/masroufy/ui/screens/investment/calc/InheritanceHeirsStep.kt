@@ -111,7 +111,7 @@ private fun HeirsCard(kinds: List<HeirKind>, d: InheritanceDraft, onChange: (Inh
 private fun MoreToggle(open: Boolean, onClick: () -> Unit) {
     val press = rememberPress()
     Row(
-        Modifier.fillMaxWidth().heightIn(min = 48.dp).pressScale(press).clip(RoundedCornerShape(16.dp)).background(Color(0x1408634F))
+        Modifier.fillMaxWidth().heightIn(min = 48.dp).pressScale(press).clip(RoundedCornerShape(16.dp)).background(Ink.primary.copy(alpha = 0x14 / 255f))
             .tap(press, onClick = onClick).padding(horizontal = 14.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,

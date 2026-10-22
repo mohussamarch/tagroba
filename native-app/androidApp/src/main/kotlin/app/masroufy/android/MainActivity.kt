@@ -50,6 +50,9 @@ class MainActivity : FragmentActivity() {
         val deps = container.appDeps(permissions)
         // ميكروفون المساعد: نافذة التعرّف على الكلام بتاعة الجوال (§79.2-8) — لازم تتسجل هنا قبل ما الشاشة تبدأ
         val speech = AndroidSpeech(this)
+        // المظهر (فاتح · غامق · زي الجوال) وإخفاء الأرقام: المحفوظ على الجهاز بيتقرا قبل أول رسم عشان ما يبقاش فيه وميض
+        val nightNow = (resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
+        app.masroufy.ui.theme.Appearance.attach(AndroidPrefStore(this), nightNow)
         setContent { CompositionLocalProvider(LocalSpeech provides speech) { MasroufyApp(deps, shell, lock, reduceMotion = animationsOff()) } }
         askNotificationsOnce(permissions)
     }

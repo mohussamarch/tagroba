@@ -138,7 +138,7 @@ private fun Badge32(content: @Composable () -> Unit, bg: Color) {
 @Composable
 private fun CategoryLine(name: String, hex: String?, missing: Boolean) {
     Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-        if (hex != null) ColorDot(parseHexColor(hex)) else Box(Modifier.size(10.dp).clip(RoundedCornerShape(5.dp)).background(Color(0x33193D33)))
+        if (hex != null) ColorDot(parseHexColor(hex)) else Box(Modifier.size(10.dp).clip(RoundedCornerShape(5.dp)).background(Ink.tint(0x33)))
         val ink = when {
             missing -> Ink.expense
             hex == null -> Ink.muted
@@ -182,7 +182,7 @@ private fun RuleCard(row: RuleRowUi, onOpen: () -> Unit, onToggle: () -> Unit) {
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Badge32({ BasicText(app.masroufy.core.sentenceNumber(row.position), style = Type.of(13, FontWeight.Bold)) }, Color(0x0F193D33))
+                Badge32({ BasicText(app.masroufy.core.sentenceNumber(row.position), style = Type.of(13, FontWeight.Bold)) }, Ink.tint(0x0F))
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                         BasicText(row.modeLabel, style = Type.caption().copy(color = Ink.muted))

@@ -68,7 +68,7 @@ fun CalcDateField(
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         FieldLabel(label)
         Row(
-            Modifier.fillMaxWidth().height(48.dp).pressScale(press).clip(shape).background(Color.White)
+            Modifier.fillMaxWidth().height(48.dp).pressScale(press).clip(shape).background(Ink.card)
                 .insetRing(shape, if (error != null) 1.5.dp else 1.dp, if (error != null) Ink.expense else Ink.fieldEdge)
                 .tap(press, label = label) { open = true }
                 .semantics { contentDescription = shown?.let(::fullDate) ?: t(UiKey.CALCUI_PICK_DATE) }

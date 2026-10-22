@@ -1,6 +1,10 @@
 package app.masroufy.ui.screens.home
 
 import app.masroufy.core.UiKey
+import app.masroufy.core.R06Key
+import app.masroufy.ui.theme.Appearance
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -46,7 +50,10 @@ internal fun WithYouHero(now: WithYouNow, month: HomeMonth?, today: IsoDate, onC
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
                 Column(Modifier.weight(1f).padding(top = 4.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    BasicText(t(UiKey.HERO_WITH_YOU), style = Type.body().copy(color = Ink.onHeroMuted))
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        BasicText(t(UiKey.HERO_WITH_YOU), Modifier.weight(1f), style = Type.body().copy(color = Ink.onHeroMuted))
+                        HideNumbersButton()
+                    }
                     HeroAmount(now.totalMinor, now.currency, Modifier.fillMaxWidth())
                 }
                 HeroBanks(now)
@@ -65,6 +72,22 @@ internal fun WithYouHero(now: WithYouNow, month: HomeMonth?, today: IsoDate, onC
             }
         }
     }
+}
+
+/**
+ * زرار العين (44×44 — تصميم `NightPrivacy`): بيخفي **كل** المبالغ في البرنامج («••••» والعملة تفضل) لحد الضغطة الجاية.
+ * الإخفاء نفسه في `formatMoney` (`MoneyPrivacy`) — الزرار بيقلب الحالة بس.
+ */
+@Composable
+internal fun HideNumbersButton() {
+    val press = rememberPress()
+    val hidden = Appearance.numbersHidden
+    val label = t(if (hidden) R06Key.NP_EYE_SHOW else R06Key.NP_EYE_HIDE)
+    Box(
+        Modifier.size(44.dp).pressScale(press).clip(RoundedCornerShape(14.dp)).background(Color(0x1FFFFFFF))
+            .tap(press, label = label, onClick = { Appearance.toggleNumbers() }),
+        contentAlignment = Alignment.Center,
+    ) { LucideIcon(if (hidden) Lucide.EYE_OFF else Lucide.EYE, size = 20.dp, tint = Ink.onPrimary, contentDescription = label) }
 }
 
 /** «يشمل X كاش ‹» — زجاج خفيف على البترولي، والضغط بيفتح لوحة الكاش (`CashDetails`). */

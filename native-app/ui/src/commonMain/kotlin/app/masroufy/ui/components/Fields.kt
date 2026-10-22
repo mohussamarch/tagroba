@@ -106,7 +106,7 @@ fun TextInput(
         if (label != null) FieldLabel(label)
         Row(
             // الضغط جوه الخانة (وزرارها اللي على الطرف) ما بيقفلش الكيبورد — برّاها بيقفله (`OutsideTapRoot`)
-            Modifier.fillMaxWidth().height(height).keepsKeyboard().clip(shape).background(Color.White)
+            Modifier.fillMaxWidth().height(height).keepsKeyboard().clip(shape).background(Ink.card)
                 .insetRing(shape, if (error != null) 1.5.dp else 1.dp, if (error != null) Ink.expense else Ink.fieldEdge)
                 .semantics { if (error != null) this.error(error); if (label != null) contentDescription = label },
             verticalAlignment = Alignment.CenterVertically,

@@ -105,8 +105,8 @@ internal fun BnplBadge(p: BnplProvider, size: Dp = 56.dp, fontSize: Int = 15) {
     ) { BasicText(name, style = Type.of(fontSize, FontWeight.Bold).copy(color = tint.ink), maxLines = 1) }
 }
 
-internal val BnplGreen = Brush.linearGradient(listOf(Color(0xFF0A7A62), Color(0xFF08634F)))
-private val ChipOff = Color(0x0F193D33)
+internal val BnplGreen get() = Brush.linearGradient(listOf(Color(0xFF0A7A62), Ink.primary.copy(alpha = 0xFF / 255f)))
+private val ChipOff get() = Ink.tint(0x0F)
 
 /** شريحة اختيار بشكل اللوحة: المختارة خضرا بنص أبيض عريض، والباقي رمادي فاتح — ارتفاع 44 وحواف 14. */
 @Composable
@@ -136,7 +136,7 @@ internal fun BnplSwitch(on: Boolean, label: String, onToggle: () -> Unit) {
             .semantics { role = Role.Switch; contentDescription = label; stateDescription = bnplSwitchState(on) },
         contentAlignment = Alignment.Center,
     ) {
-        Box(Modifier.size(44.dp, 26.dp).clip(RoundedCornerShape(13.dp)).then(if (on) Modifier.background(BnplGreen) else Modifier.background(Color(0x29193D33)))) {
+        Box(Modifier.size(44.dp, 26.dp).clip(RoundedCornerShape(13.dp)).then(if (on) Modifier.background(BnplGreen) else Modifier.background(Ink.tint(0x29)))) {
             // التصميم: شغال ⇒ الدايرة على الشمال في العربي (`right: 20px`)
             Box(Modifier.padding(2.dp).size(22.dp).align(if (on) Alignment.CenterEnd else Alignment.CenterStart).clip(RoundedCornerShape(11.dp)).background(Color.White))
         }
@@ -151,7 +151,7 @@ internal fun bnplSwitchState(on: Boolean): String = t(if (on) UiKey.PPL_SWITCH_O
 internal fun BnplQuietButton(label: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val press = rememberPress()
     Box(
-        modifier.height(52.dp).pressScale(press).clip(RoundedCornerShape(18.dp)).background(Color(0x12193D33))
+        modifier.height(52.dp).pressScale(press).clip(RoundedCornerShape(18.dp)).background(Ink.tint(0x12))
             .tap(press, onClick = onClick).semantics { role = Role.Button },
         contentAlignment = Alignment.Center,
     ) { BasicText(label, style = Type.of(15, FontWeight.Bold).copy(color = Ink.text), maxLines = 1) }
@@ -160,9 +160,9 @@ internal fun BnplQuietButton(label: String, onClick: () -> Unit, modifier: Modif
 /** وسم «اتدفعت» (أخضر) و«الجاية» (أصفر) — الباقي من غير وسم. */
 @Composable
 internal fun BnplTag(state: BnplStepState, before: Boolean = false) {
-    val (text, ink, fill) = if (before && state == BnplStepState.PAID) Triple(t(app.masroufy.core.R06Key.BS_TAG_BEFORE), Ink.muted, Color(0x12193D33)) else when (state) {
+    val (text, ink, fill) = if (before && state == BnplStepState.PAID) Triple(t(app.masroufy.core.R06Key.BS_TAG_BEFORE), Ink.muted, Ink.tint(0x12)) else when (state) {
         // r06-1b4: دفعة اتدفعت قبل ما الخطة تتسجل (من غير عملية) ⇒ «تم الدفع» رمادي
-        BnplStepState.PAID -> Triple(t(BnplKey.BNPL2_TAG_PAID), Color(0xFF13764D), Color(0xFFDCEBD6))
+        BnplStepState.PAID -> Triple(t(BnplKey.BNPL2_TAG_PAID), Ink.income, Color(0xFFDCEBD6))
         BnplStepState.NEXT -> Triple(t(BnplKey.BNPL2_TAG_NEXT), Color(0xFF6B4600), Color(0xFFFBF0DD))
         BnplStepState.LATER -> return
     }
@@ -173,7 +173,7 @@ internal fun BnplTag(state: BnplStepState, before: Boolean = false) {
 @Composable
 internal fun BnplDot(paid: Boolean) {
     val m = Modifier.size(12.dp).clip(CircleShape)
-    Box(if (paid) m.background(Ink.primary) else m.background(Color.White).border(2.dp, Ink.primary.copy(alpha = 0.45f), CircleShape))
+    Box(if (paid) m.background(Ink.primary) else m.background(Ink.card).border(2.dp, Ink.primary.copy(alpha = 0.45f), CircleShape))
 }
 
 /**

@@ -70,7 +70,7 @@ fun ApplyCard(holder: ApplyHolder, deps: BudgetsDeps, today: IsoDate, hasRules: 
             }
             BasicText(body, style = Type.of(13).copy(color = Ink.muted))
             if (holder.phase == ApplyPhase.PREVIEW && view != null) {
-                Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Color(0x0A193D33)).padding(horizontal = 12.dp, vertical = 4.dp)) {
+                Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Ink.tint(0x0A)).padding(horizontal = 12.dp, vertical = 4.dp)) {
                     view.rows.forEachIndexed { i, row ->
                         Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                             Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {

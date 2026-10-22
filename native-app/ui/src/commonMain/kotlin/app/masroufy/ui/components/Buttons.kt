@@ -128,7 +128,7 @@ fun TonalButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier
             .alpha(if (enabled) 1f else 0.45f)
             .pressScale(press, enabled)
             .clip(shape)
-            .background(if (muted) Color.Transparent else Color(0x1408634F))
+            .background(if (muted) Color.Transparent else Ink.primary.copy(alpha = 0x14 / 255f))
             .tap(press, enabled, onClick = onClick)
             .padding(horizontal = 14.dp),
         contentAlignment = Alignment.Center,
@@ -151,7 +151,7 @@ fun IconButton44(icon: Lucide, label: String, onClick: () -> Unit, modifier: Mod
             .alpha(if (enabled) 1f else 0.45f)
             .pressScale(press, enabled)
             .clip(shape)
-            .background(Color(0x1408634F))
+            .background(Ink.primary.copy(alpha = 0x14 / 255f))
             .tap(press, enabled, label = label, onClick = onClick)
             .semantics { contentDescription = label },
         contentAlignment = Alignment.Center,

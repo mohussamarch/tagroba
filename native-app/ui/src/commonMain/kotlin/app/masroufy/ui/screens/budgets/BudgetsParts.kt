@@ -52,12 +52,16 @@ import app.masroufy.ui.theme.motion
  */
 
 /** نبرة شارة/شريط بالحالة (النموذج: ضمن الحد أخضر · قرّب كهرماني · عدّى أحمر · غير متاح رمادي · جديدة أزرق). */
-enum class Tone(val ink: Color, val bg: Color, val bar: Color) {
-    OK(Ink.income, Ink.selected, Ink.primary),
-    NEAR(Ink.focus, Ink.alertBg, Ink.focus),
-    OVER(Ink.expense, Color(0x1ABE3D48), Ink.expense),
-    MUTED(Ink.muted, Color(0x0F193D33), Ink.muted),
-    NEW(Ink.transfer, Color(0x1A2469BA), Ink.transfer),
+enum class Tone(private val inkLazy: () -> Color, private val bgLazy: () -> Color, private val barLazy: () -> Color) {
+    OK({ Ink.income }, { Ink.selected }, { Ink.primary }),
+    NEAR({ Ink.focus }, { Ink.alertBg }, { Ink.focus }),
+    OVER({ Ink.expense }, { Ink.expense.copy(alpha = 0x1A / 255f) }, { Ink.expense }),
+    MUTED({ Ink.muted }, { Ink.tint(0x0F) }, { Ink.muted }),
+    NEW({ Ink.transfer }, { Color(0x1A2469BA) }, { Ink.transfer }),
+    ;
+    val ink: Color get() = inkLazy()
+    val bg: Color get() = bgLazy()
+    val bar: Color get() = barLazy()
 }
 
 /** لون التصنيف من `Category.lightColor` («#RRGGBB») — نص مش صالح ⇒ الرمادي. */
@@ -69,7 +73,7 @@ fun parseHexColor(hex: String?): Color {
 
 /** شريط تقدم (8 للبطاقة · 6 للصفوف): [percent] من 0 لـ100 جاهز من المقدِّم، والعرض بيتحرك بالنابض الهادي. */
 @Composable
-fun ProgressBar(percent: Int, color: Color, modifier: Modifier = Modifier, height: Dp = 8.dp, track: Color = Color(0x14193D33)) {
+fun ProgressBar(percent: Int, color: Color, modifier: Modifier = Modifier, height: Dp = 8.dp, track: Color = Ink.tint(0x14)) {
     val target = percent.coerceIn(0, 100) / 100f
     val fraction by animateFloatAsState(target, motion(Springs.GENTLE), label = "bar")
     val shape = RoundedCornerShape(height / 2)
@@ -96,7 +100,7 @@ fun Switch(checked: Boolean, label: String, onToggle: () -> Unit, modifier: Modi
             .semantics { contentDescription = label; toggleableState = ToggleableState(checked) },
         contentAlignment = Alignment.Center,
     ) {
-        val track = if (checked) Modifier.background(Glass.primary) else Modifier.background(Color(0x29193D33))
+        val track = if (checked) Modifier.background(Glass.primary) else Modifier.background(Ink.tint(0x29))
         Box(Modifier.size(44.dp, 26.dp).clip(RoundedCornerShape(13.dp)).then(track)) {
             // اليمين = بداية في العربي: المقفول على اليمين (2) والمفتوح على الشمال (20) — زي النموذج
             Box(
@@ -113,7 +117,7 @@ fun DangerButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifie
     val shape = RoundedCornerShape(Radius.control)
     val press = rememberPress()
     Box(
-        modifier.height(height).pressScale(press).clip(shape).background(Color.White).insetRing(shape, 1.dp, Color(0x40BE3D48))
+        modifier.height(height).pressScale(press).clip(shape).background(Ink.card).insetRing(shape, 1.dp, Ink.expense.copy(alpha = 0x40 / 255f))
             .tap(press, onClick = onClick).padding(horizontal = 14.dp),
         contentAlignment = Alignment.Center,
     ) {
@@ -148,7 +152,7 @@ fun ErrorCard(title: String, body: String, onRetry: () -> Unit, modifier: Modifi
         BasicText(body, style = Type.of(13).copy(color = Ink.focus))
         val press = rememberPress()
         Box(
-            Modifier.height(44.dp).pressScale(press).clip(RoundedCornerShape(Radius.lensSmall)).background(Color(0xCCFFFFFF))
+            Modifier.height(44.dp).pressScale(press).clip(RoundedCornerShape(Radius.lensSmall)).background(Ink.card.copy(alpha = 0.8f))
                 .tap(press, onClick = onRetry).padding(horizontal = 16.dp),
             contentAlignment = Alignment.Center,
         ) { BasicText(t(UiKey.SHELL_RETRY), style = Type.of(14, FontWeight.Bold).copy(color = Ink.primary)) }
@@ -164,7 +168,7 @@ fun ColorDot(color: Color, modifier: Modifier = Modifier, size: Dp = 10.dp) {
 /** صف «عنوان صغير + قيمة» جوه مربع رمادي خفيف (إحصاءات الخطة 2×2). */
 @Composable
 fun StatTile(label: String, value: String, modifier: Modifier = Modifier, valueColor: Color = Ink.text, ltr: Boolean = true) {
-    Column(modifier.clip(RoundedCornerShape(Radius.lensSmall)).background(Color(0x0A193D33)).padding(horizontal = 10.dp, vertical = 8.dp)) {
+    Column(modifier.clip(RoundedCornerShape(Radius.lensSmall)).background(Ink.tint(0x0A)).padding(horizontal = 10.dp, vertical = 8.dp)) {
         BasicText(label, style = Type.of(11).copy(color = Ink.muted), maxLines = 1)
         val style = Type.of(14, FontWeight.Bold).copy(color = valueColor)
         BasicText(value, style = if (ltr) style.copy(fontFeatureSettings = "tnum") else style, maxLines = 1)

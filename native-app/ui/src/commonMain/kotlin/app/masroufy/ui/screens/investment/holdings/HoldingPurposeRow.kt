@@ -58,7 +58,7 @@ fun HoldingPurposeRow(assetId: Id) {
                 val label = t(purposeKey(p))
                 Row(
                     Modifier.height(40.dp).clip(RoundedCornerShape(14.dp))
-                        .then(if (on) Modifier.background(Color.White).insetBorder(1.5.dp, Ink.primary, 14.dp) else Modifier.background(CHIP_FILL))
+                        .then(if (on) Modifier.background(Ink.card).insetBorder(1.5.dp, Ink.primary, 14.dp) else Modifier.background(CHIP_FILL))
                         .holdTap(label) {
                             if (on) return@holdTap
                             scope.launch {

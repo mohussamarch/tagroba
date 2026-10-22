@@ -202,7 +202,7 @@ private fun ChatHeader(title: String, subtitle: String, canStartNew: Boolean, on
 
 private val brandShadow = listOf(ShadowLayer(0.dp, 1.dp, 0.dp, Color(0x38FFFFFF), inset = true), ShadowLayer(0.dp, 8.dp, 18.dp, Color(0x40064B40)))
 private val boxShadow = listOf(ShadowLayer(0.dp, 10.dp, 26.dp, Color(0x1A1D3635)))
-private val boxShadowFocused = listOf(ShadowLayer(0.dp, 10.dp, 26.dp, Color(0x2E08634F)))
+private val boxShadowFocused get() = listOf(ShadowLayer(0.dp, 10.dp, 26.dp, Ink.primary.copy(alpha = 0x2E / 255f)))
 
 /**
  * مستطيل الكتابة (طلب المالك: «واضح إن في مستطيل أدوس عليه علشان أكتب»): 52 بزاوية 18 أبيض بإطار باين 1.5 بيقوى لـ2 أخضر لما تدوس،
@@ -213,10 +213,10 @@ private fun InputBox(draft: String, onDraft: (String) -> Unit, onMic: () -> Unit
     val shape = RoundedCornerShape(18.dp)
     val focus = remember { MutableInteractionSource() }
     val focused by focus.collectIsFocusedAsState()
-    val ring = if (focused) Modifier.insetRing(shape, 2.dp, Ink.primary) else Modifier.insetRing(shape, 1.5.dp, Color(0x4008634F))
+    val ring = if (focused) Modifier.insetRing(shape, 2.dp, Ink.primary) else Modifier.insetRing(shape, 1.5.dp, Ink.primary.copy(alpha = 0x40 / 255f))
     // المستطيل كله بزراره (الإرسال · الميكروفون) ما بيقفلش الكيبورد — الضغط برّاه بيقفله (`OutsideTapRoot`)
     Row(
-        Modifier.fillMaxWidth().height(52.dp).keepsKeyboard().layeredShadow(shape, if (focused) boxShadowFocused else boxShadow).clip(shape).background(Color.White)
+        Modifier.fillMaxWidth().height(52.dp).keepsKeyboard().layeredShadow(shape, if (focused) boxShadowFocused else boxShadow).clip(shape).background(Ink.card)
             .then(ring).padding(horizontal = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -273,7 +273,7 @@ private fun SuggestionChip(label: String, learned: Boolean, onClick: () -> Unit)
     val shape = RoundedCornerShape(22.dp)
     Box(
         Modifier.height(44.dp).pressScale(press).layeredShadow(shape, chipShadow).clip(shape).background(if (learned) Ink.selected else Color(0xE0FFFFFF))
-            .insetRing(shape, 1.dp, Color(0x2E08634F)).tap(press, label = label, onClick = onClick).padding(horizontal = 16.dp),
+            .insetRing(shape, 1.dp, Ink.primary.copy(alpha = 0x2E / 255f)).tap(press, label = label, onClick = onClick).padding(horizontal = 16.dp),
         contentAlignment = Alignment.Center,
     ) { BasicText(label, style = Type.of(13, FontWeight.Medium).copy(color = Ink.primary), maxLines = 1) }
 }

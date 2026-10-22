@@ -1,5 +1,7 @@
 package app.masroufy.ui.screens.investment.insights
 
+import app.masroufy.ui.theme.Ink
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -107,5 +109,5 @@ fun LazyListScope.investReturnsItem(state: InsightsState) {
 /** هيكل التحميل (زي `Investment.dc.html` «بيحمّل»): كتلة فاتحة بزاوية الكارت. */
 @Composable
 internal fun SectionSkeleton(height: Int) {
-    Box(Modifier.fillMaxWidth().height(height.dp).background(Color(0x0F193D33), RoundedCornerShape(Radius.card)))
+    Box(Modifier.fillMaxWidth().height(height.dp).background(Ink.tint(0x0F), RoundedCornerShape(Radius.card)))
 }

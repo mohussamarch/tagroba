@@ -119,7 +119,7 @@ internal fun PeopleCard(state: ReadState<PeopleTotal?>) {
 @Composable
 private fun Side(label: String, minor: Long, currency: app.masroufy.core.Currency, color: Color, modifier: Modifier) {
     Column(
-        modifier.clip(RoundedCornerShape(16.dp)).background(Color(0x0A193D33)).padding(horizontal = 12.dp, vertical = 10.dp),
+        modifier.clip(RoundedCornerShape(16.dp)).background(Ink.tint(0x0A)).padding(horizontal = 12.dp, vertical = 10.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
         BasicText(label, style = Type.caption().copy(color = Ink.muted))

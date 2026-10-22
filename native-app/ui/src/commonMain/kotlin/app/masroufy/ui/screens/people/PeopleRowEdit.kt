@@ -164,7 +164,7 @@ internal fun RowUndoBar(editor: RowEditor, modifier: Modifier = Modifier) {
         editor.clearUndo(u)
     }
     Row(
-        modifier.fillMaxWidth().heightIn(min = 52.dp).clip(RoundedCornerShape(18.dp)).background(Color(0xEB193D33))
+        modifier.fillMaxWidth().heightIn(min = 52.dp).clip(RoundedCornerShape(18.dp)).background(Ink.tint(0xEB))
             .padding(start = 16.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,

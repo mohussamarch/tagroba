@@ -88,7 +88,7 @@ internal fun Counters(u: ImportReviewUi, filter: MatchingState?, onFilter: (Matc
             val active = filter == state
             val press = rememberPress()
             val shape = RoundedCornerShape(16.dp)
-            val surface = if (active) Modifier.background(tone.bg).insetRing(shape, 1.5.dp, tone.ink) else Modifier.background(Color.White)
+            val surface = if (active) Modifier.background(tone.bg).insetRing(shape, 1.5.dp, tone.ink) else Modifier.background(Ink.card)
             Column(
                 Modifier.weight(1f).defaultMinSize(minHeight = 56.dp).pressScale(press).clip(shape).then(surface).tap(press, onClick = { onFilter(state) }).padding(vertical = 6.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -142,7 +142,7 @@ internal fun ReviewLines(
 private fun CheckBox(on: Boolean, locked: Boolean, onClick: () -> Unit) {
     val press = rememberPress()
     Box(Modifier.size(44.dp).tap(press, !locked, role = Role.Checkbox, onClick = onClick), contentAlignment = Alignment.Center) {
-        val box = if (on) Modifier.background(Ink.primary) else Modifier.background(Color.White).border(1.5.dp, Ink.faded, RoundedCornerShape(7.dp))
+        val box = if (on) Modifier.background(Ink.primary) else Modifier.background(Ink.card).border(1.5.dp, Ink.faded, RoundedCornerShape(7.dp))
         Box(Modifier.size(22.dp).alpha(if (locked) 0.5f else 1f).clip(RoundedCornerShape(7.dp)).then(box), contentAlignment = Alignment.Center) {
             if (on) LucideIcon(Lucide.CHECK, size = 16.dp, tint = Color.White)
         }

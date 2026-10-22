@@ -26,10 +26,10 @@ import androidx.compose.ui.unit.dp
 import app.masroufy.ui.theme.Ink
 
 /** قطع صغيرة مشتركة لملفات «حاجاتي» (بنفس قيم النموذج). */
-internal val SOFT_FILL = Color(0x0D193D33)
-internal val CHIP_FILL = Color(0x0F193D33)
+internal val SOFT_FILL get() = Ink.tint(0x0D)
+internal val CHIP_FILL get() = Ink.tint(0x0F)
 internal val ADD_FILL = Color(0x8CFFFFFF)
-internal val DASH = Color(0x6608634F)
+internal val DASH get() = Ink.primary.copy(alpha = 0x66 / 255f)
 internal val PLAN_THUMB = Color(0xFFB7791F)
 
 /** ضغطة باسم للقارئ (زرار). */
@@ -68,7 +68,7 @@ internal fun StepSlider(step: Int, steps: Int, label: String, valueText: String,
                 .drawBehind {
                     val track = 6.dp.toPx()
                     val cy = size.height / 2
-                    drawRoundRect(Color(0x1F193D33), Offset(0f, cy - track / 2), Size(size.width, track), CornerRadius(track / 2))
+                    drawRoundRect(Ink.tint(0x1F), Offset(0f, cy - track / 2), Size(size.width, track), CornerRadius(track / 2))
                     val r = 14.dp.toPx()
                     val frac = if (steps == 0) 0f else step.toFloat() / steps
                     // RTL: الصفحة كلها بتتعكس، والنموذج LTR ⇒ نرسم من الشمال دايمًا

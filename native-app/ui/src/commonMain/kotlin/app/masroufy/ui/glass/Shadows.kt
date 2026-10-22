@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import app.masroufy.ui.theme.Appearance
 
 /**
  * ظل طبقة واحدة = سطر من `box-shadow` في وصفات v0.3/v0.4 بالحرف: `x y blur color` (و`inset` = لمعة جوه الحافة).
@@ -23,10 +24,10 @@ private fun ring(width: Double, color: Long) = ShadowLayer(0.dp, 0.dp, 0.dp, Col
 /** الوصفات بأسمائها — ممنوع ظل من برّه الجدول ده (قائمة الفحص بند 4). الألوان `0xAARRGGBB` من `rgba` بالظبط. */
 object Shadows {
     /** الكارت الطافي: `inset 0 1px 0 #FFF, 0 1px 2px rgba(29,54,53,.05), 0 14px 32px rgba(29,54,53,.09)`. */
-    val card = listOf(inset(0, 1, 0, 0xFFFFFFFF), drop(0, 1, 2, 0x0D1D3635), drop(0, 14, 32, 0x171D3635))
+    val card get() = (listOf(inset(0, 1, 0, 0xFFFFFFFF), drop(0, 1, 2, 0x0D1D3635), drop(0, 14, 32, 0x171D3635))).noneInDark()
 
     /** كارت أصغر (شرائح وحبّات): `0 6px 16px rgba(29,54,53,.08)`. */
-    val chip = listOf(inset(0, 1, 0, 0xFFFFFFFF), drop(0, 1, 2, 0x0D1D3635), drop(0, 6, 16, 0x141D3635))
+    val chip get() = (listOf(inset(0, 1, 0, 0xFFFFFFFF), drop(0, 1, 2, 0x0D1D3635), drop(0, 6, 16, 0x141D3635))).noneInDark()
 
     /** البطاقة البطلة: `inset 0 1px 0 rgba(255,255,255,.22), 0 20px 44px rgba(6,75,64,.30), 0 4px 10px rgba(6,75,64,.18)`. */
     val hero = listOf(inset(0, 1, 0, 0x38FFFFFF), drop(0, 4, 10, 0x2E064B40), drop(0, 20, 44, 0x4D064B40))
@@ -41,10 +42,10 @@ object Shadows {
     val plus = listOf(inset(0, 1, 0, 0x4DFFFFFF), inset(0, -2, 4, 0x40002820), drop(0, 2, 5, 0x38064B40), drop(0, 10, 22, 0x4D064B40))
 
     /** شريط التنقل الزجاج. */
-    val nav = listOf(inset(1, 2, 3, 0xFFFFFFFF), inset(0, -4, 6, 0xD9FFFFFF), ring(0.5, 0x409BB3B3), drop(0, 18, 44, 0x2E1D3635))
+    val nav get() = (listOf(inset(1, 2, 3, 0xFFFFFFFF), inset(0, -4, 6, 0xD9FFFFFF), ring(0.5, 0x409BB3B3), drop(0, 18, 44, 0x2E1D3635))).darkSafe()
 
     /** شريط «اسأل مصروفي» (نفس الزجاج بظل أقصر). */
-    val ask = listOf(inset(1, 2, 3, 0xFFFFFFFF), inset(0, -3, 5, 0xD9FFFFFF), ring(0.5, 0x409BB3B3), drop(0, 10, 24, 0x241D3635))
+    val ask get() = (listOf(inset(1, 2, 3, 0xFFFFFFFF), inset(0, -3, 5, 0xD9FFFFFF), ring(0.5, 0x409BB3B3), drop(0, 10, 24, 0x241D3635))).darkSafe()
 
     /** عدسة التبويب المختار (40×30). */
     val navLens = listOf(inset(1, 1, 2, 0xFFFFFFFF), inset(-1, -2, 3, 0x2908634F), drop(0, 6, 14, 0x2E08634F))
@@ -59,19 +60,19 @@ object Shadows {
     val heroBank = listOf(inset(1, 1, 2, 0x73C8FFEB), inset(-1, -2, 3, 0x47002F30), ring(1.5, 0x8C064B40), drop(0, 6, 12, 0x29002A35))
 
     /** الصف المرفوع في قائمة الضغط المطوّل. */
-    val liftedRow = listOf(inset(0, 2, 0, 0xFFFFFFFF), inset(0, -3, 5, 0xFFFFFFFF), ring(1.0, 0xE6FFFFFF), drop(0, 22, 48, 0x33102D35))
+    val liftedRow get() = (listOf(inset(0, 2, 0, 0xFFFFFFFF), inset(0, -3, 5, 0xFFFFFFFF), ring(1.0, 0xE6FFFFFF), drop(0, 22, 48, 0x33102D35))).darkSafe()
 
     /** القائمة السائلة ونافذة الجرس. */
-    val liquidMenu = listOf(inset(1, 1, 2, 0xBFFFFFFF), inset(-1, -1, 3, 0x2E3B7166), drop(0, 18, 44, 0x331D3635))
+    val liquidMenu get() = (listOf(inset(1, 1, 2, 0xBFFFFFFF), inset(-1, -1, 3, 0x2E3B7166), drop(0, 18, 44, 0x331D3635))).darkSafe()
 
     /** اللوحة اللي بتطلع من تحت: `inset 0 1px 0 #FFF, 0 -14px 40px rgba(29,54,53,.16)`. */
-    val sheet = listOf(inset(0, 1, 0, 0xFFFFFFFF), drop(0, -14, 40, 0x291D3635))
+    val sheet get() = (listOf(inset(0, 1, 0, 0xFFFFFFFF), drop(0, -14, 40, 0x291D3635))).darkSafe()
 
     /** أيقونة التصنيف: `inset 0 1px 0 rgba(255,255,255,0.7)`. */
-    val iconTile = listOf(inset(0, 1, 0, 0xB3FFFFFF))
+    val iconTile get() = (listOf(inset(0, 1, 0, 0xB3FFFFFF))).noneInDark()
 
     /** رسالة صغيرة (toast). */
-    val toast = listOf(inset(1, 1, 2, 0xFFFFFFFF), drop(0, 10, 24, 0x291D3635))
+    val toast get() = (listOf(inset(1, 1, 2, 0xFFFFFFFF), drop(0, 10, 24, 0x291D3635))).darkSafe()
 }
 
 /**
@@ -101,3 +102,9 @@ fun Modifier.innerSheen(shape: Shape, layers: List<ShadowLayer>): Modifier {
 /** حد جوه الشكل من غير ما يكبّره: `box-shadow: inset 0 0 0 <width> <color>` (الخانة المختارة · الحقل). */
 fun Modifier.insetRing(shape: Shape, width: Dp, color: Color): Modifier =
     innerShadow(shape, Shadow(radius = 0.dp, color = color, spread = width))
+
+/** الغامق: من غير ظل ولا لمعة (الكروت مسطحة — قرار المالك 2026-10-22). */
+private fun List<ShadowLayer>.noneInDark(): List<ShadowLayer> = if (Appearance.isDark) emptyList() else this
+
+/** الغامق: من غير اللمعة البيضا والحلقة — الظل الساقط بس. */
+private fun List<ShadowLayer>.darkSafe(): List<ShadowLayer> = if (Appearance.isDark) filter { !it.inset && it.spread == 0.dp } else this

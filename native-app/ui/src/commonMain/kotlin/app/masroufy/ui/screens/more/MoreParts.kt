@@ -121,7 +121,7 @@ fun ToggleSwitch(checked: Boolean, label: String, enabled: Boolean = true, onTog
             .semantics { contentDescription = label; stateDescription = if (checked) "on" else "off" },
         contentAlignment = Alignment.Center,
     ) {
-        val track = if (checked) Modifier.background(Glass.primary) else Modifier.background(Color(0x29193D33))
+        val track = if (checked) Modifier.background(Glass.primary) else Modifier.background(Ink.tint(0x29))
         Box(Modifier.width(44.dp).height(26.dp).alpha(if (enabled) 1f else 0.45f).clip(RoundedCornerShape(13.dp)).then(track)) {
             // «من اليمين» في النموذج (dir=rtl): الدايرة يمين وهو مقفول وشمال وهو شغال ⇒ بالبداية/النهاية بتتقلب لوحدها في الإنجليزي
             Box(Modifier.align(Alignment.CenterStart).offset(x = knob).size(22.dp).clip(CircleShape).background(Color.White))
@@ -136,7 +136,7 @@ fun FillChip(label: String, on: Boolean, modifier: Modifier = Modifier, height: 
     val shape = RoundedCornerShape(16.dp)
     Box(
         modifier.height(height).alpha(if (enabled) 1f else 0.45f).pressScale(press, enabled).clip(shape)
-            .background(if (on) Glass.primary else androidx.compose.ui.graphics.SolidColor(Color(0x0F193D33)))
+            .background(if (on) Glass.primary else androidx.compose.ui.graphics.SolidColor(Ink.tint(0x0F)))
             .tap(press, enabled, role = Role.RadioButton, onClick = onClick).semantics { selected = on }.padding(horizontal = 16.dp),
         contentAlignment = Alignment.Center,
     ) {
@@ -162,7 +162,7 @@ private fun DayCell(day: Int, on: Boolean, modifier: Modifier, onClick: () -> Un
     val press = rememberPress()
     Box(
         modifier.height(44.dp).pressScale(press).clip(RoundedCornerShape(12.dp))
-            .background(if (on) Glass.primary else androidx.compose.ui.graphics.SolidColor(Color(0x0D193D33)))
+            .background(if (on) Glass.primary else androidx.compose.ui.graphics.SolidColor(Ink.tint(0x0D)))
             .tap(press, role = Role.RadioButton, onClick = onClick).semantics { selected = on },
         contentAlignment = Alignment.Center,
     ) {
@@ -173,7 +173,7 @@ private fun DayCell(day: Int, on: Boolean, modifier: Modifier, onClick: () -> Un
 /** صندوق ملاحظة هادي (`rgba(25,61,51,0.04)` بزاوية 18). */
 @Composable
 fun NoteBox(body: String, modifier: Modifier = Modifier, title: String? = null) {
-    Column(modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Color(0x0A193D33)).padding(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+    Column(modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Ink.tint(0x0A)).padding(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
         if (title != null) BasicText(title, style = Type.of(13, FontWeight.Bold).copy(color = Ink.muted))
         BasicText(body, style = Type.caption().copy(color = Ink.muted))
     }

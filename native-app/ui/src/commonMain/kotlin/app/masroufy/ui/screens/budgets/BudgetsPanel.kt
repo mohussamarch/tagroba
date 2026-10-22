@@ -204,7 +204,7 @@ private fun InfoTiles(ui: BudgetsUi) {
             BasicText(if (ui.averageMinor != null) t(UiKey.BUDGETS_AVG_NOTE) else ui.averageReason, style = Type.of(11).copy(color = Ink.muted))
         }
         Column(
-            Modifier.weight(1f).clip(RoundedCornerShape(Radius.control)).background(if (ui.anomalyAlert) Ink.alertBg else androidx.compose.ui.graphics.Color(0x0D193D33))
+            Modifier.weight(1f).clip(RoundedCornerShape(Radius.control)).background(if (ui.anomalyAlert) Ink.alertBg else app.masroufy.ui.theme.Ink.tint(0x0D))
                 .padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {

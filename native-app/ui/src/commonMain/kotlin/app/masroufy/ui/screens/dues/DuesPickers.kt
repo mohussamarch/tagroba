@@ -82,7 +82,7 @@ private fun DayButton(modifier: Modifier, day: Int, on: Boolean, isToday: Boolea
     val shape = RoundedCornerShape(12.dp)
     val bg = when {
         on -> Ink.primary
-        isToday -> Color(0x1408634F)
+        isToday -> Ink.primary.copy(alpha = 0x14 / 255f)
         else -> Color.Transparent
     }
     Box(
@@ -101,7 +101,7 @@ private fun DayButton(modifier: Modifier, day: Int, on: Boolean, isToday: Boolea
 private fun MonthArrow(icon: Lucide, label: String, onClick: () -> Unit) {
     val press = rememberPress()
     Box(
-        Modifier.size(44.dp).pressScale(press).clip(RoundedCornerShape(14.dp)).background(Color(0x0D193D33))
+        Modifier.size(44.dp).pressScale(press).clip(RoundedCornerShape(14.dp)).background(Ink.tint(0x0D))
             .tap(press, label = label, onClick = onClick).semantics { contentDescription = label },
         contentAlignment = Alignment.Center,
     ) { LucideIcon(icon, size = 20.dp, modifier = Modifier.mirrorInLtr()) }

@@ -171,7 +171,7 @@ private fun SpaceCardBox(c: SpaceCardView, canAdmin: Boolean, onSwitch: () -> Un
     if (c.archived) Column(
         Modifier.fillMaxWidth().clip(shape).background(Color(0x8CFFFFFF)).insetRing(shape, 1.dp, Color(0xB3CCD8CC)).padding(horizontal = 16.dp, vertical = 14.dp),
     ) { body() }
-    else FloatingCard(Modifier.fillMaxWidth().then(if (c.active) Modifier.insetRing(shape, 1.5.dp, Color(0x7308634F)) else Modifier), shape = shape, contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)) { body() }
+    else FloatingCard(Modifier.fillMaxWidth().then(if (c.active) Modifier.insetRing(shape, 1.5.dp, Ink.primary.copy(alpha = 0x73 / 255f)) else Modifier), shape = shape, contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)) { body() }
 }
 
 /** صف عائم لوحده («التحويل لنفسك بين البلدين ‹»). */
@@ -237,7 +237,7 @@ private fun CountryRow(o: CountryOption, on: Boolean, onPick: () -> Unit) {
     }
     Column(
         Modifier.fillMaxWidth().defaultMinSize(minHeight = 56.dp).alpha(if (off) 0.55f else 1f).pressScale(press, !off).clip(shape)
-            .background(if (on) Ink.selected else Color(0x0A193D33)).then(if (on) Modifier.insetRing(shape, 1.5.dp, Ink.primary) else Modifier)
+            .background(if (on) Ink.selected else Ink.tint(0x0A)).then(if (on) Modifier.insetRing(shape, 1.5.dp, Ink.primary) else Modifier)
             .tap(press, !off, role = Role.RadioButton, onClick = onPick).semantics { selected = on }.padding(horizontal = 14.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {

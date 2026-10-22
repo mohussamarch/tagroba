@@ -44,7 +44,7 @@ internal val NEW_PERSON_CIRCLES = listOf(PersonCircle.FAMILY, PersonCircle.FRIEN
 @Composable
 internal fun NewPersonBox(name: String, selected: Boolean, circle: PersonCircle?, onName: (String) -> Unit, onCircle: (PersonCircle) -> Unit) {
     val shape = RoundedCornerShape(Radius.control)
-    val surface = if (selected) Modifier.background(Ink.selected).insetRing(shape, 1.5.dp, Ink.primary) else Modifier.background(Color(0x0A193D33))
+    val surface = if (selected) Modifier.background(Ink.selected).insetRing(shape, 1.5.dp, Ink.primary) else Modifier.background(Ink.tint(0x0A))
     Column(Modifier.fillMaxWidth().clip(shape).then(surface).padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         BasicText(t(UiKey.TRANSFER_PARTY_NEW_TITLE), style = Type.of(12, FontWeight.Bold).copy(color = Ink.primary))
         TextInput(name, onName, placeholder = t(UiKey.TRANSFER_PARTY_NAME_LABEL))
@@ -62,7 +62,7 @@ internal fun PeopleList(people: List<Person>, picked: Person?, onPick: (Person) 
             val on = picked?.id == p.id
             val shape = RoundedCornerShape(16.dp)
             val press = rememberPress()
-            val surface = if (on) Modifier.background(Ink.selected).insetRing(shape, 1.5.dp, Ink.primary) else Modifier.background(Color(0x0A193D33))
+            val surface = if (on) Modifier.background(Ink.selected).insetRing(shape, 1.5.dp, Ink.primary) else Modifier.background(Ink.tint(0x0A))
             Row(
                 Modifier.fillMaxWidth().defaultMinSize(minHeight = 52.dp).pressScale(press).clip(shape).then(surface)
                     .tap(press, role = Role.RadioButton, onClick = { onPick(p) }).semantics { selected = on }.padding(horizontal = 12.dp, vertical = 6.dp),

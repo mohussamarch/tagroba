@@ -38,19 +38,20 @@ import app.masroufy.ui.glass.cssRadialGlow
 import app.masroufy.ui.glass.innerSheen
 import app.masroufy.ui.glass.layeredShadow
 import app.masroufy.ui.theme.Radius
+import app.masroufy.ui.theme.mix
 
 /**
  * أسطح نظام التصميم v0.4 بالوصفات الحرفية (DESIGN-SYSTEM «وصفات الأسطح» و«وصفات الزجاج»).
  * القاعدة: **الكروت طافية بالظل مش زجاج**؛ الزجاج للي بيطفو فوق المحتوى بس. ممنوع إطار على الأسطح.
  */
 
-private val backgroundBase = cssLinear(155f, 0f to Color(0xFFFAF9F3), 0.48f to Color(0xFFEFF3ED), 1f to Color(0xFFDCE9DF))
+private val backgroundBase get() = cssLinear(155f, 0f to mix(0xFFFAF9F3, 0xFF0F1A17), 0.48f to mix(0xFFEFF3ED, 0xFF0F1A17), 1f to mix(0xFFDCE9DF, 0xFF0F1A17))
 
 /** خلفية الشاشة: إضاءات ناعمة (أخضر وأزرق خفيف) فوق تدرج دافي — عشان الزجاج يبان زجاج. ممنوع حلقات أو دواير زخرفية. */
 fun Modifier.screenBackground(): Modifier = background(backgroundBase).drawBehind {
-    cssRadialGlow(0.70f, 0.38f, 1f, 0f, Color(0x73A6DEC1), 0.7f)
-    cssRadialGlow(0.60f, 0.34f, 0f, 0.62f, Color(0x299BC5FF), 0.7f)
-    cssRadialGlow(0.80f, 0.40f, 0.5f, 1f, Color(0x66A6DEC1), 0.7f)
+    cssRadialGlow(0.70f, 0.38f, 1f, 0f, mix(0x73A6DEC1, 0x00000000), 0.7f)
+    cssRadialGlow(0.60f, 0.34f, 0f, 0.62f, mix(0x299BC5FF, 0x00000000), 0.7f)
+    cssRadialGlow(0.80f, 0.40f, 0.5f, 1f, mix(0x66A6DEC1, 0x00000000), 0.7f)
 }
 
 /**

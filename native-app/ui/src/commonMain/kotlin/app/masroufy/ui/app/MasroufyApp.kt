@@ -109,7 +109,7 @@ fun OpeningScreen(synced: Int?, total: Int?) {
         if (synced != null && total != null && total > 0) {
             val fraction = (synced.toFloat() / total).coerceIn(0f, 1f)
             Box(
-                Modifier.width(220.dp).height(6.dp).clip(RoundedCornerShape(3.dp)).background(Color(0x1F193D33))
+                Modifier.width(220.dp).height(6.dp).clip(RoundedCornerShape(3.dp)).background(Ink.tint(0x1F))
                     .semantics { progressBarRangeInfo = ProgressBarRangeInfo(fraction, 0f..1f) },
             ) { Box(Modifier.fillMaxWidth(fraction).height(6.dp).clip(RoundedCornerShape(3.dp)).background(Ink.primary)) }
             BasicText(t(UiKey.SHELL_OPENING_PROGRESS, sentenceNumber(synced), sentenceNumber(total)), style = Type.caption().copy(color = Ink.muted))

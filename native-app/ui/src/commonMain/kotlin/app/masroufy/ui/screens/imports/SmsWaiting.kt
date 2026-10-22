@@ -137,7 +137,7 @@ private fun BankCard(bank: BankWaitingUi, currency: Currency, onPick: () -> Unit
         BasicText(t(UiKey.SMS_WAITING_BANK_TITLE), style = Type.of(13, FontWeight.Bold).copy(color = Ink.focus))
         BasicText(t(UiKey.SMS_WAITING_BANK_BODY, msgsCount(bank.count), bank.sender), style = Type.body())
         if (bank.samples.isNotEmpty()) {
-            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Color.White.copy(alpha = 0.65f)).padding(horizontal = 12.dp, vertical = 4.dp)) {
+            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Ink.card.copy(alpha = 0.65f)).padding(horizontal = 12.dp, vertical = 4.dp)) {
                 bank.samples.forEachIndexed { i, s ->
                     if (i > 0) Divider()
                     Row(Modifier.fillMaxWidth().padding(vertical = 6.dp), horizontalArrangement = Arrangement.SpaceBetween) {

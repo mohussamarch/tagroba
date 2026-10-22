@@ -69,7 +69,7 @@ private val CardShape = RoundedCornerShape(18.dp)
 @Composable
 private fun Tick(on: Boolean) {
     val m = Modifier.size(22.dp).clip(RoundedCornerShape(7.dp))
-    Box(if (on) m.background(Ink.primary) else m.background(Color.White).border(1.5.dp, Color(0x47193D33), RoundedCornerShape(7.dp)), contentAlignment = Alignment.Center) {
+    Box(if (on) m.background(Ink.primary) else m.background(Ink.card).border(1.5.dp, Ink.tint(0x47), RoundedCornerShape(7.dp)), contentAlignment = Alignment.Center) {
         if (on) BasicText("✓", style = Type.of(13, FontWeight.Bold).copy(color = Color.White))
     }
 }
@@ -88,7 +88,7 @@ internal fun SplitPlanCard(row: SplitPlanRow, currency: Currency, onToggle: () -
     val o = row.option
     val press = rememberPress()
     Column(
-        Modifier.fillMaxWidth().clip(CardShape).background(Color.White)
+        Modifier.fillMaxWidth().clip(CardShape).background(Ink.card)
             .insetRing(CardShape, if (row.on) 1.5.dp else 1.dp, if (row.on) Ink.primary else Ink.fieldEdge)
             .padding(start = 14.dp, end = 14.dp, top = 8.dp, bottom = 10.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -112,7 +112,7 @@ internal fun SplitPlanCard(row: SplitPlanRow, currency: Currency, onToggle: () -
 @Composable
 internal fun SplitNewCard(row: SplitNewRow, onRemove: () -> Unit) {
     Column(
-        Modifier.fillMaxWidth().clip(CardShape).background(Color.White).insetRing(CardShape, 1.5.dp, Ink.primary).padding(horizontal = 14.dp, vertical = 12.dp),
+        Modifier.fillMaxWidth().clip(CardShape).background(Ink.card).insetRing(CardShape, 1.5.dp, Ink.primary).padding(horizontal = 14.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -143,7 +143,7 @@ internal fun SplitAddButton(label: String, onClick: () -> Unit) {
 /** سطر المجموع: أخضر لو مطابق · بني لو فاضل أو زيادة. */
 @Composable
 internal fun SplitSumLine(text: String, exact: Boolean) =
-    BasicText(text, style = Type.of(13, FontWeight.Bold).copy(color = if (exact) Ink.primary else Color(0xFF956000)))
+    BasicText(text, style = Type.of(13, FontWeight.Bold).copy(color = if (exact) Ink.primary else Ink.focus))
 
 /** «غالبًا دول …» — سطر أخضر فاتح فوق الخطط. */
 @Composable

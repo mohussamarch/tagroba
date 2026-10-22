@@ -21,13 +21,15 @@ import app.masroufy.usecase.AlertInboxView
  * قسمين زي النموذج: **«بانتظار قرارك»** (الأنواع اللي محتاجة قرار — `AlertKind.needsDecision`) ثم **«جديد»** (الباقي). كل سطر: الرمز بلون مجموعته ·
  * العنوان · التفاصيل · «لماذا الآن» · إمتى · نقطة «جديد» · «مقفولة» لو مجموعته مقفولة · اسم البلد لو موجود · «×».
  */
-enum class NotifIcon(val icon: Lucide, val color: Color) {
-    SMS(Lucide.MESSAGE_SQUARE_TEXT, Ink.primary),
-    MOVE(Lucide.ARROW_LEFT_RIGHT, Ink.transfer),
-    BUDGET(Lucide.CIRCLE_ALERT, Ink.expense),
-    DUE(Lucide.RECEIPT, Ink.focus),
-    DEBT(Lucide.HAND_COINS, Color(0xFFA55060)),
-    OTHER(Lucide.BELL, Ink.muted),
+enum class NotifIcon(val icon: Lucide, private val colorLazy: () -> Color) {
+    SMS(Lucide.MESSAGE_SQUARE_TEXT, { Ink.primary }),
+    MOVE(Lucide.ARROW_LEFT_RIGHT, { Ink.transfer }),
+    BUDGET(Lucide.CIRCLE_ALERT, { Ink.expense }),
+    DUE(Lucide.RECEIPT, { Ink.focus }),
+    DEBT(Lucide.HAND_COINS, { Color(0xFFA55060) }),
+    OTHER(Lucide.BELL, { Ink.muted }),
+    ;
+    val color: Color get() = colorLazy()
 }
 
 /** فين بيودّي الضغط على السطر (الشاشات اللي لسه ما اتسجلتش ⇒ أقرب تبويب ليها — ⚠️ المسارات الدقيقة بتتوصل وقت الدمج). */

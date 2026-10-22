@@ -127,7 +127,7 @@ fun TransfersScreen() {
 private fun PartyCard(r: PartyRowView, open: Boolean, onToggle: () -> Unit, actions: @Composable () -> Unit) {
     val shape = RoundedCornerShape(20.dp)
     val press = rememberPress()
-    val surface = if (r.section == PartySection.WAITING) Modifier.clip(shape).background(Color.White).insetRing(shape, 1.5.dp, Color(0x59956000))
+    val surface = if (r.section == PartySection.WAITING) Modifier.clip(shape).background(Ink.card).insetRing(shape, 1.5.dp, Color(0x59956000))
     else Modifier.clip(shape).background(app.masroufy.ui.glass.Glass.card)
     Column(Modifier.fillMaxWidth().then(surface).padding(horizontal = 14.dp, vertical = 12.dp)) {
         Row(Modifier.fillMaxWidth().pressScale(press).tap(press, onClick = onToggle), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {

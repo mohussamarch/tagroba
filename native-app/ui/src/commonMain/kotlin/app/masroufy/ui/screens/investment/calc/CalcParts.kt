@@ -51,7 +51,7 @@ internal object CalcIcons {
 }
 
 /** كهرماني «غير متاح» / ملاحظة (النموذج: `#956000` و`#6B4600` على `#FBF0DD`). */
-internal val warnInk = Color(0xFF956000)
+internal val warnInk get() = Ink.focus
 internal val warnDeep = Color(0xFF6B4600)
 
 /** خانة رقم أو مبلغ (النموذج: عنوان 13 · خانة بيضا 48 · الوحدة على الشمال · سطر ملاحظة أو خطأ تحتها). */
@@ -144,7 +144,7 @@ fun CalcSwitchRow(label: String, sub: String?, checked: Boolean, onToggle: () ->
         }
         val track = RoundedCornerShape(13.dp)
         Box(
-            Modifier.size(44.dp, 26.dp).clip(track).then(if (checked) Modifier.background(Glass.primary) else Modifier.background(Color(0x29193D33))),
+            Modifier.size(44.dp, 26.dp).clip(track).then(if (checked) Modifier.background(Glass.primary) else Modifier.background(Ink.tint(0x29))),
             contentAlignment = if (checked) Alignment.CenterEnd else Alignment.CenterStart,
         ) { Box(Modifier.padding(2.dp).size(22.dp).clip(CircleShape).background(Color.White)) }
     }
@@ -168,9 +168,9 @@ fun Stepper(count: Int, onMinus: () -> Unit, onPlus: () -> Unit, minusLabel: Str
 private fun StepButton(icon: Lucide, label: String, enabled: Boolean, strong: Boolean, onClick: () -> Unit) {
     val press = rememberPress()
     val bg = when {
-        !enabled -> Modifier.background(Color(0x0A193D33))
+        !enabled -> Modifier.background(Ink.tint(0x0A))
         strong -> Modifier.background(Glass.primary)
-        else -> Modifier.background(Color(0x1408634F))
+        else -> Modifier.background(Ink.primary.copy(alpha = 0x14 / 255f))
     }
     val ink = when {
         !enabled -> Ink.faded

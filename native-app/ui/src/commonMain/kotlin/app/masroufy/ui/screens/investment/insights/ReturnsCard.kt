@@ -31,7 +31,7 @@ import app.masroufy.ui.theme.Type
 import app.masroufy.usecase.ReturnsView
 
 private val lineColor = Color(0xE6CCD8CC)
-private val spendBg = Color(0x0D193D33)
+private val spendBg get() = Ink.tint(0x0D)
 private val reBg = Color(0x1A0E8A6E)
 
 /** نص الصندوقين والملاحظة — كل رقم من [ReturnsView] (المتوسطات ناقصة ⇒ «غير متاح» + السبب). */

@@ -242,7 +242,7 @@ private fun BannerItem(b: Banner) {
     when (b.kind) {
         BannerKind.BANK_SMS -> WaitingBanner(b.text, Ink.focus, Ink.alertBg) { nav.push(BankSmsRoute) }
         BannerKind.REVIEW -> WaitingBanner(b.text, Ink.transfer, Color(0x142469BA)) { nav.push(ReviewQueueRoute) }
-        BannerKind.TRANSFERS -> WaitingBanner(b.text, Ink.primary, Color(0x1408634F)) { nav.push(TransfersRoute) }
+        BannerKind.TRANSFERS -> WaitingBanner(b.text, Ink.primary, Ink.primary.copy(alpha = 0x14 / 255f)) { nav.push(TransfersRoute) }
     }
 }
 

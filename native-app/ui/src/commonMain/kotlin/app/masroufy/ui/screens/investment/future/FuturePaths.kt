@@ -47,8 +47,8 @@ import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
 
 private val MINUS = Lucide("MINUS", "M5 12h14")
-private val ROW_IDLE = Color(0x09193D33)
-private val CHIP_IDLE = Color(0x0F193D33)
+private val ROW_IDLE get() = Ink.tint(0x09)
+private val CHIP_IDLE get() = Ink.tint(0x0F)
 private val AMBER_BOX = Color(0x14B7791F)
 
 /**
@@ -119,7 +119,7 @@ private fun StepButton(icon: Lucide, label: String, onClick: () -> Unit) {
     val press = rememberPress()
     val shape = RoundedCornerShape(16.dp)
     Box(
-        Modifier.size(48.dp).shadow(4.dp, shape, ambientColor = Color(0x1A1D3635), spotColor = Color(0x1A1D3635)).clip(shape).background(Color.White)
+        Modifier.size(48.dp).shadow(4.dp, shape, ambientColor = Color(0x1A1D3635), spotColor = Color(0x1A1D3635)).clip(shape).background(Ink.card)
             .tap(press, label = label, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) { LucideIcon(icon, size = 20.dp, tint = Ink.primary) }

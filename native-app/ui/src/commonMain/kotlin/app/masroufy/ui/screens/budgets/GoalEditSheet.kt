@@ -94,7 +94,7 @@ fun GoalEditSheet(
             }
             val (need, note) = needLines(d, p)
             Column(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color(0x0F08634F)).padding(horizontal = 14.dp, vertical = 10.dp),
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Ink.primary.copy(alpha = 0x0F / 255f)).padding(horizontal = 14.dp, vertical = 10.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 BasicText(need, style = Type.bodyBold().copy(color = Ink.primary))

@@ -201,7 +201,7 @@ private fun ShareBox(text: String, percent: Int?, eventName: String, onText: (St
         }
         val split = sharePercents(percent)
         Column(
-            Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(androidx.compose.ui.graphics.Color(0x0F08634F)).padding(horizontal = 14.dp, vertical = 10.dp),
+            Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(app.masroufy.ui.theme.Ink.primary.copy(alpha = 0x0F / 255f)).padding(horizontal = 14.dp, vertical = 10.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             if (split == null) SplitLine(t(UiKey.LINK_PROJECT_EVENT_RANGE, sentenceNumber(1), sentenceNumber(100)), null, Ink.muted)

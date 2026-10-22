@@ -97,13 +97,13 @@ internal fun FutureChartCard(state: InvestFutureState) {
 @Composable
 private fun ModeToggle(todayMoney: Boolean, onPick: (Boolean) -> Unit) {
     Row(
-        Modifier.clip(RoundedCornerShape(14.dp)).background(Color(0x0F193D33)).padding(3.dp).semantics { contentDescription = t(FUT_MODE_A11Y) },
+        Modifier.clip(RoundedCornerShape(14.dp)).background(Ink.tint(0x0F)).padding(3.dp).semantics { contentDescription = t(FUT_MODE_A11Y) },
     ) {
         for ((value, key) in listOf(true to FUT_MODE_TODAY, false to FUT_MODE_THEN)) {
             val on = value == todayMoney
             val press = rememberPress()
             val shape = RoundedCornerShape(11.dp)
-            val surface = if (on) Modifier.shadow(3.dp, shape, ambientColor = Color(0x1A1D3635), spotColor = Color(0x1A1D3635)).clip(shape).background(Color.White) else Modifier.clip(shape)
+            val surface = if (on) Modifier.shadow(3.dp, shape, ambientColor = Color(0x1A1D3635), spotColor = Color(0x1A1D3635)).clip(shape).background(Ink.card) else Modifier.clip(shape)
             Box(
                 Modifier.height(34.dp).then(surface).tap(press, role = Role.RadioButton) { onPick(value) }.semantics { selected = on }.padding(horizontal = 10.dp),
                 contentAlignment = Alignment.Center,

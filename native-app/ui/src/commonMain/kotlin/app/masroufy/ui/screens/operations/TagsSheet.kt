@@ -171,7 +171,7 @@ private fun RemovableTag(name: String, label: String, onRemove: () -> Unit) {
 private fun AddableTag(name: String, label: String, onAdd: () -> Unit) {
     val press = rememberPress()
     Row(
-        Modifier.heightIn(min = 44.dp).pressScale(press).clip(RoundedCornerShape(14.dp)).background(Color(0x0F193D33))
+        Modifier.heightIn(min = 44.dp).pressScale(press).clip(RoundedCornerShape(14.dp)).background(Ink.tint(0x0F))
             .tap(press, label = label, onClick = onAdd).padding(horizontal = 14.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically,

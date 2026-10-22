@@ -92,10 +92,10 @@ internal fun AssistantStart(view: ChatView, onClose: (StartItem) -> Unit, onOpen
 private fun StartCard(item: StartItem, onClose: (StartItem) -> Unit, onOpen: (ScreenLink) -> Unit, onAsk: (ChipRef) -> Unit) {
     val shape = RoundedCornerShape(20.dp)
     val (icon, tint) = when (item.kind) {
-        StartItemKind.SMS_WAITING -> Lucide.MESSAGE_SQUARE_TEXT to Color(0xFF956000)
-        StartItemKind.BILL_UNRECORDED -> Lucide.RECEIPT to Color(0xFF956000)
+        StartItemKind.SMS_WAITING -> Lucide.MESSAGE_SQUARE_TEXT to Ink.focus
+        StartItemKind.BILL_UNRECORDED -> Lucide.RECEIPT to Ink.focus
         StartItemKind.CATEGORY_AT_THRESHOLD -> Lucide.UTENSILS to Color(0xFFA36A21)
-        StartItemKind.DEBT_OVERDUE -> Lucide.HAND_COINS to Color(0xFFBE3D48)
+        StartItemKind.DEBT_OVERDUE -> Lucide.HAND_COINS to Ink.expense.copy(alpha = 0xFF / 255f)
     }
     Row(
         Modifier.fillMaxWidth().layeredShadow(shape, calmShadow).clip(shape).background(Glass.card).innerSheen(shape, calmShadow)
@@ -151,7 +151,7 @@ internal fun PastBanner(onBack: () -> Unit) {
 internal fun UndoBar(text: String, onUndo: () -> Unit) {
     val shape = RoundedCornerShape(18.dp)
     Row(
-        Modifier.fillMaxWidth().clip(shape).background(Color(0xEB193D33)).padding(start = 16.dp, end = 6.dp, top = 6.dp, bottom = 6.dp),
+        Modifier.fillMaxWidth().clip(shape).background(Ink.tint(0xEB)).padding(start = 16.dp, end = 6.dp, top = 6.dp, bottom = 6.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

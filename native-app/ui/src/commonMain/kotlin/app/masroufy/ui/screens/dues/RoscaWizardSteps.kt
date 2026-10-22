@@ -113,7 +113,7 @@ private fun TurnChip(modifier: Modifier, num: String, whenText: String?, on: Boo
     val press = rememberPress()
     val shape = RoundedCornerShape(16.dp)
     val surface = if (on) Modifier.background(Brush.linearGradient(listOf(Ink.heroStart, Ink.heroEnd)))
-    else Modifier.background(Color.White).insetRing(shape, 1.dp, Ink.fieldEdge)
+    else Modifier.background(Ink.card).insetRing(shape, 1.dp, Ink.fieldEdge)
     Column(
         modifier.height(56.dp).pressScale(press).clip(shape).then(surface).tap(press, onClick = onClick)
             .semantics { selected = on; contentDescription = listOfNotNull(num, whenText).joinToString(t(UiKey.DUES_COMMA)) },
@@ -163,7 +163,7 @@ private fun Stepper(count: Int, onStep: (Int) -> Unit) {
 private fun StepButton(icon: Lucide, label: String, onClick: () -> Unit) {
     val press = rememberPress()
     Box(
-        Modifier.size(52.dp).pressScale(press).clip(RoundedCornerShape(16.dp)).background(Color(0x1408634F))
+        Modifier.size(52.dp).pressScale(press).clip(RoundedCornerShape(16.dp)).background(Ink.primary.copy(alpha = 0x14 / 255f))
             .tap(press, label = label, onClick = onClick).semantics { contentDescription = label },
         contentAlignment = Alignment.Center,
     ) { LucideIcon(icon, size = 22.dp, tint = Ink.primary) }
