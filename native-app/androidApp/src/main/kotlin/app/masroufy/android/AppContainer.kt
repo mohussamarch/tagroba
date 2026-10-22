@@ -3,7 +3,9 @@ package app.masroufy.android
 import android.content.Context
 import androidx.fragment.app.FragmentActivity
 import app.masroufy.core.DEFAULT_SPACE_ID
+import app.masroufy.core.ProblemCode
 import app.masroufy.core.Space
+import app.masroufy.problems.Problems
 import app.masroufy.core.Texts
 import app.masroufy.core.countryPack
 import app.masroufy.device.AndroidAlertInteractionStore
@@ -185,7 +187,12 @@ class AppContainer(private val context: Context, private val problems: ProblemLo
         val s = session ?: return null
         if (auth?.currentUser() == null) return null
         s.start()
-        val ready = withTimeoutOrNull(30_000) { s.state.first { it is AccountSession.State.Ready } } as? AccountSession.State.Ready ?: return null
+        val ready = withTimeoutOrNull(30_000) { s.state.first { it is AccountSession.State.Ready } } as? AccountSession.State.Ready
+        if (ready == null) {
+            // حد داخل بس الجلسة ما جهزتش في المهلة ⇒ العامل هيخلص من غير شغل — لازم يتسجل (مش صمت)
+            Problems.report(ProblemCode.BACKGROUND_GAVE_UP)
+            return null
+        }
         return backgroundCycle(spacesOf(ready), AndroidSmsInbox(context, ready.user.uid), AndroidDeviceNotifier(context), envFor(ready.user.uid))
     }
 }

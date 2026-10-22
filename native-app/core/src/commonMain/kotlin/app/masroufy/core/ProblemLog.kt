@@ -19,6 +19,7 @@ enum class ProblemCode(val area: ProblemArea, val level: ProblemLevel, val label
     SMS_RECEIVE_FAILED(ProblemArea.SMS, ProblemLevel.ERROR, UiKey.PLOG_C_SMS_RECEIVE),
     SMS_AUTO_RECORD_FAILED(ProblemArea.SMS, ProblemLevel.ERROR, UiKey.PLOG_C_SMS_AUTO),
     BACKGROUND_FAILED(ProblemArea.OTHER, ProblemLevel.ERROR, UiKey.PLOG_C_BACKGROUND),
+    BACKGROUND_GAVE_UP(ProblemArea.OTHER, ProblemLevel.WARN, UiKey.PLOG_C_BACKGROUND_GAVE_UP),
     ALERTS_FAILED(ProblemArea.OTHER, ProblemLevel.WARN, UiKey.PLOG_C_ALERTS),
     IMPORT_PDF_UNREADABLE(ProblemArea.IMPORT, ProblemLevel.WARN, UiKey.PLOG_C_PDF_UNREADABLE),
     IMPORT_PDF_LOCKED(ProblemArea.IMPORT, ProblemLevel.INFO, UiKey.PLOG_C_PDF_LOCKED),
