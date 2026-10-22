@@ -72,6 +72,10 @@ class OperationDetailModelTest {
         assertNull(v.merchantName, "الحوالة مالهاش صفحة تاجر")
         assertNull(detail(tx, decided = setOf(party.key)).askParty, "الطرف اللي ليه قرار ما بيتسألش تاني")
         assertNull(detail(tx.copy(economicKind = EconomicKind.GIFT_RECEIVED, economicKindConfirmed = true)).askParty, "النوع اتأكد ⇒ مفيش سؤال")
+        // 0.5.2: الحساب مربوط بجهة شغل ⇒ «الفلوس دي إيه؟» (IncomeKindCard) مش «من هذا؟»
+        val employer = detailView(tx, listOf(Fx.food, Fx.shop), listOf(Fx.bank, Fx.cash), emptyList(), emptySet(), Fx.TODAY, employerPayer = true)
+        assertNull(employer.askParty, "حساب جهة الشغل ما بيتسألش «من هذا؟»")
+        assertEquals(LinkFlow.TRANSFER_IN, employer.flow)
         val move = detail(Fx.tx("mv", kind = EconomicKind.INTERNAL_TRANSFER, category = null, toWallet = Fx.cash.id))
         assertEquals(LinkFlow.NONE, move.flow, "بين محافظك ما بتتربطش")
         assertNull(move.category, "التحويل الداخلي مالوش تصنيف")

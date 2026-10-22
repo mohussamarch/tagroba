@@ -26,6 +26,7 @@ class MainActivity : FragmentActivity() {
     private val container get() = (application as MasroufyApplication).container
     private lateinit var shell: ShellState
     private lateinit var lock: LockGate
+    private lateinit var resume: app.masroufy.ui.app.ResumeRefresh
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -34,6 +35,7 @@ class MainActivity : FragmentActivity() {
         val permissions = AndroidPermissions(this)
         shell = ShellState()
         lock = LockGate(container.appLock)
+        resume = app.masroufy.ui.app.ResumeRefresh(shell.changes)
         onBackPressedDispatcher.addCallback(
             this,
             object : OnBackPressedCallback(true) {
@@ -53,14 +55,28 @@ class MainActivity : FragmentActivity() {
         // المظهر (فاتح · غامق · زي الجوال) وإخفاء الأرقام: المحفوظ على الجهاز بيتقرا قبل أول رسم عشان ما يبقاش فيه وميض
         val nightNow = (resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
         app.masroufy.ui.theme.Appearance.attach(AndroidPrefStore(this), nightNow)
-        setContent { CompositionLocalProvider(LocalSpeech provides speech) { MasroufyApp(deps, shell, lock, reduceMotion = animationsOff()) } }
+        setContent {
+            // 0.5.2: أيقونات شريط الحالة والتنقل بتتبع مظهر البرنامج (فاتحة على الغامق) وقت الاختيار — مش مظهر الجوال
+            val dark = app.masroufy.ui.theme.Appearance.isDark
+            androidx.compose.runtime.LaunchedEffect(dark) { systemBars(dark) }
+            CompositionLocalProvider(LocalSpeech provides speech) { MasroufyApp(deps, shell, lock, reduceMotion = animationsOff()) }
+        }
         askNotificationsOnce(permissions)
+    }
+
+    /** شفاف من غير طبقة تباين (كانت بتعمل ضباب فاتح تحت في الداكن) — والأيقونات فاتحة على الغامق. */
+    private fun systemBars(dark: Boolean) {
+        val clear = android.graphics.Color.TRANSPARENT
+        val style = if (dark) androidx.activity.SystemBarStyle.dark(clear) else androidx.activity.SystemBarStyle.light(clear, clear)
+        enableEdgeToEdge(statusBarStyle = style, navigationBarStyle = style)
+        if (android.os.Build.VERSION.SDK_INT >= 29) window.isNavigationBarContrastEnforced = false
     }
 
     override fun onStart() {
         super.onStart()
         container.activity = this
         lock.onVisible()
+        resume.onVisible()
     }
 
     override fun onStop() {

@@ -4,7 +4,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.runtime.Composable
@@ -61,7 +60,8 @@ fun MasroufyTheme(reduceMotion: Boolean = false, content: @Composable () -> Unit
     // المظهر: مظهر الجوال بيتتابع، والانتقال فاتح/غامق 300ms (من غير حركة لو «تقليل الحركة» شغال)
     val systemDark = isSystemInDarkTheme()
     SideEffect { Appearance.systemDark = systemDark }
-    val shown by animateFloatAsState(if (Appearance.isDark) 1f else 0f, tween(if (reduceMotion) 0 else THEME_SWITCH_MS), label = "theme")
+    // 0.5.2: القيمة بتتقري هنا (في الرسم) مش جوه SideEffect — وإلا الثيم ما بيتابعش الحركة و«داكن» يفضل فاتح لحد إعادة الفتح
+    val shown = animateFloatAsState(if (Appearance.isDark) 1f else 0f, tween(if (reduceMotion) 0 else THEME_SWITCH_MS), label = "theme").value
     SideEffect { Appearance.progress = shown }
     val direction = if (Texts.language == Language.EN) LayoutDirection.Ltr else LayoutDirection.Rtl
     CompositionLocalProvider(

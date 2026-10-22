@@ -58,6 +58,7 @@ import app.masroufy.ui.icons.LucideIcon
 import app.masroufy.ui.nav.Tab
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
+import app.masroufy.ui.theme.mix
 import app.masroufy.ui.theme.Radius
 import app.masroufy.ui.theme.Space
 import app.masroufy.ui.theme.Springs
@@ -117,7 +118,8 @@ private fun Fog(modifier: Modifier, backdrop: Backdrop) {
         Box(
             Modifier.matchParentSize().drawWithContent {
                 val at = (36.dp.toPx() / size.height).coerceIn(0f, 1f)
-                drawRect(Brush.verticalGradient(0f to Color(0x00EFF3ED), at to Color(0x66ECF2ED), 1f to Color(0xB8E2EDE5)))
+                // 0.5.2: الضباب بلون الخلفية في المظهرين (كان فاتح ثابت ⇒ ضباب فاتح ورا «اسأل مصروفي» في الداكن)
+                drawRect(Brush.verticalGradient(0f to mix(0x00EFF3ED, 0x000F1A17), at to mix(0x66ECF2ED, 0x660F1A17), 1f to mix(0xB8E2EDE5, 0xB80F1A17)))
             },
         )
     }

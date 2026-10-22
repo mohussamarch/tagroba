@@ -23,3 +23,15 @@ class DataChanges {
 }
 
 val LocalDataChanges = staticCompositionLocalOf { DataChanges() }
+
+/**
+ * 0.5.2: الرجوع للتطبيق من الخلفية (مش أول فتح) ⇒ «البيانات اتغيرت»: اللي اتسجل في الخلفية (رسالة بنك — العامل بيكتب من غير ما الشاشة
+ * تعرف) يبان، ولوحة «ادفع بعدين» (`BnplHost`) تتفحص تاني. أول ظهور ما بيعملش حاجة (الشاشات لسه بتقرا أصلًا).
+ */
+class ResumeRefresh(private val changes: DataChanges) {
+    private var shownOnce = false
+
+    fun onVisible() {
+        if (shownOnce) changes.changed() else shownOnce = true
+    }
+}

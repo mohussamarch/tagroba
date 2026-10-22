@@ -21,6 +21,8 @@ enum class R06Key : TextRef {
 
     /** «رسائل البنك» — سطر «آخر مرة قرا لوحده». */
     BANK_SMS_LAST_READ, BANK_SMS_NEVER_READ, BANK_SMS_AGO_NOW, BANK_SMS_AGO_MIN, BANK_SMS_AGO_HOUR,
+    /** 0.5.2: الجمع بالعربي (1 · 2 · 3-10 · 11+) — [BANK_SMS_AGO_MIN]/[BANK_SMS_AGO_HOUR] = 11 وأكتر. */
+    BANK_SMS_AGO_MIN_ONE, BANK_SMS_AGO_MIN_TWO, BANK_SMS_AGO_MIN_FEW, BANK_SMS_AGO_HOUR_ONE, BANK_SMS_AGO_HOUR_TWO, BANK_SMS_AGO_HOUR_FEW,
 
     /** اختيار ملف النسخة: كبير أوي · مش ملف نسخة. */
     BAK_PICK_TOO_BIG, BAK_PICK_NOT_BACKUP,
@@ -40,7 +42,7 @@ enum class R06Key : TextRef {
     BS_REMOVE, BS_SUM_EXACT, BS_SUM_LEFT, BS_SUM_OVER, BS_SAVE, BS_BACK, BS_DONE, BS_DONE_NEW, BS_FINISH, BS_AT_Q, BS_TAG_BEFORE, BS_BEFORE_NOTE,
 
     /** r06-1a3 — «القراية في الخلفية»: كارت «فيه رسايل فاتته» (AWAY_) — نصوصه في `TextsR06Away.kt`. */
-    AWAY_TITLE, AWAY_BODY, AWAY_READ, AWAY_READING, AWAY_KEEP, AWAY_DONE, AWAY_DONE_WAIT, AWAY_NEVER_BODY,
+    AWAY_TITLE, AWAY_BODY, AWAY_READ, AWAY_READING, AWAY_KEEP, AWAY_DONE, AWAY_DONE_WAIT, AWAY_NEVER_BODY, AWAY_MORE,
     /** المظهر الليلي (فاتح · غامق · زي الجوال) وزرار إخفاء الأرقام — NP_ (التصميم NightPrivacy). */
     NP_THEME_TITLE, NP_THEME_LIGHT, NP_THEME_DARK, NP_THEME_AUTO, NP_EYE_HIDE, NP_EYE_SHOW, NP_START_TITLE, NP_START_SUB,
 }

@@ -99,6 +99,8 @@ fun detailView(
     decidedParties: Set<String>,
     today: IsoDate,
     country: String? = null,
+    /** 0.5.2: الطرف حساب مربوط بجهة شغل (`PayerKindAnswers.view` مش null) ⇒ ما يتسألش «من هذا؟» — السؤال «الفلوس دي إيه؟» (PLAN-0.6 §7). */
+    employerPayer: Boolean = false,
 ): DetailView {
     val known = tx.rawMerchantName?.let { merchantIndex(merchants)[normalizeText(it)] }
     val ctx = RowContext(categories, known?.let { mapOf(tx.id to listOf(it.displayName)) }.orEmpty(), wallets, country)
@@ -115,7 +117,7 @@ fun detailView(
     } else {
         DetailField(t(UiKey.OPERATION_DETAIL_KIND), rule.label, hint = if (tx.economicKindConfirmed) null else t(UiKey.OPERATION_DETAIL_KIND_ESTIMATED), kindRow = true)
     }
-    val party = if (flow == LinkFlow.TRANSFER_IN) transferPartyOf(tx)?.takeIf { it.key !in decidedParties } else null
+    val party = if (flow == LinkFlow.TRANSFER_IN && !employerPayer) transferPartyOf(tx)?.takeIf { it.key !in decidedParties } else null
     return DetailView(
         id = tx.id,
         title = titleOf(tx, ctx),

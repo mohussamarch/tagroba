@@ -31,9 +31,9 @@ import app.masroufy.ui.theme.Type
 sealed interface AwayState {
     data object Hidden : AwayState
 
-    data class Missed(val n: Int) : AwayState
+    data class Missed(val n: Int, val more: Boolean = false) : AwayState
 
-    data class Reading(val n: Int) : AwayState
+    data class Reading(val n: Int, val more: Boolean = false) : AwayState
 
     /** [recorded] = اللي اتسجل فعلًا في القراية دي (0 ⇒ اتقرت ومستنية تأكيد). */
     data class Done(val recorded: Int) : AwayState
@@ -49,16 +49,16 @@ fun SmsAwayCard(state: AwayState, onRead: () -> Unit, onKeep: () -> Unit) {
         is AwayState.Done -> TintedPanel(PanelTone.MINT) {
             PanelTitle(if (state.recorded > 0) t(R06Key.AWAY_DONE, msgsCount(state.recorded)) else t(R06Key.AWAY_DONE_WAIT), PanelTone.MINT)
         }
-        is AwayState.Missed -> awayPanel(state.n, reading = false, onRead, onKeep)
-        is AwayState.Reading -> awayPanel(state.n, reading = true, onRead, onKeep)
+        is AwayState.Missed -> awayPanel(state.n, state.more, reading = false, onRead, onKeep)
+        is AwayState.Reading -> awayPanel(state.n, state.more, reading = true, onRead, onKeep)
     }
 }
 
 @Composable
-private fun awayPanel(n: Int, reading: Boolean, onRead: () -> Unit, onKeep: () -> Unit) {
+private fun awayPanel(n: Int, more: Boolean, reading: Boolean, onRead: () -> Unit, onKeep: () -> Unit) {
     TintedPanel(PanelTone.AMBER) {
         PanelTitle(t(R06Key.AWAY_TITLE), PanelTone.AMBER)
-        BasicText(t(R06Key.AWAY_BODY, msgsCount(n)), style = Type.of(13).copy(color = Ink.focus))
+        BasicText(t(R06Key.AWAY_BODY, if (more) t(R06Key.AWAY_MORE, msgsCount(n)) else msgsCount(n)), style = Type.of(13).copy(color = Ink.focus))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             val press = rememberPress()
             Box(

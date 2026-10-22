@@ -13,6 +13,7 @@ internal val MSA_R06_AWAY_TEXTS: Map<R06Key, String> = mapOf(
     R06Key.AWAY_DONE to "قُرئت {0} وسُجّلت",
     R06Key.AWAY_DONE_WAIT to "قُرئت — بانتظار تأكيدك",
     R06Key.AWAY_NEVER_BODY to "أول رسالة من البنك ستُقرأ وتُسجَّل تلقائيًا.",
+    R06Key.AWAY_MORE to "أكثر من {0}",
 )
 
 internal val EGYPTIAN_R06_AWAY_TEXTS: Map<R06Key, String> = mapOf(
@@ -24,6 +25,7 @@ internal val EGYPTIAN_R06_AWAY_TEXTS: Map<R06Key, String> = mapOf(
     R06Key.AWAY_DONE to "اتقرت {0} واتسجلت",
     R06Key.AWAY_DONE_WAIT to "اتقرت — مستنية تأكيدك",
     R06Key.AWAY_NEVER_BODY to "أول رسالة من البنك توصل هتتقرا وتتسجل لوحدها.",
+    R06Key.AWAY_MORE to "أكتر من {0}",
 )
 
 internal val ENGLISH_R06_AWAY_TEXTS: Map<R06Key, String> = mapOf(
@@ -35,4 +37,5 @@ internal val ENGLISH_R06_AWAY_TEXTS: Map<R06Key, String> = mapOf(
     R06Key.AWAY_DONE to "Read and recorded {0}",
     R06Key.AWAY_DONE_WAIT to "Read — waiting for you",
     R06Key.AWAY_NEVER_BODY to "The next bank message will be read and recorded automatically.",
+    R06Key.AWAY_MORE to "More than {0}",
 )

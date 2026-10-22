@@ -56,7 +56,10 @@ class AppearanceTest {
 
     @Test
     fun systemModeFollowsThePhone() {
+        // الافتراضي «فاتح» مؤقتًا (دمج a7de9cf6) ⇒ «زي الجوال» لازم يتختار صراحة
         Appearance.attach(MemoryStore(), systemDark = true)
+        assertFalse(Appearance.isDark)
+        Appearance.chooseMode(ThemeMode.SYSTEM)
         assertTrue(Appearance.isDark)
         Appearance.systemDark = false
         assertFalse(Appearance.isDark)

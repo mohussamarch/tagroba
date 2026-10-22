@@ -117,7 +117,7 @@ interface SmsDeps {
      * r06-1a3 «فيه رسايل فاتته»: عدد رسايل [inbox] (من مسح الشاشة نفسه — مفيش مسح تاني) اللي وصلت بعد آخر قراية في الخلفية ولسه ما اتقرتش.
      * 0 = تمام، أو الجهاز ما بيعرفش (مفيش سجل خلفية).
      */
-    suspend fun missedWhileAway(inbox: InboxView): Int = 0
+    suspend fun missedWhileAway(inbox: InboxView): app.masroufy.core.MissedSms = app.masroufy.core.MissedSms(0)
 
     /** r041 A8: القراءة شغالة على الجهاز ده (مفعّلة والإذن موجود) — للرئيسية الفاضية. الافتراضي: لأ. */
     suspend fun readingOn(): Boolean = false

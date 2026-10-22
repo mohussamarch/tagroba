@@ -57,6 +57,31 @@ class OperationTimeFlowTest {
         assertEquals(listOf("13:00:30"), flagged.map { it.sourceTime }, "الأحدث بس عليه «مكرر؟»")
     }
 
+    /** 0.5.2: نفس المحل ونفس المبلغ بعد 30 ث في تشغيلة تانية — فحص الرسايل القديم كان بيمسكها «بانتظار تأكيدك». */
+    @Test fun anIdenticalSecondChargeWithinAMinuteIsRecordedAndAsked() = runBlocking<Unit> {
+        val world = SmsWorld(listOf(timed)).enable()
+        world.receive(sms("m1", twinBody("41"), at = "2026-10-07T10:00:00Z"))
+        assertEquals(1, world.auto().run().recorded)
+        world.receive(sms("m2", twinBody("41"), at = "2026-10-07T10:00:30Z"))
+        val second = world.auto().run()
+        assertEquals(1, second.recorded, "التانية اتسجلت")
+        assertTrue(second.waiting.isEmpty(), "مش بانتظار التأكيد")
+        assertEquals(1, DuplicateChargeAsks("sa", timed.txnStore, FixedClock("2026-10-07T11:00:00.000Z")).scan("2026-10-07", "2026-10-07"))
+    }
+
+    /** نفس الرسالة وصلت مرتين (نفس النص والوقت) ⇒ النسخة بتتشال من غير تسجيل ولا سؤال. */
+    @Test fun theSameMessageDeliveredTwiceIsDroppedSilently() = runBlocking<Unit> {
+        val world = SmsWorld(listOf(timed)).enable()
+        world.receive(sms("m1", twinBody("41"), at = "2026-10-07T10:00:00Z"))
+        world.auto().run()
+        world.receive(sms("m1-copy", twinBody("41"), at = "2026-10-07T10:00:00Z"))
+        val again = world.auto().run()
+        assertEquals(0, again.recorded)
+        assertTrue(again.waiting.isEmpty(), "ما بتستناش تأكيد")
+        assertEquals(1, timed.all().size)
+        assertEquals(0, DuplicateChargeAsks("sa", timed.txnStore, FixedClock("2026-10-07T11:00:00.000Z")).scan("2026-10-07", "2026-10-07"))
+    }
+
     @Test fun withoutATimeThereIsNoMealAndNoAsk() = runBlocking<Unit> {
         val plain = SmsSpace() // القارئ من غير ساعة (زي الكشف اللي سطره مفيهوش ساعة)
         val world = SmsWorld(listOf(plain)).enable()
