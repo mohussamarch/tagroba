@@ -7,7 +7,11 @@ package app.masroufy.core
  * عرض بس: ما بيكتبش في `rawMerchantName` — ذاكرة التجار و`sharedMerchants` عمرها ما تشيل أسامي ناس (CLAUDE.md الأمان 7).
  */
 fun displayTitleOrNull(tx: Transaction, merchant: String? = null): String? =
-    clean(merchant) ?: clean(tx.rawMerchantName)?.let(::cleanCardName) ?: clean(tx.note) ?: partyTitleOf(tx) ?: firstLineOf(tx.rawDescription)
+    (clean(merchant) ?: clean(tx.rawMerchantName))?.let { cardTitle(tx, it) } ?: clean(tx.note) ?: partyTitleOf(tx) ?: firstLineOf(tx.rawDescription)
+
+/** r06-darahim §12-4: اسم الكارت منضّف للعرض — على الخصم اللي مالوش طرف تحويل بس (اسم الشخص ما بيتلمسش). */
+private fun cardTitle(tx: Transaction, name: String): String =
+    if (tx.observedDirection == Direction.OUT && partyTitleOf(tx) == null) cleanCardName(name) else name
 
 /** زي [displayTitleOrNull] وآخرها اسم نوع العملية. */
 fun displayTitleOf(tx: Transaction, merchant: String? = null): String = displayTitleOrNull(tx, merchant) ?: ruleFor(tx.economicKind).label

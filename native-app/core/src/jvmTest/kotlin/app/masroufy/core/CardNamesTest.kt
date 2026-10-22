@@ -38,7 +38,8 @@ class CardNamesTest {
         assertEquals("Test Diner", displayTitleOf(t))
         assertEquals("TEST DINER RIYADH SA", t.rawMerchantName)
         val m = rememberMerchant(emptyList(), t.rawMerchantName!!, "cat-x", "m-1")!!
-        assertEquals("Test Diner", m.displayName)
+        assertEquals("TEST DINER RIYADH SA", m.displayName, "التاجر المحفوظ بالاسم الأصلي (زي التطبيق القديم)")
+        assertEquals("Test Diner", displayTitleOf(t, m.displayName))
         assertEquals(normalizeText("TEST DINER RIYADH SA"), m.normalizedName, "المطابقة على الأصلي")
     }
 }
