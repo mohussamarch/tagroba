@@ -89,7 +89,7 @@ internal class SmsGraph(
      */
     override suspend fun overviewPage(record: Boolean, skip: Int): SmsOverview = withContext(io) {
         if (skip <= 0) return@withContext overview(record)
-        val fresh = if (record) auto().runNew(memo).recordedTransactionIds else emptyList()
+        val fresh = if (record) auto().runNew(memo).recordedTransactionIds.also { readMark() } else emptyList()
         inbox.page(skip)
         try {
             overview(record = false).copy(fresh = fresh)
@@ -98,13 +98,13 @@ internal class SmsGraph(
         }
     }
 
-    override suspend fun confirmMessages(ids: List<String>, categories: Map<String, Id>, isSalary: Boolean?) = extras.confirm(ids, categories, isSalary)
+    override suspend fun confirmMessages(ids: List<String>, categories: Map<String, Id>, isSalary: Boolean?) = extras.confirm(ids, categories, isSalary).also { readMark() }
 
 
     override suspend fun overview(record: Boolean): SmsOverview = work {
         val auto = auto()
         // r051: الجديد بس (أو لفة كاملة صفحة صفحة لو حاجة اتغيرت من آخر مرة) · البنوك اللي مالهاش محفظة من غير معاينة ولا قفل
-        val result = if (record) auto.runNew(memo) else null
+        val result = if (record) auto.runNew(memo).also { readMark() } else null
         val view = manage.refresh()
         val unmapped = auto.unmappedQuick().filter { it.spaceId == space.id }
         val wallets = c.shell.addOptions().wallets
@@ -121,7 +121,12 @@ internal class SmsGraph(
         SmsOverview(view, unmapped, reviews.map { it.first }, senderWallets, result?.recordedTransactionIds.orEmpty())
     }
 
-    override suspend fun recordNew(): List<Id> = work { auto().runNew(memo).recordedTransactionIds }
+    override suspend fun recordNew(): List<Id> = work { auto().runNew(memo).recordedTransactionIds.also { readMark() } }
+
+    /** 0.5.2: الشاشة قرت الصندوق — اللي كان فيه اتعاين (كارت «فيه رسايل فاتته» ما يعدّهوش). */
+    private fun readMark() {
+        runCatching { c.env.backgroundRead?.markAnyRead(c.env.nowMillis()) }
+    }
 
     override suspend fun settings(): SmsOverview = work {
         val auto = auto()
@@ -177,9 +182,9 @@ internal class SmsGraph(
         port.last()?.let { app.masroufy.core.lastReadWhen(it, c.env.nowMillis(), port.zoneOffsetMillis(it)) }
     }
 
-    override suspend fun missedWhileAway(inbox: app.masroufy.usecase.InboxView): Int = work {
-        val port = c.env.backgroundRead ?: return@work 0
-        app.masroufy.core.missedWhileAway(port.last(), inbox.messages.map { app.masroufy.core.isoInstantMillis(it.receivedAt) })
+    override suspend fun missedWhileAway(inbox: app.masroufy.usecase.InboxView): app.masroufy.core.MissedSms = work {
+        val port = c.env.backgroundRead ?: return@work app.masroufy.core.MissedSms(0)
+        app.masroufy.core.missedSms(port.lastAnyRead(), inbox.messages.map { app.masroufy.core.isoInstantMillis(it.receivedAt) }, inbox.count)
     }
 
     override suspend fun readingOn(): Boolean = work { manage.refresh().let { it.enabled && it.permission } }
@@ -220,12 +225,12 @@ internal class SmsGraph(
     }
 
     override suspend fun historyStart(senders: List<String>, from: IsoDate?, progress: (SmsRunProgress) -> Unit) =
-        work { history()?.start(space.id, senders, from, progress, memo) }
+        work { history()?.start(space.id, senders, from, progress, memo).also { readMark() } }
 
     override suspend fun historyReport() = work { history()?.report() }
 
     override suspend fun confirmShapes(messageIds: List<String>, progress: (SmsRunProgress) -> Unit) =
-        work { history()?.confirmShapes(messageIds, progress, memo) }
+        work { history()?.confirmShapes(messageIds, progress, memo).also { readMark() } }
 
     override suspend fun recordByHand(messageId: String, sender: String, amountText: String): AddOperationResult = work {
         val walletId = runCatching { auto().walletOf(space.id, sender) }.getOrNull()

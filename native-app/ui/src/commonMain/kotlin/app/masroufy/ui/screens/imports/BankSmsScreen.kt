@@ -99,8 +99,8 @@ fun BankSmsScreen() {
             val overview = sms.overviewPage(record = false, skip = r05.skip)
             if (!awayChecked && r05.skip == 0 && overview.inbox.enabled && overview.inbox.permission) {
                 awayChecked = true
-                val n = runCatching { sms.missedWhileAway(overview.inbox) }.getOrDefault(0)
-                if (n > 0) away = AwayState.Missed(n)
+                val m = runCatching { sms.missedWhileAway(overview.inbox) }.getOrNull()
+                if (m != null && m.n > 0) away = AwayState.Missed(m.n, m.more)
             }
             if (r05.skip > 0 && r05.skip >= overview.inbox.count) { r05.skip = 0; reload++; return@LaunchedEffect }
             val today = runCatching { sms.recordedToday() }.getOrDefault(emptyList())
@@ -143,7 +143,7 @@ fun BankSmsScreen() {
     // r06-1a3: «اقراهم دلوقتي» = القراية العادية اللي في الشاشة (`recordNew`) — وقت الخلفية فوق ما بيتغيّرش
     fun readAway() {
         val a = away as? AwayState.Missed ?: return
-        away = AwayState.Reading(a.n)
+        away = AwayState.Reading(a.n, a.more)
         scope.launch {
             try {
                 val fresh = deps.sms?.recordNew().orEmpty()

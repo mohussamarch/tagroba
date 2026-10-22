@@ -17,9 +17,17 @@ class AndroidBackgroundRead(context: Context) : BackgroundReadPort {
         runCatching { prefs.edit().putLong(KEY, atMillis).apply() }
     }
 
+    override fun lastAnyRead(): Long? =
+        listOfNotNull(last(), runCatching { prefs.getLong(KEY_ANY, -1L).takeIf { it > 0 } }.getOrNull()).maxOrNull()
+
+    override fun markAnyRead(atMillis: Long) {
+        runCatching { prefs.edit().putLong(KEY_ANY, atMillis).apply() }
+    }
+
     override fun zoneOffsetMillis(atMillis: Long): Long = TimeZone.getDefault().getOffset(atMillis).toLong()
 
     private companion object {
         const val KEY = "last-sms-read-millis"
+        const val KEY_ANY = "last-sms-any-read-millis"
     }
 }

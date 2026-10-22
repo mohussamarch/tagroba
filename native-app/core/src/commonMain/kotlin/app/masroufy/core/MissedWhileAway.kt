@@ -9,3 +9,15 @@ package app.masroufy.core
  */
 fun missedWhileAway(lastBackgroundMillis: Long?, arrivals: List<Long?>): Int =
     if (lastBackgroundMillis == null) arrivals.size else arrivals.count { it != null && it > lastBackgroundMillis }
+
+/** العدد + [more] = «أكتر من [n]»: الصفحة فيها أحدث الرسايل بس، وكلها اتعدّت، وفي الصندوق أقدم منها ما اتشافتش (مفيش سقف 200 بيتقال كأنه العدد). */
+data class MissedSms(val n: Int, val more: Boolean = false)
+
+/**
+ * 0.5.2 — [lastReadMillis] = آخر قراية **من أي نوع** (الخلفية أو الشاشة: «اسحب لتحت» · «اقرأ اللي فات» · «أكّد الأشكال» · التأكيد) — اللي وصل
+ * قبلها اتعاين، ولو لسه مستني تأكيد المالك فهو مش «فاتته». [queued] = كل اللي في الصندوق ([arrivals] = أحدث صفحة منه بس).
+ */
+fun missedSms(lastReadMillis: Long?, arrivals: List<Long?>, queued: Int): MissedSms {
+    val n = missedWhileAway(lastReadMillis, arrivals)
+    return MissedSms(n, more = n > 0 && n == arrivals.size && queued > arrivals.size)
+}
