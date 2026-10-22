@@ -71,6 +71,8 @@ data class OnboardAccountDeps(
     val seeding: NewAccountSeeding? = null,
     /** إضافة البنك من أسئلة البداية (نفس «أضف محفظة») — null ⇒ سؤال البنك مش متاح. */
     val manageWallets: ManageWallets? = null,
+    /** عملة البلد — الديون القديمة من أسئلة البداية بتتحفظ بيها (مراجعة r06 people-1). */
+    val currency: app.masroufy.core.Currency = app.masroufy.core.Currency.SAR,
 )
 
 class OnboardAccount(private val deps: OnboardAccountDeps) {
@@ -146,7 +148,7 @@ class OnboardAccount(private val deps: OnboardAccountDeps) {
                 val already = rows.find { it.person.id == personId }?.obligations.orEmpty().any { (obligation) ->
                     obligation.originTransactionId == null && obligation.kind == debt.kind && obligation.originalMinor == debt.amountMinor
                 }
-                if (!already) deps.people.addOpeningDebt(personId, debt.kind, debt.amountMinor)
+                if (!already) deps.people.addOpeningDebt(personId, debt.kind, debt.amountMinor, deps.currency)
             }
         }
 

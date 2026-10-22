@@ -91,7 +91,7 @@ class TransferAsksLinkedTest {
     /** مراجعة S5: سداد اتربط بالدين من «اربطها بدين موجود» (§30) ⇒ ما يتسألش «ده سداد؟» تاني، و«أيوه» ما تسددش مرتين. */
     @Test fun alreadyLinkedRepaymentIsNotSettledTwice() = runBlocking<Unit> {
         val w = World(listOf(transfer("t-in", Direction.IN, 30_000)))
-        val debt = w.people.addOpeningDebt("p-1", ObligationKind.RECEIVABLE, 100_000)
+        val debt = w.people.addOpeningDebt("p-1", ObligationKind.RECEIVABLE, 100_000, app.masroufy.core.Currency.SAR)
         w.people.settle(debt.id, "p-1", 30_000, "t-in", "old-sheet-1") // زي شيت التطبيق القديم
         assertEquals(70_000L, w.balance().receivableMinor)
         assertNull(w.answers.askOf("t-in"), "المالك جاوب بنفسه")
@@ -104,7 +104,7 @@ class TransferAsksLinkedTest {
     /** نفس الحكم للعملية اللي اتعمل منها دين أو ليها نصيب شخص من شاشة الأشخاص (`linkToPerson` في التطبيقين). */
     @Test fun aTransferLinkedFromThePeopleScreenIsNotAsked() = runBlocking<Unit> {
         val w = World(listOf(transfer("t-borrow", Direction.IN, 40_000), transfer("t-gift", Direction.OUT, 10_000), transfer("t-free", Direction.OUT, 5_000)))
-        w.people.addOpeningDebt("p-1", ObligationKind.RECEIVABLE, 100_000) // كان هيسأل «ده سداد؟» على الوارد
+        w.people.addOpeningDebt("p-1", ObligationKind.RECEIVABLE, 100_000, app.masroufy.core.Currency.SAR) // كان هيسأل «ده سداد؟» على الوارد
         w.people.linkToPerson("t-borrow", "p-1", ObligationKind.LOAN_PAYABLE, 40_000) // «استلمت قرض»
         w.people.linkToPerson("t-gift", "p-1", ObligationKind.RECEIVABLE, 10_000, asGift = true)
         assertEquals(listOf(AskKind.DEBT_REPAYMENT to "t-free"), w.asks(), "التحويل اللي مش مربوط بس — وبيتسأل «سداد؟» عشان القرض اللي استلمه")
@@ -142,7 +142,7 @@ class TransferAsksLinkedTest {
         val w = World(listOf(transfer("t-1", Direction.OUT, 50_000), transfer("t-2", Direction.IN, 20_000, "2026-10-06"), transfer("t-3", Direction.OUT, 10_000, "2026-10-07")))
         w.answers.answerLoanOrSupport("t-1", LoanOrSupport.LOAN)
         assertIs<DebtAnswer.Recorded>(w.answers.answerDebtRepayment("t-2", yes = true)) // سداد 200 من السلفة
-        val owed = w.people.addOpeningDebt("p-1", ObligationKind.LOAN_PAYABLE, 100_000)
+        val owed = w.people.addOpeningDebt("p-1", ObligationKind.LOAN_PAYABLE, 100_000, app.masroufy.core.Currency.SAR)
         assertIs<DebtAnswer.Recorded>(w.answers.answerDebtRepayment("t-3", yes = true)) // سداد 100 من دين عليه
         assertEquals(30_000L to 90_000L, w.balance().let { it.receivableMinor to it.payableLoanMinor })
 
@@ -197,8 +197,8 @@ class TransferAsksLinkedTest {
     /** مراجعة S5: «لأ، مش سداد» **ما بتتخزنش** — الشاشة بتمررها في نفس الخطوة، والسؤال بيرجع لو قفل قبل ما يختار. */
     @Test fun aNoIsPassedByTheScreenNotStored() = runBlocking<Unit> {
         val w = World(listOf(transfer("t-1", Direction.OUT, 10_000), transfer("t-in", Direction.IN, 5_000)))
-        w.people.addOpeningDebt("p-1", ObligationKind.LOAN_PAYABLE, 100_000)
-        w.people.addOpeningDebt("p-1", ObligationKind.RECEIVABLE, 100_000)
+        w.people.addOpeningDebt("p-1", ObligationKind.LOAN_PAYABLE, 100_000, app.masroufy.core.Currency.SAR)
+        w.people.addOpeningDebt("p-1", ObligationKind.RECEIVABLE, 100_000, app.masroufy.core.Currency.SAR)
         assertEquals(DebtAnswer.ThenAskLoanOrSupport, w.answers.answerDebtRepayment("t-1", yes = false))
         assertEquals(AskKind.LOAN_OR_SUPPORT, w.answers.askOf("t-1", debtRuledOut = true))
         assertEquals(uiText(TextKey.ASK_LOAN_OR_SUPPORT), w.answers.question("t-1", debtRuledOut = true)!!.title)
@@ -228,7 +228,7 @@ class TransferAsksLinkedTest {
         assertEquals(0L, w.balance().receivableMinor)
         assertTrue(w.obligations.all().isEmpty() && w.shares().isEmpty())
 
-        w.people.addOpeningDebt("p-1", ObligationKind.LOAN_PAYABLE, 100_000)
+        w.people.addOpeningDebt("p-1", ObligationKind.LOAN_PAYABLE, 100_000, app.masroufy.core.Currency.SAR)
         fail = 1
         assertFailsWith<IllegalStateException> { w.answers.answerDebtRepayment("t-2", yes = true) }
         assertEquals(70_000L, w.balance().payableLoanMinor)

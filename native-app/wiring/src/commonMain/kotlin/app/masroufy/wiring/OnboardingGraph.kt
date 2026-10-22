@@ -42,7 +42,7 @@ class OnboardingGraph(c: AreaContext) : OnboardingDeps {
             NewAccountSeeding(r.categories, r.rules, it, BundledSeeds, countryPack(c.space.countryCode))
         }
         val wallets = ManageWallets(r.wallets, c.env.ids, c.env.clock, c.space.currency, countryPack(c.space.countryCode).timeZone)
-        OnboardAccount(OnboardAccountDeps(c.shell.profile, people, r.wallets, c.env.clock, seeding, wallets))
+        OnboardAccount(OnboardAccountDeps(c.shell.profile, people, r.wallets, c.env.clock, seeding, wallets, currency = c.space.currency))
     }
 
     /**

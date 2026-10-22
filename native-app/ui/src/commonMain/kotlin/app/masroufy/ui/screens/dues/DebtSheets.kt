@@ -208,7 +208,7 @@ internal fun OpeningDebtBody(personId: String, personName: String, onSaved: (Obl
             saving = true
             scope.launch {
                 try {
-                    val o = space.dues.people.addOpeningDebt(personId, ok.kind, ok.minor)
+                    val o = space.dues.people.addOpeningDebt(personId, ok.kind, ok.minor, currency)
                     toaster.show(t(UiKey.OPENING_DEBT_SAVED))
                     DuesChanges.bump()
                     onSaved(o)

@@ -191,7 +191,8 @@ class ManagePeople(private val deps: ManagePeopleDeps) {
      * دين قديم من غير عملية — OVERRIDES §27. الالتزام بـ`originTransactionId = null`
      * وبيتسدد عادي، و**مفيش عملية وهمية**: مش بيدخل المصروف ولا الدخل ولا رصيد الكاش.
      */
-    suspend fun addOpeningDebt(personId: Id, kind: ObligationKind, amountMinor: Halalas): Obligation {
+    /** [currency] = عملة البلد (مراجعة r06 people-1: كان الريال دايمًا — دين قديم في مصر كان بيتخزن بالريال). */
+    suspend fun addOpeningDebt(personId: Id, kind: ObligationKind, amountMinor: Halalas, currency: Currency): Obligation {
         if (amountMinor <= 0 || amountMinor > MAX_SAFE_HALALAS) throw IllegalStateException(uiText(TextKey.AMOUNT_POSITIVE))
         if (deps.people.listAll().none { it.id == personId }) throw IllegalStateException(uiText(TextKey.PERSON_NOT_FOUND))
         val obligation = Obligation(
@@ -200,7 +201,7 @@ class ManagePeople(private val deps: ManagePeopleDeps) {
             originTransactionId = null,
             kind = kind,
             originalMinor = amountMinor,
-            currency = Currency.SAR,
+            currency = currency,
         )
         deps.obligations.saveMany(listOf(obligation))
         return obligation
