@@ -54,6 +54,8 @@ body{margin:0}
       </div>
     </sc-if>
 
+    <sc-if value="{{notRunning}}" hint-placeholder-val="{{ true }}"><dc-import name="MoneyWhat" bare="{{ true }}" space="{{spaceName}}" hint-size="358px,330px"></dc-import></sc-if>
+
     <sc-for list="{{groups}}" as="g" hint-placeholder-count="3">
       <div style="border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
         <span style="display: flex; align-items: center; gap: 8px"><span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 12px; color: #637570">{{g.bank}}</span><span style="font-size: 15px; font-weight: 700">{{g.shape}}</span></span><span style="font-size: 12px; font-weight: 700; color: #637570; font-variant-numeric: tabular-nums">{{g.count}}</span></span>
@@ -185,7 +187,7 @@ class Component extends DCLogic {
       heroLabel: running ? (eg ? 'اخرج — هيكمّل لوحده' : 'اخرج — يكمل وحده') : (eg ? 'أكّد الأشكال (' : 'أكّد الأشكال (') + n(openN) + ')',
       heroBtnStyle: 'height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; ' + (running ? 'color: #193D33; background: rgba(25,61,51,0.06)' : 'color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 8px 18px rgba(8,99,79,0.22)'),
       heroAct: () => { if (running) this.setState({ run: 'away' }); else { this.setState({ run: 'running', rec: G.reduce((a, g) => a + (s.conf[g[0]] ? g[5] : g[6].filter((x, i) => s.hidden[g[0] + '.' + i]).length), 0) }); this.go(); } },
-      salaryWait: s.salary === 'wait' && !running,
+      salaryWait: s.salary === 'wait' && !running, notRunning: !running,
       salChip: 'font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 8px; color: #FFFFFF; background: #956000', salChipText: eg ? 'راتب' : 'راتب',
       salTitle: eg ? 'شكلها مرتبك' : 'تبدو راتبك',
       salLine: (eg ? 'تحويل وارد من جهة شغلك · 28 سبتمبر' : 'تحويل وارد من جهة عملك · 28 سبتمبر'), salAmt: money(850000 * k, '+'),

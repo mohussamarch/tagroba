@@ -1233,6 +1233,22 @@
       "y": 32700,
       "w": 390,
       "h": 120
+    },
+    "MoneyWhat.dc.html": {
+      "is_interactive": true,
+      "title": "الفلوس دي إيه؟ · MoneyWhat (تحويل داخل مش واضح إنه راتب)",
+      "x": 0,
+      "y": 33500,
+      "w": 390,
+      "h": 620
+    },
+    "RefundWait.dc.html": {
+      "is_interactive": true,
+      "title": "مستني استرداد · RefundWait (على المشترى في تفاصيل العملية)",
+      "x": 440,
+      "y": 33500,
+      "w": 350,
+      "h": 140
     }
   },
   "createdOnFiles": {
@@ -1544,7 +1560,9 @@
     "SmsAway.dc.html",
     "Loaders.dc.html",
     "CoinLoader.dc.html",
-    "PullRefresh.dc.html"
+    "PullRefresh.dc.html",
+    "MoneyWhat.dc.html",
+    "RefundWait.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"

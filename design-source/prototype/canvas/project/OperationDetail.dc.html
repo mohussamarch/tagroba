@@ -82,6 +82,7 @@ body{margin:0}
     <sc-if value="{{showLinked}}" hint-placeholder-val="{{ false }}"><dc-import name="LinkedOps" space="{{spaceName}}" spent="{{spentMinor}}" linked="{{linkedItems}}" on-change="{{onLinked}}" hint-size="350px,300px"></dc-import></sc-if>
     <div style="display: flex; flex-direction: column; gap: 8px">
       <span style="font-size: 13px; font-weight: 700; color: #637570">{{linkTitle}}</span>
+      <sc-if value="{{showLinked}}" hint-placeholder-val="{{ false }}"><dc-import name="RefundWait" bare="{{ true }}" space="{{spaceName}}" hint-size="350px,64px"></dc-import></sc-if>
       <sc-if value="{{showLinks}}" hint-placeholder-val="{{ true }}">
         <dc-import name="LinkPersonSheet" space="{{spaceName}}" flow="{{personFlow}}" amount="{{absAmt}}" txn-name="{{txnName}}" on-save="{{onPerson}}" hint-size="350px,76px"></dc-import>
         <dc-import name="LinkProjectEventSheet" space="{{spaceName}}" flow="{{peFlow}}" amount="{{absAmt}}" txn-name="{{txnName}}" on-save="{{onLinks}}" hint-size="350px,76px"></dc-import>
