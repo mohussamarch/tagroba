@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.PendingIntent
+import android.content.Intent
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
@@ -17,6 +18,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import app.masroufy.core.LocalMoment
+import app.masroufy.core.SMS_STATE_TAG_PREFIX
 import app.masroufy.core.SystemNotice
 import app.masroufy.core.TextKey
 import app.masroufy.core.isLockSafe
@@ -60,6 +62,12 @@ class AndroidDeviceNotifier(private val context: Context) : DeviceNotifier {
         internal const val KEY_TITLE = "title"
         internal const val KEY_BODY = "body"
 
+        /** PLAN-0.6 §13 (ج): إضافة على نية الفتح — إشعار حالة القراية بيفتح «رسائل البنك» (`MainActivity`). */
+        const val EXTRA_OPEN = "masroufy-open"
+        const val OPEN_BANK_SMS = "bank-sms"
+        private const val REQUEST_ALERT = 0
+        private const val REQUEST_BANK_SMS = 1
+
         fun canPost(context: Context): Boolean {
             if (Build.VERSION.SDK_INT >= 33 &&
                 context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
@@ -89,7 +97,7 @@ class AndroidDeviceNotifier(private val context: Context) : DeviceNotifier {
             )
         }
 
-        private fun build(context: Context, title: String, body: String, visibility: Int, publicVersion: Notification?): Notification {
+        private fun build(context: Context, tag: String, title: String, body: String, visibility: Int, publicVersion: Notification?): Notification {
             val builder = NotificationCompat.Builder(context, CHANNEL_ALERTS)
                 .setSmallIcon(R.drawable.ic_stat_masroufy)
                 // نص طالع برا التطبيق: خطوط النظام ما فيهاش علامة الريال U+20C1 ⇒ «ر.س» (قرار المالك 2026-10-15)
@@ -99,9 +107,15 @@ class AndroidDeviceNotifier(private val context: Context) : DeviceNotifier {
                 .setOnlyAlertOnce(true)
                 .setVisibility(visibility)
             publicVersion?.let(builder::setPublicVersion)
-            // الضغطة بتفتح التطبيق (التفاصيل جوه بس)
+            // الضغطة بتفتح التطبيق (التفاصيل جوه بس) — وإشعار حالة القراية بيفتح «رسائل البنك» (رقم طلب لوحده عشان إضافته ما تتكتبش على التانيين)
             context.packageManager.getLaunchIntentForPackage(context.packageName)?.let { launch ->
-                builder.setContentIntent(PendingIntent.getActivity(context, 0, launch, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT))
+                val sms = tag.startsWith(SMS_STATE_TAG_PREFIX)
+                if (sms) {
+                    launch.putExtra(EXTRA_OPEN, OPEN_BANK_SMS)
+                    launch.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                }
+                val request = if (sms) REQUEST_BANK_SMS else REQUEST_ALERT
+                builder.setContentIntent(PendingIntent.getActivity(context, request, launch, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT))
             }
             return builder.build()
         }
@@ -111,8 +125,8 @@ class AndroidDeviceNotifier(private val context: Context) : DeviceNotifier {
         internal fun show(context: Context, tag: String, title: String, body: String): Boolean {
             if (!canPost(context) || !isLockSafe(title) || !isLockSafe(body)) return false
             ensureChannels(context)
-            val lockScreen = build(context, title, body, NotificationCompat.VISIBILITY_PUBLIC, null)
-            val notification = build(context, title, body, NotificationCompat.VISIBILITY_PRIVATE, lockScreen)
+            val lockScreen = build(context, tag, title, body, NotificationCompat.VISIBILITY_PUBLIC, null)
+            val notification = build(context, tag, title, body, NotificationCompat.VISIBILITY_PRIVATE, lockScreen)
             NotificationManagerCompat.from(context).notify(tag, NOTICE_ID, notification)
             return true
         }

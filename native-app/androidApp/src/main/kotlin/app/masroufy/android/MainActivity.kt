@@ -49,6 +49,7 @@ class MainActivity : FragmentActivity() {
         )
         // نسخ المحاكي بس: دخول حساب القياس الوهمي من سطر الأوامر (adb … --es perf_uid <المعرّف>) — من غير كلمة سر
         intent?.getStringExtra("perf_uid")?.let(container::perfSignIn)
+        openFrom(intent)
         val deps = container.appDeps(permissions)
         // ميكروفون المساعد: نافذة التعرّف على الكلام بتاعة الجوال (§79.2-8) — لازم تتسجل هنا قبل ما الشاشة تبدأ
         val speech = AndroidSpeech(this)
@@ -70,6 +71,20 @@ class MainActivity : FragmentActivity() {
         val style = if (dark) androidx.activity.SystemBarStyle.dark(clear) else androidx.activity.SystemBarStyle.light(clear, clear)
         enableEdgeToEdge(statusBarStyle = style, navigationBarStyle = style)
         if (android.os.Build.VERSION.SDK_INT >= 29) window.isNavigationBarContrastEnforced = false
+    }
+
+    /** PLAN-0.6 §13 (ج): الضغطة على إشعار حالة القراية (والتطبيق مفتوح أو في الخلفية) ⇒ «رسائل البنك». */
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        openFrom(intent)
+    }
+
+    private fun openFrom(intent: android.content.Intent?) {
+        if (intent?.getStringExtra(app.masroufy.device.AndroidDeviceNotifier.EXTRA_OPEN) != app.masroufy.device.AndroidDeviceNotifier.OPEN_BANK_SMS) return
+        // مرة واحدة: إعادة إنشاء الشاشة (تدوير الجوال) ما تفتحهاش تاني
+        intent.removeExtra(app.masroufy.device.AndroidDeviceNotifier.EXTRA_OPEN)
+        shell.openBankSms = true
     }
 
     override fun onStart() {
