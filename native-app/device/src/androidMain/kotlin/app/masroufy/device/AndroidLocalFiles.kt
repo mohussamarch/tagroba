@@ -32,7 +32,15 @@ class AndroidRepairBackup(private val context: Context) : RepairBackupPort {
             Problems.report(ProblemCode.BACKUP_DEVICE_COPY_FAILED, e)
             throw IllegalStateException(uiText(TextKey.BACKUP_DEVICE_SAVE_FAILED), e)
         }
-        SavedBackup(file.absolutePath, if (file.isFile) file.length() else 0)
+        val size = if (file.isFile) file.length() else 0
+        // قرار المالك: النسخ الداخلية آخر ملفين بس — بعد ما النسخة الجديدة اتكتبت وانقاست، الزيادة بتتمسح (فشل المسح ما بيفشلش الحفظ)
+        if (size > 0) pruneOld(file)
+        SavedBackup(file.absolutePath, size)
+    }
+
+    private fun pruneOld(written: File) = runCatching {
+        val siblings = written.parentFile?.listFiles { f -> f.isFile }.orEmpty().map { BackupFileInfo(it.name, it.lastModified()) }
+        for (name in BackupPruning.toDelete(siblings, written.name)) File(written.parentFile, name).delete()
     }
 
     private fun backupDir(): File {

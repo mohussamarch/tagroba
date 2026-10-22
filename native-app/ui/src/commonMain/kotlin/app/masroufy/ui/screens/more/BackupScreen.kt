@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.more
 
+import app.masroufy.core.R06Key
 import app.masroufy.core.UiKey
 import app.masroufy.core.ProblemCode
 import app.masroufy.problems.Problems
@@ -87,6 +88,7 @@ fun BackupScreen() {
     val pick = rememberFilePicker { r ->
         when (r) {
             is FilePickResult.Picked -> nav.push(RestorePreviewRoute(r.name, r.text))
+            is FilePickResult.Rejected -> toaster.show(t(if (r.why == PickRejection.TOO_BIG) R06Key.BAK_PICK_TOO_BIG else R06Key.BAK_PICK_NOT_BACKUP), dark = true)
             is FilePickResult.Failed -> toaster.show(t(UiKey.BAK_PICK_FAILED), dark = true)
             FilePickResult.Unavailable -> toaster.show(t(UiKey.BAK_NO_FILES), dark = true)
             FilePickResult.Cancelled -> Unit

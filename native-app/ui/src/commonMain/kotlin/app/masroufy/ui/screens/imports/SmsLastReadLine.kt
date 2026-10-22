@@ -7,7 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import app.masroufy.core.LastReadWhen
-import app.masroufy.core.UiKey
+import app.masroufy.core.R06Key
 import app.masroufy.ui.text.BasicText
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
@@ -17,9 +17,9 @@ import kotlinx.coroutines.CancellationException
 /** نص «متى» بالأرقام 0-9 (الدالة صافية — [lastReadWhen]): «دلوقتي» · «من 5 دقيقة» · «من 3 ساعة» · «2026-10-22 14:05». */
 @Composable
 private fun whenText(w: LastReadWhen): String = when (w) {
-    LastReadWhen.JustNow -> t(UiKey.BANK_SMS_AGO_NOW)
-    is LastReadWhen.MinutesAgo -> t(UiKey.BANK_SMS_AGO_MIN, w.minutes.toString())
-    is LastReadWhen.HoursAgo -> t(UiKey.BANK_SMS_AGO_HOUR, w.hours.toString())
+    LastReadWhen.JustNow -> t(R06Key.BANK_SMS_AGO_NOW)
+    is LastReadWhen.MinutesAgo -> t(R06Key.BANK_SMS_AGO_MIN, w.minutes.toString())
+    is LastReadWhen.HoursAgo -> t(R06Key.BANK_SMS_AGO_HOUR, w.hours.toString())
     is LastReadWhen.At -> w.text
 }
 
@@ -40,6 +40,6 @@ fun SmsLastReadLine(sms: SmsDeps?, reload: Int) {
         }
     }
     val loaded = state ?: return
-    val text = loaded.first?.let { t(UiKey.BANK_SMS_LAST_READ, whenText(it)) } ?: t(UiKey.BANK_SMS_NEVER_READ)
+    val text = loaded.first?.let { t(R06Key.BANK_SMS_LAST_READ, whenText(it)) } ?: t(R06Key.BANK_SMS_NEVER_READ)
     BasicText(text, style = Type.caption().copy(color = Ink.muted))
 }
