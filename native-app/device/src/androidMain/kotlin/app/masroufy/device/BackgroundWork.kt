@@ -111,6 +111,8 @@ class MasroufyCycleWorker(context: Context, params: WorkerParameters) : Coroutin
         }
         if (result?.smsFailed == true) Problems.report(ProblemCode.SMS_AUTO_RECORD_FAILED, null, attempt)
         if (result?.alertsFailed == true) Problems.report(ProblemCode.ALERTS_FAILED, null, attempt)
+        // «آخر مرة قرا لوحده»: خطوة الرسايل اشتغلت فعلًا (في صندوق مفعّل) ومن غير فشل — مفيش وقت بيتخترع
+        if (result?.sms != null && !result.smsFailed) AndroidBackgroundRead(applicationContext).mark(System.currentTimeMillis())
         val failed = result == null || result.smsFailed || result.alertsFailed
         // الرسايل لسه في الصندوق لو فشل ⇒ نعيد كام مرة، وبعدها الدورية بتكمّل
         return if (failed && runAttemptCount + 1 < MasroufyBackground.MAX_ATTEMPTS) Result.retry() else Result.success()

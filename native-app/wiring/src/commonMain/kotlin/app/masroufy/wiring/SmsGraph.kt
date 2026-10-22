@@ -172,6 +172,11 @@ internal class SmsGraph(
 
     override suspend fun setHandoffCard(value: String?) = work { inbox.setHandoffCard(value) }
 
+    override suspend fun lastBackgroundRead(): app.masroufy.core.LastReadWhen? = work {
+        val port = c.env.backgroundRead ?: return@work null
+        port.last()?.let { app.masroufy.core.lastReadWhen(it, c.env.nowMillis(), port.zoneOffsetMillis(it)) }
+    }
+
     override suspend fun readingOn(): Boolean = work { manage.refresh().let { it.enabled && it.permission } }
 
     override suspend fun enable(senders: List<String>): InboxView = work { manage.enable(senders) }

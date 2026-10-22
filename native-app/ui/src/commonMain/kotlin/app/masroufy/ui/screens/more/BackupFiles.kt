@@ -22,9 +22,28 @@ sealed interface FilePickResult {
 
     data object Cancelled : FilePickResult
 
+    /** الملف اتختار بس مش نسخة (الامتداد) أو كبير أوي — ما اتقراش. */
+    data class Rejected(val why: PickRejection) : FilePickResult
+
     data class Failed(val message: String?) : FilePickResult
 
     data object Unavailable : FilePickResult
+}
+
+/** ليه ملف اتختار اترفض قبل ما يتقرا: كبير أوي · مش ملف نسخة (الامتداد). */
+enum class PickRejection { TOO_BIG, NOT_BACKUP }
+
+/** أقصى حجم لملف النسخة بيتفتح (50 ميجا) — نسخة المالك بالكتير كام ميجا. */
+const val MAX_BACKUP_PICK_BYTES = 50L * 1024 * 1024
+
+/**
+ * فحص صافي قبل قراية الملف: النسخة بنكتبها `masroufy-backup-<التاريخ>.json` ⇒ الامتداد `.json` بس (المنتقي بيقبل `application/octet-stream`
+ * عشان ملفات درايف — فالاسم هو الحكم). [sizeBytes] = null (المزوّد ما قالش) ⇒ بنقرا بحد أقصى [MAX_BACKUP_PICK_BYTES] وإلا بنرفض.
+ */
+fun checkBackupPick(name: String, sizeBytes: Long?): PickRejection? = when {
+    !name.trim().endsWith(".json", ignoreCase = true) -> PickRejection.NOT_BACKUP
+    sizeBytes != null && sizeBytes > MAX_BACKUP_PICK_BYTES -> PickRejection.TOO_BIG
+    else -> null
 }
 
 /** بيرجّع دالة «احفظ [content] باسم مقترح» بنوع [mime] — النتيجة في [onResult] بعد ما المستخدم يختار المكان. */

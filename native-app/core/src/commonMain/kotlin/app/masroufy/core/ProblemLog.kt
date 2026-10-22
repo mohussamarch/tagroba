@@ -11,7 +11,7 @@ enum class ProblemLevel { INFO, WARN, ERROR }
 enum class ProblemArea(val wire: String) { SYNC("sync"), SMS("sms"), IMPORT("import"), BACKUP("backup"), UI("ui"), OTHER("other") }
 
 /** القايمة الثابتة: لكل كود منطقته ودرجته ونصه المقروء في صفحة «سجل المشاكل» (فصحى · مصري · إنجليزي). */
-enum class ProblemCode(val area: ProblemArea, val level: ProblemLevel, val label: UiKey) {
+enum class ProblemCode(val area: ProblemArea, val level: ProblemLevel, val label: TextRef) {
     SYNC_LISTEN_FAILED(ProblemArea.SYNC, ProblemLevel.WARN, UiKey.PLOG_C_SYNC_LISTEN),
     SYNC_WRITE_FAILED(ProblemArea.SYNC, ProblemLevel.ERROR, UiKey.PLOG_C_SYNC_WRITE),
     SMS_PERMISSION_LOST(ProblemArea.SMS, ProblemLevel.WARN, UiKey.PLOG_C_SMS_PERMISSION),
@@ -19,6 +19,7 @@ enum class ProblemCode(val area: ProblemArea, val level: ProblemLevel, val label
     SMS_RECEIVE_FAILED(ProblemArea.SMS, ProblemLevel.ERROR, UiKey.PLOG_C_SMS_RECEIVE),
     SMS_AUTO_RECORD_FAILED(ProblemArea.SMS, ProblemLevel.ERROR, UiKey.PLOG_C_SMS_AUTO),
     BACKGROUND_FAILED(ProblemArea.OTHER, ProblemLevel.ERROR, UiKey.PLOG_C_BACKGROUND),
+    BACKGROUND_GAVE_UP(ProblemArea.OTHER, ProblemLevel.WARN, R06Key.PLOG_C_BACKGROUND_GAVE_UP),
     ALERTS_FAILED(ProblemArea.OTHER, ProblemLevel.WARN, UiKey.PLOG_C_ALERTS),
     IMPORT_PDF_UNREADABLE(ProblemArea.IMPORT, ProblemLevel.WARN, UiKey.PLOG_C_PDF_UNREADABLE),
     IMPORT_PDF_LOCKED(ProblemArea.IMPORT, ProblemLevel.INFO, UiKey.PLOG_C_PDF_LOCKED),

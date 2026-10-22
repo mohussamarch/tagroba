@@ -103,7 +103,8 @@ fun OpeningScreen(synced: Int?, total: Int?) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        LensOnLight(Modifier.size(76.dp), shape = RoundedCornerShape(26.dp)) { LucideIcon(Lucide.REFRESH_CW, size = 30.dp, tint = Ink.primary) }
+        // r06: علامة التحميل بتاعة البرنامج «عملات بتترص» (64.dp) بدل أيقونة التحديث
+        app.masroufy.ui.components.CoinLoader(size = 64.dp)
         BasicText(t(UiKey.SHELL_OPENING), style = Type.of(18, FontWeight.Bold))
         if (synced != null && total != null && total > 0) {
             val fraction = (synced.toFloat() / total).coerceIn(0f, 1f)

@@ -1,5 +1,7 @@
 package app.masroufy.device
 
+import app.masroufy.core.ProblemCode
+import app.masroufy.core.ProblemLevel
 import java.util.Collections
 import java.util.IdentityHashMap
 
@@ -28,3 +30,18 @@ object CrashSanitizer {
 
 /** خطأ متنضف: الرسالة اسم النوع بس، والمكان من الأصلي. */
 class SanitizedCrash(typeName: String, cause: SanitizedCrash?) : RuntimeException(typeName, cause)
+
+/**
+ * إيه اللي «سجل المشاكل» يبعته لتقارير الأعطال (غير الوقعات نفسها — معالج Crashlytics بيبعتها): ERROR (بخطأ أو من غيره) و WARN ⇒ تقرير؛
+ * INFO ⇒ على الجوال بس. الوقعتين (CRASH_MAIN · CRASH_BACKGROUND) مستثنيين (من غير تكرار).
+ */
+object CrashReportPolicy {
+    fun shouldSend(code: ProblemCode): Boolean =
+        code != ProblemCode.CRASH_MAIN && code != ProblemCode.CRASH_BACKGROUND && code.level != ProblemLevel.INFO
+}
+
+/**
+ * خطأ صناعي لمشكلة من غير خطأ حقيقي: الرسالة اسم الكود من القايمة الثابتة بس — بيعدّي على `CrashSanitizer.sanitize` في `CrashReports.kt`
+ * (`sanitize(error ?: ProblemCodeReport(code.name), code.name)`).
+ */
+class ProblemCodeReport(codeName: String) : RuntimeException(codeName)

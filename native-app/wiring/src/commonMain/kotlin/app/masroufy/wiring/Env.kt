@@ -54,6 +54,8 @@ class DeviceEnv(
     val work: kotlin.coroutines.CoroutineContext = kotlinx.coroutines.Dispatchers.Default,
     /** 2026-10-16: مسودة «ابنِ/عدّل شخصيتك» على الجهاز (لكل حساب) — لو البرنامج اتقفل قبل الحفظ. null ⇒ من غير مسودة. */
     val characterDraft: app.masroufy.ui.screens.character.CharacterDraftStore? = null,
+    /** r06: «آخر مرة قرا لوحده» في الخلفية (الجهاز ده بس). null (الاختبار · الآيفون) ⇒ الشاشة بتقول «لسه ما قراش لوحده». */
+    val backgroundRead: app.masroufy.port.BackgroundReadPort? = null,
 )
 
 /**

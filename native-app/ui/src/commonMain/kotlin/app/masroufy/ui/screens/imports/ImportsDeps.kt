@@ -110,6 +110,9 @@ interface SmsDeps {
 
     suspend fun setHandoffCard(value: String?) {}
 
+    /** r06: «آخر مرة قرا لوحده» في الخلفية — null = لسه ما قراش (الشاشة بتقول كده، ما بتخترعش وقت). */
+    suspend fun lastBackgroundRead(): app.masroufy.core.LastReadWhen? = null
+
     /** r041 A8: القراءة شغالة على الجهاز ده (مفعّلة والإذن موجود) — للرئيسية الفاضية. الافتراضي: لأ. */
     suspend fun readingOn(): Boolean = false
 

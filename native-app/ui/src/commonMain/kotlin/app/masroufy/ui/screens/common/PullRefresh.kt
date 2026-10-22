@@ -1,17 +1,18 @@
 package app.masroufy.ui.screens.common
 
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animate
-import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import app.masroufy.core.R06Key
+import app.masroufy.ui.components.CoinLoader
+import app.masroufy.ui.text.BasicText
+import app.masroufy.ui.text.t
+import app.masroufy.ui.theme.Type
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -25,8 +26,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
@@ -113,26 +112,20 @@ fun PullRefreshIndicator(state: PullRefreshState, label: String, modifier: Modif
 @Composable
 private fun Spinner(state: PullRefreshState, shown: Float, label: String, modifier: Modifier) {
     val progress = (shown / state.threshold).coerceIn(0f, 1f)
-    val spin by rememberInfiniteTransition(label = "refreshSpin")
-        .animateFloat(0f, 360f, infiniteRepeatable(tween(900, easing = LinearEasing)), label = "refreshAngle")
     val spinning = state.refreshing
-    Box(
+    // r06: علامة البرنامج «عملات بتترص» (22.dp) جنب «بنحدّث…» بدل الدايرة
+    Row(
         modifier
             .graphicsLayer { translationY = shown - size.height / 2f; alpha = progress }
-            .size(36.dp)
-            .clip(CircleShape)
+            .height(36.dp)
+            .clip(RoundedCornerShape(18.dp))
             .background(Glass.card)
+            .padding(horizontal = 12.dp)
             .semantics { if (spinning) { contentDescription = label; liveRegion = LiveRegionMode.Polite } },
-        contentAlignment = Alignment.Center,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Canvas(Modifier.size(20.dp).graphicsLayer { rotationZ = if (spinning) spin else progress * 180f }) {
-            drawArc(
-                color = Ink.primary,
-                startAngle = -90f,
-                sweepAngle = if (spinning) 270f else 300f * progress,
-                useCenter = false,
-                style = Stroke(width = 2.5.dp.toPx(), cap = StrokeCap.Round),
-            )
-        }
+        CoinLoader(size = 22.dp, description = null)
+        BasicText(t(R06Key.LOADER_UPDATING), style = Type.caption().copy(color = Ink.muted))
     }
 }

@@ -43,7 +43,7 @@ import app.masroufy.ui.components.Badge
 import app.masroufy.ui.components.BadgeKind
 import app.masroufy.ui.components.LensOnLight
 import app.masroufy.ui.components.Skeleton
-import app.masroufy.ui.components.Spinner
+import app.masroufy.ui.components.CoinLoader
 import app.masroufy.ui.components.TonalButton
 import app.masroufy.ui.components.pressScale
 import app.masroufy.ui.components.rememberPress
@@ -159,7 +159,7 @@ private fun SpaceRow(c: SpaceChoice, going: Boolean, onPick: () -> Unit) {
         Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(2.dp)) {
             BasicText(t(UiKey.SPACE_WITH_YOU), style = Type.of(11).copy(color = Ink.muted))
             if (going) Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                Spinner(size = 14.dp, color = Ink.primary)
+                CoinLoader(size = 14.dp)
                 BasicText(t(UiKey.SPACE_OPENING), style = Type.captionBold().copy(color = Ink.primary))
             } else AmountText(c.withYouNowMinor, c.currency)
         }
