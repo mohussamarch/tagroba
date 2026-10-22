@@ -1209,6 +1209,14 @@
       "y": 31500,
       "w": 390,
       "h": 844
+    },
+    "Loaders.dc.html": {
+      "is_interactive": true,
+      "title": "علامة التحميل · Loaders (3 أشكال: الشاشة · السحب للتحديث · الزرار)",
+      "x": 0,
+      "y": 32500,
+      "w": 390,
+      "h": 844
     }
   },
   "createdOnFiles": {
@@ -1517,7 +1525,8 @@
     "CategorySheet.dc.html",
     "WithWho.dc.html",
     "SmsPending.dc.html",
-    "SmsAway.dc.html"
+    "SmsAway.dc.html",
+    "Loaders.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"

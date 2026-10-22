@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>علامة التحميل — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.ld-coin{position:absolute;left:12px;width:40px;height:14px;border-radius:50%;background:linear-gradient(180deg,#F1CF7A,#C9952B);box-shadow:inset 0 -3px 0 #A47619,0 1px 0 rgba(25,61,51,.12);animation:ld-drop 1.8s cubic-bezier(.3,.9,.4,1.15) infinite both}
+.ld-coin:nth-child(2){animation-delay:.25s}.ld-coin:nth-child(3){animation-delay:.5s}
+@keyframes ld-drop{0%{transform:translateY(-30px);opacity:0}22%{transform:none;opacity:1}78%{opacity:1}100%{opacity:0}}
+.ld-ring{stroke-dasharray:190;animation:ld-draw 1.6s cubic-bezier(.45,0,.35,1) infinite}
+@keyframes ld-draw{0%{stroke-dashoffset:190}50%{stroke-dashoffset:0}100%{stroke-dashoffset:-190}}
+.ld-bar{width:8px;height:40px;border-radius:4px;background:linear-gradient(180deg,#13A07F,#08634F);transform-origin:bottom;animation:ld-grow 1.2s ease-in-out infinite}
+.ld-bar:nth-child(2){animation-delay:.15s}.ld-bar:nth-child(3){animation-delay:.3s}.ld-bar:nth-child(4){animation-delay:.45s}
+@keyframes ld-grow{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}
+@media (prefers-reduced-motion: reduce){.ld-coin,.ld-ring,.ld-bar{animation:none}.ld-ring{stroke-dashoffset:0}}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; box-sizing: border-box; padding: 22px 16px; display: flex; flex-direction: column; gap: 12px; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: #F4F2EA">
+  <span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 19px; font-weight: 700">{{title}}</span><span style="font-size: 12px; color: #637570">{{sub}}</span></span>
+  <sc-for list="{{opts}}" as="o" hint-placeholder-count="3">
+    <div style="border-radius: 22px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 1px 2px rgba(29,54,53,0.05), 0 12px 28px rgba(29,54,53,0.08)">
+      <span style="display: flex; align-items: center; gap: 8px"><span style="width: 26px; height: 26px; border-radius: 13px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #FFFFFF; background: #08634F">{{o.n}}</span><span style="font-size: 15px; font-weight: 700">{{o.name}}</span><span style="font-size: 12px; color: #637570">{{o.hint}}</span></span>
+      <div style="display: grid; grid-template-columns: 96px 1fr; gap: 10px; align-items: center">
+        <div style="height: 96px; border-radius: 18px; display: flex; align-items: center; justify-content: center; background: rgba(25,61,51,0.04)">
+          <sc-if value="{{o.coins}}" hint-placeholder-val="{{ true }}"><span role="img" aria-label="{{loading}}" style="position: relative; width: 64px; height: 64px; display: block"><span class="ld-coin" style="bottom: 8px"></span><span class="ld-coin" style="bottom: 20px"></span><span class="ld-coin" style="bottom: 32px"></span></span></sc-if>
+          <sc-if value="{{o.ring}}" hint-placeholder-val="{{ false }}"><svg role="img" aria-label="{{loading}}" width="64" height="64" viewBox="0 0 64 64"><rect x="6" y="6" width="52" height="52" rx="16" fill="#DCEBD6"></rect><rect class="ld-ring" x="6" y="6" width="52" height="52" rx="16" fill="none" stroke="#08634F" stroke-width="3.5" stroke-linecap="round"></rect><text x="32" y="41" text-anchor="middle" font-size="26" font-weight="700" fill="#08634F" font-family="Noto Sans Arabic, Tahoma, sans-serif">م</text></svg></sc-if>
+          <sc-if value="{{o.bars}}" hint-placeholder-val="{{ false }}"><span role="img" aria-label="{{loading}}" style="height: 44px; display: flex; align-items: flex-end; gap: 5px"><span class="ld-bar"></span><span class="ld-bar"></span><span class="ld-bar"></span><span class="ld-bar"></span></span></sc-if>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <div style="height: 40px; border-radius: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 12px; color: #637570; background: rgba(25,61,51,0.04)">
+            <span style="width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; overflow: visible"><span style="transform: scale(0.36); display: flex">
+              <sc-if value="{{o.coins}}" hint-placeholder-val="{{ true }}"><span style="position: relative; width: 64px; height: 64px; display: block"><span class="ld-coin" style="bottom: 8px"></span><span class="ld-coin" style="bottom: 20px"></span><span class="ld-coin" style="bottom: 32px"></span></span></sc-if>
+              <sc-if value="{{o.ring}}" hint-placeholder-val="{{ false }}"><svg width="64" height="64" viewBox="0 0 64 64"><rect x="6" y="6" width="52" height="52" rx="16" fill="#DCEBD6"></rect><rect class="ld-ring" x="6" y="6" width="52" height="52" rx="16" fill="none" stroke="#08634F" stroke-width="5" stroke-linecap="round"></rect><text x="32" y="43" text-anchor="middle" font-size="30" font-weight="700" fill="#08634F" font-family="Noto Sans Arabic, Tahoma, sans-serif">م</text></svg></sc-if>
+              <sc-if value="{{o.bars}}" hint-placeholder-val="{{ false }}"><span style="height: 44px; display: flex; align-items: flex-end; gap: 5px"><span class="ld-bar"></span><span class="ld-bar"></span><span class="ld-bar"></span><span class="ld-bar"></span></span></sc-if>
+            </span></span>{{pull}}
+          </div>
+          <div style="height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)">
+            <span style="width: 18px; height: 18px; display: flex; align-items: center; justify-content: center"><span style="transform: scale(0.3); display: flex; filter: brightness(1.6) saturate(0.6)">
+              <sc-if value="{{o.coins}}" hint-placeholder-val="{{ true }}"><span style="position: relative; width: 64px; height: 64px; display: block"><span class="ld-coin" style="bottom: 8px"></span><span class="ld-coin" style="bottom: 20px"></span><span class="ld-coin" style="bottom: 32px"></span></span></sc-if>
+              <sc-if value="{{o.ring}}" hint-placeholder-val="{{ false }}"><svg width="64" height="64" viewBox="0 0 64 64"><rect class="ld-ring" x="6" y="6" width="52" height="52" rx="16" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"></rect></svg></sc-if>
+              <sc-if value="{{o.bars}}" hint-placeholder-val="{{ false }}"><span style="height: 44px; display: flex; align-items: flex-end; gap: 5px"><span class="ld-bar"></span><span class="ld-bar"></span><span class="ld-bar"></span><span class="ld-bar"></span></span></sc-if>
+            </span></span>{{saving}}
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+// علامة التحميل والتحديث الخاصة بالبرنامج بدل دايرة أندرويد (طلب المالك عن طريق جلسة كوتلن 2026-10-22: «بدائية اوي و بتاعت الاندرويد العامة»)
+// كل شكل في 3 أماكن: تحميل الشاشة (كبير) · السحب للتحديث (صغير جنب الكلام) · جوه الزرار وهو بيحفظ
+class Component extends DCLogic {
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    return {
+      title: eg ? 'علامة التحميل — اختار شكل' : 'علامة التحميل — اختر شكلًا',
+      sub: eg ? 'كل شكل: الشاشة وهي بتحمّل · السحب للتحديث · الزرار وهو بيحفظ' : 'كل شكل: تحميل الشاشة · السحب للتحديث · الزر أثناء الحفظ',
+      loading: eg ? 'بيحمّل' : 'جارٍ التحميل',
+      pull: eg ? 'بنحدّث…' : 'جارٍ التحديث…',
+      saving: eg ? 'بيتحفظ…' : 'جارٍ الحفظ…',
+      opts: [
+        { n: '1', name: eg ? 'عملات بتترص' : 'عملات تتراص', hint: eg ? 'فلوس بتتجمع' : 'مال يتجمّع', coins: true, ring: false, bars: false },
+        { n: '2', name: eg ? 'حرف «م» بيترسم' : 'حرف «م» يُرسم', hint: eg ? 'علامة البرنامج' : 'علامة التطبيق', coins: false, ring: true, bars: false },
+        { n: '3', name: eg ? 'أعمدة بتنبض' : 'أعمدة تنبض', hint: eg ? 'زي الرسومات' : 'مثل الرسوم', coins: false, ring: false, bars: true }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
