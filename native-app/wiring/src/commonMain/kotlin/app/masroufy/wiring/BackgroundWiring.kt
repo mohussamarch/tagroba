@@ -58,6 +58,7 @@ fun backgroundCycle(spaces: List<Pair<Space, SpaceRepositories>>, inbox: SmsInbo
     return RunBackgroundCycle(
         BackgroundCycleDeps(sms = AutoRecordSms(AutoRecordSmsDeps(inbox, lanes, work = env.work)), candidates = null, engine = null, notifier = notifier, smsCatchUp = catchUp,
             openingDebtRepairs = spaces.map { (space, r) -> app.masroufy.usecase.RepairOpeningDebtCurrency(r.people, r.obligations, space.currency) },
+            categoryRepairs = spaces.map { (space, r) -> app.masroufy.usecase.RepairMissingDefaultSubs(r.categories, app.masroufy.seed.BundledSeeds, countryPack(space.countryCode)) },
         ),
     )
 }

@@ -35,6 +35,8 @@ data class BackgroundCycleDeps(
     val reversalRepairs: List<RepairReversals> = emptyList(),
     /** مراجعة r06 people-1: عملة الديون القديمة في البلاد اللي عملتها غير الريال — واحد لكل بلد، آمن التكرار. */
     val openingDebtRepairs: List<RepairOpeningDebtCurrency> = emptyList(),
+    /** r06-darahim: الفرعيات الافتراضية الجديدة للحسابات القديمة — واحد لكل بلد، آمن التكرار. */
+    val categoryRepairs: List<RepairMissingDefaultSubs> = emptyList(),
     /** §75-7 (S4): لحاق خصومات الاشتراكات — واحد لكل بلد — بعد تسجيل الرسايل وقبل تجميع المرشحين (الاشتراك اللي اتدفع ما يطلعش «متأخر»). */
     val subscriptions: List<MatchSubscriptions> = emptyList(),
     /**
@@ -79,6 +81,7 @@ class RunBackgroundCycle(private val deps: BackgroundCycleDeps) {
         if (!smsFailed) deps.smsCatchUp?.let { catchUp -> runCatchingNotCancel { catchUp.after() } }
         for (repair in deps.reversalRepairs) runCatchingNotCancel { repair.run() }
         for (repair in deps.openingDebtRepairs) runCatchingNotCancel { repair.run() }
+        for (repair in deps.categoryRepairs) runCatchingNotCancel { repair.run() }
         var subscriptionsFailed = false
         for (match in deps.subscriptions) if (runCatchingNotCancel { match.catchUp(now.date) } == null) subscriptionsFailed = true
         val candidates = deps.candidates

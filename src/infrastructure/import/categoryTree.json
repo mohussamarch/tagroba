@@ -2,13 +2,13 @@
   "groups": [
     { "key": "food", "mains": [
       { "name": "مطاعم وقهوة", "icon": "utensils", "h": 22, "s": 78, "l": 46, "from": ["مطاعم وقهوة"],
-        "subs": [["مطاعم", "soup"], ["قهوة ومشروبات", "coffee"], ["حلويات ومخبوزات", "croissant"]] },
+        "subs": [["مطاعم", "soup"], ["قهوة ومشروبات", "coffee"], ["حلويات ومخبوزات", "croissant"], ["عصير", "cup-soda"]] },
       { "name": "بقالة وسوبرماركت", "icon": "shopping-basket", "h": 135, "s": 55, "l": 34, "from": ["بقالة وسوبرماركت"],
         "subs": [["سوبرماركت", "shopping-cart"], ["خضار وفواكه", "carrot"], ["لحوم ودواجن وأسماك", "fish"], ["مياه ومشروبات", "cup-soda"], ["بقالة الحي", "store"]] }
     ]},
     { "key": "home", "mains": [
       { "name": "المنزل", "icon": "house", "h": 40, "s": 90, "l": 38, "from": ["فواتير ومرافق", "خدمات منزلية"],
-        "subs": [["كهرباء", "zap"], ["مياه", "droplets"], ["غاز", "flame"], ["إيجار", "key-round", "renter"], ["صيانة وسباكة", "hammer"], ["تنظيف", "brush"], ["عمالة منزلية", "users", "domesticWorker"]] },
+        "subs": [["كهرباء", "zap"], ["مياه", "droplets"], ["غاز", "flame"], ["إيجار", "key-round", "renter"], ["صيانة وسباكة", "hammer"], ["تنظيف", "brush"], ["عمالة منزلية", "users", "domesticWorker"], ["مغسلة وكوي", "shirt"]] },
       { "name": "اتصالات", "icon": "wifi", "h": 190, "s": 80, "l": 33, "from": ["اتصالات"],
         "subs": [["جوال", "phone"], ["إنترنت منزلي", "router"]] },
       { "name": "اشتراكات رقمية", "icon": "repeat", "h": 285, "s": 50, "l": 48, "from": ["اشتراكات رقمية"],
@@ -32,7 +32,7 @@
       { "name": "صحة وصيدليات", "icon": "heart-pulse", "h": 2, "s": 70, "l": 44, "from": ["صحة وصيدليات"],
         "subs": [["صيدلية", "pill"], ["مستشفى وعيادة", "stethoscope"], ["أسنان", "face-slightly-smiling"], ["نظارات", "glasses"], ["تأمين صحي", "shield-plus"]] },
       { "name": "ترفيه", "icon": "party-popper", "h": 85, "s": 65, "l": 30, "from": ["ترفيه"],
-        "subs": [["سينما", "popcorn"], ["ألعاب", "gamepad-2"], ["فعاليات ومباريات", "ticket"], ["رياضة ونوادي", "dumbbell"]] },
+        "subs": [["سينما", "popcorn"], ["ألعاب", "gamepad-2"], ["فعاليات ومباريات", "ticket"], ["رياضة ونوادي", "dumbbell"], ["هوايات", "sparkles"]] },
       { "name": "سفر", "icon": "plane", "h": 250, "s": 55, "l": 50, "from": ["سفر"],
         "subs": [["طيران", "plane-takeoff"], ["فنادق وسكن", "hotel"], ["تأشيرات ورسوم سفر", "stamp"], ["أنشطة سياحية", "map-pin"]] },
       { "name": "تعليم وتدريب", "icon": "graduation-cap", "h": 268, "s": 40, "l": 40, "from": ["تعليم وتدريب"],
