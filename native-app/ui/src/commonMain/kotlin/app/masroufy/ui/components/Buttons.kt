@@ -83,7 +83,7 @@ fun PrimaryButton(
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (loading) Spinner(color = Ink.onPrimary)
+        if (loading) CoinLoader(size = 18.dp, light = true)
         else if (leading != null) LucideIcon(leading, size = 20.dp, tint = Ink.onPrimary)
         BasicText(text, style = Type.of(if (height >= 52.dp) 16 else 15, FontWeight.Bold).copy(color = Ink.onPrimary, textAlign = TextAlign.Center))
     }
@@ -181,17 +181,5 @@ fun SurfaceIconButton(
     ) {
         LucideIcon(icon, size = iconSize, tint = Ink.text)
         badge?.invoke(this)
-    }
-}
-
-/** دوّامة «بيحمّل» (18 بلون النص) — «تقليل الحركة» ⇒ ثابتة. */
-@Composable
-fun Spinner(modifier: Modifier = Modifier, size: Dp = 18.dp, color: Color = Ink.text) {
-    val reduce = LocalReduceMotion.current
-    val turn = rememberInfiniteTransition(label = "spin")
-    val angle by turn.animateFloat(0f, 360f, infiniteRepeatable(tween(900, easing = CubicBezierEasing(0.45f, 0.05f, 0.55f, 0.95f)), RepeatMode.Restart), label = "angle")
-    Canvas(modifier.size(size).graphicsLayer { rotationZ = if (reduce) 0f else angle }) {
-        val w = 1.5.dp.toPx() * (size.value / 18f).coerceAtLeast(1f)
-        drawArc(color, startAngle = 0f, sweepAngle = 300f, useCenter = false, style = Stroke(width = w * 1.4f, cap = StrokeCap.Round))
     }
 }
