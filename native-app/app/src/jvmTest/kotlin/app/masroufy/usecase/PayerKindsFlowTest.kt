@@ -97,7 +97,7 @@ class PayerKindsFlowTest {
         assertTrue(view.asks)
         assertNull(view.ruleKind)
 
-        val undo = payer.answer(first.id, EconomicKind.BONUS)
+        val undo = payer.answer(first.id, EconomicKind.BONUS, makeRule = true)
         assertEquals(EconomicKind.BONUS, txns.findByIds(listOf(first.id)).single().economicKind)
         val next = deposit("2026-11-06", 60_000)
         val applied = applyKnownPayerSalary(next, sources.listAll(), "now")
@@ -109,7 +109,7 @@ class PayerKindsFlowTest {
         assertEquals(EconomicKind.UNCLASSIFIED, txns.findByIds(listOf(first.id)).single().economicKind)
         assertEquals(next, applyKnownPayerSalary(next, sources.listAll(), "now"), "التراجع شال القاعدة")
 
-        payer.answer(first.id, EconomicKind.ADVANCE_RECEIVED)
+        payer.answer(first.id, EconomicKind.ADVANCE_RECEIVED, makeRule = true)
         assertEquals(EconomicKind.ADVANCE_RECEIVED, payer.view(first.id)!!.ruleKind)
         payer.forgetRule(first.id)
         assertNull(payer.view(first.id)!!.ruleKind)

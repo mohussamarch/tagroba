@@ -203,6 +203,7 @@ fun BankSmsScreen() {
         if (u.status != SmsStatus.UNAVAILABLE && (u.live || u.trueWaiting > 0)) {
             smsWaitingItems(u, currency, categoryById, chosen, included, busy, handError, actions, r05.skip, r05.picks.ids)
         }
+        item(key = "money-what") { app.masroufy.ui.screens.operations.MoneyWhatPending(reload) } // r06-1b3: «الفلوس دي إيه؟» تحت المرتب
         if (u.live && u.isEmpty) {
             item(key = "empty") { EmptyState(t(UiKey.BANK_SMS_EMPTY_TITLE), t(UiKey.BANK_SMS_EMPTY_BODY)) }
         }

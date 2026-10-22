@@ -70,6 +70,7 @@ class MemoryTransactionRepository(seed: List<Transaction> = emptyList()) : Trans
             kindBeforeReversal = if (patch.clearKindBeforeReversal) null else patch.kindBeforeReversal ?: old.kindBeforeReversal,
             linkedExpenseId = if (patch.clearLinkedExpenseId) null else patch.linkedExpenseId ?: old.linkedExpenseId,
             linkedInflowMinor = if (patch.clearLinkedInflowMinor) null else patch.linkedInflowMinor ?: old.linkedInflowMinor,
+            linkedSplit = if (patch.clearLinkedSplit) null else patch.linkedSplit ?: old.linkedSplit,
             supportAskPending = patch.supportAskPending ?: old.supportAskPending,
             personRulesOff = patch.personRulesOff ?: old.personRulesOff,
         )

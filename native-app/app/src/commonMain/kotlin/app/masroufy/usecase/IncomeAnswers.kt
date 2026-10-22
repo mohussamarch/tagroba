@@ -46,7 +46,15 @@ data class IncomeAnswersDeps(
 )
 
 /** تراجع عن رد واحد: العملية قبل الرد + الحساب اللي الرد ده ربطه (لو ربط). */
-data class AnswerUndo(val before: KindSnapshot, val employerId: Id? = null, val attachedKey: String? = null, val rule: PayerRuleUndo? = null)
+data class AnswerUndo(
+    val before: KindSnapshot,
+    val employerId: Id? = null,
+    val attachedKey: String? = null,
+    val rule: PayerRuleUndo? = null,
+    /** r06-1b3: «حاجة تانية» كتبت اسمها ملاحظة ⇒ التراجع بيرجّع الملاحظة اللي كانت ([noteBefore] null = مكانش فيه). */
+    val restoreNote: Boolean = false,
+    val noteBefore: String? = null,
+)
 
 /** نتيجة «راتب الدوام»: الجهة (بعد الربط) · الطرف (null = الرسالة من غير اسم ولا رقم) · معاينة الباقي (null = مفيش حاجة تانية). */
 data class SalaryAnswer(val employer: IncomeSource?, val party: TransferPartyRef?, val retro: RetroPreview?, val undo: AnswerUndo)
@@ -100,7 +108,11 @@ class IncomeAnswers(private val deps: IncomeAnswersDeps) {
             val key = undo.attachedKey
             if (employerId != null && key != null) deps.employers.detach(employerId, key)
             // PLAN-0.6 §7: قاعدة «الفلوس دي إيه؟» بترجع زي ما كانت
-            undo.rule?.let { deps.employers.setPayerRule(it.employerId, it.partyKey, it.previous) }
+            undo.rule?.let { deps.employers.setPayerRule(it.employerId, it.partyKey, it.previous?.kind, it.previous?.label) }
+            if (undo.restoreNote) {
+                val note = undo.noteBefore
+                deps.txns.update(undo.before.id, if (note == null) TransactionPatch(clearNote = true) else TransactionPatch(note = note))
+            }
         }
     }
 

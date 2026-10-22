@@ -111,6 +111,11 @@ data class Transaction(
      * الاسترداد يتربط بيه (`LinkInflows` — العلامة بتتشال، والمصروف بيتحسب بالصافي). true بس — بتتكتب لو موجودة بس.
      */
     val awaitingRefund: Boolean? = null,
+    /**
+     * r06-1b3 (PLAN-0.6 §7 — «استرداد مصاريف» لأكتر من مشترى): على الداخلة اللي اتوزعت على أكتر من مصروف — «معرّف-المصروف=المبلغ بالهللة»
+     * لكل مصروف ([linkedSharesOf]). [linkedExpenseId] = أول واحد. null = الداخلة كلها لمصروف واحد (الشكل القديم). بيتكتب لو موجود بس.
+     */
+    val linkedSplit: List<String>? = null,
 )
 
 enum class AllocationKind(val wire: String) {

@@ -57,24 +57,71 @@ fun salaryByPayerAllowed(t: Transaction, employer: IncomeSource, profilePayday: 
 }
 
 private const val RULE_SEP = '='
+private const val PART_SEP = '\t'
 
-/** النوع المحفوظ للحساب ده على الجهة (null = لسه بيتسأل). */
-fun payerRuleKind(source: IncomeSource, partyKey: String): EconomicKind? =
+/** قاعدة الحساب: النوع + (لـ«حاجة تانية») الاسم بالإيموجي اللي بيتكتب على العملية. */
+data class PayerRule(val kind: EconomicKind, val label: String? = null)
+
+/** القاعدة المحفوظة للحساب ده على الجهة (null = لسه بيتسأل). الشكل: «النوع=مفتاح الطرف» و(اختياري) «⇥الاسم». */
+fun payerRuleOf(source: IncomeSource, partyKey: String): PayerRule? =
     source.payerKindRules.firstNotNullOfOrNull { rule ->
         val at = rule.indexOf(RULE_SEP)
-        if (at <= 0 || rule.substring(at + 1) != partyKey) null
+        val rest = if (at > 0) rule.substring(at + 1) else ""
+        if (at <= 0 || rest.substringBefore(PART_SEP) != partyKey) null
         else EconomicKind.entries.firstOrNull { it.wire == rule.substring(0, at) }
+            ?.let { PayerRule(it, rest.substringAfter(PART_SEP, "").ifBlank { null }) }
     }
 
+/** النوع المحفوظ للحساب ده على الجهة (null = لسه بيتسأل). */
+fun payerRuleKind(source: IncomeSource, partyKey: String): EconomicKind? = payerRuleOf(source, partyKey)?.kind
+
 /** الجهة بعد حفظ (أو مسح لو [kind] null) قاعدة الحساب [partyKey]. */
-fun withPayerRule(source: IncomeSource, partyKey: String, kind: EconomicKind?): IncomeSource {
-    val kept = source.payerKindRules.filterNot { it.substringAfter(RULE_SEP, "") == partyKey }
-    return source.copy(payerKindRules = if (kind == null) kept else kept + "${kind.wire}$RULE_SEP$partyKey")
+fun withPayerRule(source: IncomeSource, partyKey: String, kind: EconomicKind?, label: String? = null): IncomeSource {
+    val kept = source.payerKindRules.filterNot { it.substringAfter(RULE_SEP, "").substringBefore(PART_SEP) == partyKey }
+    val tail = label?.takeIf { it.isNotBlank() }?.let { "$PART_SEP$it" }.orEmpty()
+    return source.copy(payerKindRules = if (kind == null) kept else kept + "${kind.wire}$RULE_SEP$partyKey$tail")
 }
 
-/** التحويل بنوع القاعدة مؤكد (التصنيف ما بيتغيرش — زي [asConfirmedSalary]). */
-fun asConfirmedKind(t: Transaction, kind: EconomicKind, nowIso: String): Transaction =
-    t.copy(economicKind = kind, economicKindConfirmed = true, reviewState = ReviewState.CONFIRMED, suggestedKind = null, updatedAt = nowIso)
+/** التحويل بنوع القاعدة مؤكد (التصنيف ما بيتغيرش — زي [asConfirmedSalary]). [label] («حاجة تانية») بيتكتب ملاحظة لو مفيش ملاحظة. */
+fun asConfirmedKind(t: Transaction, kind: EconomicKind, nowIso: String, label: String? = null): Transaction =
+    t.copy(
+        economicKind = kind, economicKindConfirmed = true, reviewState = ReviewState.CONFIRMED, suggestedKind = null, updatedAt = nowIso,
+        note = if (label != null && t.note.isNullOrBlank()) label else t.note,
+    )
+
+/** r06-1b3: الإيموجيات الـ12 لـ«حاجة تانية» (التصميم `MoneyWhat`) — الأول هو المختار من الأول. */
+val PAYER_CUSTOM_EMOJIS: List<String> = listOf("💼", "🎁", "🧾", "🎓", "🏠", "🚗", "📱", "✈️", "🩺", "🍽️", "💡", "⭐")
+const val PAYER_CUSTOM_NAME_MAX: Int = 40
+
+/** اختيار «حاجة تانية» محفوظ لحساب واحد: الإيموجي + الاسم. */
+data class PayerCustomKind(val emoji: String, val name: String) {
+    val label: String get() = "$emoji $name"
+}
+
+/** اختيارات «حاجة تانية» المحفوظة للحساب [partyKey] بس (مش لأي حساب تاني ولا جهة تانية). */
+fun payerCustomKindsOf(source: IncomeSource, partyKey: String): List<PayerCustomKind> =
+    source.payerCustomKinds.mapNotNull { row ->
+        val parts = row.split(PART_SEP)
+        if (parts.size != 3 || parts[0] != partyKey || parts[2].isBlank()) null else PayerCustomKind(parts[1], parts[2])
+    }
+
+/** الجهة بعد حفظ اختيار [custom] للحساب [partyKey] — نفس الاسم موجود ⇒ زي ما هي. */
+fun withPayerCustomKind(source: IncomeSource, partyKey: String, custom: PayerCustomKind): IncomeSource {
+    if (payerCustomKindsOf(source, partyKey).any { it.name == custom.name }) return source
+    return source.copy(payerCustomKinds = source.payerCustomKinds + listOf(partyKey, custom.emoji, custom.name).joinToString(PART_SEP.toString()))
+}
+
+/** الاسم صالح: مش فاضي، من غير فاصل، ومش أطول من [PAYER_CUSTOM_NAME_MAX]، والإيموجي من الـ12. */
+fun validPayerCustomKind(custom: PayerCustomKind): Boolean =
+    custom.name.isNotBlank() && custom.name.length <= PAYER_CUSTOM_NAME_MAX && PART_SEP !in custom.name && custom.emoji in PAYER_CUSTOM_EMOJIS
+
+/** ليه التحويل ده مش شبه المرتب (السطر الأصفر): المبلغ بعيد · الميعاد بعيد (كلمة راتب مش موجودة دايمًا لما بيتسأل). */
+data class PayerWhy(val amountFar: Boolean, val dateFar: Boolean)
+
+fun payerWhyOf(t: Transaction, employer: IncomeSource, profilePayday: Int?): PayerWhy = PayerWhy(
+    amountFar = !amountNearSalary(t.amountMinor, employer.expectedMinor),
+    dateFar = employer.payFrequency != PayFrequency.WEEKLY && !nearPayday(t.occurredAt, employer.expectedDayOfMonth ?: profilePayday),
+)
 
 /** تحويل داخل من حساب جهة شغل مش راتب لوحده ولا ليه قاعدة ⇒ «الفلوس دي إيه؟». */
 fun asksPayerKind(t: Transaction, sources: List<IncomeSource>, profilePayday: Int?): Boolean {

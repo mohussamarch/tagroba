@@ -8,7 +8,11 @@ import app.masroufy.core.Transaction
 import app.masroufy.core.canHaveLinkedInflows
 import app.masroufy.core.checkLink
 import app.masroufy.core.inflowRefusal
+import app.masroufy.core.encodeLinkedSplit
 import app.masroufy.core.isLinkedInflow
+import app.masroufy.core.isLinkedTo
+import app.masroufy.core.linkedShareTo
+import app.masroufy.core.linkedSharesOf
 import app.masroufy.core.linkRoomOf
 import app.masroufy.core.linkWindowEnd
 import app.masroufy.core.linkWindowStart
@@ -54,7 +58,7 @@ sealed interface LinkedInflowsView {
 }
 
 /** r041 A11 — اللي اتفك ([inflowId] كانت تابعة لـ[expenseId]) عشان «تراجع» يرجّعه. */
-data class UnlinkUndo(val inflowId: Id, val expenseId: Id)
+data class UnlinkUndo(val inflowId: Id, val expenseId: Id, val split: Map<Id, Halalas>? = null)
 
 /**
  * §6.5-14 «عمليات تابعة» — الربط والفك. **الرصيد ما بيتغيرش**: النوع والمبلغ والمحفظة ما بيتلمسوش، حقلين اختياريين بس
@@ -68,9 +72,10 @@ class LinkInflows(private val deps: LinkInflowsDeps) {
         if (isLinkedInflow(t)) return LinkedInflowsView.Inflow(t, t.linkedExpenseId?.let { deps.txns.findByIds(listOf(it)).singleOrNull() })
         if (!canHaveLinkedInflows(t)) return LinkedInflowsView.None
         val window = windowOf(t)
-        val linked = window.filter { it.linkedExpenseId == t.id && it.observedDirection == Direction.IN }
+        val linked = window.filter { isLinkedTo(it, t.id) }
+        val linkedTotal = sharesTo(t.id, linked)
         // مجموع متخزن مش مطابق (داخلة اتمسحت أو تراجع دفعة) ⇒ بيتصلح هنا — آمن التكرار
-        val expense = if ((t.linkedInflowMinor ?: 0L) == sumMoney(linked.map { it.amountMinor })) t else resum(t, linked).let { fresh(t.id) ?: t }
+        val expense = if ((t.linkedInflowMinor ?: 0L) == linkedTotal) t else resum(t, linkedTotal).let { fresh(t.id) ?: t }
         val open = window.filter { it.linkedExpenseId == null && inflowRefusal(expense, it) == null }
         val blocked = ledgerLinked(open.map { it.id })
         return LinkedInflowsView.Expense(
@@ -90,12 +95,52 @@ class LinkInflows(private val deps: LinkInflowsDeps) {
             if (inflows.size != ids.size) return@run LinkRefusal.NOT_INFLOW
             if (ledgerLinked(ids).isNotEmpty()) return@run LinkRefusal.LEDGER_LINKED
             checkLink(expense, inflows, deps.allocations.listByTransactionIds(listOf(expense.id)))?.let { return@run it }
-            val already = windowOf(expense).filter { it.linkedExpenseId == expense.id && it.observedDirection == Direction.IN && it.id !in ids }
+            val already = windowOf(expense).filter { isLinkedTo(it, expense.id) && it.id !in ids }
+            val adding = sumMoney(inflows.map { if (isLinkedTo(it, expense.id)) linkedShareTo(it, expense.id) else it.amountMinor })
             val now = deps.clock.nowIso()
-            for (i in inflows) if (i.linkedExpenseId != expense.id) deps.txns.update(i.id, TransactionPatch(linkedExpenseId = expense.id, updatedAt = now))
-            resum(expense, already + inflows, now)
+            for (i in inflows) if (!isLinkedTo(i, expense.id)) deps.txns.update(i.id, TransactionPatch(linkedExpenseId = expense.id, updatedAt = now))
+            resum(expense, sumMoney(listOf(sharesTo(expense.id, already), adding)), now)
             // PLAN-0.6 §7: الاسترداد وصل ⇒ «مستني استرداد» بتتشال والمشترى بيتحسب بالصافي
             if (expense.awaitingRefund == true) deps.txns.update(expense.id, TransactionPatch(awaitingRefund = false, updatedAt = now))
+            null
+        }
+    }
+
+    /**
+     * r06-1b3 — «استرداد مصاريف» لأكتر من مشترى: الداخلة [inflowId] بتتوزع على المصروفات [shares] (المعرّف ⇒ النصيب بالهللة، بالترتيب).
+     * كل نصيب لازم ما يعدّيش اللي فاضل في مصروفه ([linkRoomOf])، والمجموع ما يعدّيش الداخلة (الباقي منها ما بيتربطش بحاجة). الداخلة كلها
+     * بتبقى تابعة (ما بتتحسبش دخل) — زي الربط العادي. «مستني استرداد» بتتشال من كل مصروف اتربط. null = اتربطت · غير كده سبب الرفض.
+     */
+    suspend fun linkSplit(inflowId: Id, shares: Map<Id, Halalas>): LinkRefusal? {
+        val parts = shares.filterValues { it > 0 }
+        if (parts.isEmpty()) return null
+        return deps.uow.run {
+            val inflow = fresh(inflowId) ?: return@run LinkRefusal.NOT_INFLOW
+            if (inflow.linkedExpenseId != null) return@run LinkRefusal.ALREADY_LINKED
+            if (sumMoney(parts.values.toList()) > inflow.amountMinor) return@run LinkRefusal.OVER_EXPENSE
+            if (ledgerLinked(listOf(inflowId)).isNotEmpty()) return@run LinkRefusal.LEDGER_LINKED
+            val found = deps.txns.findByIds(parts.keys.toList()).associateBy { it.id }
+            val allocations = deps.allocations.listByTransactionIds(parts.keys.toList())
+            val totals = LinkedHashMap<Id, Halalas>()
+            for ((id, share) in parts) {
+                val e = found[id] ?: return@run LinkRefusal.NOT_EXPENSE
+                if (!canHaveLinkedInflows(e)) return@run LinkRefusal.NOT_EXPENSE
+                inflowRefusal(e, inflow)?.let { return@run it }
+                if (share > linkRoomOf(e, allocations)) return@run LinkRefusal.OVER_EXPENSE
+                totals[id] = sumMoney(listOf(sharesTo(id, windowOf(e).filter { isLinkedTo(it, id) }), share))
+            }
+            val now = deps.clock.nowIso()
+            val whole = parts.size == 1 && parts.values.first() == inflow.amountMinor
+            deps.txns.update(
+                inflowId,
+                if (whole) TransactionPatch(linkedExpenseId = parts.keys.first(), updatedAt = now)
+                else TransactionPatch(linkedExpenseId = parts.keys.first(), linkedSplit = encodeLinkedSplit(parts), updatedAt = now),
+            )
+            for ((id, total) in totals) {
+                val e = found.getValue(id)
+                resum(e, total, now)
+                if (e.awaitingRefund == true) deps.txns.update(id, TransactionPatch(awaitingRefund = false, updatedAt = now))
+            }
             null
         }
     }
@@ -110,25 +155,32 @@ class LinkInflows(private val deps: LinkInflowsDeps) {
     suspend fun unlinkWithUndo(inflowId: Id): UnlinkUndo? = deps.uow.run {
         val inflow = fresh(inflowId)
         val expenseId = inflow?.linkedExpenseId ?: return@run null
-        val expense = fresh(expenseId)
-        val rest = expense?.let { e -> windowOf(e).filter { it.linkedExpenseId == e.id && it.observedDirection == Direction.IN && it.id != inflowId } }
+        val shares = linkedSharesOf(inflow)
+        // r06-1b3: الموزّعة على أكتر من مصروف بتتفك من كلهم — القرايات الأول
+        val rests = shares.keys.mapNotNull { id -> fresh(id)?.let { e -> e to sharesTo(id, windowOf(e).filter { isLinkedTo(it, id) && it.id != inflowId }) } }
         val now = deps.clock.nowIso()
-        deps.txns.update(inflowId, TransactionPatch(clearLinkedExpenseId = true, updatedAt = now))
-        if (expense != null && rest != null) resum(expense, rest, now)
-        UnlinkUndo(inflowId, expenseId)
+        deps.txns.update(inflowId, TransactionPatch(clearLinkedExpenseId = true, clearLinkedSplit = inflow.linkedSplit != null, updatedAt = now))
+        for ((e, rest) in rests) resum(e, rest, now)
+        UnlinkUndo(inflowId, expenseId, shares.takeIf { inflow.linkedSplit != null })
     }
 
     /** «تراجع» بعد «فك الربط»: يربطها تاني بنفس المصروف — آمن التكرار (مربوطة فعلًا ⇒ ولا كتابة). null = رجعت · غير كده سبب الرفض. */
-    suspend fun relink(undo: UnlinkUndo): LinkRefusal? = link(undo.expenseId, listOf(undo.inflowId))
+    suspend fun relink(undo: UnlinkUndo): LinkRefusal? {
+        val split = undo.split ?: return link(undo.expenseId, listOf(undo.inflowId))
+        if (fresh(undo.inflowId)?.let { linkedSharesOf(it) == split } == true) return null
+        return linkSplit(undo.inflowId, split)
+    }
 
     private suspend fun fresh(id: Id): Transaction? = deps.txns.findByIds(listOf(id)).singleOrNull()
 
     private suspend fun windowOf(expense: Transaction): List<Transaction> =
         deps.txns.listByDateRange(linkWindowStart(expense.occurredAt), linkWindowEnd(expense.occurredAt))
 
-    /** مجموع التابعة على المصروف = [linked] (صفر ⇒ الحقل بيتشال، فالمصروف بيرجع زي ما كان بالظبط). */
-    private suspend fun resum(expense: Transaction, linked: List<Transaction>, now: String = deps.clock.nowIso()) {
-        val total = sumMoney(linked.map { it.amountMinor })
+    /** مجموع أنصبة [expenseId] من الداخلات [linked]. */
+    private fun sharesTo(expenseId: Id, linked: List<Transaction>): Halalas = sumMoney(linked.map { linkedShareTo(it, expenseId) })
+
+    /** مجموع التابعة على المصروف = [total] (صفر ⇒ الحقل بيتشال، فالمصروف بيرجع زي ما كان بالظبط). */
+    private suspend fun resum(expense: Transaction, total: Halalas, now: String = deps.clock.nowIso()) {
         if ((expense.linkedInflowMinor ?: 0L) == total) return
         deps.txns.update(
             expense.id,
@@ -155,8 +207,8 @@ class LinkInflows(private val deps: LinkInflowsDeps) {
  */
 /** أطراف «عمليات تابعة» اللي ليها علاقة بـ[t]: مصروف الداخلة دي، أو الداخلات المربوطة بالمصروف ده — زي ما هي (للتراجع). */
 internal suspend fun linkedPartners(txns: TransactionRepository, t: Transaction): List<Transaction> = buildList {
-    t.linkedExpenseId?.let { addAll(txns.findByIds(listOf(it))) }
-    if (t.linkedInflowMinor != null) addAll(txns.listByDateRange(linkWindowStart(t.occurredAt), linkWindowEnd(t.occurredAt)).filter { it.linkedExpenseId == t.id })
+    linkedSharesOf(t).keys.takeIf { it.isNotEmpty() }?.let { addAll(txns.findByIds(it.toList())) }
+    if (t.linkedInflowMinor != null) addAll(txns.listByDateRange(linkWindowStart(t.occurredAt), linkWindowEnd(t.occurredAt)).filter { isLinkedTo(it, t.id) })
 }
 
 /**
@@ -176,15 +228,23 @@ class LinkedUndo(private val txns: TransactionRepository, private val clock: Clo
         val gone = deleting.toSet()
         val now = clock.nowIso()
         for (t in txns.findByIds(deleting)) {
-            val expenseId = t.linkedExpenseId
-            if (expenseId != null && expenseId !in gone) {
+            for ((expenseId, share) in linkedSharesOf(t)) {
+                if (expenseId in gone) continue
                 val expense = txns.findByIds(listOf(expenseId)).singleOrNull() ?: continue
-                val left = (expense.linkedInflowMinor ?: 0L) - t.amountMinor
+                val left = (expense.linkedInflowMinor ?: 0L) - share
                 txns.update(expenseId, if (left > 0) TransactionPatch(linkedInflowMinor = left, updatedAt = now) else TransactionPatch(clearLinkedInflowMinor = true, updatedAt = now))
             }
             if (t.linkedInflowMinor != null && t.observedDirection == Direction.OUT) {
-                val orphans = txns.listByDateRange(linkWindowStart(t.occurredAt), linkWindowEnd(t.occurredAt)).filter { it.linkedExpenseId == t.id && it.id !in gone }
-                for (o in orphans) txns.update(o.id, TransactionPatch(clearLinkedExpenseId = true, updatedAt = now))
+                val orphans = txns.listByDateRange(linkWindowStart(t.occurredAt), linkWindowEnd(t.occurredAt)).filter { isLinkedTo(it, t.id) && it.id !in gone }
+                for (o in orphans) {
+                    // r06-1b3: الموزّعة بتفضل تابعة للباقيين بس
+                    val kept = linkedSharesOf(o).filterKeys { it !in gone }
+                    txns.update(
+                        o.id,
+                        if (o.linkedSplit == null || kept.isEmpty()) TransactionPatch(clearLinkedExpenseId = true, clearLinkedSplit = o.linkedSplit != null, updatedAt = now)
+                        else TransactionPatch(linkedExpenseId = kept.keys.first(), linkedSplit = encodeLinkedSplit(kept), updatedAt = now),
+                    )
+                }
             }
         }
     }
