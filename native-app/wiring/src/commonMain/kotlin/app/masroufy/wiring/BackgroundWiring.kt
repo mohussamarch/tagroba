@@ -52,12 +52,22 @@ fun smsImportDeps(spaceId: String, r: SpaceRepositories, env: DeviceEnv, inbox: 
  * **كل** المرشحين (المستحقات · الميزانية · التحويلات · الزكاة · المناسبات · الدخل · المساعد …) بنفس اللي الشاشة بتجمعه — شغل منطقة
  * الإشعارات (`GatherAllSpaceAlerts`). لحد ما يتوصل: التسجيل لوحده شغال، ومفيش إشعار جوال.
  */
-fun backgroundCycle(spaces: List<Pair<Space, SpaceRepositories>>, inbox: SmsInboxPort, notifier: DeviceNotifier, env: DeviceEnv): RunBackgroundCycle {
+fun backgroundCycle(
+    spaces: List<Pair<Space, SpaceRepositories>>, inbox: SmsInboxPort, notifier: DeviceNotifier, env: DeviceEnv,
+    noticeMemory: app.masroufy.port.NoticeMemoryPort? = null,
+): RunBackgroundCycle {
     val lanes = spaces.mapNotNull { (space, r) -> smsLaneOf(space, r, env, inbox) }
+    val auto = AutoRecordSms(AutoRecordSmsDeps(inbox, lanes, work = env.work))
+    // PLAN-0.6 §13 (ج): التلات حالات بس (شكل جديد مستني · الإذن اتسحب · رسايل فاتته) — من غير المحرك، والمسجّل لوحده من غير إشعار
+    val notices = noticeMemory?.let { memory ->
+        app.masroufy.usecase.SmsStateNotices(
+            app.masroufy.usecase.SmsStateNoticesDeps({ auto.inboxState() }, { env.backgroundRead?.lastAnyRead() }, memory, notifier),
+        )
+    }
     // §83-2: من آخر نقطة لكل بلد (إعدادات الحساب — نفس المخزن في كل البلاد)
     val catchUp = spaces.firstOrNull()?.let { (_, r) -> SmsCatchUp(inbox, r.assistant.settings, lanes.map { it.spaceId }, env.clock) }
     return RunBackgroundCycle(
-        BackgroundCycleDeps(sms = AutoRecordSms(AutoRecordSmsDeps(inbox, lanes, work = env.work)), candidates = null, engine = null, notifier = notifier, smsCatchUp = catchUp,
+        BackgroundCycleDeps(sms = auto, candidates = null, engine = null, notifier = notifier, smsCatchUp = catchUp, smsNotices = notices,
             openingDebtRepairs = spaces.map { (space, r) -> app.masroufy.usecase.RepairOpeningDebtCurrency(r.people, r.obligations, space.currency) },
             duplicateScans = spaces.map { (space, r) -> app.masroufy.usecase.DuplicateChargeAsks(space.id, r.transactions, env.clock) },
             categoryRepairs = spaces.map { (space, r) -> app.masroufy.usecase.RepairMissingDefaultSubs(r.categories, app.masroufy.seed.BundledSeeds, countryPack(space.countryCode)) },

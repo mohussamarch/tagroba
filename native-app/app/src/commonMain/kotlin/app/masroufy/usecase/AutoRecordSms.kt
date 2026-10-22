@@ -251,6 +251,9 @@ class AutoRecordSms(private val deps: AutoRecordSmsDeps) {
      */
     suspend fun waiting(): SmsWaiting = locked { if (off()) SmsWaiting(emptyList()) else routes.waiting().waiting }
 
+    /** PLAN-0.6 §13 (ج): حالة الصندوق (مفعّل · الإذن · أحدث صفحة) تحت نفس القفل — لإشعارات حالة القراية. null = الجهاز مالوش رسايل. */
+    suspend fun inboxState(): app.masroufy.port.SmsInboxState? = if (!deps.inbox.available) null else locked { deps.inbox.sync() }
+
     /**
      * سؤال لكل رسالة مستنية (`SmsAskSource`): «ده راتبك؟» لو عليها، وإلا «مستنية تأكيدك» — بلدها ويومها لو اتقرت. الرسالة اللي ولا قارئ
      * فهمها: بلدها = البلد اللي المالك ربط فيها البنك ده بمحفظة (لو بلد واحدة)، أو البلد الوحيدة؛ غير كده **مش معروفة** (`spaceId` فاضي)
