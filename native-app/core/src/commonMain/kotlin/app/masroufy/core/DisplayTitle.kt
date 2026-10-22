@@ -7,7 +7,7 @@ package app.masroufy.core
  * عرض بس: ما بيكتبش في `rawMerchantName` — ذاكرة التجار و`sharedMerchants` عمرها ما تشيل أسامي ناس (CLAUDE.md الأمان 7).
  */
 fun displayTitleOrNull(tx: Transaction, merchant: String? = null): String? =
-    clean(merchant) ?: clean(tx.rawMerchantName) ?: clean(tx.note) ?: partyTitleOf(tx) ?: firstLineOf(tx.rawDescription)
+    clean(merchant) ?: clean(tx.rawMerchantName)?.let(::cleanCardName) ?: clean(tx.note) ?: partyTitleOf(tx) ?: firstLineOf(tx.rawDescription)
 
 /** زي [displayTitleOrNull] وآخرها اسم نوع العملية. */
 fun displayTitleOf(tx: Transaction, merchant: String? = null): String = displayTitleOrNull(tx, merchant) ?: ruleFor(tx.economicKind).label

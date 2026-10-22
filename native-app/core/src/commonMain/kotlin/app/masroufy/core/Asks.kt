@@ -42,6 +42,9 @@ enum class AskKind {
 
     /** رسالة بنك مستنية تأكيدك (أي سبب تاني). */
     SMS_WAITING,
+
+    /** r06-darahim (§12-5): خصم تاني من نفس المحل بمبلغ قريب في خلال دقيقة ⇒ «مكرر؟» (`duplicateAskPending`). */
+    DUPLICATE_CHARGE,
 }
 
 /**

@@ -1715,3 +1715,11 @@ Legacy v1 restoration remains a separate compatibility path; its coverage is exp
 - **sms-1:** رِجل الداخل في «تحويل بين حساباتك» رقم سطرها = سطر الرسالة + `IN_LEG_LINE_OFFSET` (مليون) — ده بيبقى `sourceOrder` و`originalRowIndex` بتوعها (ترتيبها في يومها بييجي في الآخر). رِجل مالهاش محفظة من حق المرسل ⇒ `SMS_WAIT_OTHER_ACCOUNT` لوحدها.
 - **people-1:** `addOpeningDebt` بياخد العملة، فاتشال قفل «الريال بس» من «دين قديم» وإضافة شخص وديون البروفايل (`CurrencyNotReady` و`PPL_SAR_ONLY` ما بقوش بيتستعملوا). التصليح `RepairOpeningDebtCurrency` بيشتغل في دورة الخلفية لكل بلد (آمن التكرار) — من غير دورة خلفية (الآيفون) ما بيشتغلش.
 - **money-1:** `spaceTransfersOf(c)` (`wiring/SpaceLegsWiring.kt`) اتنقلت من `OperationsGraph` عشان «الاستيراد» يدّي `spaceLegs`؛ `importBatchUndoers` (`ReturnsWiring.kt`) = الدمج · «اللي رجع» · «عمليات تابعة» · الاشتراك. `ReturnsWiring.undoers` لسه موجودة لاختبارها بس.
+
+### 31.48 جولة 0.6 (دراهم — PLAN §12): قرارات Claude في التنفيذ (2026-10-22، فرع `r06-darahim` فوق `f1484d83` — OVERRIDES §109)
+
+- **مولّد البذور:** `scripts/gen-bundled-seed.mjs` بيكتب `BundledSeedJson.kt` من `categoryTree.json` و`rule-reference.json` (نفس الصيغة بالحرف — اتجرب على النسخة القديمة وطلع مطابق). أي تعديل في الملفين ⇒ شغّله، و`NewAccountOnboardingTest.bundledSeedsMatchTheRepositoryFiles` بيتأكد.
+- **حقول العملية الجديدة اختيارية وبتتكتب لو موجودة بس** (`excludedFromReports` · `meal` · `duplicateAskPending`) ⇒ مفيش ترحيل بيانات. فحص النسخة: البوليانين في `BOOLEANS` والوجبة في `OPTIONAL_ENUMS`.
+- **`ExclusionScope`** (`Entities.kt`): `computePeriodTotals` و`categoryDistribution` بياخدوا النطاق (الافتراضي التقارير)؛ شاشة الميزانية بتبعت `BUDGET`.
+- **`OperationDetailScreen` على حد الـ300:** «فرق الكاش» اتنقل لـ`DetailCashBox.kt`، والأجزاء الجديدة في `DarahimDetailParts.kt` (سطر واحد في الشاشة) — عشان الدمج مع فرع `r06-1b3` يبقى صغير.
+- **«مكرر؟» مش متوصل بشاشة قايمة:** `CountNeedsConfirmation` نفسه مش متوصل بمصادر في الإنتاج لسه، فالسؤال بيظهر في «تفاصيل العملية» والمصدر (`DuplicateChargeAsks` كـ`AskSource`) جاهز للتوصيل.

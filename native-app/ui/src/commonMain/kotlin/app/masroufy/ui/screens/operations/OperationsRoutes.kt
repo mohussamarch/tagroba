@@ -82,6 +82,9 @@ interface OperationsDeps {
     /** PLAN-0.6 §7: «الفلوس دي إيه؟» على تحويل من حساب جهة الشغل مش راتب · «استرداد مصاريف» · «مستني استرداد». null ⇒ مخفية. */
     val payerKinds: app.masroufy.usecase.PayerKindAnswers? get() = null
 
+    /** r06-darahim (§12-5): سؤال «مكرر؟» على العملية. */
+    val duplicates: app.masroufy.usecase.DuplicateChargeAsks? get() = null
+
     /** ردود «مَن هذا؟» الجديدة (2026-10-16): شركة · مستحقات دايمًا · حاجة تانية · تجاهل بتراجع — وكمان «حسابات متجاهَلة» وقاعدة المستحقات في صفحة الشخص. null ⇒ مخفية. */
     val partyAnswers: app.masroufy.usecase.TransferPartyAnswers? get() = null
 

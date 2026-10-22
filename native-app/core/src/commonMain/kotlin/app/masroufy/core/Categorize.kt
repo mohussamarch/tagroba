@@ -148,7 +148,8 @@ fun rememberMerchant(all: List<Merchant>, rawName: String, categoryId: Id, newId
     if (normalizedName.isEmpty() || displayName.all { it in '0'..'9' || JsText.isWhitespace(it) || it in "*•.:-" }) return null
     val existing = merchantIndex(all)[normalizedName]
     if (existing != null) return existing.copy(verifiedCategoryId = categoryId)
-    return Merchant(newId, displayName.take(120), normalizedName, verifiedCategoryId = categoryId)
+    // r06-darahim §12-4: اسم العرض منضّف («… RIYADH SA» ⇒ «…») — المطابقة على الاسم الأصلي ([normalizedName]) زي ما هي
+    return Merchant(newId, cleanCardName(displayName).take(120), normalizedName, verifiedCategoryId = categoryId)
 }
 
 /**

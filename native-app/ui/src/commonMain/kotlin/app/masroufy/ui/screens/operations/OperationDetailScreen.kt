@@ -147,7 +147,7 @@ fun OperationDetailScreen(transactionId: Id, openPerson: Boolean = false) {
                     item(key = "linked-parent") { LinkedParentBanner(li, unlinks) { linkStep { l, show -> confirm(l, show) } } }
                 }
                 if (v.unrecorded && v.category?.status == CategoryStatus.NONE) item(key = "cash") { CashDifferenceBox { picking = true } }
-                if (!s.locked && !v.unrecorded) item(key = "darahim") { DarahimDetailExtras(v.transaction, s.categories) { reload++ } } // §12: الوجبة والعلامتين
+                if (!s.locked && !v.unrecorded) item(key = "darahim") { DarahimDetailExtras(v.transaction, s.categories, onErased = { erased = it }) { reload++ } } // §12: الوجبة والعلامتين
                 val party = v.askParty ?: partyShown
                 if (party != null) item(key = "party") { TransferPartyCard(party, v.id, onChanged = { reload++ }) }
                 // تغيير نوع تحويل داخل اتقرر (البند 6) — مش على رجل «التحويل لنفسك»

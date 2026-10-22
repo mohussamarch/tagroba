@@ -1,9 +1,20 @@
 package app.masroufy.ui.screens.operations
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import app.masroufy.core.displayTitleOf
+import app.masroufy.ui.components.PrimaryButton
+import app.masroufy.ui.components.TonalButton
+import app.masroufy.ui.theme.Radius
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,11 +45,35 @@ import kotlinx.coroutines.launch
  * الوجبة على المطعم (§12-2) · «برّه الميزانية» و«برّه التقارير» (§12-3). الحساب كله في `EditTransaction` و`Meals.kt` — هنا عرض بس.
  */
 @Composable
-internal fun DarahimDetailExtras(t0: Transaction, categories: List<Category>, onChanged: () -> Unit) {
+internal fun DarahimDetailExtras(t0: Transaction, categories: List<Category>, onErased: (TxnErased) -> Unit, onChanged: () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        if (t0.duplicateAskPending == true) DuplicateAskCard(t0, onErased, onChanged)
         if (t0.meal != null || isRestaurantCategory(t0.categoryId, categories)) MealChips(t0, categories, onChanged)
         ExclusionChips(t0, onChanged)
     }
+}
+
+/** §12-5 «مكرر؟»: «أيوه مكرر — شيله» = لوحة المسح الموجودة (بتراجعها) · «لأ، الاتنين صح» = السؤال يتقفل وما يرجعش. */
+@Composable
+private fun DuplicateAskCard(t0: Transaction, onErased: (TxnErased) -> Unit, onChanged: () -> Unit) {
+    val ops = LocalSpace.current.operations
+    val scope = rememberCoroutineScope()
+    var erasing by remember(t0.id) { mutableStateOf(false) }
+    var error by remember(t0.id) { mutableStateOf<String?>(null) }
+    Column(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(Radius.card)).background(Color(0x14C98A1E)).padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        BasicText(t(R06Key.DUP_ASK_TITLE), style = Type.of(14, FontWeight.Bold))
+        BasicText(t(R06Key.DUP_ASK_BODY, displayTitleOf(t0)), style = Type.of(13).copy(color = Ink.muted))
+        if (ops.erase != null) PrimaryButton(t(R06Key.DUP_ASK_REMOVE), onClick = { erasing = true }, modifier = Modifier.fillMaxWidth())
+        TonalButton(t(R06Key.DUP_ASK_KEEP), {
+            val dup = ops.duplicates ?: return@TonalButton
+            scope.launch { error = failureOf { dup.keepBoth(t0.id) }; if (error == null) onChanged() }
+        }, Modifier.fillMaxWidth(), muted = true)
+        error?.let { FieldError(it) }
+    }
+    OperationEraseSheet(if (erasing) t0.id else null, ops.erase, onDismiss = { erasing = false }) { e -> erasing = false; onErased(e) }
 }
 
 private val MEAL_LABELS = listOf(Meal.BREAKFAST to R06Key.MEAL_BREAKFAST, Meal.LUNCH to R06Key.MEAL_LUNCH, Meal.DINNER to R06Key.MEAL_DINNER)
