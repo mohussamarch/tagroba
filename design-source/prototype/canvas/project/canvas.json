@@ -1281,6 +1281,14 @@
       "y": 33500,
       "w": 350,
       "h": 300
+    },
+    "NightPrivacy.dc.html": {
+      "is_interactive": true,
+      "title": "المظهر الليلي وإخفاء الأرقام · NightPrivacy",
+      "x": 2560,
+      "y": 33500,
+      "w": 390,
+      "h": 844
     }
   },
   "createdOnFiles": {
@@ -1598,7 +1606,8 @@
     "BnplSplit.dc.html",
     "CountryMark.dc.html",
     "LinkPay.dc.html",
-    "HeroReserve.dc.html"
+    "HeroReserve.dc.html",
+    "NightPrivacy.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"
