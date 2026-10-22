@@ -122,7 +122,8 @@ fun InvestmentScreen() {
     val holdings = rememberHoldings(deps.holdings, snapshot) { scope.launch { loadShared() } }
     val insights = rememberInsights(deps.insights, snapshot, rates)
     val title = t(UiKey.TAB_INVESTMENT)
-    TabScaffold(title, header = {
+    val pull = app.masroufy.ui.screens.common.rememberPullRefresh(refreshing, ::refresh)
+    TabScaffold(title, refresh = pull, header = {
         // «تحديث الأسعار» بس — «ضيف حاجة» بقت جوه «حاجاتي» (مواصفة §1.0 — اختيار Claude ❓)
         TabHeader(title, actions = { SurfaceIconButton(Lucide.REFRESH_CW, t(UiKey.INVEST_REFRESH), ::refresh) })
     }) {
@@ -163,8 +164,8 @@ fun refreshedText(skipped: Int): String =
 private fun LoadingBlocks() {
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         Skeleton(Modifier.fillMaxWidth().height(132.dp), radius = 28.dp, strong = true)
-        Skeleton(Modifier.fillMaxWidth().height(210.dp))
-        Skeleton(Modifier.fillMaxWidth().height(112.dp))
+        Skeleton(quiet = true, modifier = Modifier.fillMaxWidth().height(210.dp))
+        Skeleton(quiet = true, modifier = Modifier.fillMaxWidth().height(112.dp))
     }
 }
 

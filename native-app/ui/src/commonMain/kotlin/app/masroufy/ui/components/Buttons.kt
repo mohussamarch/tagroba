@@ -17,7 +17,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import app.masroufy.core.R06Key
 import app.masroufy.ui.text.BasicText
+import app.masroufy.ui.text.t
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -83,9 +85,9 @@ fun PrimaryButton(
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (loading) CoinLoader(size = 18.dp, light = true)
+        if (loading) CoinLoader(size = 18.dp, description = null)
         else if (leading != null) LucideIcon(leading, size = 20.dp, tint = Ink.onPrimary)
-        BasicText(text, style = Type.of(if (height >= 52.dp) 16 else 15, FontWeight.Bold).copy(color = Ink.onPrimary, textAlign = TextAlign.Center))
+        BasicText(if (loading) t(R06Key.LOADER_SAVING) else text, style = Type.of(if (height >= 52.dp) 16 else 15, FontWeight.Bold).copy(color = Ink.onPrimary, textAlign = TextAlign.Center))
     }
 }
 

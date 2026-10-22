@@ -106,7 +106,7 @@ fun ReviewQueueScreen() {
             d == null -> item(key = "loading") {
                 Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     Skeleton(Modifier.fillMaxWidth().height(120.dp), radius = 28.dp, strong = true)
-                    Skeleton(Modifier.fillMaxWidth().height(160.dp))
+                    Skeleton(quiet = true, modifier = Modifier.fillMaxWidth().height(160.dp))
                 }
             }
             reviewTotal(d.summary) == 0 -> {

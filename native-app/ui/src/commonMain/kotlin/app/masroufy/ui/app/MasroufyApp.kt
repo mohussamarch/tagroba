@@ -103,8 +103,8 @@ fun OpeningScreen(synced: Int?, total: Int?) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        // r06: علامة التحميل بتاعة البرنامج «عملات بتترص» (64.dp) بدل أيقونة التحديث
-        app.masroufy.ui.components.CoinLoader(size = 64.dp)
+        // r06: علامة التحميل بتاعة البرنامج «عملات بتترص» (112.dp) بدل أيقونة التحديث
+        app.masroufy.ui.components.CoinLoader(size = 112.dp)
         BasicText(t(UiKey.SHELL_OPENING), style = Type.of(18, FontWeight.Bold))
         if (synced != null && total != null && total > 0) {
             val fraction = (synced.toFloat() / total).coerceIn(0f, 1f)

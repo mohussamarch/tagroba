@@ -69,7 +69,7 @@ fun CategoryBudgetScreen(categoryId: String) {
         when (state) {
             Load.Loading -> {
                 item { Skeleton(Modifier.fillMaxWidth().height(150.dp), radius = Radius.hero, strong = true) }
-                item { Skeleton(Modifier.fillMaxWidth().height(220.dp)) }
+                item { Skeleton(quiet = true, modifier = Modifier.fillMaxWidth().height(220.dp)) }
             }
             is Load.Failed -> item { ErrorCard(t(UiKey.BUDGETS_ERROR_TITLE), t(UiKey.BUDGETS_ERROR_BODY), { reload++ }) }
             is Load.Ready -> {

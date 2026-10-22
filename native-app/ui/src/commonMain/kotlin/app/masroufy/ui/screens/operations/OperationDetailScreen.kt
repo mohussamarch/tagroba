@@ -119,7 +119,7 @@ fun OperationDetailScreen(transactionId: Id, openPerson: Boolean = false) {
             DetailState.Loading -> item(key = "loading") {
                 Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     Skeleton(Modifier.fillMaxWidth().height(190.dp), radius = Radius.lensLarge)
-                    Skeleton(Modifier.fillMaxWidth().height(220.dp))
+                    Skeleton(quiet = true, modifier = Modifier.fillMaxWidth().height(220.dp))
                 }
             }
             DetailState.Failed -> item(key = "error") {

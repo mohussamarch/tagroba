@@ -66,6 +66,8 @@ fun HomeScreen() {
     var me by remember(deps) { mutableStateOf<MeInfo?>(null) }
     var load by remember(deps) { mutableStateOf<HomeLoad>(HomeLoad.Loading) }
     var tick by remember { mutableStateOf(0) }
+    var refreshing by remember { mutableStateOf(false) }
+    val pull = app.masroufy.ui.screens.common.rememberPullRefresh(refreshing) { if (!refreshing) { refreshing = true; tick++ } }
     var cashOpen by remember { mutableStateOf(false) }
     val bell = LocalBell.current
     val gone = Dismissals.of(deps.space.id).goneKeys
@@ -84,12 +86,13 @@ fun HomeScreen() {
             }
             load = loaded
             smsWaiting = deps.imports.sms?.let { s -> smsShapeWaiting(runCatching { s.historyReport() }.getOrNull()) } ?: 0
+            refreshing = false
         }
     }
     // اختار «رسائل البنك» في أول تشغيل والإذن اترفض (أو الشرح اتقفل) ⇒ كارت هادي «اسمح لاحقًا» (OVERRIDES §91)
     val smsCard = smsAllowCardShown()
     val emptyBody = homeEmptyBodyKey(readable = deps.imports.sms != null, readingOn = readingOn)
-    TabScaffold(t(UiKey.TAB_HOME), header = { HomeHeader(me, bell.state, bell.refresh) }) {
+    TabScaffold(t(UiKey.TAB_HOME), refresh = pull, header = { HomeHeader(me, bell.state, bell.refresh) }) {
         if (smsCard) item(key = "smsAllow") { SmsAllowCard() }
         if (smsWaiting > 0) item(key = "smsWaiting") { SmsWaitingCard(smsWaiting) }
         when (val s = load) {
@@ -168,11 +171,11 @@ private fun HomeHeader(me: MeInfo?, bell: app.masroufy.ui.app.BellState?, refres
 @Composable
 private fun HomeSkeleton() {
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        Skeleton(Modifier.fillMaxWidth().height(176.dp), radius = 28.dp, strong = true)
-        Skeleton(Modifier.fillMaxWidth().height(92.dp))
+        Skeleton(quiet = true, modifier = Modifier.fillMaxWidth().height(176.dp), radius = 28.dp, strong = true)
+        Skeleton(quiet = true, modifier = Modifier.fillMaxWidth().height(92.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            Skeleton(Modifier.weight(1f).height(78.dp), radius = 18.dp)
-            Skeleton(Modifier.weight(1f).height(78.dp), radius = 18.dp)
+            Skeleton(quiet = true, modifier = Modifier.weight(1f).height(78.dp), radius = 18.dp)
+            Skeleton(quiet = true, modifier = Modifier.weight(1f).height(78.dp), radius = 18.dp)
         }
     }
 }

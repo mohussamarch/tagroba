@@ -77,7 +77,7 @@ fun RevertBatchSheet(batch: ImportBatch?, deps: ImportsDeps, onDone: (RevertPlan
             u == null -> {
                 BasicText(t(UiKey.REVERT_SHEET_LOADING), style = Type.of(13).copy(color = Ink.muted))
                 Skeleton(Modifier.fillMaxWidth().height(64.dp), radius = 16.dp)
-                Skeleton(Modifier.fillMaxWidth().height(140.dp), radius = 16.dp)
+                Skeleton(quiet = true, modifier = Modifier.fillMaxWidth().height(140.dp), radius = 16.dp)
             }
             u.blocked -> {
                 TintedPanel(PanelTone.AMBER, radius = 16.dp) {

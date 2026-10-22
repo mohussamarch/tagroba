@@ -148,7 +148,7 @@ fun CharacterBuilderScreen() {
             }
             if (st == null) {
                 Skeleton(Modifier.fillMaxWidth().height(216.dp), radius = 26.dp)
-                Skeleton(Modifier.fillMaxWidth().height(300.dp), radius = 26.dp)
+                Skeleton(quiet = true, modifier = Modifier.fillMaxWidth().height(300.dp), radius = 26.dp)
                 return@Column
             }
             offer?.let { draft ->

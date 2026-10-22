@@ -8,6 +8,9 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.BoxWithConstraints
+import app.masroufy.core.R06Key
+import app.masroufy.ui.text.t
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -55,11 +58,16 @@ private val calm = CubicBezierEasing(0.2f, 0.7f, 0.3f, 1f)
 
 /** هيكل «بيحمّل» (مستوى 1): نفس شكل المحتوى رمادي بينبض `0.5↔1` كل 1.4 ثانية — مش دوّامة في نص الشاشة. «تقليل الحركة» ⇒ ثابت. */
 @Composable
-fun Skeleton(modifier: Modifier = Modifier, radius: Dp = 22.dp, strong: Boolean = false) {
-    val reduce = LocalReduceMotion.current
-    val pulse = rememberInfiniteTransition(label = "skeleton")
-    val a by pulse.animateFloat(0.5f, 1f, infiniteRepeatable(tween(1400, easing = calm), RepeatMode.Reverse), label = "alpha")
-    Box(modifier.alpha(if (reduce) 1f else a).clip(RoundedCornerShape(radius)).background(if (strong) Color(0x14193D33) else Color(0x0F193D33)))
+fun Skeleton(modifier: Modifier = Modifier, radius: Dp = 22.dp, strong: Boolean = false, quiet: Boolean = false) {
+    // r06 (قرار المالك 2026-10-22): «عملات بتترص» بدل الصناديق الرمادية — طول ≥150 ⇒ 112 + «بنجهّز فلوسك…» · أقصر ⇒ علامة أصغر من غير كلام.
+    // [quiet] = مكان محجوز من غير علامة (لما فيه كذا هيكل على شاشة واحدة، العلامة بتظهر مرة واحدة). [radius]/[strong] متسابين لتوافق النداءات.
+    BoxWithConstraints(modifier, contentAlignment = Alignment.Center) {
+        if (!quiet) {
+            val h = if (maxHeight == Dp.Infinity) 150.dp else maxHeight
+            if (h >= 150.dp) CoinLoader(size = 112.dp, text = t(R06Key.LOADER_PREPARING), description = t(R06Key.LOADER_PREPARING))
+            else CoinLoader(size = (h - 8.dp).coerceIn(24.dp, 64.dp))
+        }
+    }
 }
 
 /**

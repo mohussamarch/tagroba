@@ -109,7 +109,7 @@ internal fun failText(e: Throwable): String = e.message?.takeIf { it.isNotBlank(
 internal fun LoadingBlocks(first: Int = 120, second: Int = 280) {
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         Skeleton(Modifier.fillMaxWidth().height(first.dp))
-        Skeleton(Modifier.fillMaxWidth().height(second.dp))
+        Skeleton(quiet = true, modifier = Modifier.fillMaxWidth().height(second.dp))
     }
 }
 

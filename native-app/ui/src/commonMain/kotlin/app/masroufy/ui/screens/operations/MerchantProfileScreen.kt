@@ -90,10 +90,10 @@ fun MerchantProfileScreen(merchantName: String) {
                 Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     Skeleton(Modifier.fillMaxWidth().height(190.dp), radius = Radius.lensLarge)
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Skeleton(Modifier.weight(1f).height(84.dp))
-                        Skeleton(Modifier.weight(1f).height(84.dp))
+                        Skeleton(quiet = true, modifier = Modifier.weight(1f).height(84.dp))
+                        Skeleton(quiet = true, modifier = Modifier.weight(1f).height(84.dp))
                     }
-                    Skeleton(Modifier.fillMaxWidth().height(120.dp))
+                    Skeleton(quiet = true, modifier = Modifier.fillMaxWidth().height(120.dp))
                 }
             }
             return@InnerScaffold

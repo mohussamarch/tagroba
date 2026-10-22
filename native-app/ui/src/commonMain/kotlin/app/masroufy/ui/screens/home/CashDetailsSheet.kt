@@ -72,8 +72,8 @@ internal fun CashDetailsSheet(visible: Boolean, onDismiss: () -> Unit) {
         when (val s = load) {
             CashLoad.Loading -> {
                 Skeleton(Modifier.fillMaxWidth().height(64.dp))
-                Skeleton(Modifier.fillMaxWidth().height(44.dp), radius = 16.dp)
-                Skeleton(Modifier.fillMaxWidth().height(120.dp))
+                Skeleton(quiet = true, modifier = Modifier.fillMaxWidth().height(44.dp), radius = 16.dp)
+                Skeleton(quiet = true, modifier = Modifier.fillMaxWidth().height(120.dp))
             }
             CashLoad.Failed -> EmptyState(t(UiKey.SHELL_LOAD_FAILED))
             is CashLoad.Ready -> {

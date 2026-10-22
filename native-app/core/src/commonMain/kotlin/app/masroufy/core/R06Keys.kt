@@ -16,4 +16,7 @@ enum class R06Key : TextRef {
 
     /** علامة التحميل «عملات بتترص» — وصف للقارئ الصوتي · «بنحدّث…» جنب علامة السحب · «بيتحفظ…» جوه الزرار الأساسي. */
     LOADER_A11Y, LOADER_UPDATING, LOADER_SAVING,
+
+    /** شاشة التحميل «بنجهّز فلوسك…» · السحب للتحديث: قبل الحد · عند الحد · بعد ما خلص. */
+    LOADER_PREPARING, LOADER_PULL, LOADER_RELEASE, LOADER_DONE,
 }

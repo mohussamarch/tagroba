@@ -230,7 +230,7 @@ private fun ReconcileCard(state: RecState, onRun: () -> Unit) {
             when (state) {
                 RecState.Running -> {
                     Skeleton(Modifier.fillMaxWidth(0.6f).height(22.dp), radius = 8.dp)
-                    Skeleton(Modifier.fillMaxWidth().height(56.dp), radius = 14.dp)
+                    Skeleton(quiet = true, modifier = Modifier.fillMaxWidth().height(56.dp), radius = 14.dp)
                 }
                 is RecState.Done -> for (line in reconcileLines(state.outcome)) BasicText(line.text, style = line.style())
                 RecState.Failed -> WarnBox(null, t(UiKey.WDET_REC_FAILED))
