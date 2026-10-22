@@ -172,6 +172,7 @@ fun BankSmsScreen() {
         item(key = "status") {
             SmsStatusBanner(u?.status, onSettings = { nav.push(BankSmsSettingsRoute) }, onPaste = { nav.push(SmsPasteRoute) })
         }
+        if (u?.status == SmsStatus.READING || u?.status == SmsStatus.PERMISSION) item(key = "last-read") { SmsLastReadLine(deps.sms, reload) }
         if (u == null && failure == null) {
             item(key = "loading") {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {

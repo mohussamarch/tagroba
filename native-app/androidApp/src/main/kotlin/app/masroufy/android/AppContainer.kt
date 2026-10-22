@@ -177,6 +177,7 @@ class AppContainer(private val context: Context, private val problems: ProblemLo
         repairBackup = app.masroufy.device.AndroidRepairBackup(context),
         onboardingDraft = AndroidOnboardingDraft(context, uid),
         characterDraft = AndroidCharacterDraft(context, uid),
+        backgroundRead = app.masroufy.device.AndroidBackgroundRead(context),
     )
 
     /**
