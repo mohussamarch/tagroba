@@ -19,7 +19,7 @@
       <span style="font-size: 13px; font-weight: 700; color: #637570; padding: 8px 0 4px">{{g.title}}</span>
       <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="3">
         <div style="{{r.rowStyle}}">
-          <span aria-hidden="true" style="{{r.icon}}">{{r.letter}}</span>
+          <span aria-hidden="true" style="{{r.icon}}">{{r.letter}}<sc-if value="{{r.hasFlag}}" hint-placeholder-val="{{ true }}"><span style="position: absolute; top: -5px; left: -5px; width: 16px; height: 16px; border-radius: 8px; overflow: hidden; box-shadow: 0 0 0 2px #FFFFFF, 0 1px 3px rgba(16,45,53,0.25)"><svg width="16" height="16" viewBox="0 0 16 16"><sc-if value="{{r.isEg}}" hint-placeholder-val="{{ false }}"><rect width="16" height="5.4" fill="#CE1126"></rect><rect y="5.3" width="16" height="5.4" fill="#FFFFFF"></rect><rect y="10.6" width="16" height="5.4" fill="#111111"></rect><circle cx="8" cy="8" r="1.4" fill="#C09300"></circle></sc-if><sc-if value="{{r.isSa}}" hint-placeholder-val="{{ true }}"><rect width="16" height="16" fill="#006C35"></rect><path d="M4 6.2h8M4.5 7.6h7" stroke="#FFFFFF" stroke-width="0.9" stroke-linecap="round"></path><path d="M4.5 10.4h7" stroke="#FFFFFF" stroke-width="0.8" stroke-linecap="round"></path></sc-if></svg></span></sc-if></span>
           <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px"><span style="display: flex; align-items: center; gap: 6px; min-width: 0"><span style="font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{r.name}}</span><sc-if value="{{r.hasMark}}" hint-placeholder-val="{{ true }}"><span role="img" aria-label="{{r.markAria}}" style="{{r.markStyle}}">{{r.mark}}</span></sc-if></span><span style="font-size: 12px; color: #637570">{{r.sub}}</span></span>
           <span style="{{r.amtStyle}}">{{r.amt}}</span>
         </div>
@@ -29,7 +29,7 @@
   <span style="font-size: 12px; line-height: 1.7; color: #637570">{{note}}</span>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"look":{"editor":"enum","options":["علم","اسم مختصر","لون"],"default":"علم","section":"شكل العلامة"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"look":{"editor":"enum","options":["علم فوق اللوجو","علم","اسم مختصر","لون"],"default":"علم فوق اللوجو","section":"شكل العلامة"},"$preview":{"width":390,"height":844}}'>
 // علامة البلد (بند 5 من DESIGN-BRIEF-0.6 · المالك: «لو حد عمل البلدين لازم حجات كتير تتعلم عليها بعلامة») — 3 أشكال للمقارنة
 // بتظهر بس لما المستخدم مفعّل البلدين، على: المحافظ والبطاقات · الديون · مصادر الدخل · العمليات. الأرقام مخترعة
 const fmt = (m) => { const a = Math.abs(m), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; };
@@ -37,26 +37,28 @@ const money = (m, eg) => (m < 0 ? '−' : '') + (eg ? '⁦' + fmt(m) + '⁩ ج.�
 const C = { sa: '#08634F', eg: '#B0466A' };
 class Component extends DCLogic {
   renderVals() {
-    const look = this.props.look ?? 'علم';
+    const look = this.props.look ?? 'علم فوق اللوجو';
     const mark = (eg) => {
       if (look === 'علم') return { hasMark: true, mark: eg ? '\u{1F1EA}\u{1F1EC}' : '\u{1F1F8}\u{1F1E6}', markStyle: 'flex-shrink: 0; font-size: 15px; line-height: 1' };
+      if (look === 'علم فوق اللوجو') return { hasMark: false, mark: '', markStyle: '', hasFlag: true, isEg: eg, isSa: !eg };
       if (look === 'اسم مختصر') return { hasMark: true, mark: eg ? 'مصر' : 'السعودية', markStyle: 'flex-shrink: 0; font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 8px; color: ' + (eg ? C.eg : C.sa) + '; background: ' + (eg ? C.eg : C.sa) + '1A' };
       return { hasMark: false, mark: '', markStyle: '' };
     };
     const row = (name, sub, amt, eg, letter, last) => Object.assign({
       name, sub, letter, amt: money(amt, eg), amtStyle: 'flex-shrink: 0; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (amt < 0 ? '#193D33' : '#08634F'), markAria: eg ? 'مصر' : 'السعودية',
-      icon: 'width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #08634F; background: rgba(8,99,79,0.08)',
+      hasFlag: false, isEg: false, isSa: false,
+      icon: 'position: relative; width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #08634F; background: rgba(8,99,79,0.08)',
       rowStyle: 'display: flex; align-items: center; gap: 10px; min-height: 58px; ' + (last ? '' : 'border-bottom: 1px solid rgba(204,216,204,0.55); ') + (look === 'لون' ? 'border-inline-start: 4px solid ' + (eg ? C.eg : C.sa) + '; padding-inline-start: 10px; margin-inline-start: -14px' : '')
     }, mark(eg));
     return {
       title: 'علامة البلد — ' + look,
       sub: 'بتظهر بس لو البلدين شغالين، على أي حاجة ليها بلد: المحافظ والبطاقات · الديون · مصادر الدخل · العمليات.',
       groups: [
-        { title: 'المحافظ', rows: [row('مصرف الراجحي', 'بنك · آخر 4: 1234', 483783, false, 'ر'), row('كاش ريال', 'محفظة كاش', 100000, false, 'ك'), row('بنك مصر', 'بنك · آخر 4: 7788', 1250000, true, 'ب'), row('كاش جنيه', 'محفظة كاش', 300000, true, 'ك', true)] },
+        { title: 'المحافظ', rows: [row('مصرف الراجحي', 'بنك · آخر 4: 1234', 325000, false, 'ر'), row('كاش ريال', 'محفظة كاش', 100000, false, 'ك'), row('بنك مصر', 'بنك · آخر 4: 7788', 1250000, true, 'ب'), row('كاش جنيه', 'محفظة كاش', 300000, true, 'ك', true)] },
         { title: 'الديون', rows: [row('خالد', 'عليه ليك', 150000, false, 'خ'), row('ليلى', 'عليك ليها', -450000, true, 'ل', true)] },
         { title: 'مصادر الدخل', rows: [row('شركة الريادة', 'مرتب · يوم 28', 1200000, false, 'ش'), row('إيجار شقة', 'إيجار · أول الشهر', 800000, true, 'إ', true)] }
       ],
-      note: look === 'علم' ? 'العلم جنب الاسم — بيتعرف من أول نظرة، وصغير.' : look === 'اسم مختصر' ? 'كلمة صغيرة ملوّنة جنب الاسم — أوضح للي مش بيركّز في الأعلام.' : 'شريط لون على جنب الصف — هادي، بس محتاج تحفظ اللون بتاع كل بلد.'
+      note: look === 'علم فوق اللوجو' ? 'علم صغير في ركن الأيقونة اللي فوق ناحية الاسم (رسمة المالك).' : look === 'علم' ? 'العلم جنب الاسم — بيتعرف من أول نظرة، وصغير.' : look === 'اسم مختصر' ? 'كلمة صغيرة ملوّنة جنب الاسم — أوضح للي مش بيركّز في الأعلام.' : 'شريط لون على جنب الصف — هادي، بس محتاج تحفظ اللون بتاع كل بلد.'
     };
   }
 }
