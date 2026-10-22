@@ -92,6 +92,7 @@ class SmsFeeEffect(
             id = ctx.ids.next("txn"),
             occurredAt = main.occurredAt,
             datePrecision = main.datePrecision,
+            sourceTime = main.sourceTime,
             sourceOrder = main.sourceOrder,
             economicKind = EconomicKind.FEE,
             economicKindConfirmed = true,

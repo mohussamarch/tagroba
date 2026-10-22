@@ -113,6 +113,7 @@ fun parseQnbPdf(pages: List<PdfPage>): QnbPdfOutcome {
                 description = tidy(redactSms(details), 400), raw = raw,
                 sourceOperationType = details.substringBefore('-').let { tidy(it, 80) }.ifEmpty { null },
                 statedBalanceMinor = balance,
+                time = qnbCardTime(details, r.date),
             )
         }
     }

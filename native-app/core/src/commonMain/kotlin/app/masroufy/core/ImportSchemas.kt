@@ -30,6 +30,8 @@ data class ParsedRow(
     val sourceCategory: String? = null,
     val sourceOperationType: String? = null,
     val statedBalanceMinor: Halalas? = null,
+    /** r06-1e (OVERRIDES §110-1): ساعة العملية المحلية «HH:mm» أو «HH:mm:ss» لو المصدر إداها — **مخفية** (الوجبة و«مكرر؟» بس). */
+    val time: String? = null,
 )
 
 data class RowError(val lineNumber: Int, val field: String, val message: String, val raw: String)

@@ -65,6 +65,8 @@ object AssistantCodecs {
                         req("type", "investDaily"); req("spaceId", s.spaceId); req("date", s.date); req("ids", s.ids); req("values", s.values)
                         opt("prevDate", s.prevDate); req("prevIds", s.prevIds); req("prevValues", s.prevValues); req("units", s.units); req("prevUnits", s.prevUnits)
                     }
+                    // r06-1e: تصليح «مرة واحدة» خلص في البلد (اسم التصليح والبلد بس)
+                    is UserSetting.RepairDone -> { req("type", "repairDone"); req("spaceId", s.spaceId); req("repair", s.repair) }
                 }
             }
         },
@@ -87,6 +89,7 @@ object AssistantCodecs {
                     d.strings("prevIds").orEmpty(), d.longs("prevValues"), d.str("updatedAt"),
                     d.longs("units"), d.longs("prevUnits"),
                 )
+                "repairDone" -> UserSetting.RepairDone(d.str("spaceId"), d.str("repair"), d.str("updatedAt"))
                 else -> throw DocumentError(uiText(TextKey.DOC_FIELD_VALUE, USER_SETTINGS_GROUP, "type", type))
             }
         },

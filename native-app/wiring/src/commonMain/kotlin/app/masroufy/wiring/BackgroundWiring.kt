@@ -3,6 +3,7 @@ package app.masroufy.wiring
 import app.masroufy.core.CROSS_SOURCE_WINDOW_DAYS
 import app.masroufy.core.Space
 import app.masroufy.core.countryPack
+import app.masroufy.core.parseTimed
 import app.masroufy.port.DeviceNotifier
 import app.masroufy.port.SmsInboxPort
 import app.masroufy.usecase.AutoRecordSms
@@ -60,6 +61,12 @@ fun backgroundCycle(spaces: List<Pair<Space, SpaceRepositories>>, inbox: SmsInbo
             openingDebtRepairs = spaces.map { (space, r) -> app.masroufy.usecase.RepairOpeningDebtCurrency(r.people, r.obligations, space.currency) },
             duplicateScans = spaces.map { (space, r) -> app.masroufy.usecase.DuplicateChargeAsks(space.id, r.transactions, env.clock) },
             categoryRepairs = spaces.map { (space, r) -> app.masroufy.usecase.RepairMissingDefaultSubs(r.categories, app.masroufy.seed.BundledSeeds, countryPack(space.countryCode)) },
+            // r06-1e (§110-2): قواعد محلات دراهم للحسابات الموجودة — مرة واحدة لكل بلد (علامة «خلص» في إعدادات الحساب)
+            ruleRepairs = spaces.map { (space, r) ->
+                app.masroufy.usecase.RepairDarahimRules(
+                    space.id, r.categories, r.rules, app.masroufy.seed.BundledSeeds, countryPack(space.countryCode), r.assistant.settings, env.clock,
+                )
+            },
         ),
     )
 }
@@ -75,5 +82,5 @@ fun smsHistory(spaces: List<Pair<Space, SpaceRepositories>>, inbox: SmsInboxPort
 internal fun smsLaneOf(space: Space, r: SpaceRepositories, env: DeviceEnv, inbox: SmsInboxPort): SmsLane? {
     val pack = countryPack(space.countryCode)
     val reader = pack.smsReader ?: return null
-    return SmsLane.of(space.id, smsImportDeps(space.id, r, env, inbox), ManageSmsInbox(inbox, reader::parse), r.wallets, pack.timeZone)
+    return SmsLane.of(space.id, smsImportDeps(space.id, r, env, inbox), ManageSmsInbox(inbox) { m, n -> reader.parseTimed(m, n, pack.timeZone) }, r.wallets, pack.timeZone)
 }

@@ -122,6 +122,8 @@ data class SmsRow(
     val foreignAmountMinor: Long? = null,
     /** مراجعة S1 (§75-11): آخر 4 أرقام **حسابك** بس (مش الكارت — `SmsOwnAccount.kt`) — التوزيع على المحافظ بيبص على ده بس. */
     val accountLast4: String? = null,
+    /** r06-1e (OVERRIDES §110-1): ساعة وصول الرسالة المحلية «HH:mm:ss» بتوقيت حزمة البلد ([parseTimed]) — مخفية، ومش جوه [smsRowsJson]. */
+    val time: String? = null,
 )
 
 /**
@@ -207,7 +209,7 @@ fun redactSms(input: String): String {
 }
 
 /** صف الرسالة كصف استيراد عادي — منع التكرار والتصنيف والحفظ بعدها زي الكشف بالظبط. */
-fun SmsRow.toParsedRow() = ParsedRow(lineNumber, date, amountMinor, direction, merchantName, reference, sourceName, description, raw)
+fun SmsRow.toParsedRow() = ParsedRow(lineNumber, date, amountMinor, direction, merchantName, reference, sourceName, description, raw, time = time)
 
 /**
  * نفس `JSON.stringify(rows)` بالحرف وبترتيب مفاتيح التطبيق الحالي — النص ده محتوى «ملف» الرسايل،

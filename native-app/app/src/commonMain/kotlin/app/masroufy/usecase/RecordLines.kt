@@ -19,7 +19,9 @@ internal fun importLineTransaction(id: Id, line: ImportPreviewLine, now: String,
     return Transaction(
         id = id,
         occurredAt = line.row.date,
-        datePrecision = "day",
+        // r06-1e (§110-1): الساعة المخفية لو المصدر إداها (رسالة البنك · سطر كشف فيه ساعة) — من غيرها «day» زي الأول
+        datePrecision = app.masroufy.core.datePrecisionFor(line.row.time),
+        sourceTime = line.row.time,
         sourceOrder = line.row.lineNumber,
         // ⚠️ النوع الاقتصادي **ما بيستنتجش من اتجاه السيولة** (spec/02) — بيبدأ غير محدد
         economicKind = EconomicKind.UNCLASSIFIED,
