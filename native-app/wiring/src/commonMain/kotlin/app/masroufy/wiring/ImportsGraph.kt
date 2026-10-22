@@ -31,6 +31,7 @@ import app.masroufy.usecase.ResumeStagedBatchDeps
 import app.masroufy.usecase.RevertDeps
 import app.masroufy.usecase.RevertImportBatch
 import app.masroufy.usecase.RevertLinkDeps
+import app.masroufy.usecase.importBatchUndoers
 
 /**
  * «الاستيراد» — رسايل البنك (`AutoRecordSms` · `ReviewSmsInbox` · `ManageSmsInbox` في [SmsGraph]) · `ReadBankSms` · `ReadPdfStatement` ·
@@ -46,14 +47,16 @@ class ImportsGraph(private val c: AreaContext) : ImportsDeps {
 
     override val importer = ImportStatement(importDeps(r, env))
 
-    // ⚠️ `spaceLegs` (فك زوج التحويل لنفسك قبل مسح رجله) محتاج `SpaceTransferWriter` — مش في `SpaceRepositories` لسه
+    // مراجعة r06 money-1: التراجع بيرجّع آثار التسجيل (الدمج · «اللي رجع» · «عمليات تابعة» · الاشتراك) وبيفك زوج «التحويل لنفسك» قبل مسح رجله.
+    // نفس النسخة بتتدّي لـ[SmsGraph] ⇒ دفعات الرسايل بنفس الطريق.
     override val batches = RevertImportBatch(
         RevertDeps(
             r.transactions, r.sourceRecords, r.importBatches, r.settlements, r.allocations, r.obligations, r.uow,
             RevertLinkDeps(
                 r.projectLinks, r.eventLinks, r.transactionTags, r.roscaEntries, r.installmentPayments, r.installmentPlans,
-                r.zakatPayments, r.assetLots, r.assetSales, personLinks = r.personLinks,
+                r.zakatPayments, r.assetLots, r.assetSales, spaceLegs = spaceTransfersOf(c).legsIn(c.space.id), personLinks = r.personLinks,
             ),
+            undoers = importBatchUndoers(r.transactions, r.recurring, env.clock),
         ),
     )
 
