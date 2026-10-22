@@ -55,6 +55,11 @@ class DuesGraph(private val c: AreaContext) : DuesDeps {
         ),
     )
 
+    /** PLAN-0.6 §8 — «مجموع أكتر من قسط» بنفس اعتمادات اللوحة. */
+    override val bnplSplit = app.masroufy.usecase.BnplSplitCharge(
+        app.masroufy.usecase.BnplChargesDeps(r.transactions, r.installmentPlans, r.installmentPayments, installments, env.clock, env.today),
+    )
+
     /** r051 — قسم «مشتريات بالتقسيط» في «الأقساط». */
     override val bnplPlans = app.masroufy.usecase.LoadBnplPlans(r.installmentPlans, r.installmentPayments, r.categories)
 

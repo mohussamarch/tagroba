@@ -96,6 +96,7 @@ fun BnplHost() {
     val chips = remember(categories) { bnplCategoryChips(categories) }
     val state = remember(ask?.transaction?.id, chips) { ask?.let { BnplSheetState(it, chips) } }
     var picking by remember { mutableStateOf(false) }
+    var multi by remember { mutableStateOf<String?>(null) }
     val density = LocalDensity.current
     val maxBody = with(density) { (LocalWindowInfo.current.containerSize.height * 0.62f).toDp() }.coerceAtLeast(280.dp)
     val showing = bnplSheetShown(state != null, holding, toaster.holdsAction)
@@ -127,7 +128,7 @@ fun BnplHost() {
     }
 
     val title = state?.let { t(if (it.setup) BnplKey.BNPL2_SETUP_TITLE else BnplKey.BNPL2_WHICH_TITLE) } ?: ""
-    Sheet(showing && !picking, onDismiss = { state?.let { later += it.ask.transaction.id } }, title = title, closeLabel = t(UiKey.SHELL_CLOSE), spacing = 14.dp) {
+    Sheet(showing && !picking && multi == null, onDismiss = { state?.let { later += it.ask.transaction.id } }, title = title, closeLabel = t(UiKey.SHELL_CLOSE), spacing = 14.dp) {
         val s = state ?: return@Sheet
         val t0 = s.ask.transaction
         BnplSheetContent(
@@ -137,7 +138,23 @@ fun BnplHost() {
             onOtherCategory = { picking = true },
             onAnswer = ::answer,
             onLater = { later += t0.id },
+            onMulti = { multi = t0.id }.takeIf { space.dues.bnplSplit != null },
         )
+    }
+    BnplMultiSheet(multi.takeIf { showing }, onDismiss = { multi = null }) { undo, n ->
+        multi = null
+        later += undo.transactionId
+        DuesChanges.bump()
+        changes.changed()
+        toaster.show(t(app.masroufy.core.R06Key.BNPL_MULTI_DONE, n.toString()), t(BnplKey.BNPL2_UNDO)) {
+            scope.launch {
+                val ok = runCatching { withContext(Dispatchers.Default) { space.dues.bnplSplit?.undo(undo) } }.isSuccess
+                toaster.show(t(if (ok) BnplKey.BNPL2_UNDONE else BnplKey.BNPL2_UNDO_FAILED), dark = true)
+                later.remove(undo.transactionId)
+                DuesChanges.bump()
+                changes.changed()
+            }
+        }
     }
     CategoryPickerSheet(
         visible = showing && picking,

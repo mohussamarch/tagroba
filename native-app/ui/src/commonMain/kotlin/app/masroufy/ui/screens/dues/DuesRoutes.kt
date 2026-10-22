@@ -58,6 +58,9 @@ interface DuesDeps {
      */
     val bnpl: app.masroufy.usecase.BnplCharges? get() = null
 
+    /** PLAN-0.6 §8 «مجموع أكتر من قسط» — توزيع خصم مجمّع على كذا خطة. null ⇒ الزرار مش ظاهر. */
+    val bnplSplit: app.masroufy.usecase.BnplSplitCharge? get() = null
+
     /** r051 — قسم «مشتريات بالتقسيط» في «الأقساط» (`load`). `null` ⇒ القسم ما بيظهرش والخطط في القايمة العادية. */
     val bnplPlans: app.masroufy.usecase.LoadBnplPlans? get() = null
 }
