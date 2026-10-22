@@ -4,7 +4,7 @@ import android.content.Context
 import android.os.Looper
 import android.os.Process
 import app.masroufy.core.ProblemCode
-import app.masroufy.core.ProblemLevel
+import app.masroufy.device.CrashReportPolicy
 import app.masroufy.device.CrashSanitizer
 import app.masroufy.port.CrashReportsPort
 import app.masroufy.problems.Problems
@@ -57,11 +57,11 @@ class AndroidCrashReports(context: Context) : CrashReportsPort {
         c.setCustomKey(KEY_COUNTRY, country.orEmpty().take(2))
     }
 
-    /** مشكلة «خطأ» من «سجل المشاكل» ومعاها خطأ ⇒ تقرير من غير وقعة (non-fatal) — متنضف. */
+    /** مشكلة «خطأ» (بخطأ أو من غيره) أو «تحذير» من «سجل المشاكل» ⇒ تقرير من غير وقعة (non-fatal) — متنضف، والرسالة اسم الكود بس لو مفيش خطأ. */
     fun problem(code: ProblemCode, error: Throwable?) {
         // الوقعة نفسها بيبعتها معالج Crashlytics ([installCrashHandler]) — مش مرتين
-        if (error == null || code.level != ProblemLevel.ERROR || code in CRASHES || !isOn()) return
-        crashlytics?.recordException(CrashSanitizer.sanitize(error, code.name))
+        if (!CrashReportPolicy.shouldSend(code) || !isOn()) return
+        crashlytics?.recordException(CrashReportPolicy.toSend(code, error))
     }
 
     /**
@@ -87,7 +87,6 @@ class AndroidCrashReports(context: Context) : CrashReportsPort {
         const val KEY_SCREEN = "screen"
         const val KEY_VERSION = "app_version"
         const val KEY_COUNTRY = "country"
-        val CRASHES = setOf(ProblemCode.CRASH_MAIN, ProblemCode.CRASH_BACKGROUND)
 
         /** المكتبة بتشتغل مع تطبيق فايربيز الافتراضي بس — مش موجود (من غير إعدادات) ⇒ null من غير ما حاجة تقع. */
         fun crashlyticsOrNull(context: Context): FirebaseCrashlytics? {
