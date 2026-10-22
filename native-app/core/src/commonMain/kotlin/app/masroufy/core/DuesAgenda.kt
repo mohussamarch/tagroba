@@ -57,7 +57,7 @@ fun roscaDueItems(r: Rosca, entries: List<RoscaEntry>, today: IsoDate, until: Is
 }
 
 fun installmentDueItems(p: InstallmentPlan, payments: List<InstallmentPayment>, today: IsoDate, until: IsoDate): List<DueItem> {
-    val paid = sumMoney(payments.filter { it.planId == p.id }.map { it.amountMinor })
+    val paid = planPaidMinor(p, payments)
     val alertDays = when (p.remindDayBefore) { true -> 1; false -> null; null -> DUE_SOON_DAYS }
     return items(DueSource.INSTALLMENT, p.id, p.name, p.currency, DueFlow.PAY, today, unpaidInstallments(installmentSchedule(p), paid, until))
         .map { if (alertDays == DUE_SOON_DAYS) it else it.copy(alertDays = alertDays) }

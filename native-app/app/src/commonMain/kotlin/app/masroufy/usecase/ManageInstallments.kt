@@ -20,6 +20,7 @@ import app.masroufy.core.dueLinkCandidate
 import app.masroufy.core.installmentCountPreview
 import app.masroufy.core.isValidIsoDate
 import app.masroufy.core.parseIsoDate
+import app.masroufy.core.planPaidMinor
 import app.masroufy.core.shiftDays
 import app.masroufy.core.toDayNumber
 import app.masroufy.core.totalFromCount
@@ -68,6 +69,8 @@ data class InstallmentInput(
     val categoryId: Id? = null,
     /** r051: «فكّرني قبل كل دفعة بيوم» (`InstallmentPlan.remindDayBefore`). */
     val remindDayBefore: Boolean? = null,
+    /** r06-1b4: الدفعات اللي اتدفعت قبل التسجيل («الدفعة دي رقم كام؟» — `InstallmentPlan.paidBeforeCount`). null = زي ما هي. */
+    val paidBeforeCount: Int? = null,
 )
 
 /** [receivedMinor]: مبلغ عملية «مبلغ تمويل مستلم» المربوطة (null = لسه ما اتربطتش — مش صفر). */
@@ -99,12 +102,12 @@ class ManageInstallments(private val deps: ManageInstallmentsDeps) {
     private suspend fun find(id: Id): InstallmentPlan =
         deps.plans.listAll().firstOrNull { it.id == id } ?: throw InstallmentError(uiText(TextKey.INSTALLMENT_NOT_FOUND))
 
-    private suspend fun paidOf(planId: Id): Halalas = sumMoney(deps.payments.listByPlan(planId).map { it.amountMinor })
+    private suspend fun paidOf(plan: InstallmentPlan): Halalas = planPaidMinor(plan, deps.payments.listByPlan(plan.id))
 
     suspend fun list(today: IsoDate): List<InstallmentView> {
         val plans = deps.plans.listAll()
         val received = deps.txns.findByIds(plans.mapNotNull { it.receivedTransactionId }).associate { it.id to it.amountMinor }
-        return plans.map { InstallmentView(it, dueProgress(installmentSchedule(it), paidOf(it.id), today), it.receivedTransactionId?.let(received::get)) }
+        return plans.map { InstallmentView(it, dueProgress(installmentSchedule(it), paidOf(it), today), it.receivedTransactionId?.let(received::get)) }
     }
 
     suspend fun save(input: InstallmentInput): InstallmentPlan = save(input, newId = null)
@@ -131,10 +134,11 @@ class ManageInstallments(private val deps: ManageInstallmentsDeps) {
             cycleWeeks = input.cycleWeeks,
             categoryId = input.categoryId,
             remindDayBefore = input.remindDayBefore ?: existing?.remindDayBefore,
+            paidBeforeCount = input.paidBeforeCount ?: existing?.paidBeforeCount,
         )
         val plan = draft.copy(name = checkInstallmentPlan(draft).name)
         if (existing != null) {
-            val paid = paidOf(plan.id)
+            val paid = paidOf(plan)
             val linked = paid > 0 || existing.receivedTransactionId != null
             if (linked && (existing.currency != plan.currency || existing.kind != plan.kind)) {
                 throw InstallmentError(uiText(TextKey.DUE_LOCKED_AFTER_LINK))
@@ -149,7 +153,7 @@ class ManageInstallments(private val deps: ManageInstallmentsDeps) {
     suspend fun link(planId: Id, transactionId: Id, amountMinor: Halalas? = null): InstallmentPayment {
         val plan = find(planId)
         val (_, amount) = links.check(transactionId, Direction.OUT, plan.currency, plan.name, amountMinor)
-        val room = subtractMoney(plan.totalMinor, paidOf(planId))
+        val room = subtractMoney(plan.totalMinor, paidOf(plan))
         if (amount > room) throw InstallmentError(uiText(TextKey.INSTALLMENT_OVER, formatMoney(room, plan.currency), formatMoney(amount - room, plan.currency)))
         val payment = InstallmentPayment(deps.ids.next("installmentpay"), planId, transactionId, amount)
         deps.uow.run {
@@ -203,7 +207,7 @@ class ManageInstallments(private val deps: ManageInstallmentsDeps) {
         }
         for ((plan, part) in plans.zip(existing)) {
             if (plan.currency != txn.currency) throw InstallmentError(uiText(TextKey.DUE_TXN_CURRENCY, plan.name))
-            val room = subtractMoney(plan.totalMinor, paidOf(plan.id))
+            val room = subtractMoney(plan.totalMinor, paidOf(plan))
             if (part.second > room) throw InstallmentError(uiText(TextKey.INSTALLMENT_OVER, formatMoney(room, plan.currency), formatMoney(part.second - room, plan.currency)))
         }
         return deps.uow.run {

@@ -19,11 +19,15 @@ import app.masroufy.core.Transaction
 import app.masroufy.core.bnplLinkAmount
 import app.masroufy.core.bnplMatch
 import app.masroufy.core.bnplPreview
+import app.masroufy.core.bnplPreviewAt
+import app.masroufy.core.bnplFirstDueFor
+import app.masroufy.core.bnplSumSuggestion
 import app.masroufy.core.bnplProviderOf
 import app.masroufy.core.dayNumberToIso
 import app.masroufy.core.dueProgress
 import app.masroufy.core.installmentSchedule
 import app.masroufy.core.parseIsoDate
+import app.masroufy.core.planPaidMinor
 import app.masroufy.core.subtractMoney
 import app.masroufy.core.sumMoney
 import app.masroufy.core.toDayNumber
@@ -49,7 +53,7 @@ class BnplCharges(private val deps: BnplChargesDeps) {
     private suspend fun openPlans(today: IsoDate): List<BnplOpenPlan> {
         val plans = deps.plans.listAll().filter { it.kind == InstallmentKind.PURCHASE_PLAN && bnplProviderOf(it.provider) != null }
         return plans.map { plan ->
-            val paid = sumMoney(deps.payments.listByPlan(plan.id).map { it.amountMinor })
+            val paid = planPaidMinor(plan, deps.payments.listByPlan(plan.id))
             val p = dueProgress(installmentSchedule(plan), paid, today)
             BnplOpenPlan(plan, subtractMoney(plan.totalMinor, paid), p.nextDueAt, p.paidCount, p.count)
         }
@@ -106,7 +110,10 @@ class BnplCharges(private val deps: BnplChargesDeps) {
                 BnplMatch.NewPurchase -> asks += BnplAsk(t, provider, m, emptyList(), walletName = walletOf(t))
                 is BnplMatch.AskWhich -> {
                     val mine = open.filter { it.plan.id in m.planIds }
-                    asks += BnplAsk(t, provider, m, mine.map { it.plan }, mine.map { optionOf(it, t.amountMinor) }, walletOf(t))
+                    val options = mine.map { optionOf(it, t.amountMinor) }
+                    // r06-1b4: «غالبًا: «أ» + «ب» = المبلغ بالظبط» — أقساط مستحقة مجموعها = الخصم
+                    val hint = bnplSumSuggestion(t.amountMinor, mine.map { it.plan.id to minOf(it.plan.installmentMinor, it.remainingMinor) })
+                    asks += BnplAsk(t, provider, m, mine.map { it.plan }, options, walletOf(t), hint)
                 }
             }
         }
@@ -119,8 +126,8 @@ class BnplCharges(private val deps: BnplChargesDeps) {
     )
 
     /** «خطتك» في لوحة «أول خصم» وهو بيختار — من الجدول المشترك (نفس تواريخ «المستحقات»). */
-    fun preview(amountMinor: Halalas, currency: Currency, date: IsoDate, count: Int, cycle: BnplCycle): BnplPreview =
-        bnplPreview(amountMinor, currency, date, count, cycle)
+    fun preview(amountMinor: Halalas, currency: Currency, date: IsoDate, count: Int, cycle: BnplCycle, number: Int = 1): BnplPreview =
+        if (number <= 1) bnplPreview(amountMinor, currency, date, count, cycle) else bnplPreviewAt(amountMinor, currency, date, count, cycle, number)
 
     private suspend fun charge(transactionId: Id): Pair<Transaction, BnplProvider> {
         val t = deps.txns.findByIds(listOf(transactionId)).firstOrNull() ?: throw IllegalArgumentException("transaction $transactionId")
@@ -139,10 +146,12 @@ class BnplCharges(private val deps: BnplChargesDeps) {
             principalMinor = 0,
             totalMinor = 0,
             installmentMinor = t.amountMinor,
-            firstDueAt = t.occurredAt.take(10),
+            // r06-1b4 «الدفعة دي رقم كام؟»: الدفعة دي النهارده، واللي قبلها اتدفعت من غير عمليات (مش مصروف)
+            firstDueAt = bnplFirstDueFor(t.occurredAt.take(10), answer.cycle, answer.at.coerceIn(1, answer.count)),
             cycleWeeks = answer.cycle.weeks,
             categoryId = answer.categoryId,
             remindDayBefore = answer.remind,
+            paidBeforeCount = (answer.at.coerceIn(1, answer.count) - 1).takeIf { it > 0 },
         )
         return deps.installments.saveCounted(input, answer.count, firstPaymentTxnId = t.id)
     }
@@ -185,7 +194,7 @@ class BnplCharges(private val deps: BnplChargesDeps) {
     suspend fun answer(a: BnplAnswer): BnplDone = lock.withLock {
         suspend fun done(planId: Id): BnplDone {
             val plan = deps.plans.listAll().first { it.id == planId }
-            val paid = sumMoney(deps.payments.listByPlan(planId).map { it.amountMinor })
+            val paid = planPaidMinor(plan, deps.payments.listByPlan(planId))
             return BnplDone(plan.name, subtractMoney(plan.totalMinor, paid), plan.currency)
         }
         when (a) {

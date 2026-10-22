@@ -101,7 +101,7 @@ class LoadDues(private val deps: LoadDuesDeps) {
             items += installmentDueItems(p, payments, today, until)
             val dates = deps.txns.findByIds(payments.map { it.transactionId }).associate { it.id to it.occurredAt }
             financingCost = addMoney(financingCost, financingCostInPeriod(p, payments, payments.mapNotNull { pay -> dates[pay.transactionId]?.let { pay.id to it } }.toMap(), period))
-            dueProgress(installmentSchedule(p), sumMoney(payments.map { it.amountMinor }), today).remainingMinor
+            dueProgress(installmentSchedule(p), app.masroufy.core.planPaidMinor(p, payments), today).remainingMinor
         }
 
         val names = deps.people.listAll().associate { it.id to it.name }
