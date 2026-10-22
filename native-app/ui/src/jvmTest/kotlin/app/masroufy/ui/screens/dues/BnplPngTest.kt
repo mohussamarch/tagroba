@@ -87,7 +87,7 @@ class BnplPngTest {
                 Modifier.fillMaxWidth().clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)).background(Color.White).padding(start = 20.dp, end = 20.dp, top = 18.dp, bottom = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
-                BnplSheetContent(s, today, bnplCategoryChips(cats), { n, c -> bnplPreview(s.ask.transaction.amountMinor, Currency.SAR, today, n, c) }, 2000.dp, {}, {}, {})
+                BnplSheetContent(s, today, bnplCategoryChips(cats), { n, c, _ -> bnplPreview(s.ask.transaction.amountMinor, Currency.SAR, today, n, c) }, 2000.dp, {}, {}, {})
             }
         }
     }

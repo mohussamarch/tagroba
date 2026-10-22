@@ -10,6 +10,7 @@ import app.masroufy.core.bnplProviderOf
 import app.masroufy.core.bnplSteps
 import app.masroufy.core.dueProgress
 import app.masroufy.core.installmentSchedule
+import app.masroufy.core.planPaidMinor
 import app.masroufy.core.sumMoney
 import app.masroufy.port.CategoryRepository
 import app.masroufy.port.InstallmentPaymentRepository
@@ -41,7 +42,7 @@ class LoadBnplPlans(
         if (mine.isEmpty()) return emptyList()
         val names = categories?.listAll().orEmpty().associate { it.id to it.name }
         return mine.map { (p, provider) ->
-            val paid = sumMoney(payments.listByPlan(p.id).map { it.amountMinor })
+            val paid = planPaidMinor(p, payments.listByPlan(p.id))
             val s = installmentSchedule(p)
             BnplPlanView(p, provider, p.categoryId?.let { names[it] }, dueProgress(s, paid, today), bnplSteps(s, paid))
         }.sortedWith(compareBy({ it.progress.nextDueAt == null }, { it.progress.nextDueAt ?: "" }, { it.plan.createdAt }, { it.plan.id }))

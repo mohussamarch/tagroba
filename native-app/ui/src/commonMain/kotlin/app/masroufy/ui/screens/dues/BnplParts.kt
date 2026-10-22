@@ -159,8 +159,9 @@ internal fun BnplQuietButton(label: String, onClick: () -> Unit, modifier: Modif
 
 /** وسم «اتدفعت» (أخضر) و«الجاية» (أصفر) — الباقي من غير وسم. */
 @Composable
-internal fun BnplTag(state: BnplStepState) {
-    val (text, ink, fill) = when (state) {
+internal fun BnplTag(state: BnplStepState, before: Boolean = false) {
+    val (text, ink, fill) = if (before && state == BnplStepState.PAID) Triple(t(app.masroufy.core.R06Key.BS_TAG_BEFORE), Ink.muted, Color(0x12193D33)) else when (state) {
+        // r06-1b4: دفعة اتدفعت قبل ما الخطة تتسجل (من غير عملية) ⇒ «تم الدفع» رمادي
         BnplStepState.PAID -> Triple(t(BnplKey.BNPL2_TAG_PAID), Color(0xFF13764D), Color(0xFFDCEBD6))
         BnplStepState.NEXT -> Triple(t(BnplKey.BNPL2_TAG_NEXT), Color(0xFF6B4600), Color(0xFFFBF0DD))
         BnplStepState.LATER -> return

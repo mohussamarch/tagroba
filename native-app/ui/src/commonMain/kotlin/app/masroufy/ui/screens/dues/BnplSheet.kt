@@ -69,10 +69,13 @@ internal class BnplSheetState(val ask: BnplAsk, chips: List<Category>) {
     var remind by mutableStateOf(true)
     var pick by mutableStateOf<String?>(null)
 
+    /** r06-1b4 «الدفعة دي رقم كام؟» (1..[split]). */
+    var at by mutableStateOf(1)
+
     /** الرد اللي «اعمل الخطة»/«تأكيد» بيبعته — null = «مشترى جديد» (بيقلب اللوحة) أو مفيش اختيار. [providerName] بدل الاسم الفاضي. */
     fun answer(providerName: String): BnplAnswer? {
         val id = ask.transaction.id
-        if (setup) return BnplAnswer.New(id, BnplPurchase(what.trim().ifEmpty { providerName }, category?.id, split, cycle, remind))
+        if (setup) return BnplAnswer.New(id, BnplPurchase(what.trim().ifEmpty { providerName }, category?.id, split, cycle, remind, at.coerceIn(1, split)))
         return when (val p = pick) {
             null -> null
             BNPL_PICK_NEW -> { setup = true; pick = null; null }
@@ -94,7 +97,7 @@ internal fun ColumnScope.BnplSheetContent(
     s: BnplSheetState,
     today: IsoDate,
     chips: List<Category>,
-    preview: (Int, BnplCycle) -> BnplPreview,
+    preview: (Int, BnplCycle, Int) -> BnplPreview,
     maxBody: Dp,
     onOtherCategory: () -> Unit,
     onAnswer: (BnplAnswer) -> Unit,
@@ -117,7 +120,7 @@ internal fun ColumnScope.BnplSheetContent(
             BasicText(t(if (s.setup) BnplKey.BNPL2_SETUP_TITLE else BnplKey.BNPL2_WHICH_TITLE), style = Type.of(18, FontWeight.Bold))
             BasicText(if (s.setup) t(BnplKey.BNPL2_SETUP_LEAD) else t(BnplKey.BNPL2_WHICH_LEAD, name), style = Type.of(13, lineHeight = 1.7).copy(color = Ink.muted))
         }
-        if (s.setup) BnplSetupBody(s, name, today, chips, preview, onOtherCategory) else BnplWhichBody(s)
+        if (s.setup) BnplSetupBody(s, name, today, chips, preview, onOtherCategory) else BnplWhichBody(s, onMulti)
     }
     Row(Modifier.fillMaxWidth().padding(top = 2.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         val off = !s.setup && s.pick == null
@@ -127,12 +130,12 @@ internal fun ColumnScope.BnplSheetContent(
         BnplQuietButton(later, onLater, Modifier.weight(1f))
     }
     // PLAN-0.6 §8: الخصم ده مجموع كذا قسط ⇒ صفحة التوزيع
-    onMulti?.let { BnplQuietButton(t(app.masroufy.core.R06Key.BNPL_MULTI), it, Modifier.fillMaxWidth()) }
+    if (s.setup) onMulti?.let { BnplQuietButton(t(app.masroufy.core.R06Key.BNPL_MULTI), it, Modifier.fillMaxWidth()) }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun BnplSetupBody(s: BnplSheetState, name: String, today: IsoDate, chips: List<Category>, preview: (Int, BnplCycle) -> BnplPreview, onOther: () -> Unit) {
+private fun BnplSetupBody(s: BnplSheetState, name: String, today: IsoDate, chips: List<Category>, preview: (Int, BnplCycle, Int) -> BnplPreview, onOther: () -> Unit) {
     BasicText(t(BnplKey.BNPL2_WHAT_Q, name), style = Type.of(14, FontWeight.Bold))
     TextInput(s.what, { s.what = it }, Modifier.fillMaxWidth(), placeholder = t(BnplKey.BNPL2_WHAT_HINT))
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -141,22 +144,24 @@ private fun BnplSetupBody(s: BnplSheetState, name: String, today: IsoDate, chips
         BnplChip(picked?.name ?: t(BnplKey.BNPL2_CAT_OTHER), picked != null, onOther)
     }
     BasicText(t(BnplKey.BNPL2_SPLIT_Q), style = Type.of(14, FontWeight.Bold))
-    BnplChipRow { for (n in BNPL_SPLITS) BnplChip(sentenceNumber(n), s.split == n, { s.split = n }, Modifier.weight(1f)) }
+    BnplChipRow { for (n in BNPL_SPLITS) BnplChip(sentenceNumber(n), s.split == n, { s.split = n; s.at = minOf(s.at, n) }, Modifier.weight(1f)) }
+    BasicText(t(app.masroufy.core.R06Key.BS_AT_Q), style = Type.of(14, FontWeight.Bold))
+    BnplChipRow { for (n in 1..s.split) BnplChip(sentenceNumber(n), s.at == n, { s.at = n }, Modifier.weight(1f)) }
     BasicText(t(BnplKey.BNPL2_EVERY_Q), style = Type.of(14, FontWeight.Bold))
     BnplChipRow {
         BnplChip(t(BnplKey.BNPL2_MONTHLY), s.cycle == BnplCycle.MONTHLY, { s.cycle = BnplCycle.MONTHLY }, Modifier.weight(1f))
         BnplChip(t(BnplKey.BNPL2_TWO_WEEKS), s.cycle == BnplCycle.TWO_WEEKS, { s.cycle = BnplCycle.TWO_WEEKS }, Modifier.weight(1f))
     }
     // مفتاحها الخصم نفسه كمان ([s]): اللوحة بتفضل مفتوحة وهي بتنقل للسؤال الجاي ⇒ من غيره «خطتك» كانت بتفضل بأرقام الخصم اللي فات
-    val plan = remember(s, s.split, s.cycle) { preview(s.split, s.cycle) }
+    val plan = remember(s, s.split, s.cycle, s.at) { preview(s.split, s.cycle, s.at) }
     Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Color(0x0A193D33)).padding(horizontal = 14.dp, vertical = 12.dp)) {
         Row(Modifier.fillMaxWidth().padding(bottom = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             BasicText(t(BnplKey.BNPL2_PLAN_TITLE), Modifier.weight(1f), style = Type.of(14, FontWeight.Bold))
             BasicText(t(BnplKey.BNPL2_PLAN_TOTAL, amountLabel(plan.totalMinor, plan.currency), amountLabel(plan.remainingMinor, plan.currency)), style = Type.of(12).copy(color = Ink.muted))
         }
         for (step in plan.steps) {
-            val day = if (step.number == 1) bnplDay(step.dueAt, today) else dateText(step.dueAt, today)
-            BnplStepRow(t(BnplKey.BNPL2_STEP, sentenceNumber(step.number), day), step.state, step.amountMinor, plan.currency, dot = true)
+            val day = if (step.number == s.at) bnplDay(step.dueAt, today) else dateText(step.dueAt, today)
+            BnplStepRow(t(BnplKey.BNPL2_STEP, sentenceNumber(step.number), day), step.state, step.amountMinor, plan.currency, dot = true, before = step.number < s.at)
         }
     }
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -166,16 +171,17 @@ private fun BnplSetupBody(s: BnplSheetState, name: String, today: IsoDate, chips
         }
         BnplSwitch(s.remind, t(BnplKey.BNPL2_REMIND_TITLE)) { s.remind = !s.remind }
     }
-    BasicText(t(BnplKey.BNPL2_AUTO_NOTE, name), style = Type.of(12, lineHeight = 1.6).copy(color = Ink.muted))
+    val note = t(BnplKey.BNPL2_AUTO_NOTE, name) + if (s.at > 1) " " + t(app.masroufy.core.R06Key.BS_BEFORE_NOTE) else ""
+    BasicText(note, style = Type.of(12, lineHeight = 1.6).copy(color = Ink.muted))
 }
 
 /** سطر دفعة: (نقطة) · «الدفعة 2 · 7 نوفمبر» · الوسم · المبلغ — في «خطتك» و«المواعيد». */
 @Composable
-internal fun BnplStepRow(label: String, state: BnplStepState, amountMinor: Long, currency: app.masroufy.core.Currency, dot: Boolean) {
+internal fun BnplStepRow(label: String, state: BnplStepState, amountMinor: Long, currency: app.masroufy.core.Currency, dot: Boolean, before: Boolean = false) {
     Row(Modifier.fillMaxWidth().defaultMinSize(minHeight = 40.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
         if (dot) BnplDot(state == BnplStepState.PAID)
         BasicText(label, Modifier.weight(1f), style = Type.of(13))
-        BnplTag(state)
+        BnplTag(state, before)
         AmountText(amountMinor, currency, size = 13)
     }
 }

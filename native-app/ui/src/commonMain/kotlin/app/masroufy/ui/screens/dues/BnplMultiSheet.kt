@@ -4,6 +4,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -12,21 +15,21 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import app.masroufy.core.Currency
 import app.masroufy.core.Id
 import app.masroufy.core.R06Key
 import app.masroufy.core.UiKey
+import app.masroufy.core.formatMoney
 import app.masroufy.core.tryParseMoney
 import app.masroufy.ui.app.LocalSpace
+import app.masroufy.ui.components.AmountText
 import app.masroufy.ui.components.FieldError
 import app.masroufy.ui.components.PrimaryButton
-import app.masroufy.ui.components.SelectChip
-import app.masroufy.ui.components.TextInput
 import app.masroufy.ui.components.amountLabel
 import app.masroufy.ui.overlay.Sheet
 import app.masroufy.ui.text.BasicText
@@ -40,86 +43,103 @@ import app.masroufy.usecase.BnplSplitView
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
-/** سطر في صفحة التوزيع: خطة موجودة ([planId]) أو مشترى جديد (الاسم + العدد) — والقسط مكتوب نص لحد ما يتقري بالهللة. */
-private class SplitRow(val planId: Id?, val name: String, amount: String) {
-    var amount by mutableStateOf(amount)
-    var what by mutableStateOf("")
-    var count by mutableStateOf("4")
-}
+/** سطر «اتوزّع»: الاسم والمبلغ. */
+private class DoneRow(val name: String, val amountMinor: Long)
 
 /**
- * PLAN-0.6 §8 — «مجموع أكتر من قسط»: المالك بيختار الخطط اللي الخصم ده دفعها (أو «+ مشترى جديد») ويكتب قسط كل واحدة. الفرق بيبان تحت
- * (`BnplSplitCharge.diff` — الشاشة ما بتحسبش)، والحفظ مقفول لحد ما يبقى صفر. [transactionId] null = مقفولة. ستايل البرنامج الحالي —
- * التصميم هيرسمه بعدين («محتاج رسم»).
+ * r06-1b4 — «الخصم ده فيه كام قسط؟» (`BnplSplit.dc.html`): الخطط المفتوحة لنفس المزوّد بعلامات اختيار (المقترحة متعلّمة من الأول وفوقها
+ * «غالبًا دول …») · «+ مشترى جديد» (الاسم · قيمة الدفعة بالباقي · قسمتها على · الدفعة دي رقم) · سطر المجموع · «وزّع على الأقساط» شغال بس لما
+ * المجموع = الخصم بالظبط (`BnplSplitCharge.ready`) · بعد الحفظ «اتوزّع» بكل جزء، و«تمام» بيقفل ويطلّع «تراجع». الشاشة ما بتحسبش: المجموع والباقي
+ * من حالة الاستخدام، والمكتوب بيتقري بالهللة (`tryParseMoney` — أعداد صحيحة). [transactionId] null = مقفولة.
  */
 @Composable
 fun BnplMultiSheet(transactionId: Id?, onDismiss: () -> Unit, onDone: (BnplSplitUndo, Int) -> Unit) {
     val split = LocalSpace.current.dues.bnplSplit ?: return
     val scope = rememberCoroutineScope()
     var view by remember(transactionId) { mutableStateOf<BnplSplitView?>(null) }
-    val rows = remember(transactionId) { mutableStateListOf<SplitRow>() }
+    val plans = remember(transactionId) { mutableStateListOf<SplitPlanRow>() }
+    val news = remember(transactionId) { mutableStateListOf<SplitNewRow>() }
+    var sugg by remember(transactionId) { mutableStateOf(false) }
     var error by remember(transactionId) { mutableStateOf<String?>(null) }
     var saving by remember(transactionId) { mutableStateOf(false) }
-    LaunchedEffect(transactionId) { if (transactionId != null) view = runCatching { split.view(transactionId) }.getOrNull() }
+    var done by remember(transactionId) { mutableStateOf<Pair<BnplSplitUndo, List<DoneRow>>?>(null) }
+    var nextKey by remember(transactionId) { mutableStateOf(0) }
+    LaunchedEffect(transactionId) {
+        if (transactionId == null) return@LaunchedEffect
+        val v = runCatching { split.view(transactionId) }.getOrNull() ?: return@LaunchedEffect
+        plans.clear()
+        for (o in v.options) plans += SplitPlanRow(o, plainAmount(o.installmentMinor, v.charge.currency), o.planId in v.suggested)
+        sugg = v.suggested.size >= 2
+        view = v
+    }
     val v = view
-    Sheet(transactionId != null && v != null, onDismiss, title = t(R06Key.BNPL_MULTI_TITLE), closeLabel = t(UiKey.SHELL_CLOSE), spacing = 12.dp) {
+    val maxBody = with(LocalDensity.current) { (LocalWindowInfo.current.containerSize.height * 0.62f).toDp() }.coerceAtLeast(280.dp)
+    Sheet(transactionId != null && v != null, onDismiss, title = t(R06Key.BS_TITLE), closeLabel = t(UiKey.SHELL_CLOSE), spacing = 12.dp) {
         val vv = v ?: return@Sheet
         val currency = vv.charge.currency
-        BasicText(t(R06Key.BNPL_MULTI_TITLE), style = Type.of(17, FontWeight.Bold))
-        BasicText(t(R06Key.BNPL_MULTI_BODY, amountLabel(vv.charge.amountMinor, currency)), style = Type.of(13).copy(color = Ink.muted))
-        if (vv.options.isEmpty()) BasicText(t(R06Key.BNPL_MULTI_EMPTY), style = Type.of(12).copy(color = Ink.muted))
-        for (o in vv.options) {
-            val picked = rows.firstOrNull { it.planId == o.planId }
-            SelectChip(o.name + " · " + amountLabel(o.installmentMinor, o.currency), picked != null, {
-                if (picked != null) rows.remove(picked) else rows += SplitRow(o.planId, o.name, plainAmount(o.installmentMinor, currency))
-                error = null
-            }, height = 44.dp)
+        val charge = vv.charge.amountMinor
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            BasicText(t(R06Key.BS_TITLE), style = Type.of(18, FontWeight.Bold))
+            AmountText(charge, currency, size = 20)
         }
-        SelectChip(t(R06Key.BNPL_MULTI_NEW), false, { rows += SplitRow(null, "", ""); error = null }, height = 44.dp)
-        for (r in rows) SplitRowFields(r, currency)
-        val parts = rows.map { partOf(it, currency) }
-        val diff = if (parts.any { it == null }) null else split.diff(vv.charge.amountMinor, parts.filterNotNull())
-        if (diff != null && diff != 0L) BasicText(t(R06Key.BNPL_MULTI_DIFF, amountLabel(diff, currency)), style = Type.of(13, FontWeight.Bold).copy(color = Ink.expense))
-        error?.let { FieldError(it) }
-        PrimaryButton(t(R06Key.BNPL_MULTI_SAVE), loading = saving, enabled = diff == 0L && rows.size >= 2, height = 52.dp, modifier = Modifier.fillMaxWidth(), onClick = {
-            scope.launch {
-                saving = true
-                try {
-                    val undo = split.save(vv.charge.id, parts.filterNotNull())
-                    onDone(undo, parts.size)
-                } catch (e: CancellationException) {
-                    throw e
-                } catch (e: Exception) {
-                    error = bnplErrorText(e) ?: e.message
-                }
-                saving = false
+        val finished = done
+        if (finished != null) {
+            SplitDoneCard(t(R06Key.BS_DONE), finished.second.map { it.name to amountLabel(it.amountMinor, currency) })
+            PrimaryButton(t(R06Key.BS_FINISH), { onDone(finished.first, finished.second.size) }, Modifier.fillMaxWidth(), height = 52.dp)
+            return@Sheet
+        }
+        val picked = plans.filter { it.on }
+        val amounts = picked.map { read(it.amount, currency) } + news.map { read(it.amount, currency) }
+        val (sum, left) = split.tally(charge, amounts)
+        Column(Modifier.weight(1f, fill = false).heightIn(max = maxBody).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            BasicText(t(R06Key.BS_LEAD), style = Type.of(13, lineHeight = 1.7).copy(color = Ink.muted))
+            if (sugg) {
+                val names = plans.filter { it.on }.joinToString(" + ") { "«" + it.option.name + "»" }
+                SplitSuggLine(t(R06Key.BS_SUGG, names))
             }
-        })
+            if (vv.options.isEmpty()) BasicText(t(R06Key.BNPL_MULTI_EMPTY), style = Type.of(12).copy(color = Ink.muted))
+            for (row in plans) {
+                SplitPlanCard(row, currency, onToggle = { row.on = !row.on; sugg = false; error = null }, onAmount = { row.amount = it; sugg = false })
+            }
+            for (row in news) SplitNewCard(row, onRemove = { news.remove(row) })
+            SplitAddButton(t(R06Key.BNPL_MULTI_NEW)) {
+                news += SplitNewRow(nextKey++, if (left > 0) plainAmount(left, currency) else "")
+                sugg = false
+            }
+            val line = when {
+                left == 0L -> t(R06Key.BS_SUM_EXACT, amountLabel(sum, currency))
+                left > 0 -> t(R06Key.BS_SUM_LEFT, amountLabel(sum, currency), amountLabel(left, currency))
+                else -> t(R06Key.BS_SUM_OVER, amountLabel(sum, currency), amountLabel(-left, currency))
+            }
+            SplitSumLine(line, exact = left == 0L)
+            error?.let { FieldError(it) }
+        }
+        val ready = split.ready(charge, amounts, news.all { it.name.isNotBlank() })
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            PrimaryButton(t(R06Key.BS_SAVE), loading = saving, enabled = ready, height = 52.dp, modifier = Modifier.weight(2f), onClick = {
+                val parts = picked.map { BnplSplitPart(read(it.amount, currency) ?: 0, planId = it.option.planId) } +
+                    news.map { BnplSplitPart(read(it.amount, currency) ?: 0, newPurchase = BnplPurchase(it.name.trim(), null, it.split, at = it.at)) }
+                val rows = picked.map { DoneRow(it.option.name, read(it.amount, currency) ?: 0) } +
+                    news.map { DoneRow(t(R06Key.BS_DONE_NEW, it.name.trim(), it.at.toString(), it.split.toString()), read(it.amount, currency) ?: 0) }
+                scope.launch {
+                    saving = true
+                    try {
+                        done = split.save(vv.charge.id, parts) to rows
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        error = bnplErrorText(e) ?: e.message
+                    }
+                    saving = false
+                }
+            })
+            BnplQuietButton(t(R06Key.BS_BACK), onDismiss, Modifier.weight(1f))
+        }
     }
 }
 
-@Composable
-private fun SplitRowFields(r: SplitRow, currency: Currency) {
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        if (r.planId == null) {
-            TextInput(r.what, { r.what = it }, Modifier.fillMaxWidth(), label = t(R06Key.BNPL_MULTI_NEW_WHAT))
-            TextInput(r.count, { r.count = it }, Modifier.fillMaxWidth(), label = t(R06Key.BNPL_MULTI_NEW_COUNT), keyboard = KeyboardType.Number, ltr = true)
-        } else {
-            BasicText(r.name, style = Type.of(13, FontWeight.Bold))
-        }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            TextInput(r.amount, { r.amount = it }, Modifier.fillMaxWidth(), label = t(R06Key.BNPL_MULTI_AMOUNT), keyboard = KeyboardType.Decimal, ltr = true)
-        }
-    }
-}
+/** قراية المبلغ المكتوب بالهللة (قراية مش حساب) — null = لسه مش مكتوب صح أو صفر. */
+private fun read(text: String, currency: Currency): Long? = tryParseMoney(text.trim(), currency)?.takeIf { it > 0 }
 
-/** قراية السطر بالهللة (قراية مش حساب). null = لسه مش مكتوب صح. */
-private fun partOf(r: SplitRow, currency: Currency): BnplSplitPart? {
-    val amount = tryParseMoney(r.amount.trim(), currency)?.takeIf { it > 0 } ?: return null
-    if (r.planId != null) return BnplSplitPart(amount, planId = r.planId)
-    val count = r.count.trim().toIntOrNull()?.takeIf { it in 1..60 } ?: return null
-    return BnplSplitPart(amount, newPurchase = BnplPurchase(r.what, null, count))
-}
-
-/** القسط المقترح في الخانة (من غير علامة العملة). */
-private fun plainAmount(minor: Long, currency: Currency): String = app.masroufy.core.formatMoney(minor, currency, showCurrency = false, grouping = false)
+/** المبلغ في الخانة من غير علامة العملة ولا فواصل. */
+private fun plainAmount(minor: Long, currency: Currency): String = formatMoney(minor, currency, showCurrency = false, grouping = false)

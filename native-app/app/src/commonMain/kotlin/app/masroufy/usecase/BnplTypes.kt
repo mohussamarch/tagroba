@@ -44,6 +44,8 @@ data class BnplAsk(
     val plans: List<InstallmentPlan>,
     val options: List<BnplOption> = emptyList(),
     val walletName: String? = null,
+    /** r06-1b4: خطط مجموع أقساطها المستحقة = الخصم بالظبط (`bnplSumSuggestion`) ⇒ «غالبًا: «أ» + «ب»». فاضية = مفيش اقتراح. */
+    val splitHint: List<Id> = emptyList(),
 )
 
 /**
@@ -71,7 +73,15 @@ data class BnplLinked(val transactionId: Id, val planId: Id, val planName: Strin
 data class BnplSettle(val linked: Map<Id, Id>, val asks: List<BnplAsk>, val autoLinked: List<BnplLinked> = emptyList())
 
 /** رد «اشتريت إيه؟ قسمتها على كام؟ كل قد إيه؟». [what] فاضي ⇒ اسم المزوّد · [remind] = «فكّرني قبل كل دفعة بيوم». */
-data class BnplPurchase(val what: String, val categoryId: Id?, val count: Int, val cycle: BnplCycle = BnplCycle.MONTHLY, val remind: Boolean = true)
+data class BnplPurchase(
+    val what: String,
+    val categoryId: Id?,
+    val count: Int,
+    val cycle: BnplCycle = BnplCycle.MONTHLY,
+    val remind: Boolean = true,
+    /** r06-1b4 «الدفعة دي رقم كام؟» (1..[count]): اللي قبلها «اتدفعت» من غير عمليات · الباقي = القسط × (العدد − الرقم). */
+    val at: Int = 1,
+)
 
 data class BnplChargesDeps(
     val txns: TransactionRepository,

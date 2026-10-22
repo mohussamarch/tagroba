@@ -51,7 +51,7 @@ class SuggestDueLinks(private val deps: SuggestDueLinksDeps) {
     suspend fun list(from: IsoDate, to: IsoDate): List<DueLinkSuggestion> {
         val plans = deps.plans.listAll()
         val openings = mutableListOf<DueOpening>()
-        for (p in plans) openings += installmentOpenings(p, sumMoney(deps.payments.listByPlan(p.id).map { it.amountMinor }), to)
+        for (p in plans) openings += installmentOpenings(p, app.masroufy.core.planPaidMinor(p, deps.payments.listByPlan(p.id)), to)
         for (r in deps.roscas.listAll()) openings += roscaOpenings(r, deps.roscaEntries.listByRosca(r.id), to)
         if (openings.isEmpty()) return emptyList()
         // فلترة أولية بالمبلغ والاتجاه قبل ما نسأل عن الروابط (القراية على المرشحين بس)
