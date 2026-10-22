@@ -29,10 +29,13 @@ class DuplicateChargeAsks(
         return ids.size
     }
 
-    /** آخر [SCAN_DAYS] أيام لحد النهارده (اليوم من ساعة الجهاز — المقارنة نفسها بالساعة المحلية للعمليات). */
+    /**
+     * آخر [SCAN_DAYS] أيام لحد النهارده. ساعة الجهاز بالتوقيت العالمي (UTC)، وتاريخ العملية بتوقيت البلد ⇒ بعد نص الليل المحلي اليوم المحلي
+     * بيبقى بكرة بالعالمي (فحص 0.5.2 الساعة 00:10 الرياض). عشان كده النافذة بيوم زيادة لقدام — آمن، والمقارنة نفسها بالساعة المحلية للعمليات.
+     */
     suspend fun scanRecent(): Int {
-        val today = clock.nowIso().take(10)
-        return scan(shiftDays(today, -SCAN_DAYS), today)
+        val utcToday = clock.nowIso().take(10)
+        return scan(shiftDays(utcToday, -SCAN_DAYS), shiftDays(utcToday, 1))
     }
 
     override suspend fun pending(from: IsoDate, to: IsoDate): List<PendingAsk> =

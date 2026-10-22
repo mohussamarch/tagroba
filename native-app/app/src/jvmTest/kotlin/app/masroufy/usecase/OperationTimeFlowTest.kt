@@ -23,7 +23,7 @@ import kotlin.test.assertTrue
 class OperationTimeFlowTest {
     private val timed = SmsSpace(parse = { m, n -> SaudiBankSmsReader.parseTimed(m, n, SAUDI_TIME_ZONE) })
 
-    private fun twinBody(amount: String) = "شراء\nبـSR $amount\nلدى:TEST CAFE\n26/10/07"
+    private fun twinBody(amount: String, day: String = "26/10/07") = "شراء\nبـSR $amount\nلدى:TEST CAFE\n$day"
 
     @Test fun localTimeFollowsThePackZoneAndTheDay() {
         assertEquals("13:00:30", localTimeOn(SAUDI_TIME_ZONE, "2026-10-07T10:00:30Z", "2026-10-07"))
@@ -55,6 +55,15 @@ class OperationTimeFlowTest {
         assertEquals(1, asks.scan("2026-10-07", "2026-10-07"))
         val flagged = timed.all().filter { it.duplicateAskPending == true }
         assertEquals(listOf("13:00:30"), flagged.map { it.sourceTime }, "الأحدث بس عليه «مكرر؟»")
+    }
+
+    /** فحص 0.5.2 (00:10 الرياض): بعد نص الليل المحلي اليوم بالعالمي لسه امبارح — `scanRecent` لازم يلاقي خصمين النهارده المحلي. */
+    @Test fun scanRecentFindsTodaysChargesJustAfterLocalMidnight() = runBlocking<Unit> {
+        val world = SmsWorld(listOf(timed)).enable()
+        world.receive(sms("m1", twinBody("25", "26/10/08"), at = "2026-10-07T21:05:00Z"), sms("m2", twinBody("25", "26/10/08"), at = "2026-10-07T21:05:30Z"))
+        world.auto().run()
+        assertEquals(setOf("2026-10-08"), timed.all().map { it.occurredAt.take(10) }.toSet(), "تاريخ العمليات بتوقيت الرياض")
+        assertEquals(1, DuplicateChargeAsks("sa", timed.txnStore, FixedClock("2026-10-07T21:10:00.000Z")).scanRecent())
     }
 
     /** 0.5.2: نفس المحل ونفس المبلغ بعد 30 ث في تشغيلة تانية — فحص الرسايل القديم كان بيمسكها «بانتظار تأكيدك». */
