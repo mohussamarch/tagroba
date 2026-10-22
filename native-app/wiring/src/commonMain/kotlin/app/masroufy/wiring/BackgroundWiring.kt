@@ -50,7 +50,8 @@ fun smsImportDeps(spaceId: String, r: SpaceRepositories, env: DeviceEnv, inbox: 
  * بلد كل رسالة (قارئ البلد من حزمتها — بلد مالهاش قارئ ما بتاخدش رسايل).
  * ⚠️ **محرك التنبيهات مش متوصل هنا لسه** (`candidates = null`): المحرك بيشيل من صفحة الإشعارات أي موضوع مش في المرشحين، فلازم ياخد
  * **كل** المرشحين (المستحقات · الميزانية · التحويلات · الزكاة · المناسبات · الدخل · المساعد …) بنفس اللي الشاشة بتجمعه — شغل منطقة
- * الإشعارات (`GatherAllSpaceAlerts`). لحد ما يتوصل: التسجيل لوحده شغال، ومفيش إشعار جوال.
+ * الإشعارات (`GatherAllSpaceAlerts`). لحد ما يتوصل: التسجيل لوحده شغال، وإشعارات الجوال الوحيدة هي حالات القراية التلاتة
+ * (PLAN-0.6 §13 ج — `SmsStateNotices`، لو [noticeMemory] موجود): شكل جديد مستني · الإذن اتسحب · رسايل فاتته.
  */
 fun backgroundCycle(
     spaces: List<Pair<Space, SpaceRepositories>>, inbox: SmsInboxPort, notifier: DeviceNotifier, env: DeviceEnv,
