@@ -96,10 +96,13 @@ class PendingIncomeTest {
         )
         val now = withEstimatedKinds(outs, names, owner)
         val before = withEstimatedKinds(outs, names, legacy)
-        assertEquals(before, now, "الصادر ما اتغيرش في أي حاجة")
+        // مراجعة r06 money-2: الفرق الوحيد = التحويل الخارج المجهول بقى أول احتمال (تحويل لنفسك) مش «شراء» — الباقي زي ما هو
+        assertEquals(before.transactions.filterIndexed { i, _ -> i != 3 }, now.transactions.filterIndexed { i, _ -> i != 3 }, "الصادر ما اتغيرش غير التحويل")
+        assertEquals(EconomicKind.PURCHASE, before.transactions[3].economicKind)
+        assertEquals(before.estimatedCount to before.needsReviewCount, now.estimatedCount to now.needsReviewCount)
         assertEquals(
             listOf(
-                EconomicKind.PURCHASE, EconomicKind.PURCHASE, EconomicKind.ASSET_BUY, EconomicKind.PURCHASE, EconomicKind.FEE,
+                EconomicKind.PURCHASE, EconomicKind.PURCHASE, EconomicKind.ASSET_BUY, EconomicKind.INTERNAL_TRANSFER, EconomicKind.FEE,
                 EconomicKind.INTERNAL_TRANSFER, EconomicKind.PURCHASE, EconomicKind.SUPPORT_GIFT,
             ),
             now.transactions.map { it.economicKind },
