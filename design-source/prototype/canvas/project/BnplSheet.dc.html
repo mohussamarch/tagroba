@@ -44,6 +44,10 @@ input::placeholder{color:#8A9A95}
       <div role="radiogroup" aria-label="{{splitLabel}}" style="display: flex; gap: 8px">
         <sc-for list="{{splits}}" as="sp" hint-placeholder-count="4"><button type="button" role="radio" aria-checked="{{sp.on}}" class="m-press" onClick="{{sp.pick}}" style="{{sp.style}}">{{sp.label}}</button></sc-for>
       </div>
+      <span style="font-size: 14px; font-weight: 700">{{atLabel}}</span>
+      <div role="radiogroup" aria-label="{{atLabel}}" style="display: flex; gap: 8px">
+        <sc-for list="{{ats}}" as="at" hint-placeholder-count="4"><button type="button" role="radio" aria-checked="{{at.on}}" class="m-press" onClick="{{at.pick}}" style="{{at.style}}">{{at.label}}</button></sc-for>
+      </div>
       <span style="font-size: 14px; font-weight: 700">{{everyLabel}}</span>
       <div role="radiogroup" aria-label="{{everyLabel}}" style="display: flex; gap: 8px">
         <sc-for list="{{everys}}" as="ev" hint-placeholder-count="2"><button type="button" role="radio" aria-checked="{{ev.on}}" class="m-press" onClick="{{ev.pick}}" style="{{ev.style}}">{{ev.label}}</button></sc-for>
@@ -91,7 +95,7 @@ const MON = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو',
 const OPEN = { 'تابي': [['سماعة لاسلكية', 25000, 2, 4, '7 نوفمبر'], ['طقم أواني', 18000, 2, 3, '20 أكتوبر']], 'تمارا': [['ساعة رياضية', 40000, 1, 4, '1 نوفمبر']] };
 class Component extends DCLogic {
   constructor(props) { super(props); this.state = this.fresh(props); }
-  fresh(p) { return { mode: (p && p.mode) || 'أول خصم', what: '', cat: 'shop', split: 4, every: 'month', remind: true, pick: null }; }
+  fresh(p) { return { at: 1, mode: (p && p.mode) || 'أول خصم', what: '', cat: 'shop', split: 4, every: 'month', remind: true, pick: null }; }
   componentDidUpdate(prev) { if (prev.mode !== this.props.mode || prev.provider !== this.props.provider || prev.space !== this.props.space) this.setState(this.fresh(this.props)); }
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر', T = (msa, egy) => (eg ? egy : msa);
@@ -103,9 +107,10 @@ class Component extends DCLogic {
     const chip = (on, flex) => (flex ? 'flex: 1 1 0; min-width: 0; ' : '') + 'height: 44px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #FFFFFF; background: ' + green : 'color: #193D33; background: rgba(25,61,51,0.06)');
     // مواعيد الخطة: الأولى النهارده (اتدفعت)، والباقي كل شهر في نفس اليوم أو كل 14 يوم
     const dateAt = (i) => { const d = new Date(Date.UTC(2026, 9, 7)); if (s.every === 'month') d.setUTCMonth(d.getUTCMonth() + i); else d.setUTCDate(d.getUTCDate() + 14 * i); return d.getUTCDate() + ' ' + MON[d.getUTCMonth()] + (d.getUTCFullYear() !== 2026 ? ' ' + d.getUTCFullYear() : ''); };
-    const steps = Array.from({ length: s.split }, (x, i) => ({ label: T('الدفعة ', 'الدفعة ') + n(i + 1) + ' · ' + (i === 0 ? T('اليوم', 'النهارده') : dateAt(i)), amount: money(debit, cur), tag: i === 0 ? T('دُفعت', 'اتدفعت') : i === 1 ? T('القادمة', 'الجاية') : '',
-      tagStyle: 'flex-shrink: 0; font-size: 11px; font-weight: 700; ' + (i === 0 ? 'padding: 1px 8px; border-radius: 10px; color: #13764D; background: #DCEBD6' : i === 1 ? 'padding: 1px 8px; border-radius: 10px; color: #6B4600; background: #FBF0DD' : 'display: none'),
-      dot: 'width: 12px; height: 12px; border-radius: 6px; flex-shrink: 0; ' + (i === 0 ? 'background: #08634F' : 'background: #FFFFFF; box-shadow: inset 0 0 0 2px rgba(8,99,79,0.45)') }));
+    const at = Math.min(s.at, s.split), cut = at - 1;
+    const steps = Array.from({ length: s.split }, (x, i) => ({ label: T('الدفعة ', 'الدفعة ') + n(i + 1) + ' · ' + (i === cut ? T('اليوم', 'النهارده') : dateAt(i - cut)), amount: money(debit, cur), tag: i < cut ? T('دُفعت قبل ذلك', 'اتدفعت قبل كده') : i === cut ? T('دُفعت', 'اتدفعت') : i === cut + 1 ? T('القادمة', 'الجاية') : '',
+      tagStyle: 'flex-shrink: 0; font-size: 11px; font-weight: 700; ' + (i < cut ? 'padding: 1px 8px; border-radius: 10px; color: #637570; background: rgba(25,61,51,0.07)' : i === cut ? 'padding: 1px 8px; border-radius: 10px; color: #13764D; background: #DCEBD6' : i === cut + 1 ? 'padding: 1px 8px; border-radius: 10px; color: #6B4600; background: #FBF0DD' : 'display: none'),
+      dot: 'width: 12px; height: 12px; border-radius: 6px; flex-shrink: 0; ' + (i < cut ? 'background: rgba(8,99,79,0.35)' : i === cut ? 'background: #08634F' : 'background: #FFFFFF; box-shadow: inset 0 0 0 2px rgba(8,99,79,0.45)') }));
     const CATS = [['shop', T('التسوق', 'التسوق')], ['tech', T('إلكترونيات وأجهزة', 'إلكترونيات وأجهزة')], ['clothes', T('ملابس', 'لبس')], ['home', T('المنزل', 'البيت')], ['travel', T('سفر', 'سفر')], ['other', T('تصنيف آخر…', 'تصنيف تاني…')]];
     const plans = (OPEN[prov] || []).map(([name, inst, done, total, next]) => ({ id: name, name, inst: money(inst * k, cur), sub: T('بقي ', 'فاضل ') + n(total - done) + T(' من ', ' من ') + n(total) + T(' · القادمة ', ' · الجاية ') + next, diff: debit - inst * k }))
       .concat((OPEN[prov] || []).length > 1 ? [{ id: 'split', name: T('مجموع أكثر من قسط', 'مجموع أكتر من قسط'), sub: T('الخصم فيه قسطان أو أكثر معًا', 'الخصم فيه قسطين أو أكتر مع بعض'), inst: '',
@@ -120,21 +125,22 @@ class Component extends DCLogic {
     return {
       provider: prov, badge: 'min-width: 56px; height: 56px; padding: 0 8px; box-sizing: border-box; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; ' + (prov === 'تابي' ? 'color: #0B3B2E; background: #3BFFC1' : 'color: #FFFFFF; background: #1F1F3A'),
       debitLine: T('خصم من ', 'خصم من ') + prov + T(' · اليوم · مصرف الراجحي', ' · النهارده · مصرف الراجحي'), debit: money(debit, cur),
-      title: setup ? T('يبدو أنها أول دفعة من تقسيط', 'شكلها أول دفعة من تقسيط') : T('هذا قسط من أي مشترى؟', 'ده قسط من أنهي مشترى؟'),
-      lead: setup ? T('ثلاثة أسئلة، ونعمل لك خطة الأقساط ونذكّرك بكل دفعة.', 'تلات أسئلة، ونعملك خطة الأقساط ونفكّرك بكل دفعة.') : T('المبلغ لا يطابق أي قسط منتظر من ', 'المبلغ مش زي أي قسط مستني من ') + prov + '.',
+      title: setup ? T('يبدو أنها دفعة من تقسيط جديد', 'شكلها دفعة من تقسيط جديد') : T('هذا قسط من أي مشترى؟', 'ده قسط من أنهي مشترى؟'),
+      lead: setup ? T('أسئلة قليلة، ونعمل لك خطة الأقساط ونذكّرك بكل دفعة.', 'كام سؤال، ونعملك خطة الأقساط ونفكّرك بكل دفعة.') : T('المبلغ لا يطابق أي قسط منتظر من ', 'المبلغ مش زي أي قسط مستني من ') + prov + '.',
       spaceName: eg ? 'مصر' : 'السعودية',
       isSetup: setup, isWhich: !setup, isSplit, debitMinor: String(debit), backToWhich: () => this.setState({ mode: 'أنهي مشترى', pick: null }), splitDone: (x) => done({ split: x && x.parts }),
       whatLabel: T('ماذا اشتريت من ', 'اشتريت إيه من ') + prov + '؟', whatHint: T('مثل: سماعة لاسلكية', 'مثلًا: سماعة لاسلكية'), what: s.what, typeWhat: (e) => this.setState({ what: e.target.value }),
       catLabel: T('التصنيف', 'التصنيف'), cats: CATS.map(([id, label]) => ({ label, on: s.cat === id ? 'true' : 'false', style: chip(s.cat === id), pick: () => this.setState({ cat: id }) })),
-      splitLabel: T('قسّمتها على كم دفعة؟', 'قسمتها على كام؟'), splits: [2, 3, 4, 6].map((x) => ({ label: n(x), on: s.split === x ? 'true' : 'false', style: chip(s.split === x, true), pick: () => this.setState({ split: x }) })),
+      splitLabel: T('قسّمتها على كم دفعة؟', 'قسمتها على كام؟'), splits: [2, 3, 4, 6].map((x) => ({ label: n(x), on: s.split === x ? 'true' : 'false', style: chip(s.split === x, true), pick: () => this.setState({ split: x, at: Math.min(s.at, x) }) })),
       everyLabel: T('كل كم؟', 'كل قد إيه؟'), everys: [['month', T('كل شهر', 'كل شهر')], ['two', T('كل أسبوعين', 'كل أسبوعين')]].map(([id, label]) => ({ label, on: s.every === id ? 'true' : 'false', style: chip(s.every === id, true), pick: () => this.setState({ every: id }) })),
-      planTitle: T('خطتك', 'خطتك'), planTotal: T('الإجمالي ', 'الإجمالي ') + money(debit * s.split, cur) + T(' · الباقي ', ' · الباقي ') + money(debit * (s.split - 1), cur), steps,
+      planTitle: T('خطتك', 'خطتك'), planTotal: T('الإجمالي ', 'الإجمالي ') + money(debit * s.split, cur) + T(' · الباقي ', ' · الباقي ') + money(debit * (s.split - at), cur), steps,
+      atLabel: T('هذه الدفعة رقم كم؟', 'الدفعة دي رقم كام؟'), ats: Array.from({ length: s.split }, (x, i) => i + 1).map((v) => ({ label: n(v), on: at === v ? 'true' : 'false', style: chip(at === v, true), pick: () => this.setState({ at: v }) })),
       remindTitle: T('ذكّرني قبل كل دفعة بيوم', 'فكّرني قبل كل دفعة بيوم'), remindSub: T('تظهر في «القادم» وفي الإشعارات', 'بتظهر في «القادم» وفي الإشعارات'), remindOn: s.remind ? 'true' : 'false', toggleRemind: () => this.setState({ remind: !s.remind }),
       track: 'position: relative; display: block; width: 44px; height: 26px; border-radius: 13px; ' + (s.remind ? 'background: ' + green : 'background: rgba(25,61,51,0.16)'), knob: 'position: absolute; top: 2px; right: ' + (s.remind ? 20 : 2) + 'px; width: 22px; height: 22px; border-radius: 11px; background: #FFFFFF; box-shadow: 0 2px 6px rgba(16,45,53,0.22)',
-      autoNote: T('الخصومات القادمة من ', 'الخصومات الجاية من ') + prov + T(' بالمبلغ نفسه تُعلَّم «دُفعت» تلقائيًا من هذه الخطة.', ' بنفس المبلغ بتتعلّم «اتدفعت» لوحدها من الخطة دي.'), plans,
+      autoNote: T('الخصومات القادمة من ', 'الخصومات الجاية من ') + prov + T(' بالمبلغ نفسه تُعلَّم «دُفعت» تلقائيًا من هذه الخطة.', ' بنفس المبلغ بتتعلّم «اتدفعت» لوحدها من الخطة دي.') + (cut ? T(' والدفعات السابقة تُعلَّم «دُفعت قبل ذلك» فقط دون تسجيل عمليات جديدة.', ' والدفعات اللي قبلها بتتعلّم «اتدفعت قبل كده» بس، من غير ما تتسجل عمليات جديدة.') : ''), plans,
       saveLabel: setup ? T('اعمل الخطة', 'اعمل الخطة') : T('تأكيد', 'تأكيد'), saveOff,
       saveStyle: 'flex: 2 1 0; height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 16px; font-weight: 700; color: #FFFFFF; background: ' + green + '; ' + (saveOff ? 'opacity: 0.45; cursor: default' : 'cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.25)'),
-      save: () => { if (saveOff) return; if (!setup && s.pick === 'new') { this.setState({ mode: 'أول خصم', pick: null }); return; } done(setup ? { what: s.what.trim() || prov, cat: s.cat, split: s.split, every: s.every, remind: s.remind } : { plan: s.pick }); },
+      save: () => { if (saveOff) return; if (!setup && s.pick === 'new') { this.setState({ mode: 'أول خصم', pick: null }); return; } done(setup ? { what: s.what.trim() || prov, cat: s.cat, split: s.split, at, every: s.every, remind: s.remind } : { plan: s.pick }); },
       laterLabel: setup ? T('تخطَّ', 'تخطّي') : T('لاحقًا', 'بعدين'), later: () => { if (this.props.onClose) this.props.onClose(); }
     };
   }

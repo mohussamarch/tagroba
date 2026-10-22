@@ -48,6 +48,7 @@ input::placeholder{color:#8A9A95}
           <input type="text" value="{{nw.name}}" onInput="{{nw.typeName}}" placeholder="{{newPh}}" aria-label="{{newPh}}" style="height: 46px; box-sizing: border-box; padding: 0 12px; border: 0; border-radius: 14px; font: inherit; font-size: 15px; color: #193D33; background: rgba(25,61,51,0.04)">
           <label style="{{amtRow}}"><span style="flex: 1 1 auto">{{firstLabel}}</span><input type="text" inputmode="decimal" value="{{nw.amt}}" onInput="{{nw.typeAmt}}" aria-label="{{firstLabel}}" style="{{amtInput}}"><span>{{cur}}</span></label>
           <span style="display: flex; align-items: center; gap: 6px"><span style="flex: 1 1 auto; font-size: 13px; color: #637570">{{splitLabel}}</span><sc-for list="{{nw.splits}}" as="sp" hint-placeholder-count="4"><button type="button" role="radio" aria-checked="{{sp.on}}" class="bs-press" onClick="{{sp.pick}}" style="{{sp.style}}">{{sp.label}}</button></sc-for></span>
+          <span style="display: flex; align-items: center; gap: 6px"><span style="flex: 1 1 auto; font-size: 13px; color: #637570">{{atLabel}}</span><sc-for list="{{nw.ats}}" as="sp" hint-placeholder-count="4"><button type="button" role="radio" aria-checked="{{sp.on}}" class="bs-press" onClick="{{sp.pick}}" style="{{sp.style}}">{{sp.label}}</button></sc-for></span>
         </div>
       </sc-for>
       <button type="button" class="bs-press" onClick="{{addNew}}" style="min-height: 48px; border: 1.5px dashed rgba(8,99,79,0.4); border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; cursor: pointer; background: transparent">{{addLabel}}</button>
@@ -101,7 +102,7 @@ class Component extends DCLogic {
     const left = s.debit - sum;
     const count = picked.length + s.news.length;
     const saveOff = left !== 0 || count < 2 || s.news.some((x) => !x.name.trim() || !toMinor(x.amt));
-    const rows = picked.map((x) => ({ name: x.name, amt: money(toMinor(s.amts[x.name]), cur) })).concat(s.news.map((x) => ({ name: x.name.trim() + T(' (جديد)', ' (جديد)'), amt: money(toMinor(x.amt), cur) })));
+    const rows = picked.map((x) => ({ name: x.name, amt: money(toMinor(s.amts[x.name]), cur) })).concat(s.news.map((x) => ({ name: x.name.trim() + T(' (جديد · الدفعة ', ' (جديد · الدفعة ') + x.at + T(' من ', ' من ') + x.split + ')', amt: money(toMinor(x.amt), cur) })));
     const tick = (on) => 'width: 22px; height: 22px; border-radius: 7px; flex-shrink: 0; box-sizing: border-box; display: flex; align-items: center; justify-content: center; ' + (on ? 'background: #08634F' : 'background: #FFFFFF; border: 1.5px solid rgba(25,61,51,0.28)');
     return {
       provider: prov,
@@ -111,7 +112,7 @@ class Component extends DCLogic {
       lead: T('علّم الأقساط التي خُصمت معًا، وعدّل المبلغ إن اختلف. وإن كان فيه مشترى جديد أضفه.', 'علّم الأقساط اللي اتخصمت مع بعض، وعدّل المبلغ لو مختلف. ولو فيه مشترى جديد زوّده.'),
       isEdit: !s.done, isDone: s.done,
       hasSugg: s.sugg, sugg: T('غالبًا هذه: أقساط ', 'غالبًا دول: أقساط ') + s.plans.map((x) => '«' + x.name + '»').join(T(' و', ' و')) + T(' مستحقة، ومجموعها = المبلغ تمامًا. أكّد أو عدّل.', ' مستحقة، ومجموعهم = المبلغ بالظبط. أكّد أو عدّل.'),
-      instLabel: T('قيمة القسط', 'قيمة القسط'), firstLabel: T('أول دفعة', 'أول دفعة'),
+      instLabel: T('قيمة القسط', 'قيمة القسط'), firstLabel: T('قيمة الدفعة', 'قيمة الدفعة'),
       amtRow: 'display: flex; align-items: center; gap: 8px; font-size: 13px; color: #637570',
       amtInput: 'width: 112px; height: 42px; box-sizing: border-box; padding: 0 10px; border: 0; border-radius: 12px; font: inherit; font-size: 15px; font-weight: 700; text-align: left; direction: ltr; font-variant-numeric: tabular-nums; color: #193D33; background: rgba(25,61,51,0.05)',
       parts: s.plans.map((x) => {
@@ -123,15 +124,17 @@ class Component extends DCLogic {
           type: (e) => { const v = e && e.target ? e.target.value : ''; this.setState((st) => ({ amts: Object.assign({}, st.amts, { [x.name]: v }), sugg: false })); } };
       }),
       newTitle: T('مشترى جديد', 'مشترى جديد'), newPh: T('ماذا اشتريت؟ مثل: مكنسة', 'اشتريت إيه؟ مثلًا: مكنسة'), removeLabel: T('إزالة', 'شيل'),
-      splitLabel: T('قسّمتها على', 'قسمتها على'),
+      splitLabel: T('قسّمتها على', 'قسمتها على'), atLabel: T('هذه الدفعة رقم', 'الدفعة دي رقم'),
       news: s.news.map((x) => ({ name: x.name, amt: x.amt,
         typeName: (e) => setNew(x.id, { name: e && e.target ? e.target.value : '' }),
         typeAmt: (e) => setNew(x.id, { amt: e && e.target ? e.target.value : '' }),
         remove: () => this.setState((st) => ({ news: st.news.filter((y) => y.id !== x.id) })),
-        splits: [2, 3, 4, 6].map((n) => ({ label: String(n), on: x.split === n ? 'true' : 'false', pick: () => setNew(x.id, { split: n }),
+        ats: Array.from({ length: x.split }, (y, i) => i + 1).map((n) => ({ label: String(n), on: x.at === n ? 'true' : 'false', pick: () => setNew(x.id, { at: n }),
+          style: 'width: 40px; height: 40px; border: 0; border-radius: 12px; font: inherit; font-size: 14px; cursor: pointer; ' + (x.at === n ? 'font-weight: 700; color: #FFFFFF; background: ' + green : 'color: #193D33; background: rgba(25,61,51,0.06)') })),
+        splits: [2, 3, 4, 6].map((n) => ({ label: String(n), on: x.split === n ? 'true' : 'false', pick: () => setNew(x.id, { split: n, at: Math.min(x.at, n) }),
           style: 'width: 40px; height: 40px; border: 0; border-radius: 12px; font: inherit; font-size: 14px; cursor: pointer; ' + (x.split === n ? 'font-weight: 700; color: #FFFFFF; background: ' + green : 'color: #193D33; background: rgba(25,61,51,0.06)') })) })),
       addLabel: T('+ مشترى جديد', '+ مشترى جديد'),
-      addNew: () => this.setState((st) => ({ news: st.news.concat([{ id: st.nid + 1, name: '', amt: left > 0 ? plain(left) : '', split: 4 }]), nid: st.nid + 1, sugg: false })),
+      addNew: () => this.setState((st) => ({ news: st.news.concat([{ id: st.nid + 1, name: '', amt: left > 0 ? plain(left) : '', split: 4, at: 1 }]), nid: st.nid + 1, sugg: false })),
       sumLine: left === 0 ? T('الموزَّع ', 'الموزّع ') + money(sum, cur) + T(' — يطابق الخصم تمامًا', ' — مطابق للخصم بالظبط') : left > 0 ? T('الموزَّع ', 'الموزّع ') + money(sum, cur) + T(' · يتبقى ', ' · فاضل ') + money(left, cur) : T('الموزَّع ', 'الموزّع ') + money(sum, cur) + T(' · يزيد ', ' · زيادة ') + money(-left, cur),
       sumStyle: 'font-size: 13px; font-weight: 700; color: ' + (left === 0 ? '#08634F' : '#956000'),
       saveOff, saveLabel: T('وزّع على الأقساط', 'وزّع على الأقساط'),
@@ -139,7 +142,7 @@ class Component extends DCLogic {
       save: () => { if (!saveOff) this.setState({ done: true }); },
       backLabel: T('رجوع', 'رجوع'), back: () => { if (s.done) { this.setState({ done: false }); return; } if (typeof this.props.onBack === 'function') this.props.onBack(); },
       doneTitle: T('تم التوزيع', 'اتوزّع'), doneRows: rows,
-      doneNote: T('كل خطة عُلّم فيها قسط «دُفع» بالمبلغ ده، والمشترى الجديد اتعملت له خطة كل شهر.', 'كل خطة اتعلّم فيها قسط «اتدفع» بالمبلغ ده، والمشترى الجديد اتعملّه خطة كل شهر.'),
+      doneNote: T('كل خطة عُلّم فيها قسط «دُفع» بالمبلغ ده، والمشترى الجديد اتعملت له خطة كل شهر، والدفعات التي قبل رقمها عُلّمت «دُفعت قبل ذلك» دون عمليات جديدة.', 'كل خطة اتعلّم فيها قسط «اتدفع» بالمبلغ ده، والمشترى الجديد اتعملّه خطة كل شهر، والدفعات اللي قبل رقمها اتعلّمت «اتدفعت قبل كده» من غير عمليات جديدة.'),
       finishLabel: T('تم', 'تمام'), finish: () => { if (typeof this.props.onDone === 'function') this.props.onDone({ parts: rows.map((r) => r.name) }); else this.setState(this.fresh(this.props)); }
     };
   }
