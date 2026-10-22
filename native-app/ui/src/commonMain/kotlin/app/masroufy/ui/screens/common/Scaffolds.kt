@@ -53,18 +53,23 @@ fun TabScaffold(
     title: String,
     modifier: Modifier = Modifier,
     header: (@Composable () -> Unit)? = null,
+    /** السحب للتحديث (علامة العملات): لو موجود الصفحة بتنزل مع الإصبع والشريط بيتعرض هنا. */
+    refresh: PullRefreshState? = null,
     content: LazyListScope.() -> Unit,
 ) {
     // بيرجع لمكانه مع الرجوع وتبديل التبويب (§85 — في الملّاح، مش في كل شاشة)
     val state = rememberEntryLazyListState()
+    androidx.compose.foundation.layout.Box(Modifier.fillMaxSize()) {
     LazyColumn(
-        modifier.fillMaxSize(),
+        (if (refresh != null) modifier.pullRefresh(refresh) else modifier).fillMaxSize(),
         state = state,
         contentPadding = PaddingValues(start = Space.gutter, end = Space.gutter, top = Space.gutter + statusTop, bottom = Space.tabContentBottom),
         verticalArrangement = Arrangement.spacedBy(Space.block),
     ) {
         item(key = "header") { header?.invoke() ?: TabHeader(title) }
         content()
+    }
+    if (refresh != null) PullRefreshIndicator(refresh, Modifier.align(Alignment.TopCenter).padding(top = statusTop))
     }
 }
 

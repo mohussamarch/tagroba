@@ -92,7 +92,7 @@ fun RestorePreviewScreen(fileName: String, text: String) {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     BasicText(t(UiKey.RST_READING), style = Type.of(13).copy(color = Ink.muted))
                     Skeleton(Modifier.fillMaxWidth().height(120.dp), radius = 24.dp)
-                    Skeleton(Modifier.fillMaxWidth().height(260.dp))
+                    Skeleton(quiet = true, modifier = Modifier.fillMaxWidth().height(260.dp))
                 }
             }
             is Phase.Error -> item(key = "error") {

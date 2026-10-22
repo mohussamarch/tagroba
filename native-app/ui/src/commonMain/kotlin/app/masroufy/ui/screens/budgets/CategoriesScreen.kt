@@ -89,7 +89,7 @@ fun CategoriesScreen() {
         when (state) {
             Load.Loading -> {
                 item { Skeleton(Modifier.fillMaxWidth().height(220.dp), strong = true) }
-                item { Skeleton(Modifier.fillMaxWidth().height(160.dp)) }
+                item { Skeleton(quiet = true, modifier = Modifier.fillMaxWidth().height(160.dp)) }
             }
             is Load.Failed -> item { ErrorCard(t(UiKey.CATS_ERR_TITLE), t(UiKey.CATS_ERR_BODY), { reload++ }) }
             is Load.Ready -> {

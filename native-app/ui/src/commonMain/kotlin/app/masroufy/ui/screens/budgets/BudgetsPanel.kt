@@ -55,7 +55,7 @@ fun BudgetsPanel() {
         when (state) {
             Load.Loading -> {
                 Skeleton(Modifier.fillMaxWidth().height(168.dp), strong = true)
-                Skeleton(Modifier.fillMaxWidth().height(240.dp))
+                Skeleton(quiet = true, modifier = Modifier.fillMaxWidth().height(240.dp))
             }
             is Load.Failed -> ErrorCard(t(UiKey.BUDGETS_ERROR_TITLE), t(UiKey.BUDGETS_ERROR_BODY), { reload++ })
             is Load.Ready -> BudgetsContent(state.value, deps, today) { reload++ }

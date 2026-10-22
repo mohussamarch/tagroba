@@ -99,7 +99,7 @@ fun NotificationsScreen() {
                 list == null -> item(key = "loading") {
                     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                         Skeleton(Modifier.fillMaxWidth().height(180.dp))
-                        Skeleton(Modifier.fillMaxWidth().height(120.dp))
+                        Skeleton(quiet = true, modifier = Modifier.fillMaxWidth().height(120.dp))
                     }
                 }
                 else -> {

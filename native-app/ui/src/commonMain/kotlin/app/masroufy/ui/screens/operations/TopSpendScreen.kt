@@ -60,7 +60,7 @@ fun TopSpendScreen() {
         when (val s = state) {
             ReadState.Loading -> {
                 item(key = "skeleton-total") { Skeleton(Modifier.fillMaxWidth().height(150.dp)) }
-                item(key = "skeleton-rows") { Skeleton(Modifier.fillMaxWidth().height(260.dp)) }
+                item(key = "skeleton-rows") { Skeleton(quiet = true, modifier = Modifier.fillMaxWidth().height(260.dp)) }
             }
             ReadState.Failed -> item(key = "failed") { EmptyState(t(UiKey.TOP_SPEND_FAILED)) }
             is ReadState.Ready -> {

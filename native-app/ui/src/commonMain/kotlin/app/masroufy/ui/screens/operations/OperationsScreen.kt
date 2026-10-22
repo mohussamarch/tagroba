@@ -49,10 +49,8 @@ import app.masroufy.ui.nav.Slots
 import app.masroufy.ui.overlay.Anchor
 import app.masroufy.ui.overlay.QuickMenuHost
 import app.masroufy.ui.overlay.rememberQuickMenu
-import app.masroufy.ui.screens.common.PullRefreshIndicator
 import app.masroufy.ui.screens.common.TabHeader
 import app.masroufy.ui.screens.common.TabScaffold
-import app.masroufy.ui.screens.common.pullRefresh
 import app.masroufy.ui.screens.common.rememberPullRefresh
 import app.masroufy.ui.screens.home.PeriodChoice
 import app.masroufy.ui.screens.home.PeriodPickerRoute
@@ -137,7 +135,7 @@ fun OperationsScreen() {
     }
     val title = t(UiKey.TAB_OPERATIONS)
     Box(Modifier.fillMaxSize()) {
-        TabScaffold(title, Modifier.pullRefresh(pull), header = {
+        TabScaffold(title, refresh = pull, header = {
             TabHeader(title, actions = {
                 if (deps.bulk != null && tab == OpsTab.OPERATIONS && !sel.active) {
                     SurfaceIconButton(Lucide.CHECK, t(UiKey.OPS_SELECT), onClick = { sel = sel.start() }, iconSize = 20.dp)
@@ -192,7 +190,6 @@ fun OperationsScreen() {
                 }
             }
         }
-        PullRefreshIndicator(pull, t(UiKey.OPERATIONS_REFRESHING), Modifier.align(Alignment.TopCenter))
     }
     QuickMenuHost(quick)
     OperationEraseSheet(erasing, deps.erase, onDismiss = { erasing = null }) { e -> erasing = null; reload++; done = e.asBulk() }
@@ -279,9 +276,9 @@ private fun LoadingBlocks() {
     Column(Modifier.fillMaxWidth().semantics { contentDescription = label }, verticalArrangement = Arrangement.spacedBy(14.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Skeleton(Modifier.weight(1f).height(66.dp), radius = 18.dp)
-            Skeleton(Modifier.weight(1f).height(66.dp), radius = 18.dp)
+            Skeleton(quiet = true, modifier = Modifier.weight(1f).height(66.dp), radius = 18.dp)
         }
-        Skeleton(Modifier.size(48.dp, 16.dp), radius = 8.dp, strong = true)
-        Skeleton(Modifier.fillMaxWidth().height(176.dp))
+        Skeleton(quiet = true, modifier = Modifier.size(48.dp, 16.dp), radius = 8.dp, strong = true)
+        Skeleton(quiet = true, modifier = Modifier.fillMaxWidth().height(176.dp))
     }
 }

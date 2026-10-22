@@ -13,6 +13,10 @@ internal val MSA_R06_TEXTS: Map<R06Key, String> = mapOf(
     R06Key.LOADER_A11Y to "جارٍ التحميل",
     R06Key.LOADER_UPDATING to "جارٍ التحديث…",
     R06Key.LOADER_SAVING to "جارٍ الحفظ…",
+    R06Key.LOADER_PREPARING to "نجهّز أموالك…",
+    R06Key.LOADER_PULL to "اسحب للتحديث",
+    R06Key.LOADER_RELEASE to "أفلت للتحديث",
+    R06Key.LOADER_DONE to "تم التحديث الآن",
 )
 
 internal val EGYPTIAN_R06_TEXTS: Map<R06Key, String> = mapOf(
@@ -27,6 +31,10 @@ internal val EGYPTIAN_R06_TEXTS: Map<R06Key, String> = mapOf(
     R06Key.LOADER_A11Y to "بيحمّل",
     R06Key.LOADER_UPDATING to "بنحدّث…",
     R06Key.LOADER_SAVING to "بيتحفظ…",
+    R06Key.LOADER_PREPARING to "بنجهّز فلوسك…",
+    R06Key.LOADER_PULL to "اسحب كمان للتحديث",
+    R06Key.LOADER_RELEASE to "سيب عشان يحدّث",
+    R06Key.LOADER_DONE to "اتحدّث دلوقتي",
 )
 
 internal val ENGLISH_R06_TEXTS: Map<R06Key, String> = mapOf(
@@ -41,4 +49,8 @@ internal val ENGLISH_R06_TEXTS: Map<R06Key, String> = mapOf(
     R06Key.LOADER_A11Y to "Loading",
     R06Key.LOADER_UPDATING to "Updating…",
     R06Key.LOADER_SAVING to "Saving…",
+    R06Key.LOADER_PREPARING to "Getting your money ready…",
+    R06Key.LOADER_PULL to "Pull to refresh",
+    R06Key.LOADER_RELEASE to "Release to refresh",
+    R06Key.LOADER_DONE to "Updated just now",
 )

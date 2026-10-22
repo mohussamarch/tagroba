@@ -75,8 +75,8 @@ fun ZakatScreen() {
             l == null -> item(key = "loading") {
                 Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     Skeleton(Modifier.fillMaxWidth().height(150.dp), radius = 28.dp, strong = true)
-                    Skeleton(Modifier.fillMaxWidth().height(120.dp))
-                    Skeleton(Modifier.fillMaxWidth().height(260.dp))
+                    Skeleton(quiet = true, modifier = Modifier.fillMaxWidth().height(120.dp))
+                    Skeleton(quiet = true, modifier = Modifier.fillMaxWidth().height(260.dp))
                 }
             }
             !l.visible -> item(key = "hidden") {

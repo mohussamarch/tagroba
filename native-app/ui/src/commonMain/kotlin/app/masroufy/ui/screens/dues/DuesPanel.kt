@@ -70,9 +70,9 @@ fun DuesPanel() {
             Load.Loading -> {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     Skeleton(Modifier.weight(1f).height(120.dp))
-                    Skeleton(Modifier.weight(1f).height(120.dp))
+                    Skeleton(quiet = true, modifier = Modifier.weight(1f).height(120.dp))
                 }
-                Skeleton(Modifier.fillMaxWidth().height(280.dp))
+                Skeleton(quiet = true, modifier = Modifier.fillMaxWidth().height(280.dp))
             }
             Load.Failed -> LoadFailed(load::reload)
             is Load.Ready -> if (s.value.empty) EmptyState(t(UiKey.DUES_EMPTY_TITLE), t(UiKey.DUES_EMPTY_BODY)) else DuesMain(s.value)

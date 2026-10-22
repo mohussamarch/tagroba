@@ -1,70 +1,83 @@
 package app.masroufy.ui.components
 
+import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.masroufy.core.R06Key
+import app.masroufy.ui.text.BasicText
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.LocalReduceMotion
+import app.masroufy.ui.theme.Type
 
-private val COIN_TOP = Color(0xFFF1CF7A)
-private val COIN_BOTTOM = Color(0xFFC9952B)
-private val COIN_RIM = Color(0xFFA47619)
-private val COIN_DROP_SHADOW = Color(0x1F193D33)
-
-/** مقاسات التصميم (مربع 64): العملة 40×14 · البداية من اليسار 12 · الأسفل 8 وبعدها كل 12. */
-private const val BOX = 64f
-private const val COIN_W = 40f
-private const val COIN_H = 14f
-private const val COIN_LEFT = 12f
-private const val COIN_BASE_BOTTOM = 8f
-private const val COIN_STEP = 12f
-private const val RIM = 3f
+private val STILL_EASE = CubicBezierEasing(0.3f, 1.5f, 0.6f, 1f)
+private val MUTED = Color(0xFF637570)
 
 /**
- * علامة التحميل بتاعة البرنامج «عملات بتترص» (قرار المالك 2026-10-22 — بدل دايرة أندرويد): 3 عملات دهبي بتنزل فوق بعض وتختفي وتعيد.
- * **مكوّن واحد** لكل الأماكن: تحميل الشاشة [size] = 64.dp · السحب للتحديث 22.dp جنب «بنحدّث…» · جوه الزرار الأساسي 18.dp و[light] = true.
- * «تقليل الحركة» (`LocalReduceMotion` — مقياس حركة الجهاز صفر) ⇒ العملات ثابتة. التوقيت دالة صافية ([CoinLoaderTiming]).
+ * علامة التحميل «عملات بتترص» (قرار المالك 2026-10-22 — بدل دايرة أندرويد). **مكوّن واحد** لكل الأماكن: شاشة بتحمّل (112 + [text]) ·
+ * السحب للتحديث · جوه الزرار الأساسي أثناء الحفظ. [count] = -1 ⇒ الحركة شغالة · 0..3 ⇒ عدد العملات المرصوصة ثابتة (السحب للتحديث).
+ * [row] = الكلام جنبها بدل تحتها · [onGreen] = الكلام أبيض (جوه الزرار). «تقليل الحركة» (`LocalReduceMotion`) ⇒ العملات ثابتة.
+ * الحركة transform وشفافية بس، والتوقيت دالة صافية ([CoinLoaderTiming]).
  */
 @Composable
-fun CoinLoader(modifier: Modifier = Modifier, size: Dp = 64.dp, light: Boolean = false, description: String? = t(R06Key.LOADER_A11Y)) {
+fun CoinLoader(
+    modifier: Modifier = Modifier,
+    size: Dp = 64.dp,
+    count: Int = -1,
+    text: String? = null,
+    row: Boolean = false,
+    onGreen: Boolean = false,
+    description: String? = t(R06Key.LOADER_A11Y),
+) {
+    val gap = if (row) 8.dp else (size.value * 0.08f).dp
+    val a11y = (text ?: description)?.let { d -> Modifier.semantics { contentDescription = d } } ?: Modifier
+    val label: @Composable () -> Unit = {
+        if (!text.isNullOrEmpty()) {
+            val big = size >= 80.dp
+            BasicText(text, style = Type.of(if (big) 14 else 12, if (big || onGreen) FontWeight.Bold else FontWeight.Medium).copy(color = if (onGreen) Color.White else MUTED))
+        }
+    }
+    val stack: @Composable () -> Unit = { CoinStack(size, count) }
+    if (row) Row(modifier.then(a11y), Arrangement.spacedBy(gap, Alignment.CenterHorizontally), Alignment.CenterVertically) { stack(); label() }
+    else Column(modifier.then(a11y), Arrangement.spacedBy(gap, Alignment.Top), Alignment.CenterHorizontally) { stack(); label() }
+}
+
+@Composable
+private fun CoinStack(size: Dp, count: Int) {
     val reduce = LocalReduceMotion.current
-    val time: State<Float> = if (reduce) remember { mutableStateOf(0f) } else rememberInfiniteTransition(label = "coins")
+    val live = count < 0 && !reduce
+    val time: State<Float> = if (!live) remember { mutableStateOf(0f) } else rememberInfiniteTransition(label = "coins")
         .animateFloat(0f, CoinLoaderTiming.CYCLE_MS.toFloat(), infiniteRepeatable(tween(CoinLoaderTiming.CYCLE_MS, easing = LinearEasing)), label = "coinsTime")
-    val top = if (light) lerp(COIN_TOP, Color.White, 0.45f) else COIN_TOP
-    val bottom = if (light) lerp(COIN_BOTTOM, Color.White, 0.45f) else COIN_BOTTOM
-    val rim = if (light) lerp(COIN_RIM, Color.White, 0.45f) else COIN_RIM
-    val a11y = if (description == null) Modifier else Modifier.semantics { contentDescription = description }
-    Canvas(modifier.size(size).then(a11y)) {
-        val s = this.size.minDimension / BOX
-        for (i in 0 until CoinLoaderTiming.COINS) {
-            val f = if (reduce) CoinLoaderTiming.STATIC else CoinLoaderTiming.frame(time.value, i)
-            if (f.alpha <= 0f) continue
-            val y = (BOX - (COIN_BASE_BOTTOM + COIN_STEP * i) - COIN_H + f.offsetY) * s
-            val x = COIN_LEFT * s
-            val w = COIN_W * s
-            // ظل خفيف تحت العملة، وبعدين الحافة الغامقة، وبعدين وش العملة (تدرّج رأسي) — الحافة 3 وحدات تحت
-            drawOval(COIN_DROP_SHADOW, Offset(x, y + 1f * s), Size(w, COIN_H * s), alpha = f.alpha)
-            drawOval(rim, Offset(x, y), Size(w, COIN_H * s), alpha = f.alpha)
-            drawOval(Brush.verticalGradient(listOf(top, bottom), startY = y, endY = y + (COIN_H - RIM) * s), Offset(x, y), Size(w, (COIN_H - RIM) * s), alpha = f.alpha)
+    // الثابتة: كل عملة بتطلع/بتختفي بنابض خفيف (220ms)
+    val shown = if (count < 0) CoinLoaderTiming.COINS else count.coerceIn(0, CoinLoaderTiming.COINS)
+    val still = List(CoinLoaderTiming.COINS) { i -> animateFloatAsState(if (i < shown) 1f else 0f, tween(if (reduce) 0 else 220, easing = STILL_EASE), label = "still$i") }
+    Canvas(Modifier.size(size).clearAndSetSemantics { }) {
+        if (live) {
+            val ms = time.value
+            drawCoinStack(List(CoinLoaderTiming.COINS) { CoinLoaderTiming.frame(ms, it) }, List(CoinLoaderTiming.COINS) { CoinLoaderTiming.shineX(ms, it) }, CoinLoaderTiming.floor(ms))
+        } else {
+            drawCoinStack(List(CoinLoaderTiming.COINS) { i -> still[i].value.let { p -> CoinFrame(-16f * (1f - p), p.coerceIn(0f, 1f)) } }, null, FloorFrame(1f, if (shown > 0) 1f else 0.4f))
         }
     }
 }

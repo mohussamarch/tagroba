@@ -177,7 +177,7 @@ fun BankSmsScreen() {
             item(key = "loading") {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Skeleton(Modifier.fillMaxWidth().height(120.dp))
-                    Skeleton(Modifier.fillMaxWidth().height(220.dp))
+                    Skeleton(quiet = true, modifier = Modifier.fillMaxWidth().height(220.dp))
                 }
             }
             return@InnerScaffold

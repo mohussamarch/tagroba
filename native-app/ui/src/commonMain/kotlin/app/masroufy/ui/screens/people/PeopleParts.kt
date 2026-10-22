@@ -60,7 +60,7 @@ private fun SideBox(title: String, lines: List<MoneyLine>?, tone: app.masroufy.u
 internal fun LoadingStage(top: Float) {
     Column(Modifier.padding(horizontal = Space.gutter).offset(y = (top + 82f).dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
         Skeleton(Modifier.fillMaxWidth().height(STAGE_H.dp), radius = 28.dp)
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) { repeat(5) { Skeleton(Modifier.size(56.dp), radius = 28.dp) } }
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) { repeat(5) { Skeleton(quiet = true, modifier = Modifier.size(56.dp), radius = 28.dp) } }
     }
 }
 

@@ -87,7 +87,7 @@ fun AssetDetailScreen(assetId: Id) {
                 if (failed) AlertBanner(t(UiKey.SHELL_LOAD_FAILED), null, t(UiKey.SHELL_RETRY)) { scope.launch { reload() } }
                 else Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     Skeleton(Modifier.fillMaxWidth().height(150.dp), radius = 28.dp, strong = true)
-                    Skeleton(Modifier.fillMaxWidth().height(160.dp))
+                    Skeleton(quiet = true, modifier = Modifier.fillMaxWidth().height(160.dp))
                 }
             }
             return@InnerScaffold

@@ -269,7 +269,7 @@ private fun StepBody(s: OnbState, open: List<Space>, onChange: (OnbState) -> Uni
 private fun Loading() {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Skeleton(Modifier.fillMaxWidth().height(60.dp), radius = 18.dp)
-        Skeleton(Modifier.fillMaxWidth().height(60.dp), radius = 18.dp)
+        Skeleton(quiet = true, modifier = Modifier.fillMaxWidth().height(60.dp), radius = 18.dp)
     }
 }
 
