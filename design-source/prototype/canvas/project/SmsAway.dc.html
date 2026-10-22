@@ -44,16 +44,15 @@ body{margin:0}
   <span style="position: absolute; bottom: 40px; left: 24px; right: 24px; text-align: center; font-size: 12px; line-height: 1.7; opacity: 0.6">{{rule}}</span>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"phase":{"editor":"enum","options":["بيسجّل","خلص","وقف","عملية اتسجلت","محتاجة تأكيد","الإذن اتسحب","فاتته رسايل"],"default":"خلص","section":"الحالة"},"waiting":{"editor":"boolean","default":true,"section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"phase":{"editor":"enum","options":["بيسجّل","خلص","وقف","محتاجة تأكيد","الإذن اتسحب","فاتته رسايل"],"default":"خلص","section":"الحالة"},"waiting":{"editor":"boolean","default":true,"section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const phase = this.props.phase ?? 'خلص';
     const waiting = this.props.waiting !== false;
     // نصوص الإشعار نفسها اللي في 0.5.2 (TextsR052) — على شاشة القفل من غير أي رقم
-    // القراية اليومية في الخلفية (بند 2 من DESIGN-BRIEF-0.6): إشعار بس لما يحتاج منك حاجة، و«عملية اتسجلت» من غير صوت
+    // القراية اليومية في الخلفية (بند 2 من DESIGN-BRIEF-0.6): إشعار بس للحاجات اللي تستاهل تنبيه — العملية اللي اتسجلت لوحدها ما لهاش إشعار (المالك 2026-10-22)
     const daily = {
-      'عملية اتسجلت': eg ? 'اتسجلت عملية جديدة من رسالة البنك' : 'سُجّلت عملية جديدة من رسالة البنك',
       'محتاجة تأكيد': eg ? 'رسالة من البنك شكلها جديد ومستنية تأكيدك' : 'رسالة من البنك بشكل جديد تنتظر تأكيدك',
       'الإذن اتسحب': eg ? 'قراية رسايل البنك وقفت — إذن الرسايل اتسحب. افتح مصروفي ورجّعه' : 'توقفت قراءة رسائل البنك — سُحب إذن الرسائل. افتح مصروفي وأعده',
       'فاتته رسايل': eg ? 'فيه رسايل بنك وصلت وما اتقرتش لوحدها — افتح مصروفي يقراها' : 'وصلت رسائل بنك لم تُقرأ تلقائيًا — افتح مصروفي لقراءتها'
@@ -65,7 +64,7 @@ class Component extends DCLogic {
     return {
       date: eg ? 'السبت 17 أكتوبر' : 'السبت 17 أكتوبر', time: '1:24',
       caption: eg ? '(كده شكلها وإنت سايب التطبيق)' : '(هكذا تبدو وأنت خارج التطبيق)',
-      app: eg ? 'مصروفي' : 'مصروفي', nowLabel: (eg ? 'دلوقتي' : 'الآن') + (phase === 'عملية اتسجلت' ? (eg ? ' · من غير صوت' : ' · بلا صوت') : ''),
+      app: eg ? 'مصروفي' : 'مصروفي', nowLabel: (eg ? 'دلوقتي' : 'الآن'),
       running: phase === 'بيسجّل', finished: phase !== 'بيسجّل',
       runText: eg ? 'بنسجّل رسايل البنك في الخلفية' : 'نسجّل رسائل البنك في الخلفية',
       doneText: done,
