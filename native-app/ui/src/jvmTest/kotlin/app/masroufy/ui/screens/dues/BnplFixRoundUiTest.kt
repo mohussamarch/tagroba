@@ -100,7 +100,7 @@ class BnplFixRoundUiTest {
             SheetFrame {
                 val s = holder.value
                 val t0 = s.ask.transaction
-                BnplSheetContent(s, today, chips, { n, c -> seen += t0.amountMinor; bnplPreview(t0.amountMinor, Currency.SAR, t0.occurredAt, n, c) }, 2000.dp, {}, {}, {})
+                BnplSheetContent(s, today, chips, { n, c, _ -> seen += t0.amountMinor; bnplPreview(t0.amountMinor, Currency.SAR, t0.occurredAt, n, c) }, 2000.dp, {}, {}, {})
             }
         }
         try {
@@ -121,7 +121,7 @@ class BnplFixRoundUiTest {
         val answers = mutableListOf<BnplAnswer>()
         var later = 0
         val scene = scene(1100) {
-            SheetFrame { BnplSheetContent(s, today, bnplCategoryChips(cats), { n, c -> bnplPreview(25_000, Currency.SAR, today, n, c) }, 2000.dp, {}, { answers += it }, { later++ }) }
+            SheetFrame { BnplSheetContent(s, today, bnplCategoryChips(cats), { n, c, _ -> bnplPreview(25_000, Currency.SAR, today, n, c) }, 2000.dp, {}, { answers += it }, { later++ }) }
         }
         try {
             scene.render()

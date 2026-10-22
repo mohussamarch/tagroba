@@ -43,7 +43,7 @@ import app.masroufy.ui.theme.Type
  * من حالة الاستخدام).
  */
 @Composable
-internal fun BnplWhichBody(s: BnplSheetState) {
+internal fun BnplWhichBody(s: BnplSheetState, onMulti: (() -> Unit)? = null) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         for (o in s.ask.options) {
             val on = s.pick == o.planId
@@ -55,6 +55,12 @@ internal fun BnplWhichBody(s: BnplSheetState) {
             BnplChoice(o.name, t(BnplKey.BNPL2_LEFT_OF, sentenceNumber(o.leftCount), sentenceNumber(o.count), next), on, note, { s.pick = o.planId }) {
                 AmountText(o.installmentMinor, o.currency, size = 14)
             }
+        }
+        // r06-1b4: «مجموع أكتر من قسط» لو المزوّد عنده خطتين مفتوحتين أو أكتر — بيفتح «الخصم ده فيه كام قسط؟» على طول
+        if (onMulti != null && s.ask.plans.size >= 2) {
+            val names = s.ask.splitHint.mapNotNull { id -> s.ask.options.firstOrNull { it.planId == id }?.name }
+            val hint = if (names.size >= 2) t(app.masroufy.core.R06Key.BS_HINT, names.joinToString(" + ") { "«$it»" }) else null
+            BnplChoice(t(app.masroufy.core.R06Key.BS_CHOICE), t(app.masroufy.core.R06Key.BS_CHOICE_SUB), false, hint, onMulti)
         }
         BnplChoice(t(BnplKey.BNPL2_NEW), t(BnplKey.BNPL2_NEW_SUB), s.pick == BNPL_PICK_NEW, null, { s.pick = BNPL_PICK_NEW })
         BnplChoice(t(BnplKey.BNPL2_NOT_INST), null, s.pick == BNPL_PICK_NONE, null, { s.pick = BNPL_PICK_NONE })

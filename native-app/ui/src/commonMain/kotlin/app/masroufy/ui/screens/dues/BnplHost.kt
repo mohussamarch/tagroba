@@ -133,7 +133,7 @@ fun BnplHost() {
         val t0 = s.ask.transaction
         BnplSheetContent(
             s, today.ifEmpty { t0.occurredAt.take(10) }, chips,
-            preview = { n, c -> bnpl.preview(t0.amountMinor, t0.currency, t0.occurredAt.take(10), n, c) },
+            preview = { n, c, at -> bnpl.preview(t0.amountMinor, t0.currency, t0.occurredAt.take(10), n, c, at) },
             maxBody = maxBody,
             onOtherCategory = { picking = true },
             onAnswer = ::answer,

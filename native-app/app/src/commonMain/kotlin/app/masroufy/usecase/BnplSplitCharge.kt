@@ -55,6 +55,12 @@ class BnplSplitCharge(private val deps: BnplChargesDeps) {
     /** الخصم − مجموع الأجزاء (صفر = يتحفظ · موجب = ناقص · سالب = زيادة). */
     fun diff(chargeMinor: Halalas, parts: List<BnplSplitPart>): Halalas = subtractMoney(chargeMinor, sumMoney(parts.map { it.amountMinor }))
 
+    /** سطر المجموع: (الموزّع · الخصم − الموزّع) — المبالغ اللي لسه مش مكتوبة صح (null) ما بتدخلش. صفر = «مطابق» · موجب = «فاضل» · سالب = «زيادة». */
+    fun tally(chargeMinor: Halalas, amounts: List<Halalas?>): Pair<Halalas, Halalas> {
+        val sum = sumMoney(amounts.filterNotNull())
+        return sum to subtractMoney(chargeMinor, sum)
+    }
+
     /** «وزّع على الأقساط» شغال؟ [amounts] = مبالغ الأجزاء مقرية (null = مش مكتوبة صح) · [newNamed] = كل مشترى جديد ليه اسم. */
     fun ready(chargeMinor: Halalas, amounts: List<Halalas?>, newNamed: Boolean): Boolean = bnplSplitReady(chargeMinor, amounts, newNamed)
 

@@ -30,4 +30,8 @@ enum class R06Key : TextRef {
 
     /** شاشة التحميل «بنجهّز فلوسك…» · السحب للتحديث: قبل الحد · عند الحد · بعد ما خلص. */
     LOADER_PREPARING, LOADER_PULL, LOADER_RELEASE, LOADER_DONE,
+
+    /** r06-1b4 — خصم تابي/تمارا المجمّع (`BnplSplit`) و«الدفعة دي رقم كام؟» (BS_). */
+    BS_CHOICE, BS_CHOICE_SUB, BS_HINT, BS_TITLE, BS_LEAD, BS_SUGG, BS_PLAN_SUB, BS_INST, BS_NEW_TITLE, BS_NEW_PH, BS_PAY, BS_DIVIDE, BS_AT,
+    BS_REMOVE, BS_SUM_EXACT, BS_SUM_LEFT, BS_SUM_OVER, BS_SAVE, BS_BACK, BS_DONE, BS_DONE_NEW, BS_FINISH, BS_AT_Q, BS_TAG_BEFORE, BS_BEFORE_NOTE,
 }
