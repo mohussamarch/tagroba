@@ -75,6 +75,11 @@ data class IncomeSource(
      * ([payerCustomKindsOf]). بتظهر في أسئلة «الفلوس دي إيه؟» للحساب ده بس. حقل اختياري جديد في incomeSources.
      */
     val payerCustomKinds: List<String> = emptyList(),
+    /**
+     * §111-2: هوية الجهة **في البلدين** — مصدرين في بلدين بنفس المفتاح = جهة واحدة بمبلغين (`EmployerIdentity.kt`).
+     * null = الهوية هي الاسم المطبّع. حقل اختياري جديد (ما بيتكتبش لو null).
+     */
+    val employerKey: String? = null,
 )
 
 /** الأنواع اللي ليها «مرتب» من شغل (يوم مرتب · مرتب متوقع · «هتروح بيها الشغل؟» · «ده مرتب من …؟»). */

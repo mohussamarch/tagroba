@@ -21,6 +21,7 @@ object IncomeCodecs {
                 opt("payerKeys", s.payerKeys.takeIf { it.isNotEmpty() }); opt("declinedPayerKeys", s.declinedPayerKeys.takeIf { it.isNotEmpty() })
                 opt("payerKindRules", s.payerKindRules.takeIf { it.isNotEmpty() })
                 opt("payerCustomKinds", s.payerCustomKinds.takeIf { it.isNotEmpty() })
+                opt("employerKey", s.employerKey)
                 // الشهري (الافتراضي) ما بيتكتبش ⇒ مستند المصدر القديم هو هو، والقديم من غير الحقل = شهري (§65)
                 opt("payFrequency", s.payFrequency.takeIf { it != PayFrequency.MONTHLY }?.wire); opt("payWeekday", s.payWeekday)
                 req("createdAt", s.createdAt)
@@ -36,6 +37,7 @@ object IncomeCodecs {
                 payerCustomKinds = d.strings("payerCustomKinds").orEmpty(),
                 payFrequency = d.strOrNull("payFrequency")?.let { w -> PayFrequency.entries.first { it.wire == w } } ?: PayFrequency.MONTHLY,
                 payWeekday = d.intOrNull("payWeekday"),
+                employerKey = d.strOrNull("employerKey"),
             )
         },
     )
