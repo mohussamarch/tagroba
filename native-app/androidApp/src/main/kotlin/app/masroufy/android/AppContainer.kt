@@ -106,6 +106,7 @@ class AppContainer(private val context: Context, private val problems: ProblemLo
     }
 
     private val online = networkStatus(context)
+    private val supportOutbox = app.masroufy.device.FileSupportOutbox(java.io.File(context.filesDir, "support/outbox.log"))
 
     fun appDeps(permissions: Permissions): AppDeps = object : AppDeps {
         override val session = appSession
@@ -116,6 +117,7 @@ class AppContainer(private val context: Context, private val problems: ProblemLo
         override val online = this@AppContainer.online
         override val remoteChanges = this@AppContainer.remoteChanges
         override val problems = this@AppContainer.problems.deps
+        override val support: app.masroufy.port.SupportOutboxPort = supportOutbox
     }
 
     /** تغييرات السيرفر في البلد الشغالة والحساب (`FirestoreSync.remoteChanges`) — من غير القيمة الأولى (مش تغيير). */

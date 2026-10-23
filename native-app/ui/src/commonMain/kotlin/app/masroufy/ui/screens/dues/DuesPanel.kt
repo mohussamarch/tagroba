@@ -77,6 +77,7 @@ fun DuesPanel() {
             Load.Failed -> LoadFailed(load::reload)
             is Load.Ready -> if (s.value.empty) EmptyState(t(UiKey.DUES_EMPTY_TITLE), t(UiKey.DUES_EMPTY_BODY)) else DuesMain(s.value)
         }
+        ZakatLink() // الزكاة هنا مش في «الاستثمار» (AppMap 2026-10-23)
     }
 }
 

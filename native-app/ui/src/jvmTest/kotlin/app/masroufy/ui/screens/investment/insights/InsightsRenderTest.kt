@@ -38,8 +38,9 @@ import app.masroufy.core.RopeStrand
 import app.masroufy.core.TipGroup
 import app.masroufy.core.Texts
 import app.masroufy.core.reinvest
-import app.masroufy.ui.screens.more.FaqCard
-import app.masroufy.ui.screens.more.faqItems
+import app.masroufy.ui.screens.more.FaqGroup
+import app.masroufy.core.FaqSection
+import app.masroufy.core.faqFor
 import app.masroufy.ui.text.t
 import app.masroufy.usecase.ReturnsRowView
 import app.masroufy.usecase.ReturnsView
@@ -113,7 +114,7 @@ class InsightsRenderTest {
             render(out, "returns-$v", 380) { ReturnsCard(returns(true)) }
             render(out, "returns-na-$v", 380) { ReturnsCard(returns(false)) }
             render(out, "returns-none-$v", 140) { ReturnsCard(null) }
-            render(out, "faq-$v", 640) { Column { FaqCard(faqItems("SA")) } }
+            render(out, "faq-$v", 640) { Column { FaqGroup("الاستثمار", faqFor("SA").filter { it.section == FaqSection.INVEST }, 0, false) {} } }
             render(out, "home-invest-$v", 150) { HomeInvest(InvestTodayView(120, 170_000, Currency.SAR, null)) }
             render(out, "home-invest-old-$v", 150) { HomeInvest(InvestTodayView(-45, -2_350, Currency.EGP, "2026-10-12")) }
             render(out, "tips-$v", 3600) {

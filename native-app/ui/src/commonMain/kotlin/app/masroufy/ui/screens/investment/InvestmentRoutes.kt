@@ -1,5 +1,7 @@
 package app.masroufy.ui.screens.investment
 
+import app.masroufy.ui.screens.dues.ZakatPayRoute
+import app.masroufy.ui.screens.dues.ZakatRoute
 import app.masroufy.ui.screens.investment.insights.registerInsights
 import app.masroufy.core.GoalProgress
 import app.masroufy.core.Id
@@ -94,18 +96,6 @@ data class AssetDetailRoute(val assetId: Id) : Route {
 /** «الصورة كاملة» للأصل — والعقار وتوقّعه. */
 data class AssetProjectionRoute(val assetId: Id) : Route {
     override val name = "AssetProjection"
-}
-
-object ZakatRoute : Route {
-    override val name = "Zakat"
-}
-
-/**
- * «دفع زكاة السنة» لسنة متثبّتة بمعرّفها (= يوم ميعادها). في النموذج `ZakatPay` مرسومة **جوه** `Zakat` بعد «ثبّت» (وده اللي بيتعرض
- * هناك)؛ المسار ده عشان أي مكان تاني (تنبيه الزكاة مثلًا) يفتح دفع سنة بعينها.
- */
-data class ZakatPayRoute(val yearId: Id) : Route {
-    override val name = "ZakatPay"
 }
 
 object AdvisorRoute : Route {

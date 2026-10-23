@@ -7,6 +7,7 @@ internal val ENGLISH_OPERATIONS_LIST_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.OPERATIONS_TAB_OPS to "Operations",
     UiKey.OPERATIONS_TAB_BUDGETS to "Budgets",
     UiKey.OPERATIONS_TAB_DUES to "Dues",
+    UiKey.OPERATIONS_FILTER_TRANSFERS to "Transfers",
     UiKey.OPERATIONS_ERROR_TITLE to "Couldn't load operations",
     UiKey.OPERATIONS_ERROR_BODY to "Check your connection and try again.",
     UiKey.OPERATIONS_REFRESHING to "Refreshing…",

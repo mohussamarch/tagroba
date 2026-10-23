@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.operations
 
+import app.masroufy.ui.components.SelectChip
 import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -73,6 +74,7 @@ fun OperationsScreen() {
     val deps = space.operations
     val nav = LocalNavigator.current
     var tab by rememberSaveable { mutableStateOf(OpsTab.OPERATIONS) }
+    var transfersOnly by rememberSaveable { mutableStateOf(false) } // شريحة «تحويلات» فوق العمليات (تحويلاتك لنفسك — قرار المالك 2026-10-23)
     var ui by remember(deps) { mutableStateOf(OpsUi()) }
     var reload by remember { mutableIntStateOf(0) }
     var refreshing by remember { mutableStateOf(false) }
@@ -186,6 +188,7 @@ fun OperationsScreen() {
                             }
                         },
                         selection = sel,
+                        transfersOnly = transfersOnly, onTransfersOnly = { transfersOnly = !transfersOnly },
                     )
                 }
             }
@@ -201,7 +204,7 @@ fun OperationsScreen() {
     }
 }
 
-private fun LazyListScope.operationsTab(ui: OpsUi, onRetry: () -> Unit, onOpen: (OpRow) -> Unit, onMenu: (OpRow, Anchor) -> Unit, selection: OpsSelection) {
+private fun LazyListScope.operationsTab(ui: OpsUi, onRetry: () -> Unit, onOpen: (OpRow) -> Unit, onMenu: (OpRow, Anchor) -> Unit, selection: OpsSelection, transfersOnly: Boolean, onTransfersOnly: () -> Unit) {
     if (ui.skeleton) {
         item(key = "loading") { LoadingBlocks() }
         return
@@ -214,11 +217,12 @@ private fun LazyListScope.operationsTab(ui: OpsUi, onRetry: () -> Unit, onOpen: 
         item(key = "empty") { EmptyState(t(UiKey.OPERATIONS_EMPTY_TITLE, v.periodLabel), t(UiKey.OPERATIONS_EMPTY_BODY)) }
         return
     }
+    item(key = "filter-chips") { SelectChip(t(UiKey.OPERATIONS_FILTER_TRANSFERS), transfersOnly, onTransfersOnly) }
     // شريط رسايل البنك: عددها مالوش حالة استخدام في «العمليات» لسه (صندوق الرسايل شغل منطقة الاستيراد) ⇒ `null` ⇒ ما بيظهرش
     items(banners(bankSmsWaiting = null, reviewCount = v.reviewCount, partiesWaiting = ui.partiesWaiting), key = { "banner-${it.kind}" }) { b -> BannerItem(b) }
     // «دفعت الإيجار؟» (`QuickAddStrip`) بيستنى حالة استخدام «المتوقع ولم يُسجَّل» — من غيرها ما بيظهرش
     item(key = "summary") { Summary(v.incomeMinor, v.expenseMinor, v.currency, v.approx) }
-    items(v.days, key = { "day-${it.date}" }) { day ->
+    items(if (transfersOnly) onlyTransfers(v.days) else v.days, key = { "day-${it.date}" }) { day ->
         DayGroup(day.label) {
             day.rows.forEachIndexed { i, row ->
                 // كل صف في مجموعة بمفتاحه ومفتاح الوضع: التبديل بين الصف العادي وصف التحديد ما يقراش خانات «remember» غلط
