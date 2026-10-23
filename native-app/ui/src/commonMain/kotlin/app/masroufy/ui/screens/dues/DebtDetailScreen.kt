@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.dues
 
+import app.masroufy.ui.overlay.SheetScroll
 import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -203,10 +204,10 @@ private fun SettleAction(ui: DebtDetailUi, onCelebrate: (Boolean) -> Unit) {
         if (ui.done) BasicText(t(UiKey.SETTLE_DONE_WHY), style = Type.caption().copy(color = Ink.muted))
     }
     Sheet(open, { open = false }, t(UiKey.SETTLE_SHEET_TITLE_GENERIC), closeLabel = t(UiKey.SHELL_CLOSE)) {
-        SettleForm(ui.settleTarget()) { full ->
+        SheetScroll { SettleForm(ui.settleTarget()) { full ->
             open = false
             if (full) onCelebrate(true)
-        }
+        } }
     }
 }
 
