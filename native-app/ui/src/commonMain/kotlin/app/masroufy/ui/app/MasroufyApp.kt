@@ -50,6 +50,11 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import androidx.compose.runtime.snapshotFlow
+import app.masroufy.core.UsageEvents
+import app.masroufy.core.UsageProperty
+import app.masroufy.core.UsageValue
+import app.masroufy.problems.Usage
+import app.masroufy.ui.theme.Appearance
 
 /** تغييرات السيرفر بتوصل دفعات (مستمع لكل مجموعة) ⇒ قراية واحدة بعد ما تهدى. */
 private const val REMOTE_SETTLE_MS = 400L
@@ -73,6 +78,17 @@ fun MasroufyApp(app: AppDeps, shell: ShellState, lock: LockGate, reduceMotion: B
             .combine(app.session) { screen, s -> if (s is AppSession.Ready) screen else s::class.simpleName.orEmpty() }
             .distinctUntilChanged()
             .collect { crash.screenShown(it) }
+    }
+    // بيانات الاستخدام (PLAN-0.6 §16): الشاشة اللي اتفتحت (اسم ثابت — `UsageValue.screen` بيرفض أي شكل تاني) + الوضع الداكن (خاصية)
+    LaunchedEffect(app) {
+        val nav = shell.navigator
+        snapshotFlow { nav.sheets.lastOrNull()?.route?.name ?: nav.top?.route?.name ?: nav.tab.boardName }
+            .combine(app.session) { screen, s -> if (s is AppSession.Ready) screen else null }
+            .distinctUntilChanged()
+            .collect { if (it != null) Usage.log(UsageEvents.screenOpened(it)) }
+    }
+    LaunchedEffect(Unit) {
+        snapshotFlow { Appearance.isDark }.distinctUntilChanged().collect { Usage.set(UsageProperty.DARK_MODE, UsageValue.flag(it)) }
     }
     MasroufyTheme(reduceMotion) {
         CompositionLocalProvider(LocalApp provides app, LocalPermissions provides app.permissions) {

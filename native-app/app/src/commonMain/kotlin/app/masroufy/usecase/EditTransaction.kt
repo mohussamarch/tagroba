@@ -96,6 +96,7 @@ class EditTransaction(private val deps: EditTransactionDeps) {
                 updatedAt = deps.clock.nowIso(),
             ),
         )
+        usageOfCategorySet(transaction, categoryId)
         if (categoryId != null) {
             // الحفظ على الحساب فشله بيبان (ما بنقولش «اتحفظ» وهو ما اتحفظش)؛ الرفع للقايمة المشتركة اختياري وبيتبلع زي الأول
             deps.merchantMemory?.remember(MerchantPick.of(transaction, categoryId), share = false)

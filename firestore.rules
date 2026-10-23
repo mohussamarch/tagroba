@@ -42,5 +42,24 @@ service cloud.firestore {
           && d.confirmed == false
           && d.updatedAt == request.time;
     }
+
+    // «ابعتلنا» — OVERRIDES §114 · PLAN-0.6 §16 (مسودة r06-telemetry — ⚠️ ما اتنشرتش، النشر بموافقة المالك).
+    // كتابة بس من أي داخل: مستند جديد بالمفاتيح دي بالظبط، من غير uid ولا إيميل. مفيش قراية ولا تعديل ولا مسح من التطبيق —
+    // المهمة الآلية في المستودع الخاص بتقرا وتمسح بحساب خدمة (حساب الخدمة مش بيمر بالقواعد).
+    match /inbox/{id} {
+      allow create: if request.auth != null && validFeedback();
+      allow read, update, delete: if false;
+    }
+
+    function validFeedback() {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['kind', 'country', 'text', 'appVersion', 'createdAt'])
+          && d.keys().hasAll(['kind', 'country', 'text', 'appVersion', 'createdAt'])
+          && d.kind in ['question', 'suggestion', 'problem']
+          && d.country in ['eg', 'sa']
+          && d.text is string && d.text.size() > 0 && d.text.size() <= 2000
+          && d.appVersion is string && d.appVersion.size() > 0 && d.appVersion.size() <= 40
+          && d.createdAt == request.time;
+    }
   }
 }

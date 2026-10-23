@@ -30,6 +30,8 @@ android {
         buildConfigField("boolean", "HAS_FIREBASE_SETTINGS", (firebaseSettings != null).toString())
         // تقارير الأعطال (OVERRIDES §90): شغالة في نسخ المالك الحقيقية (debug · fast)، ومقفولة في نسخ المحاكي (emulator · fastEmulator)
         buildConfigField("boolean", "CRASH_REPORTS", "true")
+        // بيانات الاستخدام (OVERRIDES §114): نفس قاعدة تقارير الأعطال — شغالة في نسخ المالك، مقفولة في نسخ المحاكي
+        buildConfigField("boolean", "USAGE_ANALYTICS", "true")
     }
 
     buildTypes {
@@ -40,6 +42,7 @@ android {
             matchingFallbacks += "debug"
             buildConfigField("String", "FIREBASE_EMULATOR_PROJECT", "\"demo-masroufy-kt\"")
             buildConfigField("boolean", "CRASH_REPORTS", "false")
+            buildConfigField("boolean", "USAGE_ANALYTICS", "false")
         }
         getByName("release") {
             isMinifyEnabled = false
@@ -65,6 +68,7 @@ android {
             matchingFallbacks += "release"
             buildConfigField("String", "FIREBASE_EMULATOR_PROJECT", "\"demo-masroufy-kt\"")
             buildConfigField("boolean", "CRASH_REPORTS", "false")
+            buildConfigField("boolean", "USAGE_ANALYTICS", "false")
         }
     }
 
@@ -118,6 +122,9 @@ dependencies {
     // بيفتحه بنفسه حسب نوع البناء ومفتاح المستخدم (`CrashReports.kt`)
     implementation(platform("com.google.firebase:firebase-bom:34.18.0"))
     implementation("com.google.firebase:firebase-crashlytics:20.1.0")
+    // بيانات الاستخدام (OVERRIDES §114 — السبب في ARCHITECTURE «بيانات الاستخدام»): من نفس BoM (من غير رقم نسخة — الـBoM بيحدده).
+    // الجمع مقفول في المانيفست والتطبيق بيفتحه في نسخ المالك بس (`FirebaseUsage.kt`)؛ معرّف الإعلانات والإعلانات المخصصة مقفولين
+    implementation("com.google.firebase:firebase-analytics")
 }
 
 /*

@@ -106,6 +106,60 @@ class NoSecretsInLogsTest {
         assertTrue(bad.isEmpty(), "نداء لتقارير الأعطال ممكن يبعت بيانات:\n" + bad.joinToString("\n"))
     }
 
+    /**
+     * بيانات الاستخدام (OVERRIDES §114 · PLAN-0.6 §16): كل نداء `Usage.log` بياخد حدث من `UsageEvents` بس، و`Usage.set` خاصية من `UsageProperty`
+     * وقيمة من `UsageValue` — أنواع `core` اللي مالهاش نص حر (`UsageEventsTest`). ومكتبة فايربيز نفسها من ملف واحد (`FirebaseUsage.kt`):
+     * `logEvent` باسم الحدث من القايمة بس · `setUserProperty` باسم الخاصية بس · `setUserId` و`setDefaultEventParameters` ممنوعين خالص.
+     */
+    private val usageCall = Regex("""(?<![A-Za-z])Usage\.(log|set)\(""")
+    private val analyticsCall = Regex("""\.(logEvent|setUserProperty|setUserId|setDefaultEventParameters|setSessionTimeoutDuration)\(""")
+    private val core = "(app\\.masroufy\\.core\\.)?"
+
+    internal fun usageLeaks(line: String): Boolean = usageCall.findAll(line).any { m ->
+        val args = argsAt(line, m.range.last + 1).trim()
+        when (m.groupValues[1]) {
+            "log" -> !Regex("^${core}UsageEvents\\.\\w+\\(").containsMatchIn(args)
+            else -> !Regex("^${core}UsageProperty\\.[A-Z_]+,\\s*${core}UsageValue\\.\\w+\\(").containsMatchIn(args)
+        }
+    }
+
+    internal fun analyticsLeaks(line: String): Boolean = analyticsCall.findAll(line).any { m ->
+        val args = argsAt(line, m.range.last + 1).trim()
+        when (m.groupValues[1]) {
+            "logEvent" -> !args.startsWith("event.name.wire,")
+            "setUserProperty" -> !args.startsWith("property.wire,")
+            else -> true
+        }
+    }
+
+    @Test fun theUsageCheckCatchesWhatItShould() {
+        assertTrue(usageLeaks("""Usage.log(UsageEvent(name, mapOf()))"""))
+        assertTrue(usageLeaks("""app.masroufy.problems.Usage.log(event)"""))
+        assertTrue(usageLeaks("""Usage.set(UsageProperty.ACCOUNTS, value)"""))
+        assertTrue(analyticsLeaks("""analytics.logEvent("sms", bundleOf("body" to body))"""))
+        assertTrue(analyticsLeaks("""analytics.setUserId(uid)"""))
+        assertTrue(analyticsLeaks("""analytics.setUserProperty("merchant", name)"""))
+        assertEquals(false, usageLeaks("""app.masroufy.problems.Usage.log(app.masroufy.core.UsageEvents.plusDismissed())"""))
+        assertEquals(false, usageLeaks("""Usage.set(UsageProperty.DARK_MODE, UsageValue.flag(it))"""))
+        assertEquals(false, analyticsLeaks("""analytics.logEvent(event.name.wire, bundle)"""))
+    }
+
+    @Test fun usageCallsCarryOnlyCatalogEvents() {
+        val root = root()
+        val files = mainSources(root).filter { it.extension == "kt" }
+        val firebase = files.filter { it.readText().contains("FirebaseAnalytics") }
+        assertEquals(listOf("FirebaseUsage.kt"), firebase.map { it.name }, "مكتبة التحليلات من مكان واحد بس (`FirebaseUsage.kt`)")
+        val bad = files.flatMap { f ->
+            f.readLines().mapIndexedNotNull { i, line ->
+                val leak = usageLeaks(line) || (f.name == "FirebaseUsage.kt" && analyticsLeaks(line))
+                if (leak) "${f.relativeTo(root).invariantSeparatorsPath}:${i + 1}: ${line.trim()}" else null
+            }
+        }
+        assertTrue(bad.isEmpty(), "نداء بيانات استخدام ممكن يبعت بيانات:\n" + bad.joinToString("\n"))
+        val calls = files.sumOf { f -> f.readLines().count { usageCall.containsMatchIn(it) } }
+        assertTrue(calls >= 10, "المسح لازم يلاقي نداءات بيانات الاستخدام فعلًا — لقى $calls")
+    }
+
     @Test fun noLogLineCarriesATokenOrAFullExceptionMessage() {
         val root = root()
         val files = mainSources(root)

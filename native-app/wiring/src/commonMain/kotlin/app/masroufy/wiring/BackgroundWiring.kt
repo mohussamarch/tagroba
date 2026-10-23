@@ -57,6 +57,7 @@ fun smsImportDeps(spaceId: String, r: SpaceRepositories, env: DeviceEnv, inbox: 
 fun backgroundCycle(
     spaces: List<Pair<Space, SpaceRepositories>>, inbox: SmsInboxPort, notifier: DeviceNotifier, env: DeviceEnv,
     noticeMemory: app.masroufy.port.NoticeMemoryPort? = null,
+    support: app.masroufy.usecase.SendSupportMessage? = null,
 ): RunBackgroundCycle {
     val lanes = spaces.mapNotNull { (space, r) -> smsLaneOf(space, r, env, inbox) }
     val auto = AutoRecordSms(AutoRecordSmsDeps(inbox, lanes, work = env.work))
@@ -72,6 +73,8 @@ fun backgroundCycle(
         BackgroundCycleDeps(sms = auto, candidates = null, engine = null, notifier = notifier, smsCatchUp = catchUp, smsNotices = notices,
             // r06-shared: قاعدة التجار المشتركة — التغييرات من آخر مؤشر كل دورة (رد المالك 2026-10-22)
             sharedMerchants = syncSharedMerchantsOf(spaces, env),
+            // «ابعتلنا» (OVERRIDES §114): الرسايل اللي ما اتبعتتش لفايربيز (النت) بتتعاد كل دورة
+            support = support,
             openingDebtRepairs = spaces.map { (space, r) -> app.masroufy.usecase.RepairOpeningDebtCurrency(r.people, r.obligations, space.currency) },
             duplicateScans = spaces.map { (space, r) -> app.masroufy.usecase.DuplicateChargeAsks(space.id, r.transactions, env.clock) },
             categoryRepairs = spaces.map { (space, r) -> app.masroufy.usecase.RepairMissingDefaultSubs(r.categories, app.masroufy.seed.BundledSeeds, countryPack(space.countryCode)) },

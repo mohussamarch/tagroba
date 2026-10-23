@@ -33,15 +33,19 @@ class AndroidPermissions(private val activity: ComponentActivity) : Permissions 
         if (hasSms()) return true
         val wait = CompletableDeferred<Boolean>().also { pending = it }
         sms.launch(arrayOf(Manifest.permission.RECEIVE_SMS, Manifest.permission.READ_SMS))
-        return wait.await()
+        return wait.await().also { usage(app.masroufy.core.UsagePermission.SMS, it) }
     }
+
+    /** PLAN-0.6 §16 «البداية»: وافق على الإذن ولا لأ — بعد نافذة النظام بس (مش لو كان موجود قبل كده). */
+    private fun usage(which: app.masroufy.core.UsagePermission, granted: Boolean) =
+        app.masroufy.problems.Usage.log(app.masroufy.core.UsageEvents.permission(which, granted))
 
     override suspend fun requestNotifications(): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return true
         if (granted(activity, Manifest.permission.POST_NOTIFICATIONS)) return true
         val wait = CompletableDeferred<Boolean>().also { pending = it }
         notifications.launch(Manifest.permission.POST_NOTIFICATIONS)
-        return wait.await()
+        return wait.await().also { usage(app.masroufy.core.UsagePermission.NOTIFICATIONS, it) }
     }
 
     override fun openBatterySettings() {

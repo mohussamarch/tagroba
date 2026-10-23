@@ -75,8 +75,8 @@ interface AppDeps {
     /** «سجل المشاكل» وتقارير الأعطال (OVERRIDES §90) — null = النسخة دي مالهاش (الاختبارات · المعاينة). */
     val problems: ProblemLogDeps? get() = null
 
-    /** صندوق «ابعتلنا» على الجهاز (الأسئلة الشائعة + «الدعم») — بيحفظ محليًا بس، مفيش إرسال (الوجهة سؤال مفتوح للمالك). null = المعاينة. */
-    val support: app.masroufy.port.SupportOutboxPort? get() = null
+    /** «ابعتلنا» (الأسئلة الشائعة + «الدعم»): نسخة على الجهاز + `inbox` على فايربيز (OVERRIDES §114). null = المعاينة (ذاكرة بس). */
+    val support: app.masroufy.usecase.SendSupportMessage? get() = null
 }
 
 /**

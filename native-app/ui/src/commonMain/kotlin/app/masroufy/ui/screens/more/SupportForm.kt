@@ -18,8 +18,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.masroufy.core.SupportChrome
 import app.masroufy.core.SupportKind
+import app.masroufy.core.FEEDBACK_TEXT_MAX
 import app.masroufy.core.SupportMessage
-import app.masroufy.port.SupportOutboxPort
+import app.masroufy.usecase.SendSupportMessage
+import app.masroufy.usecase.SupportSendResult
+import androidx.compose.runtime.remember
 import app.masroufy.ui.app.LocalApp
 import app.masroufy.ui.app.LocalSpace
 import app.masroufy.ui.components.FloatingCard
@@ -33,31 +36,38 @@ import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
 import kotlinx.coroutines.launch
 
-/** مكان الحفظ: صندوق الجهاز، وفي المعاينة (من غير جهاز) صندوق الذاكرة. */
+/** حالة الاستخدام: صندوق الجهاز + فايربيز، وفي المعاينة (من غير جهاز) صندوق الذاكرة من غير إرسال. */
 @Composable
-internal fun supportOutbox(): SupportOutboxPort =
-    LocalApp.current.support ?: androidx.compose.runtime.remember { app.masroufy.memory.MemorySupportOutbox() }
+internal fun supportSender(): SendSupportMessage = LocalApp.current.support ?: androidx.compose.runtime.remember {
+    SendSupportMessage(app.masroufy.memory.MemorySupportOutbox(), null, app.masroufy.memory.SequentialIdGenerator(), "preview")
+}
 
 /**
  * «ابعتلنا» (`SupportForm.dc.html`): نوعه (سؤال · اقتراح · مشكلة — السعودي «شكوى») + نص ⇐ «ابعت» ⇐ «اتبعت». بيتركّب جوه الأسئلة الشائعة
- * ([prefill] = كلمة البحث) وفي صفحة «الدعم». **بيتحفظ على الجهاز بس** — مفيش إرسال لأي مكان (الوجهة سؤال مفتوح للمالك — OVERRIDES ❓).
- * TODO(owner decision): لما المالك يعمل المستودع الخاص على جيت هاب، مهمة آلية (scheduled Action) هي اللي تقرا الصندوق وتفتح المشكلة.
+ * ([prefill] = كلمة البحث) وفي صفحة «الدعم». النسخة على الجهاز دايمًا + `inbox` على فايربيز (OVERRIDES §114): «اتبعت» بعد تأكيد السيرفر بس،
+ * وإلا «محفوظ وهيتبعت لما النت يرجع» (دورة الخلفية بتعيد المحاولة).
  */
 @Composable
 internal fun SupportForm(egypt: Boolean, prefill: String = "", modifier: Modifier = Modifier) {
     val chrome = androidx.compose.runtime.remember(egypt) { SupportChrome(egypt) }
-    val outbox = supportOutbox()
+    val sender = supportSender()
     val space = LocalSpace.current
     val scope = rememberCoroutineScope()
     var kind by rememberSaveable { mutableStateOf(SupportKind.QUESTION.name) }
     var text by rememberSaveable { mutableStateOf(prefill) }
-    var sent by rememberSaveable { mutableStateOf(false) }
+    // null = لسه · SENT / QUEUED (اسم الحالة — يتحفظ مع الشاشة)
+    var result by rememberSaveable { mutableStateOf<String?>(null) }
+    var sending by remember { mutableStateOf(false) }
     val current = SupportKind.valueOf(kind)
-    if (sent) {
+    if (result != null) {
+        val ok = result == SupportSendResult.SENT.name
         FloatingCard(modifier.fillMaxWidth().heightIn(min = 52.dp), contentPadding = androidx.compose.foundation.layout.PaddingValues(14.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally), verticalAlignment = Alignment.CenterVertically) {
-                LucideIcon(Lucide.CHECK, size = 18.dp, tint = Ink.primary)
-                BasicText(chrome.sent, style = Type.of(15, FontWeight.Bold).copy(color = Ink.primary, textAlign = TextAlign.Center))
+                LucideIcon(if (ok) Lucide.CHECK else Lucide.CLOCK, size = 18.dp, tint = if (ok) Ink.primary else Ink.muted)
+                BasicText(
+                    if (ok) chrome.sent else chrome.queued,
+                    style = Type.of(15, FontWeight.Bold).copy(color = if (ok) Ink.primary else Ink.muted, textAlign = TextAlign.Center),
+                )
             }
         }
         return
@@ -68,15 +78,17 @@ internal fun SupportForm(egypt: Boolean, prefill: String = "", modifier: Modifie
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 for (k in SupportKind.entries) SelectChip(k.label(egypt), current == k, { kind = k.name }, Modifier.weight(1f), height = 40.dp)
             }
-            TextInput(text, { text = it }, placeholder = current.hint(egypt), height = 112.dp, textSize = 15)
+            TextInput(text, { text = it.take(FEEDBACK_TEXT_MAX) }, placeholder = current.hint(egypt), height = 112.dp, textSize = 15)
             PrimaryButton(chrome.send, onClick = {
                 val message = text.trim()
+                sending = true
                 scope.launch {
                     val day = runCatching { space.shell.today() }.getOrDefault("")
-                    outbox.add(SupportMessage(current, message, day, space.space.countryCode))
-                    sent = true
+                    val r = runCatching { sender.send(SupportMessage(current, message, day, space.space.countryCode)) }.getOrDefault(SupportSendResult.QUEUED)
+                    result = r.name
+                    sending = false
                 }
-            }, Modifier.fillMaxWidth(), enabled = text.isNotBlank())
+            }, Modifier.fillMaxWidth(), enabled = text.isNotBlank() && !sending)
             BasicText(chrome.note, style = Type.caption().copy(color = Ink.muted))
         }
     }

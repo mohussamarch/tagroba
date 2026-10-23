@@ -1,0 +1,2629 @@
+{
+    "version": 1,
+    "note": "Generated from the app's built-in rules (BuiltInRulesExportTest). Do not edit by hand.",
+    "rules": [
+        {
+            "id": "rule-0001",
+            "word": "BARQ",
+            "category": {
+                "eg": "cat-استثمار--محافظ-رقميه",
+                "sa": "cat-استثمار--محافظ-رقميه"
+            }
+        },
+        {
+            "id": "rule-0002",
+            "word": "STC PAY",
+            "category": {
+                "eg": "cat-استثمار--محافظ-رقميه",
+                "sa": "cat-استثمار--محافظ-رقميه"
+            }
+        },
+        {
+            "id": "rule-0003",
+            "word": "STC BANK",
+            "category": {
+                "eg": "cat-استثمار--محافظ-رقميه",
+                "sa": "cat-استثمار--محافظ-رقميه"
+            }
+        },
+        {
+            "id": "rule-0004",
+            "word": "URPAY",
+            "category": {
+                "eg": "cat-استثمار--محافظ-رقميه",
+                "sa": "cat-استثمار--محافظ-رقميه"
+            }
+        },
+        {
+            "id": "rule-0005",
+            "word": "ALINMA PAY",
+            "category": {
+                "eg": "cat-استثمار--محافظ-رقميه",
+                "sa": "cat-استثمار--محافظ-رقميه"
+            }
+        },
+        {
+            "id": "rule-0006",
+            "word": "TABBY",
+            "category": {
+                "eg": "cat-الالتزامات--تقسيط",
+                "sa": "cat-الالتزامات--تقسيط"
+            }
+        },
+        {
+            "id": "rule-0007",
+            "word": "TAMARA",
+            "category": {
+                "eg": "cat-الالتزامات--تقسيط",
+                "sa": "cat-الالتزامات--تقسيط"
+            }
+        },
+        {
+            "id": "rule-0008",
+            "word": "MADFU",
+            "category": {
+                "eg": "cat-الالتزامات--تقسيط",
+                "sa": "cat-الالتزامات--تقسيط"
+            }
+        },
+        {
+            "id": "rule-0009",
+            "word": "SPOTII",
+            "category": {
+                "eg": "cat-الالتزامات--تقسيط",
+                "sa": "cat-الالتزامات--تقسيط"
+            }
+        },
+        {
+            "id": "rule-0010",
+            "word": "DRAHIM",
+            "category": {
+                "eg": "cat-استثمار",
+                "sa": "cat-استثمار"
+            }
+        },
+        {
+            "id": "rule-0011",
+            "word": "AWAED",
+            "category": {
+                "eg": "cat-استثمار",
+                "sa": "cat-استثمار"
+            }
+        },
+        {
+            "id": "rule-0012",
+            "word": "DERAYAH",
+            "category": {
+                "eg": "cat-استثمار",
+                "sa": "cat-استثمار"
+            }
+        },
+        {
+            "id": "rule-0013",
+            "word": "SAVINGS CO",
+            "category": {
+                "eg": "cat-استثمار",
+                "sa": "cat-استثمار"
+            }
+        },
+        {
+            "id": "rule-0014",
+            "word": "STC",
+            "category": {
+                "eg": "cat-اتصالات",
+                "sa": "cat-اتصالات"
+            }
+        },
+        {
+            "id": "rule-0015",
+            "word": "SAUDI TELECOM",
+            "category": {
+                "eg": "cat-اتصالات",
+                "sa": "cat-اتصالات"
+            }
+        },
+        {
+            "id": "rule-0016",
+            "word": "MOBILY",
+            "category": {
+                "eg": "cat-اتصالات",
+                "sa": "cat-اتصالات"
+            }
+        },
+        {
+            "id": "rule-0017",
+            "word": "ZAIN",
+            "category": {
+                "eg": "cat-اتصالات",
+                "sa": "cat-اتصالات"
+            }
+        },
+        {
+            "id": "rule-0018",
+            "word": "TOP UP",
+            "category": {
+                "eg": "cat-اتصالات",
+                "sa": "cat-اتصالات"
+            }
+        },
+        {
+            "id": "rule-0019",
+            "word": "CHANNELS -",
+            "category": {
+                "eg": "cat-اتصالات",
+                "sa": "cat-اتصالات"
+            }
+        },
+        {
+            "id": "rule-0020",
+            "word": "ELECTRICITY",
+            "category": {
+                "eg": "cat-المنزل",
+                "sa": "cat-المنزل"
+            }
+        },
+        {
+            "id": "rule-0021",
+            "word": "WATER",
+            "category": {
+                "eg": "cat-المنزل",
+                "sa": "cat-المنزل"
+            }
+        },
+        {
+            "id": "rule-0022",
+            "word": "GAS CO",
+            "category": {
+                "eg": "cat-المنزل",
+                "sa": "cat-المنزل"
+            }
+        },
+        {
+            "id": "rule-0023",
+            "word": "AMDAD ALAMEN",
+            "category": {
+                "eg": "cat-المنزل",
+                "sa": "cat-المنزل"
+            }
+        },
+        {
+            "id": "rule-0024",
+            "word": "GROCERY",
+            "category": {
+                "eg": "cat-بقاله-وسوبرماركت",
+                "sa": "cat-بقاله-وسوبرماركت"
+            }
+        },
+        {
+            "id": "rule-0025",
+            "word": "PANDA",
+            "category": {
+                "eg": "cat-بقاله-وسوبرماركت",
+                "sa": "cat-بقاله-وسوبرماركت"
+            }
+        },
+        {
+            "id": "rule-0026",
+            "word": "TAMIMI",
+            "category": {
+                "eg": "cat-بقاله-وسوبرماركت",
+                "sa": "cat-بقاله-وسوبرماركت"
+            }
+        },
+        {
+            "id": "rule-0027",
+            "word": "OTHAIM",
+            "category": {
+                "eg": "cat-بقاله-وسوبرماركت",
+                "sa": "cat-بقاله-وسوبرماركت"
+            }
+        },
+        {
+            "id": "rule-0028",
+            "word": "HYPER",
+            "category": {
+                "eg": "cat-بقاله-وسوبرماركت",
+                "sa": "cat-بقاله-وسوبرماركت"
+            }
+        },
+        {
+            "id": "rule-0029",
+            "word": "MART",
+            "category": {
+                "eg": "cat-بقاله-وسوبرماركت",
+                "sa": "cat-بقاله-وسوبرماركت"
+            }
+        },
+        {
+            "id": "rule-0030",
+            "word": "BAQALA",
+            "category": {
+                "eg": "cat-بقاله-وسوبرماركت",
+                "sa": "cat-بقاله-وسوبرماركت"
+            }
+        },
+        {
+            "id": "rule-0031",
+            "word": "FALIH",
+            "category": {
+                "eg": "cat-بقاله-وسوبرماركت",
+                "sa": "cat-بقاله-وسوبرماركت"
+            }
+        },
+        {
+            "id": "rule-0032",
+            "word": "KEEMART",
+            "category": {
+                "eg": "cat-بقاله-وسوبرماركت",
+                "sa": "cat-بقاله-وسوبرماركت"
+            }
+        },
+        {
+            "id": "rule-0033",
+            "word": "SUPERMARKET",
+            "category": {
+                "eg": "cat-بقاله-وسوبرماركت",
+                "sa": "cat-بقاله-وسوبرماركت"
+            }
+        },
+        {
+            "id": "rule-0034",
+            "word": "NAJD",
+            "category": {
+                "eg": "cat-بقاله-وسوبرماركت",
+                "sa": "cat-بقاله-وسوبرماركت"
+            }
+        },
+        {
+            "id": "rule-0035",
+            "word": "VEGETABLE",
+            "category": {
+                "eg": "cat-بقاله-وسوبرماركت",
+                "sa": "cat-بقاله-وسوبرماركت"
+            }
+        },
+        {
+            "id": "rule-0036",
+            "word": "LLHWM",
+            "category": {
+                "eg": "cat-بقاله-وسوبرماركت",
+                "sa": "cat-بقاله-وسوبرماركت"
+            }
+        },
+        {
+            "id": "rule-0037",
+            "word": "FOR FOOD",
+            "category": {
+                "eg": "cat-بقاله-وسوبرماركت",
+                "sa": "cat-بقاله-وسوبرماركت"
+            }
+        },
+        {
+            "id": "rule-0038",
+            "word": "FALAFEL",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0039",
+            "word": "SHAWARM",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0040",
+            "word": "SHAWERMA",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0041",
+            "word": "ROMANSIAH",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0042",
+            "word": "KEETA",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0043",
+            "word": "EXPRESS FOOD",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0044",
+            "word": "HUNGERSTATION",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0045",
+            "word": "REST",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0046",
+            "word": "MANDEE",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0047",
+            "word": "MANDI",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0048",
+            "word": "COFFEE",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0049",
+            "word": "CAFE",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0050",
+            "word": "TEA",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0051",
+            "word": "BLABAN",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0052",
+            "word": "FURUJ",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0053",
+            "word": "SBAROO",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0054",
+            "word": "TAHINAH",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0055",
+            "word": "MAHASHI",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0056",
+            "word": "BEVERAGE",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0057",
+            "word": "SWEETS",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0058",
+            "word": "DYAFH",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0059",
+            "word": "KANARI",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0060",
+            "word": "BURGER",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0061",
+            "word": "PIZZA",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0062",
+            "word": "JUICE",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0063",
+            "word": "BAKER",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0064",
+            "word": "PHARMAC",
+            "category": {
+                "eg": "cat-صحه-وصيدليات",
+                "sa": "cat-صحه-وصيدليات"
+            }
+        },
+        {
+            "id": "rule-0065",
+            "word": "NAHDI",
+            "category": {
+                "eg": "cat-صحه-وصيدليات",
+                "sa": "cat-صحه-وصيدليات"
+            }
+        },
+        {
+            "id": "rule-0066",
+            "word": "DAWA",
+            "category": {
+                "eg": "cat-صحه-وصيدليات",
+                "sa": "cat-صحه-وصيدليات"
+            }
+        },
+        {
+            "id": "rule-0067",
+            "word": "MEDICAL",
+            "category": {
+                "eg": "cat-صحه-وصيدليات",
+                "sa": "cat-صحه-وصيدليات"
+            }
+        },
+        {
+            "id": "rule-0068",
+            "word": "CLINIC",
+            "category": {
+                "eg": "cat-صحه-وصيدليات",
+                "sa": "cat-صحه-وصيدليات"
+            }
+        },
+        {
+            "id": "rule-0069",
+            "word": "HOSPITAL",
+            "category": {
+                "eg": "cat-صحه-وصيدليات",
+                "sa": "cat-صحه-وصيدليات"
+            }
+        },
+        {
+            "id": "rule-0070",
+            "word": "DENTAL",
+            "category": {
+                "eg": "cat-صحه-وصيدليات",
+                "sa": "cat-صحه-وصيدليات"
+            }
+        },
+        {
+            "id": "rule-0071",
+            "word": "ALDREES",
+            "category": {
+                "eg": "cat-السياره--وقود",
+                "sa": "cat-السياره--وقود"
+            }
+        },
+        {
+            "id": "rule-0072",
+            "word": "SASCO",
+            "category": {
+                "eg": "cat-السياره--وقود",
+                "sa": "cat-السياره--وقود"
+            }
+        },
+        {
+            "id": "rule-0073",
+            "word": "PETRO",
+            "category": {
+                "eg": "cat-السياره--وقود",
+                "sa": "cat-السياره--وقود"
+            }
+        },
+        {
+            "id": "rule-0074",
+            "word": "PARKING",
+            "category": {
+                "eg": "cat-السياره--باركنج",
+                "sa": "cat-السياره--مواقف-وسايس"
+            }
+        },
+        {
+            "id": "rule-0075",
+            "word": "UBER",
+            "category": {
+                "eg": "cat-السياره--تاكسي-وتطبيقات",
+                "sa": "cat-السياره--تاكسي-وتطبيقات"
+            }
+        },
+        {
+            "id": "rule-0076",
+            "word": "CAREEM",
+            "category": {
+                "eg": "cat-السياره--تاكسي-وتطبيقات",
+                "sa": "cat-السياره--تاكسي-وتطبيقات"
+            }
+        },
+        {
+            "id": "rule-0077",
+            "word": "TAXI",
+            "category": {
+                "eg": "cat-السياره--تاكسي-وتطبيقات",
+                "sa": "cat-السياره--تاكسي-وتطبيقات"
+            }
+        },
+        {
+            "id": "rule-0078",
+            "word": "STATION",
+            "category": {
+                "eg": "cat-السياره--وقود",
+                "sa": "cat-السياره--وقود"
+            }
+        },
+        {
+            "id": "rule-0079",
+            "word": "FLYNAS",
+            "category": {
+                "eg": "cat-سفر",
+                "sa": "cat-سفر"
+            }
+        },
+        {
+            "id": "rule-0080",
+            "word": "ALMATAR",
+            "category": {
+                "eg": "cat-سفر",
+                "sa": "cat-سفر"
+            }
+        },
+        {
+            "id": "rule-0081",
+            "word": "ALTAYAR",
+            "category": {
+                "eg": "cat-سفر",
+                "sa": "cat-سفر"
+            }
+        },
+        {
+            "id": "rule-0082",
+            "word": "AIRPORT",
+            "category": {
+                "eg": "cat-سفر",
+                "sa": "cat-سفر"
+            }
+        },
+        {
+            "id": "rule-0083",
+            "word": "AIRLINE",
+            "category": {
+                "eg": "cat-سفر",
+                "sa": "cat-سفر"
+            }
+        },
+        {
+            "id": "rule-0084",
+            "word": "HOTEL",
+            "category": {
+                "eg": "cat-سفر",
+                "sa": "cat-سفر"
+            }
+        },
+        {
+            "id": "rule-0085",
+            "word": "BOOKING",
+            "category": {
+                "eg": "cat-سفر",
+                "sa": "cat-سفر"
+            }
+        },
+        {
+            "id": "rule-0086",
+            "word": "TRAVEL",
+            "category": {
+                "eg": "cat-سفر",
+                "sa": "cat-سفر"
+            }
+        },
+        {
+            "id": "rule-0087",
+            "word": "HARAMAIN",
+            "category": {
+                "eg": "cat-سفر",
+                "sa": "cat-سفر"
+            }
+        },
+        {
+            "id": "rule-0088",
+            "word": "MUVI",
+            "category": {
+                "eg": "cat-ترفيه",
+                "sa": "cat-ترفيه"
+            }
+        },
+        {
+            "id": "rule-0089",
+            "word": "CINEMA",
+            "category": {
+                "eg": "cat-ترفيه",
+                "sa": "cat-ترفيه"
+            }
+        },
+        {
+            "id": "rule-0090",
+            "word": "WEBOOK",
+            "category": {
+                "eg": "cat-ترفيه",
+                "sa": "cat-ترفيه"
+            }
+        },
+        {
+            "id": "rule-0091",
+            "word": "GAME",
+            "category": {
+                "eg": "cat-ترفيه",
+                "sa": "cat-ترفيه"
+            }
+        },
+        {
+            "id": "rule-0092",
+            "word": "NETFLIX",
+            "category": {
+                "eg": "cat-ترفيه",
+                "sa": "cat-ترفيه"
+            }
+        },
+        {
+            "id": "rule-0093",
+            "word": "SPOTIFY",
+            "category": {
+                "eg": "cat-ترفيه",
+                "sa": "cat-ترفيه"
+            }
+        },
+        {
+            "id": "rule-0094",
+            "word": "SHAHID",
+            "category": {
+                "eg": "cat-ترفيه",
+                "sa": "cat-ترفيه"
+            }
+        },
+        {
+            "id": "rule-0095",
+            "word": "SALLA",
+            "category": {
+                "eg": "cat-التسوق--تسوق-الكتروني",
+                "sa": "cat-التسوق--تسوق-الكتروني"
+            }
+        },
+        {
+            "id": "rule-0096",
+            "word": "CART FOUNDATION",
+            "category": {
+                "eg": "cat-التسوق--تسوق-الكتروني",
+                "sa": "cat-التسوق--تسوق-الكتروني"
+            }
+        },
+        {
+            "id": "rule-0097",
+            "word": "NOON",
+            "category": {
+                "eg": "cat-التسوق--تسوق-الكتروني",
+                "sa": "cat-التسوق--تسوق-الكتروني"
+            }
+        },
+        {
+            "id": "rule-0098",
+            "word": "AMAZON",
+            "category": {
+                "eg": "cat-التسوق--تسوق-الكتروني",
+                "sa": "cat-التسوق--تسوق-الكتروني"
+            }
+        },
+        {
+            "id": "rule-0099",
+            "word": "SHEIN",
+            "category": {
+                "eg": "cat-التسوق--تسوق-الكتروني",
+                "sa": "cat-التسوق--تسوق-الكتروني"
+            }
+        },
+        {
+            "id": "rule-0100",
+            "word": "ALIEXPRESS",
+            "category": {
+                "eg": "cat-التسوق--تسوق-الكتروني",
+                "sa": "cat-التسوق--تسوق-الكتروني"
+            }
+        },
+        {
+            "id": "rule-0101",
+            "word": "APP EST",
+            "category": {
+                "eg": "cat-التسوق--تسوق-الكتروني",
+                "sa": "cat-التسوق--تسوق-الكتروني"
+            }
+        },
+        {
+            "id": "rule-0102",
+            "word": "SHORY",
+            "category": {
+                "eg": "cat-السياره--تامين-السياره",
+                "sa": "cat-السياره--تامين-السياره"
+            }
+        },
+        {
+            "id": "rule-0105",
+            "word": "BUPA",
+            "category": {
+                "eg": "cat-صحه-وصيدليات--تامين-صحي",
+                "sa": "cat-صحه-وصيدليات--تامين-صحي"
+            }
+        },
+        {
+            "id": "rule-0106",
+            "word": "LAUNDRY",
+            "category": {
+                "eg": "cat-المنزل",
+                "sa": "cat-المنزل"
+            }
+        },
+        {
+            "id": "rule-0107",
+            "word": "LAUNDRIES",
+            "category": {
+                "eg": "cat-المنزل",
+                "sa": "cat-المنزل"
+            }
+        },
+        {
+            "id": "rule-0108",
+            "word": "CLEAN",
+            "category": {
+                "eg": "cat-المنزل",
+                "sa": "cat-المنزل"
+            }
+        },
+        {
+            "id": "rule-0109",
+            "word": "MAINTENANCE",
+            "category": {
+                "eg": "cat-المنزل",
+                "sa": "cat-المنزل"
+            }
+        },
+        {
+            "id": "rule-0110",
+            "word": "BUILDING MANAG",
+            "category": {
+                "eg": "cat-المنزل",
+                "sa": "cat-المنزل"
+            }
+        },
+        {
+            "id": "rule-0111",
+            "word": "CONTRACTIN",
+            "category": {
+                "eg": "cat-المنزل",
+                "sa": "cat-المنزل"
+            }
+        },
+        {
+            "id": "rule-0112",
+            "word": "EHSAN",
+            "category": {
+                "eg": "cat-تبرعات",
+                "sa": "cat-تبرعات"
+            }
+        },
+        {
+            "id": "rule-0113",
+            "word": "CHARITY",
+            "category": {
+                "eg": "cat-تبرعات",
+                "sa": "cat-تبرعات"
+            }
+        },
+        {
+            "id": "rule-0114",
+            "word": "JAM'IYYA",
+            "category": {
+                "eg": "cat-تبرعات",
+                "sa": "cat-تبرعات"
+            }
+        },
+        {
+            "id": "rule-0115",
+            "word": "WAQF",
+            "category": {
+                "eg": "cat-تبرعات",
+                "sa": "cat-تبرعات"
+            }
+        },
+        {
+            "id": "rule-0116",
+            "word": "OUD",
+            "category": {
+                "eg": "cat-العنايه-الشخصيه",
+                "sa": "cat-العنايه-الشخصيه"
+            }
+        },
+        {
+            "id": "rule-0117",
+            "word": "PERFUM",
+            "category": {
+                "eg": "cat-العنايه-الشخصيه",
+                "sa": "cat-العنايه-الشخصيه"
+            }
+        },
+        {
+            "id": "rule-0118",
+            "word": "MODA",
+            "category": {
+                "eg": "cat-العنايه-الشخصيه",
+                "sa": "cat-العنايه-الشخصيه"
+            }
+        },
+        {
+            "id": "rule-0119",
+            "word": "FASHION",
+            "category": {
+                "eg": "cat-العنايه-الشخصيه",
+                "sa": "cat-العنايه-الشخصيه"
+            }
+        },
+        {
+            "id": "rule-0120",
+            "word": "MALL",
+            "category": {
+                "eg": "cat-العنايه-الشخصيه",
+                "sa": "cat-العنايه-الشخصيه"
+            }
+        },
+        {
+            "id": "rule-0121",
+            "word": "JENNY",
+            "category": {
+                "eg": "cat-العنايه-الشخصيه",
+                "sa": "cat-العنايه-الشخصيه"
+            }
+        },
+        {
+            "id": "rule-0122",
+            "word": "OMAYA",
+            "category": {
+                "eg": "cat-العنايه-الشخصيه",
+                "sa": "cat-العنايه-الشخصيه"
+            }
+        },
+        {
+            "id": "rule-0123",
+            "word": "CONSULATE",
+            "category": {
+                "eg": "cat-حكومي-ورسوم",
+                "sa": "cat-حكومي-ورسوم"
+            }
+        },
+        {
+            "id": "rule-0124",
+            "word": "MUNICIPAL",
+            "category": {
+                "eg": "cat-حكومي-ورسوم",
+                "sa": "cat-حكومي-ورسوم"
+            }
+        },
+        {
+            "id": "rule-0125",
+            "word": "ABSHER",
+            "category": {
+                "eg": "cat-حكومي-ورسوم",
+                "sa": "cat-حكومي-ورسوم"
+            }
+        },
+        {
+            "id": "rule-0126",
+            "word": "DIRIYAH GATE",
+            "category": {
+                "eg": "cat-حكومي-ورسوم",
+                "sa": "cat-حكومي-ورسوم"
+            }
+        },
+        {
+            "id": "rule-0127",
+            "word": "GOOGLE",
+            "category": {
+                "eg": "cat-اشتراكات-رقميه",
+                "sa": "cat-اشتراكات-رقميه"
+            }
+        },
+        {
+            "id": "rule-0128",
+            "word": "ANTHROPIC",
+            "category": {
+                "eg": "cat-اشتراكات-رقميه",
+                "sa": "cat-اشتراكات-رقميه"
+            }
+        },
+        {
+            "id": "rule-0129",
+            "word": "OPENAI",
+            "category": {
+                "eg": "cat-اشتراكات-رقميه",
+                "sa": "cat-اشتراكات-رقميه"
+            }
+        },
+        {
+            "id": "rule-0130",
+            "word": "PADDLE.NET",
+            "category": {
+                "eg": "cat-اشتراكات-رقميه",
+                "sa": "cat-اشتراكات-رقميه"
+            }
+        },
+        {
+            "id": "rule-0131",
+            "word": "PIXERY",
+            "category": {
+                "eg": "cat-اشتراكات-رقميه",
+                "sa": "cat-اشتراكات-رقميه"
+            }
+        },
+        {
+            "id": "rule-0132",
+            "word": "PERSONALITY.CO",
+            "category": {
+                "eg": "cat-اشتراكات-رقميه",
+                "sa": "cat-اشتراكات-رقميه"
+            }
+        },
+        {
+            "id": "rule-0133",
+            "word": "MYIQ",
+            "category": {
+                "eg": "cat-اشتراكات-رقميه",
+                "sa": "cat-اشتراكات-رقميه"
+            }
+        },
+        {
+            "id": "rule-0134",
+            "word": "MEP*PLAYERMATRIX",
+            "category": {
+                "eg": "cat-اشتراكات-رقميه",
+                "sa": "cat-اشتراكات-رقميه"
+            }
+        },
+        {
+            "id": "rule-0135",
+            "word": "ANANINJA",
+            "category": {
+                "eg": "cat-اشتراكات-رقميه",
+                "sa": "cat-اشتراكات-رقميه"
+            }
+        },
+        {
+            "id": "rule-0136",
+            "word": "FACEBK",
+            "category": {
+                "eg": "cat-مصاريف-الشغل--اعلانات-وتسويق",
+                "sa": "cat-مصاريف-الشغل--اعلانات-وتسويق"
+            }
+        },
+        {
+            "id": "rule-0137",
+            "word": "META PLATFORMS",
+            "category": {
+                "eg": "cat-مصاريف-الشغل--اعلانات-وتسويق",
+                "sa": "cat-مصاريف-الشغل--اعلانات-وتسويق"
+            }
+        },
+        {
+            "id": "rule-0138",
+            "word": "TIKTOK ADS",
+            "category": {
+                "eg": "cat-مصاريف-الشغل--اعلانات-وتسويق",
+                "sa": "cat-مصاريف-الشغل--اعلانات-وتسويق"
+            }
+        },
+        {
+            "id": "rule-0139",
+            "word": "SNAP INC",
+            "category": {
+                "eg": "cat-مصاريف-الشغل--اعلانات-وتسويق",
+                "sa": "cat-مصاريف-الشغل--اعلانات-وتسويق"
+            }
+        },
+        {
+            "id": "rule-0140",
+            "word": "VIZACADEMY",
+            "category": {
+                "eg": "cat-تعليم-وتدريب",
+                "sa": "cat-تعليم-وتدريب"
+            }
+        },
+        {
+            "id": "rule-0141",
+            "word": "ACADEMY",
+            "category": {
+                "eg": "cat-تعليم-وتدريب",
+                "sa": "cat-تعليم-وتدريب"
+            }
+        },
+        {
+            "id": "rule-0142",
+            "word": "UDEMY",
+            "category": {
+                "eg": "cat-تعليم-وتدريب",
+                "sa": "cat-تعليم-وتدريب"
+            }
+        },
+        {
+            "id": "rule-0143",
+            "word": "COURSERA",
+            "category": {
+                "eg": "cat-تعليم-وتدريب",
+                "sa": "cat-تعليم-وتدريب"
+            }
+        },
+        {
+            "id": "rule-0144",
+            "word": "TRAINING",
+            "category": {
+                "eg": "cat-تعليم-وتدريب",
+                "sa": "cat-تعليم-وتدريب"
+            }
+        },
+        {
+            "id": "rule-0145",
+            "word": "ALKMBYWTR",
+            "category": {
+                "eg": "cat-التسوق--الكترونيات-واجهزه",
+                "sa": "cat-التسوق--الكترونيات-واجهزه"
+            }
+        },
+        {
+            "id": "rule-0146",
+            "word": "CAMERA TIME",
+            "category": {
+                "eg": "cat-التسوق--الكترونيات-واجهزه",
+                "sa": "cat-التسوق--الكترونيات-واجهزه"
+            }
+        },
+        {
+            "id": "rule-0147",
+            "word": "JARIR",
+            "category": {
+                "eg": "cat-التسوق--الكترونيات-واجهزه",
+                "sa": "cat-التسوق--الكترونيات-واجهزه"
+            }
+        },
+        {
+            "id": "rule-0148",
+            "word": "LLHASB",
+            "category": {
+                "eg": "cat-التسوق--الكترونيات-واجهزه",
+                "sa": "cat-التسوق--الكترونيات-واجهزه"
+            }
+        },
+        {
+            "id": "rule-0149",
+            "word": "BOOKSTORE",
+            "category": {
+                "eg": "cat-التسوق",
+                "sa": "cat-التسوق"
+            }
+        },
+        {
+            "id": "rule-0150",
+            "word": "LLNSKH",
+            "category": {
+                "eg": "cat-التسوق",
+                "sa": "cat-التسوق"
+            }
+        },
+        {
+            "id": "rule-0151",
+            "word": "DESIGN ADVERTISI",
+            "category": {
+                "eg": "cat-التسوق",
+                "sa": "cat-التسوق"
+            }
+        },
+        {
+            "id": "rule-0152",
+            "word": "DIGIMAX",
+            "category": {
+                "eg": "cat-التسوق",
+                "sa": "cat-التسوق"
+            }
+        },
+        {
+            "id": "rule-0153",
+            "word": "PRINT",
+            "category": {
+                "eg": "cat-التسوق",
+                "sa": "cat-التسوق"
+            }
+        },
+        {
+            "id": "rule-0154",
+            "word": "MAKTABA",
+            "category": {
+                "eg": "cat-التسوق",
+                "sa": "cat-التسوق"
+            }
+        },
+        {
+            "id": "rule-0155",
+            "word": "BARBER",
+            "category": {
+                "eg": "cat-العنايه-الشخصيه",
+                "sa": "cat-العنايه-الشخصيه"
+            }
+        },
+        {
+            "id": "rule-0156",
+            "word": "SALON",
+            "category": {
+                "eg": "cat-العنايه-الشخصيه",
+                "sa": "cat-العنايه-الشخصيه"
+            }
+        },
+        {
+            "id": "rule-0157",
+            "word": "HALAQ",
+            "category": {
+                "eg": "cat-العنايه-الشخصيه",
+                "sa": "cat-العنايه-الشخصيه"
+            }
+        },
+        {
+            "id": "rule-0158",
+            "word": "SPA",
+            "category": {
+                "eg": "cat-العنايه-الشخصيه",
+                "sa": "cat-العنايه-الشخصيه"
+            }
+        },
+        {
+            "id": "rule-0159",
+            "word": "MOFA-SERVICES",
+            "category": {
+                "eg": "cat-حكومي-ورسوم",
+                "sa": "cat-حكومي-ورسوم"
+            }
+        },
+        {
+            "id": "rule-0160",
+            "word": "MINISTRY OF",
+            "category": {
+                "eg": "cat-حكومي-ورسوم",
+                "sa": "cat-حكومي-ورسوم"
+            }
+        },
+        {
+            "id": "rule-0161",
+            "word": "VF WORLDWIDE",
+            "category": {
+                "eg": "cat-حكومي-ورسوم",
+                "sa": "cat-حكومي-ورسوم"
+            }
+        },
+        {
+            "id": "rule-0162",
+            "word": "TAMEENI",
+            "category": {
+                "eg": "cat-حكومي-ورسوم",
+                "sa": "cat-حكومي-ورسوم"
+            }
+        },
+        {
+            "id": "rule-0163",
+            "word": "ESAAL",
+            "category": {
+                "eg": "cat-صحه-وصيدليات",
+                "sa": "cat-صحه-وصيدليات"
+            }
+        },
+        {
+            "id": "rule-0164",
+            "word": "LABORATOR",
+            "category": {
+                "eg": "cat-صحه-وصيدليات",
+                "sa": "cat-صحه-وصيدليات"
+            }
+        },
+        {
+            "id": "rule-0165",
+            "word": "OPTIC",
+            "category": {
+                "eg": "cat-صحه-وصيدليات",
+                "sa": "cat-صحه-وصيدليات"
+            }
+        },
+        {
+            "id": "rule-0166",
+            "word": "TEMU",
+            "category": {
+                "eg": "cat-التسوق--تسوق-الكتروني",
+                "sa": "cat-التسوق--تسوق-الكتروني"
+            }
+        },
+        {
+            "id": "rule-0167",
+            "word": "TRENDYOL",
+            "category": {
+                "eg": "cat-التسوق--تسوق-الكتروني",
+                "sa": "cat-التسوق--تسوق-الكتروني"
+            }
+        },
+        {
+            "id": "rule-0168",
+            "word": "FNMKSTORE",
+            "category": {
+                "eg": "cat-التسوق--تسوق-الكتروني",
+                "sa": "cat-التسوق--تسوق-الكتروني"
+            }
+        },
+        {
+            "id": "rule-0169",
+            "word": "HARAJ STORE",
+            "category": {
+                "eg": "cat-التسوق--تسوق-الكتروني",
+                "sa": "cat-التسوق--تسوق-الكتروني"
+            }
+        },
+        {
+            "id": "rule-0170",
+            "word": "KIWI.COM",
+            "category": {
+                "eg": "cat-سفر",
+                "sa": "cat-سفر"
+            }
+        },
+        {
+            "id": "rule-0171",
+            "word": "CENTREPOINT",
+            "category": {
+                "eg": "cat-العنايه-الشخصيه",
+                "sa": "cat-العنايه-الشخصيه"
+            }
+        },
+        {
+            "id": "rule-0172",
+            "word": "CENTERPOINT",
+            "category": {
+                "eg": "cat-العنايه-الشخصيه",
+                "sa": "cat-العنايه-الشخصيه"
+            }
+        },
+        {
+            "id": "rule-0173",
+            "word": "POINT 21",
+            "category": {
+                "eg": "cat-العنايه-الشخصيه",
+                "sa": "cat-العنايه-الشخصيه"
+            }
+        },
+        {
+            "id": "rule-0174",
+            "word": "BASICS FASHIO",
+            "category": {
+                "eg": "cat-العنايه-الشخصيه",
+                "sa": "cat-العنايه-الشخصيه"
+            }
+        },
+        {
+            "id": "rule-0175",
+            "word": "JEANS",
+            "category": {
+                "eg": "cat-العنايه-الشخصيه",
+                "sa": "cat-العنايه-الشخصيه"
+            }
+        },
+        {
+            "id": "rule-0176",
+            "word": "AROMATIC",
+            "category": {
+                "eg": "cat-العنايه-الشخصيه",
+                "sa": "cat-العنايه-الشخصيه"
+            }
+        },
+        {
+            "id": "rule-0177",
+            "word": "SPINNEYS",
+            "category": {
+                "eg": "cat-بقاله-وسوبرماركت",
+                "sa": "cat-بقاله-وسوبرماركت"
+            }
+        },
+        {
+            "id": "rule-0178",
+            "word": "FOODSTUFF",
+            "category": {
+                "eg": "cat-بقاله-وسوبرماركت",
+                "sa": "cat-بقاله-وسوبرماركت"
+            }
+        },
+        {
+            "id": "rule-0179",
+            "word": "TAMWINAT",
+            "category": {
+                "eg": "cat-بقاله-وسوبرماركت",
+                "sa": "cat-بقاله-وسوبرماركت"
+            }
+        },
+        {
+            "id": "rule-0180",
+            "word": "TROLLEY",
+            "category": {
+                "eg": "cat-بقاله-وسوبرماركت",
+                "sa": "cat-بقاله-وسوبرماركت"
+            }
+        },
+        {
+            "id": "rule-0181",
+            "word": "BASKET",
+            "category": {
+                "eg": "cat-بقاله-وسوبرماركت",
+                "sa": "cat-بقاله-وسوبرماركت"
+            }
+        },
+        {
+            "id": "rule-0182",
+            "word": "ALTAWFIR",
+            "category": {
+                "eg": "cat-بقاله-وسوبرماركت",
+                "sa": "cat-بقاله-وسوبرماركت"
+            }
+        },
+        {
+            "id": "rule-0183",
+            "word": "ALTAWFER",
+            "category": {
+                "eg": "cat-بقاله-وسوبرماركت",
+                "sa": "cat-بقاله-وسوبرماركت"
+            }
+        },
+        {
+            "id": "rule-0184",
+            "word": "TAWFIR",
+            "category": {
+                "eg": "cat-بقاله-وسوبرماركت",
+                "sa": "cat-بقاله-وسوبرماركت"
+            }
+        },
+        {
+            "id": "rule-0185",
+            "word": "LLMWAD ALGH",
+            "category": {
+                "eg": "cat-بقاله-وسوبرماركت",
+                "sa": "cat-بقاله-وسوبرماركت"
+            }
+        },
+        {
+            "id": "rule-0186",
+            "word": "NAJID",
+            "category": {
+                "eg": "cat-بقاله-وسوبرماركت",
+                "sa": "cat-بقاله-وسوبرماركت"
+            }
+        },
+        {
+            "id": "rule-0187",
+            "word": "RAYAHIN",
+            "category": {
+                "eg": "cat-بقاله-وسوبرماركت",
+                "sa": "cat-بقاله-وسوبرماركت"
+            }
+        },
+        {
+            "id": "rule-0188",
+            "word": "POPEYES",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0189",
+            "word": "FOODICS",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0190",
+            "word": "GELATO",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0191",
+            "word": "TALQIMAH",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0192",
+            "word": "LTQDYM ALWJBAT",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0193",
+            "word": "MATEAM",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0194",
+            "word": "RESYTAURANT",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0195",
+            "word": "LLHLA",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0196",
+            "word": "SHAY",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0197",
+            "word": "BUFFET",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0198",
+            "word": "FAST FOOD",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0199",
+            "word": "HALF A MILLION",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0200",
+            "word": "SHAMIAH",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0201",
+            "word": "NABLSYT",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0202",
+            "word": "AVOCADO",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0203",
+            "word": "RUMAAN",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0204",
+            "word": "ICE CREAM",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0205",
+            "word": "ALKANDEI",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0206",
+            "word": "ALTAYR RES",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0207",
+            "word": "BASTA RES",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0208",
+            "word": "MOSAFER COFFE",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0209",
+            "word": "ALRUKN ALKHALEJI",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0210",
+            "word": "MADBYKOM",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0211",
+            "word": "ABUTARIQ",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0212",
+            "word": "WLAWZ",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0213",
+            "word": "MAWASEM AL ASEER",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0214",
+            "word": "ZAWEAH MSHWAR",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0215",
+            "word": "ALFAHS",
+            "category": {
+                "eg": "cat-السياره--وقود",
+                "sa": "cat-السياره--وقود"
+            }
+        },
+        {
+            "id": "rule-0216",
+            "word": "ZYOAAT",
+            "category": {
+                "eg": "cat-السياره--وقود",
+                "sa": "cat-السياره--وقود"
+            }
+        },
+        {
+            "id": "rule-0217",
+            "word": "ALZYWT",
+            "category": {
+                "eg": "cat-السياره--وقود",
+                "sa": "cat-السياره--وقود"
+            }
+        },
+        {
+            "id": "rule-0218",
+            "word": "ALZAYOU",
+            "category": {
+                "eg": "cat-السياره--وقود",
+                "sa": "cat-السياره--وقود"
+            }
+        },
+        {
+            "id": "rule-0219",
+            "word": "LLTSHGHYL",
+            "category": {
+                "eg": "cat-المنزل",
+                "sa": "cat-المنزل"
+            }
+        },
+        {
+            "id": "rule-0220",
+            "word": "CONTRA",
+            "category": {
+                "eg": "cat-المنزل",
+                "sa": "cat-المنزل"
+            }
+        },
+        {
+            "id": "rule-0221",
+            "word": "DIRIYAH",
+            "category": {
+                "eg": "cat-ترفيه",
+                "sa": "cat-ترفيه"
+            }
+        },
+        {
+            "id": "rule-0222",
+            "word": "AWQAF",
+            "category": {
+                "eg": "cat-تبرعات",
+                "sa": "cat-تبرعات"
+            }
+        },
+        {
+            "id": "rule-0223",
+            "word": "ALBAIK",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0224",
+            "word": "AL BAIK",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0225",
+            "word": "CHEFS",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه",
+                "sa": "cat-مطاعم-وقهوه"
+            }
+        },
+        {
+            "id": "rule-0226",
+            "word": "VIRGIN MOBILE",
+            "category": {
+                "eg": "cat-اتصالات",
+                "sa": "cat-اتصالات"
+            }
+        },
+        {
+            "id": "rule-0227",
+            "word": "ZARA",
+            "category": {
+                "eg": "cat-العنايه-الشخصيه",
+                "sa": "cat-العنايه-الشخصيه"
+            }
+        },
+        {
+            "id": "rule-0228",
+            "word": "SACO",
+            "category": {
+                "eg": "cat-المنزل",
+                "sa": "cat-المنزل"
+            }
+        },
+        {
+            "id": "rule-0229",
+            "word": "بوابة الدرعية",
+            "category": {
+                "eg": "cat-ترفيه",
+                "sa": "cat-ترفيه"
+            }
+        },
+        {
+            "id": "rule-0230",
+            "word": "Muvi Cinema",
+            "category": {
+                "eg": "cat-ترفيه--سينما",
+                "sa": "cat-ترفيه--سينما"
+            }
+        },
+        {
+            "id": "rule-0231",
+            "word": "موفي سينما",
+            "category": {
+                "eg": "cat-ترفيه--سينما",
+                "sa": "cat-ترفيه--سينما"
+            }
+        },
+        {
+            "id": "rule-0232",
+            "word": "Steam",
+            "category": {
+                "eg": "cat-ترفيه--هوايات",
+                "sa": "cat-ترفيه--هوايات"
+            }
+        },
+        {
+            "id": "rule-0233",
+            "word": "ستيم",
+            "category": {
+                "eg": "cat-ترفيه--هوايات",
+                "sa": "cat-ترفيه--هوايات"
+            }
+        },
+        {
+            "id": "rule-0234",
+            "word": "Blvd World",
+            "category": {
+                "eg": "cat-ترفيه--فعاليات-ومباريات",
+                "sa": "cat-ترفيه--فعاليات-ومباريات"
+            }
+        },
+        {
+            "id": "rule-0235",
+            "word": "بوليفارد وورلد",
+            "category": {
+                "eg": "cat-ترفيه--فعاليات-ومباريات",
+                "sa": "cat-ترفيه--فعاليات-ومباريات"
+            }
+        },
+        {
+            "id": "rule-0236",
+            "word": "ويبوك",
+            "category": {
+                "eg": "cat-ترفيه--فعاليات-ومباريات",
+                "sa": "cat-ترفيه--فعاليات-ومباريات"
+            }
+        },
+        {
+            "id": "rule-0237",
+            "word": "mazaya al arab beverag",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--قهوه-ومشروبات",
+                "sa": "cat-مطاعم-وقهوه--قهوه-ومشروبات"
+            }
+        },
+        {
+            "id": "rule-0238",
+            "word": "Coffee Address",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--قهوه-ومشروبات",
+                "sa": "cat-مطاعم-وقهوه--قهوه-ومشروبات"
+            }
+        },
+        {
+            "id": "rule-0239",
+            "word": "عنوان القهوة",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--قهوه-ومشروبات",
+                "sa": "cat-مطاعم-وقهوه--قهوه-ومشروبات"
+            }
+        },
+        {
+            "id": "rule-0240",
+            "word": "joe and the juice",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--قهوه-ومشروبات",
+                "sa": "cat-مطاعم-وقهوه--قهوه-ومشروبات"
+            }
+        },
+        {
+            "id": "rule-0241",
+            "word": "hot and cold drinks se",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--قهوه-ومشروبات",
+                "sa": "cat-مطاعم-وقهوه--قهوه-ومشروبات"
+            }
+        },
+        {
+            "id": "rule-0242",
+            "word": "Half Million",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--قهوه-ومشروبات",
+                "sa": "cat-مطاعم-وقهوه--قهوه-ومشروبات"
+            }
+        },
+        {
+            "id": "rule-0243",
+            "word": "هاف مليون",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--قهوه-ومشروبات",
+                "sa": "cat-مطاعم-وقهوه--قهوه-ومشروبات"
+            }
+        },
+        {
+            "id": "rule-0244",
+            "word": "nakhati artisan gelato",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--حلويات-ومخبوزات",
+                "sa": "cat-مطاعم-وقهوه--حلويات-ومخبوزات"
+            }
+        },
+        {
+            "id": "rule-0245",
+            "word": "lemon and half",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--عصير",
+                "sa": "cat-مطاعم-وقهوه--عصير"
+            }
+        },
+        {
+            "id": "rule-0246",
+            "word": "مانجو و افوكادو",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--عصير",
+                "sa": "cat-مطاعم-وقهوه--عصير"
+            }
+        },
+        {
+            "id": "rule-0247",
+            "word": "polar cafe",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--قهوه-ومشروبات",
+                "sa": "cat-مطاعم-وقهوه--قهوه-ومشروبات"
+            }
+        },
+        {
+            "id": "rule-0248",
+            "word": "Signature",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--قهوه-ومشروبات",
+                "sa": "cat-مطاعم-وقهوه--قهوه-ومشروبات"
+            }
+        },
+        {
+            "id": "rule-0249",
+            "word": "سيغنتشر",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--قهوه-ومشروبات",
+                "sa": "cat-مطاعم-وقهوه--قهوه-ومشروبات"
+            }
+        },
+        {
+            "id": "rule-0250",
+            "word": "tea and sesame",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--قهوه-ومشروبات",
+                "sa": "cat-مطاعم-وقهوه--قهوه-ومشروبات"
+            }
+        },
+        {
+            "id": "rule-0251",
+            "word": "شاي وسمسم",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--قهوه-ومشروبات",
+                "sa": "cat-مطاعم-وقهوه--قهوه-ومشروبات"
+            }
+        },
+        {
+            "id": "rule-0252",
+            "word": "jj kafd no 1",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--قهوه-ومشروبات",
+                "sa": "cat-مطاعم-وقهوه--قهوه-ومشروبات"
+            }
+        },
+        {
+            "id": "rule-0253",
+            "word": "Aldawaa",
+            "category": {
+                "eg": "cat-صحه-وصيدليات--صيدليه",
+                "sa": "cat-صحه-وصيدليات--صيدليه"
+            }
+        },
+        {
+            "id": "rule-0254",
+            "word": "الدواء",
+            "category": {
+                "eg": "cat-صحه-وصيدليات--صيدليه",
+                "sa": "cat-صحه-وصيدليات--صيدليه"
+            }
+        },
+        {
+            "id": "rule-0255",
+            "word": "kingsman",
+            "category": {
+                "eg": "cat-العنايه-الشخصيه--حلاقه",
+                "sa": "cat-العنايه-الشخصيه--حلاقه"
+            }
+        },
+        {
+            "id": "rule-0256",
+            "word": "Lemon",
+            "category": {
+                "eg": "cat-صحه-وصيدليات--صيدليه",
+                "sa": "cat-صحه-وصيدليات--صيدليه"
+            }
+        },
+        {
+            "id": "rule-0257",
+            "word": "ليمون",
+            "category": {
+                "eg": "cat-صحه-وصيدليات--صيدليه",
+                "sa": "cat-صحه-وصيدليات--صيدليه"
+            }
+        },
+        {
+            "id": "rule-0258",
+            "word": "dar al enayag medical",
+            "category": {
+                "eg": "cat-صحه-وصيدليات--مستشفي-وعياده",
+                "sa": "cat-صحه-وصيدليات--مستشفي-وعياده"
+            }
+        },
+        {
+            "id": "rule-0259",
+            "word": "alkalij medical",
+            "category": {
+                "eg": "cat-صحه-وصيدليات--مستشفي-وعياده",
+                "sa": "cat-صحه-وصيدليات--مستشفي-وعياده"
+            }
+        },
+        {
+            "id": "rule-0260",
+            "word": "Aster Sanad Hospital",
+            "category": {
+                "eg": "cat-صحه-وصيدليات--مستشفي-وعياده",
+                "sa": "cat-صحه-وصيدليات--مستشفي-وعياده"
+            }
+        },
+        {
+            "id": "rule-0261",
+            "word": "مستشفى أستر سند",
+            "category": {
+                "eg": "cat-صحه-وصيدليات--مستشفي-وعياده",
+                "sa": "cat-صحه-وصيدليات--مستشفي-وعياده"
+            }
+        },
+        {
+            "id": "rule-0262",
+            "word": "ocean pharmacy 039",
+            "category": {
+                "eg": "cat-صحه-وصيدليات--صيدليه",
+                "sa": "cat-صحه-وصيدليات--صيدليه"
+            }
+        },
+        {
+            "id": "rule-0263",
+            "word": "riyadh care hospital",
+            "category": {
+                "eg": "cat-صحه-وصيدليات--مستشفي-وعياده",
+                "sa": "cat-صحه-وصيدليات--مستشفي-وعياده"
+            }
+        },
+        {
+            "id": "rule-0264",
+            "word": "al rawabi medical hosp",
+            "category": {
+                "eg": "cat-صحه-وصيدليات--مستشفي-وعياده",
+                "sa": "cat-صحه-وصيدليات--مستشفي-وعياده"
+            }
+        },
+        {
+            "id": "rule-0265",
+            "word": "Al Nahdi Pharmacy",
+            "category": {
+                "eg": "cat-صحه-وصيدليات--صيدليه",
+                "sa": "cat-صحه-وصيدليات--صيدليه"
+            }
+        },
+        {
+            "id": "rule-0266",
+            "word": "النهدي",
+            "category": {
+                "eg": "cat-صحه-وصيدليات--صيدليه",
+                "sa": "cat-صحه-وصيدليات--صيدليه"
+            }
+        },
+        {
+            "id": "rule-0267",
+            "word": "attractive elegant sin",
+            "category": {
+                "eg": "cat-المنزل--مغسله-وكوي",
+                "sa": "cat-المنزل--مغسله-وكوي"
+            }
+        },
+        {
+            "id": "rule-0268",
+            "word": "aliah pharmacy",
+            "category": {
+                "eg": "cat-صحه-وصيدليات--صيدليه",
+                "sa": "cat-صحه-وصيدليات--صيدليه"
+            }
+        },
+        {
+            "id": "rule-0269",
+            "word": "million cut",
+            "category": {
+                "eg": "cat-العنايه-الشخصيه--حلاقه",
+                "sa": "cat-العنايه-الشخصيه--حلاقه"
+            }
+        },
+        {
+            "id": "rule-0270",
+            "word": "mofa services",
+            "category": {
+                "eg": "cat-سفر--تاشيرات-ورسوم-سفر",
+                "sa": "cat-سفر--تاشيرات-ورسوم-سفر"
+            }
+        },
+        {
+            "id": "rule-0271",
+            "word": "Airports",
+            "category": {
+                "eg": "cat-سفر",
+                "sa": "cat-سفر"
+            }
+        },
+        {
+            "id": "rule-0272",
+            "word": "المطارات",
+            "category": {
+                "eg": "cat-سفر",
+                "sa": "cat-سفر"
+            }
+        },
+        {
+            "id": "rule-0273",
+            "word": "طيران ناس",
+            "category": {
+                "eg": "cat-سفر--طيران",
+                "sa": "cat-سفر--طيران"
+            }
+        },
+        {
+            "id": "rule-0274",
+            "word": "Almosafer",
+            "category": {
+                "eg": "cat-سفر",
+                "sa": "cat-سفر"
+            }
+        },
+        {
+            "id": "rule-0275",
+            "word": "المسافر",
+            "category": {
+                "eg": "cat-سفر",
+                "sa": "cat-سفر"
+            }
+        },
+        {
+            "id": "rule-0276",
+            "word": "consulate general of t",
+            "category": {
+                "eg": "cat-سفر--تاشيرات-ورسوم-سفر",
+                "sa": "cat-سفر--تاشيرات-ورسوم-سفر"
+            }
+        },
+        {
+            "id": "rule-0277",
+            "word": "mahashi corner buffet",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0278",
+            "word": "كيتا",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0279",
+            "word": "Mama Noura",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0280",
+            "word": "ماما نورة",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0281",
+            "word": "al romansiah",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0282",
+            "word": "al mawarid food compan",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0283",
+            "word": "البيك",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0284",
+            "word": "tyb falafel",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0285",
+            "word": "أوريجين",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0286",
+            "word": "shawarma eajibah",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0287",
+            "word": "njom altayr res",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0288",
+            "word": "aleamdih restaurants",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0289",
+            "word": "future grill restauran",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0290",
+            "word": "kushari abutariq",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0291",
+            "word": "badr ice cream",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--حلويات-ومخبوزات",
+                "sa": "cat-مطاعم-وقهوه--حلويات-ومخبوزات"
+            }
+        },
+        {
+            "id": "rule-0292",
+            "word": "Shawerma House",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0293",
+            "word": "بيت الشاورما",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0294",
+            "word": "bukhari alim restauran",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0295",
+            "word": "aleamdih almisria",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0296",
+            "word": "alamh jawdah",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--حلويات-ومخبوزات",
+                "sa": "cat-مطاعم-وقهوه--حلويات-ومخبوزات"
+            }
+        },
+        {
+            "id": "rule-0297",
+            "word": "elvet beldres co",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0298",
+            "word": "بلبن",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--حلويات-ومخبوزات",
+                "sa": "cat-مطاعم-وقهوه--حلويات-ومخبوزات"
+            }
+        },
+        {
+            "id": "rule-0299",
+            "word": "أزهار",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0300",
+            "word": "cone zone",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--حلويات-ومخبوزات",
+                "sa": "cat-مطاعم-وقهوه--حلويات-ومخبوزات"
+            }
+        },
+        {
+            "id": "rule-0301",
+            "word": "Alromansiah",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0302",
+            "word": "الرومانسية",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0303",
+            "word": "noor alkanari resturan",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0304",
+            "word": "futurk wa shahi compan",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0305",
+            "word": "foakeh al entash",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0306",
+            "word": "Shawarmer",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0307",
+            "word": "شاورمر",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0308",
+            "word": "karam resturant",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0309",
+            "word": "elhamra street resturants",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0310",
+            "word": "white wings contractin",
+            "category": {
+                "eg": "cat-المنزل--صيانه-وسباكه",
+                "sa": "cat-المنزل--صيانه-وسباكه"
+            }
+        },
+        {
+            "id": "rule-0311",
+            "word": "modren building manag",
+            "category": {
+                "eg": "cat-المنزل--صيانه-وسباكه",
+                "sa": "cat-المنزل--صيانه-وسباكه"
+            }
+        },
+        {
+            "id": "rule-0312",
+            "word": "family discount",
+            "category": {
+                "eg": "cat-المنزل",
+                "sa": "cat-المنزل"
+            }
+        },
+        {
+            "id": "rule-0313",
+            "word": "al amdad alamen for ga",
+            "category": {
+                "eg": "cat-المنزل--غاز",
+                "sa": "cat-المنزل--غاز"
+            }
+        },
+        {
+            "id": "rule-0314",
+            "word": "yasalam company",
+            "category": {
+                "eg": "cat-المنزل--صيانه-وسباكه",
+                "sa": "cat-المنزل--صيانه-وسباكه"
+            }
+        },
+        {
+            "id": "rule-0315",
+            "word": "ezz key",
+            "category": {
+                "eg": "cat-المنزل--صيانه-وسباكه",
+                "sa": "cat-المنزل--صيانه-وسباكه"
+            }
+        },
+        {
+            "id": "rule-0316",
+            "word": "Saudi Electricity Company",
+            "category": {
+                "eg": "cat-المنزل--كهرباء",
+                "sa": "cat-المنزل--كهرباء"
+            }
+        },
+        {
+            "id": "rule-0317",
+            "word": "الشركة السعودية للكهرباء",
+            "category": {
+                "eg": "cat-المنزل--كهرباء",
+                "sa": "cat-المنزل--كهرباء"
+            }
+        }
+    ],
+    "categoryNames": {
+        "cat-اتصالات": "اتصالات",
+        "cat-اتصالات--انترنت-منزلي": "إنترنت منزلي",
+        "cat-اتصالات--جوال": "جوال",
+        "cat-اتصالات--موبايل": "موبايل",
+        "cat-استثمار": "استثمار",
+        "cat-استثمار--ادخار": "ادخار",
+        "cat-استثمار--اسهم-وصناديق": "أسهم وصناديق",
+        "cat-استثمار--ذهب": "ذهب",
+        "cat-استثمار--محافظ-رقميه": "محافظ رقمية",
+        "cat-اشتراكات-رقميه": "اشتراكات رقمية",
+        "cat-اشتراكات-رقميه--بث-وافلام": "بث وأفلام",
+        "cat-اشتراكات-رقميه--تخزين-وبرامج": "تخزين وبرامج",
+        "cat-اشتراكات-رقميه--موسيقي": "موسيقى",
+        "cat-الاسره-والاطفال": "الأسرة والأطفال",
+        "cat-الاسره-والاطفال--حضانه": "حضانة",
+        "cat-الاسره-والاطفال--مدارس-ورسوم-دراسيه": "مدارس ورسوم دراسية",
+        "cat-الاسره-والاطفال--مستلزمات-اطفال": "مستلزمات أطفال",
+        "cat-الاسره-والاطفال--مصروف-البيت": "مصروف البيت",
+        "cat-الالتزامات": "الالتزامات",
+        "cat-الالتزامات--تقسيط": "تقسيط",
+        "cat-التسوق": "التسوق",
+        "cat-التسوق--الكترونيات-واجهزه": "إلكترونيات وأجهزة",
+        "cat-التسوق--تسوق-الكتروني": "تسوق إلكتروني",
+        "cat-السياره": "السيارة",
+        "cat-السياره--باركنج": "باركنج",
+        "cat-السياره--تاكسي-وتطبيقات": "تاكسي وتطبيقات",
+        "cat-السياره--تامين-السياره": "تأمين السيارة",
+        "cat-السياره--سايس": "سايس",
+        "cat-السياره--صيانه-السياره": "صيانة السيارة",
+        "cat-السياره--مخالفات-السياره": "مخالفات السيارة",
+        "cat-السياره--مواصلات-عامه": "مواصلات عامة",
+        "cat-السياره--مواقف-وسايس": "مواقف",
+        "cat-السياره--وقود": "وقود",
+        "cat-العنايه-الشخصيه": "العناية الشخصية",
+        "cat-العنايه-الشخصيه--احذيه": "أحذية",
+        "cat-العنايه-الشخصيه--اكسسوارات": "إكسسوارات",
+        "cat-العنايه-الشخصيه--تجميل": "تجميل",
+        "cat-العنايه-الشخصيه--حلاقه": "حلاقة",
+        "cat-العنايه-الشخصيه--عطور": "عطور",
+        "cat-العنايه-الشخصيه--ملابس": "ملابس",
+        "cat-العنايه-الشخصيه--منتجات-عنايه": "منتجات عناية",
+        "cat-المنزل": "المنزل",
+        "cat-المنزل--ايجار": "إيجار",
+        "cat-المنزل--تنظيف": "تنظيف",
+        "cat-المنزل--صيانه-وسباكه": "صيانة وسباكة",
+        "cat-المنزل--عماله-منزليه": "عمالة منزلية",
+        "cat-المنزل--غاز": "غاز",
+        "cat-المنزل--كهرباء": "كهرباء",
+        "cat-المنزل--مغسله-وكوي": "مغسلة وكوي",
+        "cat-المنزل--مياه": "مياه",
+        "cat-بقاله-وسوبرماركت": "بقالة وسوبرماركت",
+        "cat-بقاله-وسوبرماركت--بقاله-الحي": "بقالة الحي",
+        "cat-بقاله-وسوبرماركت--خضار-وفواكه": "خضار وفواكه",
+        "cat-بقاله-وسوبرماركت--سوبرماركت": "سوبرماركت",
+        "cat-بقاله-وسوبرماركت--لحوم-ودواجن-واسماك": "لحوم ودواجن وأسماك",
+        "cat-بقاله-وسوبرماركت--مياه-ومشروبات": "مياه ومشروبات",
+        "cat-تبرعات": "تبرعات",
+        "cat-تبرعات--زكاه": "زكاة",
+        "cat-تبرعات--صدقه": "صدقة",
+        "cat-تحويلات": "تحويلات",
+        "cat-تحويلات--تحويل-لاشخاص": "تحويل لأشخاص",
+        "cat-تحويلات--حوالات-للخارج": "حوالات للخارج",
+        "cat-ترفيه": "ترفيه",
+        "cat-ترفيه--العاب": "ألعاب",
+        "cat-ترفيه--رياضه-ونوادي": "رياضة ونوادي",
+        "cat-ترفيه--سينما": "سينما",
+        "cat-ترفيه--فعاليات-ومباريات": "فعاليات ومباريات",
+        "cat-ترفيه--هوايات": "هوايات",
+        "cat-تعليم-وتدريب": "تعليم وتدريب",
+        "cat-تعليم-وتدريب--جامعه-ودراسه": "جامعة ودراسة",
+        "cat-تعليم-وتدريب--دورات-اونلاين": "دورات أونلاين",
+        "cat-تعليم-وتدريب--كتب": "كتب",
+        "cat-حكومي-ورسوم": "حكومي ورسوم",
+        "cat-حكومي-ورسوم--تجديد-وثايق": "تجديد وثائق",
+        "cat-حكومي-ورسوم--رسوم-وخدمات-حكوميه": "رسوم وخدمات حكومية",
+        "cat-حكومي-ورسوم--مخالفات": "مخالفات",
+        "cat-سحب-نقدي": "سحب نقدي",
+        "cat-سفر": "سفر",
+        "cat-سفر--انشطه-سياحيه": "أنشطة سياحية",
+        "cat-سفر--تاشيرات-ورسوم-سفر": "تأشيرات ورسوم سفر",
+        "cat-سفر--طيران": "طيران",
+        "cat-سفر--فنادق-وسكن": "فنادق وسكن",
+        "cat-صحه-وصيدليات": "صحة وصيدليات",
+        "cat-صحه-وصيدليات--اسنان": "أسنان",
+        "cat-صحه-وصيدليات--تامين-صحي": "تأمين صحي",
+        "cat-صحه-وصيدليات--صيدليه": "صيدلية",
+        "cat-صحه-وصيدليات--مستشفي-وعياده": "مستشفى وعيادة",
+        "cat-صحه-وصيدليات--نظارات": "نظارات",
+        "cat-متفرقات": "متفرقات",
+        "cat-مصاريف-الشغل": "مصاريف الشغل",
+        "cat-مصاريف-الشغل--ادوات-وبرامج-للشغل": "أدوات وبرامج للشغل",
+        "cat-مصاريف-الشغل--اعلانات-وتسويق": "إعلانات وتسويق",
+        "cat-مطاعم-وقهوه": "مطاعم وقهوة",
+        "cat-مطاعم-وقهوه--حلويات-ومخبوزات": "حلويات ومخبوزات",
+        "cat-مطاعم-وقهوه--عصير": "عصير",
+        "cat-مطاعم-وقهوه--قهوه-ومشروبات": "قهوة ومشروبات",
+        "cat-مطاعم-وقهوه--مطاعم": "مطاعم"
+    },
+    "countries": [
+        "eg",
+        "sa"
+    ]
+}
