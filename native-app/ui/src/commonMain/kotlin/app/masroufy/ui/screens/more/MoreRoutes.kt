@@ -82,6 +82,11 @@ object MoreRoute : Route {
     override val name = "More"
 }
 
+/** «الدعم» — من علامة السماعة فوق «المزيد» (تصميم 9170906d). */
+object SupportRoute : Route {
+    override val name = "Support"
+}
+
 object AccountRoute : Route {
     override val name = "Account"
 }
@@ -152,4 +157,5 @@ fun RouteRegistry.registerMore() {
     screen<BackupRoute> { BackupScreen() }
     screen<RestorePreviewRoute> { r -> RestorePreviewScreen(r.fileName, r.text) }
     screen<ProblemLogRoute> { ProblemLogScreen() }
+    screen<SupportRoute> { SupportScreen() }
 }

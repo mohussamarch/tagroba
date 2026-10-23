@@ -53,6 +53,10 @@ data class OpRow(
     val bank: Bank? = null,
 )
 
+/** «تحويلات» فقط: صفوف التحويل بين محافظك (نغمة التحويل) — الأيام الفاضية بتتشال. */
+fun onlyTransfers(days: List<OpDay>): List<OpDay> =
+    days.mapNotNull { d -> d.rows.filter { it.tone == AmountTone.TRANSFER }.takeIf { it.isNotEmpty() }?.let { d.copy(rows = it) } }
+
 /** مجموعة يوم: «اليوم» · «أمس» · «7 أكتوبر». */
 data class OpDay(val date: IsoDate, val label: String, val rows: List<OpRow>)
 

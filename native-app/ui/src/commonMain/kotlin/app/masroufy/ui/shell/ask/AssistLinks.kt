@@ -30,8 +30,8 @@ import app.masroufy.ui.screens.investment.InheritanceCalculatorRoute
 import app.masroufy.ui.screens.investment.InheritanceSavedRoute
 import app.masroufy.ui.screens.investment.RetirementCalculatorRoute
 import app.masroufy.ui.screens.investment.SavingsCalculatorRoute
-import app.masroufy.ui.screens.investment.ZakatPayRoute
-import app.masroufy.ui.screens.investment.ZakatRoute
+import app.masroufy.ui.screens.dues.ZakatPayRoute
+import app.masroufy.ui.screens.dues.ZakatRoute
 import app.masroufy.ui.screens.more.AccountRoute
 import app.masroufy.ui.screens.more.AppSettingsRoute
 import app.masroufy.ui.screens.more.BackupRoute

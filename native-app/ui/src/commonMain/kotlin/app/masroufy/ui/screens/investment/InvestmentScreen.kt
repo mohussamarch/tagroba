@@ -69,6 +69,7 @@ import app.masroufy.ui.screens.investment.future.rememberInvestFuture
 import app.masroufy.ui.screens.investment.holdings.HoldingsOverlays
 import app.masroufy.ui.screens.investment.holdings.holdingsSection
 import app.masroufy.ui.screens.investment.holdings.rememberHoldings
+import app.masroufy.ui.screens.investment.insights.FaqRoute
 import app.masroufy.ui.screens.investment.insights.InvestTipsRoute
 import app.masroufy.ui.screens.investment.insights.incomeRopeItem
 import app.masroufy.ui.screens.investment.insights.investReturnsItem
@@ -148,7 +149,7 @@ fun InvestmentScreen() {
             incomeRopeItem(insights)
             investReturnsItem(insights)
         }
-        item(key = "tools") { ToolsCard(l?.zakatHint, l?.goals) }
+        item(key = "tools") { ToolsCard(l?.goals) }
         item(key = "calcs") { CalculatorsGrid() }
     }
     InvestFutureOverlays(future)
@@ -170,17 +171,15 @@ private fun LoadingBlocks() {
 }
 
 @Composable
-private fun ToolsCard(zakatHint: String?, goals: Int?) {
+private fun ToolsCard(goals: Int?) {
     val nav = LocalNavigator.current
     FloatingCard(Modifier.fillMaxWidth(), contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 4.dp)) {
         val chevron: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit = {
             LucideIcon(Lucide.CHEVRON_LEFT, size = 18.dp, tint = Ink.muted, modifier = Modifier.mirrorInLtr())
         }
-        // الزكاة بتظهر بس لو «المحتوى الإسلامي: ظاهر» وبلد ليها مرجع (`ManageZakat.visible` — §62-د)
-        if (zakatHint != null) {
-            ToolRow(t(UiKey.INVEST_TOOL_ZAKAT), zakatHint, { nav.push(ZakatRoute) }, trailing = chevron)
-            RowGap()
-        }
+        // الزكاة انتقلت لـ«المستحقات» (قرار المالك 2026-10-23 — AppMap): هنا رابط «الأسئلة الشائعة» (فيها قسم «الاستثمار» اللي بيشرح الحساب)
+        ToolRow(uiText(InvestInsightKey.FAQ_TITLE), uiText(InvestInsightKey.FAQ_MORE_SUB), { nav.push(FaqRoute) }, trailing = chevron)
+        RowGap()
         ToolRow(t(UiKey.INVEST_TOOL_ADVISOR), t(UiKey.INVEST_TOOL_ADVISOR_HINT), { nav.push(AdvisorRoute) }, trailing = chevron)
         RowGap()
         ToolRow(t(UiKey.INVEST_TOOL_GOALS), goals?.let(::goalsHint), { nav.push(SavingsGoalsRoute) }, trailing = chevron)

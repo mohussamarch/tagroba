@@ -10,6 +10,7 @@ internal val EGYPTIAN_OPERATIONS_LIST_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.OPERATIONS_TAB_OPS to "العمليات",
     UiKey.OPERATIONS_TAB_BUDGETS to "الميزانيات",
     UiKey.OPERATIONS_TAB_DUES to "المستحقات",
+    UiKey.OPERATIONS_FILTER_TRANSFERS to "تحويلات",
     UiKey.OPERATIONS_ERROR_TITLE to "تعذّر تحميل العمليات",
     UiKey.OPERATIONS_ERROR_BODY to "تحقق من الاتصال ثم أعد المحاولة.",
     UiKey.OPERATIONS_REFRESHING to "بيحدّث…",

@@ -26,6 +26,7 @@ import app.masroufy.ui.app.LocalSpace
 import app.masroufy.ui.app.MeInfo
 import app.masroufy.ui.components.FloatingCard
 import app.masroufy.ui.components.mirrorInLtr
+import app.masroufy.ui.components.tap
 import app.masroufy.ui.icons.Lucide
 import app.masroufy.ui.icons.LucideIcon
 import app.masroufy.ui.nav.LocalNavigator
@@ -59,7 +60,7 @@ fun MoreScreen() {
         spaces = runCatching { deps.more.spaces() }.getOrNull()
     }
     val view = moreView(me, payday, spaces, deps.space)
-    InnerScaffold(t(UiKey.MORE_TITLE)) {
+    InnerScaffold(t(UiKey.MORE_TITLE), actions = { HeaderTiles(onFaq = { nav.push(FaqRoute) }, onSupport = { nav.push(SupportRoute) }) }) {
         item(key = "me") { MeCard(me, view) { nav.push(AccountRoute) } }
         for (group in moreGroups(view)) item(key = group.title.name) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -76,6 +77,28 @@ fun MoreScreen() {
 
 @Composable
 private fun MeCard(me: MeInfo?, view: MoreView, onClick: () -> Unit) {
+    MeCardBody(me, view, onClick)
+}
+
+/** علامتين فوق «المزيد» (تصميم 6935136c): «الأسئلة الشائعة» (؟) و«الدعم» (سماعة) — مربع 36 زاوية 12 زي أيقونات السطور، بينهم 6. */
+@Composable
+private fun HeaderTiles(onFaq: () -> Unit, onSupport: () -> Unit) {
+    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        HeaderTile(app.masroufy.ui.screens.investment.insights.InsightIcons.HELP, t(InvestInsightKey.FAQ_TITLE), onFaq)
+        HeaderTile(MoreIcons.HEADSET, app.masroufy.core.SupportChrome(true).pageTitle, onSupport)
+    }
+}
+
+@Composable
+private fun HeaderTile(icon: Lucide, label: String, onClick: () -> Unit) {
+    val press = app.masroufy.ui.components.rememberPress()
+    app.masroufy.ui.components.IconTile(Ink.primary, Modifier.tap(press, label = label, onClick = onClick)) {
+        LucideIcon(icon, size = 18.dp, tint = Ink.primary)
+    }
+}
+
+@Composable
+private fun MeCardBody(me: MeInfo?, view: MoreView, onClick: () -> Unit) {
     FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp), onClick = onClick, clickLabel = t(UiKey.ME_PROFILE)) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
             MeAvatar(46.dp, me?.profilePercent, Modifier.size(46.dp), character = me?.character)
@@ -136,8 +159,6 @@ fun moreGroups(view: MoreView): List<MoreGroup> = listOf(
             MoreItem(Lucide.LOCK, UiKey.MORE_ITEM_LOCK, null, AppSettingsRoute),
             MoreItem(Lucide.LANGUAGES, UiKey.MORE_ITEM_LANGUAGE, null, AppSettingsRoute),
             MoreItem(Lucide.MOON, UiKey.MORE_ITEM_ISLAMIC, null, AppSettingsRoute),
-            // «الأسئلة الشائعة» (مواصفة النقل §1.13 — آخر سطر في «الإعدادات»)
-            MoreItem(app.masroufy.ui.screens.investment.insights.InsightIcons.HELP, InvestInsightKey.FAQ_TITLE, t(InvestInsightKey.FAQ_MORE_SUB), FaqRoute),
         ),
     ),
 )
