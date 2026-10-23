@@ -179,7 +179,8 @@ private fun DetailStats(a: AssetDetailUi) {
             StatTile(t(UiKey.ASSET_DETAIL_COST), t(UiKey.ASSET_DETAIL_COST_SUB), Modifier.weight(1f)) { AmountText(a.costMinor, a.currency, size = 17, showCurrency = false) }
             StatTile(t(UiKey.INVEST_REALIZED), a.realizedSub, Modifier.weight(1f)) {
                 val r = a.realizedMinor
-                if (r == null) BasicText(t(UiKey.ASSET_DETAIL_NO_SALES), style = Type.of(17, FontWeight.Bold).copy(color = Ink.muted))
+                if (a.realizedUnknown) BasicText(NOT_AVAILABLE, style = Type.of(17, FontWeight.Bold).copy(color = Ink.muted))
+                else if (r == null) BasicText(t(UiKey.ASSET_DETAIL_NO_SALES), style = Type.of(17, FontWeight.Bold).copy(color = Ink.muted))
                 else AmountText(r, a.currency, tone = if (r < 0) AmountTone.EXPENSE else AmountTone.INCOME, size = 17, showCurrency = false)
             }
         }

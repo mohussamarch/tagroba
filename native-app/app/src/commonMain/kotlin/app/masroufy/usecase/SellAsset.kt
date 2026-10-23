@@ -77,7 +77,8 @@ class SellAsset(private val deps: SellAssetDeps) {
     /** المكسب أو الخسارة قبل الحفظ (المعاينة) — نفس الحساب اللي بيتحفظ. */
     suspend fun preview(input: SaleInput): SaleOutcome {
         val draft = AssetSale("", input.assetId, input.soldAt, input.quantity, input.grossProceedsMinor, input.feeMinor ?: 0)
-        return saleOutcome(deps.lots.listByAsset(input.assetId), deps.sales.listByAsset(input.assetId), draft)
+        val known = assetOf(input.assetId).costKnown != false
+        return saleOutcome(deps.lots.listByAsset(input.assetId), deps.sales.listByAsset(input.assetId), draft).copy(costKnown = known)
     }
 
     /** «اربطه بالتحويل اللي وصل (لو وصل)»: داخل على المحفظة دي، قريب من يوم البيع ومن الصافي، ومش مربوط بشراء أو بيع تاني. */
@@ -128,7 +129,7 @@ class SellAsset(private val deps: SellAssetDeps) {
             ).id.also { created = it }
         }
         val recorded = try {
-            deps.manage.recordSale(input.sale.copy(transactionId = txnId), toWalletId = wallet.id, gainMinor = outcome.gainMinor)
+            deps.manage.recordSale(input.sale.copy(transactionId = txnId), toWalletId = wallet.id, gainMinor = outcome.gainMinor.takeIf { outcome.costKnown })
         } catch (e: Exception) {
             created?.let { deps.txns.deleteMany(listOf(it)) }
             throw e

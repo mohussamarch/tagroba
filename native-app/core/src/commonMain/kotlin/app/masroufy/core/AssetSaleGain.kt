@@ -7,7 +7,8 @@ package app.masroufy.core
  * لفوق بعيد عن الصفر** (`shareOfAmount`)، وبيع كل المملوك بياخد التكلفة كلها (مفيش هللة تضيع). ده نفس حساب [computePosition] بالظبط:
  * مشتريات يوم البيع قبله، والمبيعات اللي في نفس اليوم بترتيب تسجيلها (البيعة الجديدة آخرهم). أعداد صحيحة بس — مفيش كسور عشرية.
  */
-data class SaleOutcome(val costShareMinor: Halalas, val gainMinor: Halalas, val heldBefore: Quantity)
+/** [costKnown] false ⇒ تكلفة الأصل مش متسجلة (`Asset.costKnown=false`) ⇒ المكسب «غير متاح» — [gainMinor] ما يتعرضش ولا يتحفظ (قاعدة 10). */
+data class SaleOutcome(val costShareMinor: Halalas, val gainMinor: Halalas, val heldBefore: Quantity, val costKnown: Boolean = true)
 
 fun saleOutcome(lots: List<AssetLot>, priorSales: List<AssetSale>, sale: AssetSale): SaleOutcome {
     val before = computePosition(

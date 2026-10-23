@@ -88,7 +88,7 @@ internal fun SupportForm(egypt: Boolean, prefill: String = "", modifier: Modifie
                     result = r.name
                     sending = false
                 }
-            }, Modifier.fillMaxWidth(), enabled = text.isNotBlank() && !sending)
+            }, Modifier.fillMaxWidth(), enabled = text.isNotBlank(), loading = sending) // smoke 0.5.4: مشغول بكلام على طول، مش رمادي فاضي
             BasicText(chrome.note, style = Type.caption().copy(color = Ink.muted))
         }
     }

@@ -131,7 +131,7 @@ fun JobChangeSheet(mode: JobSheetMode?, current: List<IncomeSource>, monthStart:
                     t(if (m is JobSheetMode.Close) UiKey.JOB_CLOSE_GO else UiKey.JOB_NEXT),
                     onClick = {
                         val id = oldId ?: return@PrimaryButton
-                        if (m is JobSheetMode.Close) act { sources.close(id, end); onDone(); onClose() } else step = Step.NEW
+                        if (m is JobSheetMode.Close) act { sources.close(id, end); onDone(); onClose() } else { start = plusDays(end, 1); step = Step.NEW }
                     },
                     enabled = oldId != null && isValidIsoDate(end) && !busy, loading = busy, modifier = Modifier.fillMaxWidth(),
                 )
@@ -143,7 +143,7 @@ fun JobChangeSheet(mode: JobSheetMode?, current: List<IncomeSource>, monthStart:
                     for (k in IncomeSourceKind.entries) FillChip(t(incomeKindLabel(k)), kind == k) { kind = k }
                 }
                 Label(t(UiKey.JOB_WHEN_STARTED))
-                DateChoices(startDateChoices(today, monthStart, m == JobSheetMode.Change), start, today) { start = it }
+                DateChoices(startDateChoices(today, monthStart, m == JobSheetMode.Change, endedOn = end), start, today) { start = it }
                 PrimaryButton(
                     t(if (m == JobSheetMode.Add) UiKey.JOB_ADD_GO else UiKey.MORE_SAVE),
                     onClick = {

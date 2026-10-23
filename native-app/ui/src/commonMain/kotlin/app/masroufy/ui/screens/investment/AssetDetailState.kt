@@ -43,8 +43,10 @@ data class AssetDetailUi(
     val avgSub: String,
     /** null ⇒ التكلفة مش معروفة (ورث أو هدية من غير قيمة · «حاجاتي» r05 §3.1 `costKnown=false`) ⇒ «غير متاح». */
     val costMinor: Halalas?,
-    /** null ⇒ مفيش بيع (بيتكتب «لا مبيعات»). */
+    /** null ⇒ مفيش بيع (بيتكتب «لا مبيعات») أو [realizedUnknown]. */
     val realizedMinor: Halalas?,
+    /** فيه بيع بس التكلفة مش متسجلة ⇒ «غير متاح» (قاعدة 10) — مش «لا مبيعات». */
+    val realizedUnknown: Boolean,
     val realizedSub: String,
     /** مربوط برمز في ملف الأسعار. */
     val linked: Boolean,
@@ -96,7 +98,8 @@ fun assetDetailUi(row: AssetRow, projection: AssetProjectionView?, currency: Cur
         else -> PriceChip.FRESH
     }
     val kindLabel = ASSET_KIND_LABELS[a.displayKind] ?: a.displayKind
-    val log = row.lots.map { lot ->
+    // أصل اتضاف من غير تكلفة ⇒ دفعته صفر — مش «شراء −0.00» (الكمية بتفضل في المملوك)
+    val log = row.lots.filterNot { a.costKnown == false && it.principalMinor == 0L && it.feeMinor == 0L }.map { lot ->
         LogRow(TradeKind.BUY, dateText(lot.purchasedAt), lot.purchasedAt + "0", lot.principalMinor, feeLine(lot.quantity, unit, lot.feeMinor, currency), lot.transactionId != null)
     } + row.sales.map { sale ->
         LogRow(TradeKind.SELL, dateText(sale.soldAt), sale.soldAt + "1", sale.grossProceedsMinor, feeLine(sale.quantity, unit, sale.feeMinor, currency), sale.transactionId != null)
@@ -120,6 +123,7 @@ fun assetDetailUi(row: AssetRow, projection: AssetProjectionView?, currency: Cur
         avgSub = uiText(UiKey.ASSET_DETAIL_AVG_SUB, unit),
         costMinor = p.costBasisMinor.takeIf { a.costKnown != false },
         realizedMinor = if (row.sales.isEmpty() || a.costKnown == false) null else p.realizedGainMinor,
+        realizedUnknown = row.sales.isNotEmpty() && a.costKnown == false,
         realizedSub = if (row.sales.isEmpty()) uiText(UiKey.ASSET_DETAIL_NOT_SOLD) else uiText(UiKey.ASSET_DETAIL_FROM_SALES, sentenceNumber(row.sales.size)),
         linked = linked,
         staleLinked = linked && p.priceState is PriceState.Stale,

@@ -21,6 +21,7 @@ internal val MSA_R06_SELL_TEXTS: Map<R06Key, String> = mapOf(
     R06Key.SELL_ERR_CURRENCY to "عملة المحفظة غير عملة الأصل.",
     R06Key.SELL_ERR_LINK to "هذا التحويل لا يناسب البيع أو مربوط بشيء آخر.",
     R06Key.SELL_ACTION to "بيع",
+    R06Key.SELL_GAIN_NA to "المكسب غير متاح — التكلفة غير مسجلة",
 )
 
 internal val EGYPTIAN_R06_SELL_TEXTS: Map<R06Key, String> = mapOf(
@@ -40,6 +41,7 @@ internal val EGYPTIAN_R06_SELL_TEXTS: Map<R06Key, String> = mapOf(
     R06Key.SELL_ERR_CURRENCY to "عملة المحفظة غير عملة الأصل.",
     R06Key.SELL_ERR_LINK to "التحويل ده مش مناسب للبيع أو مربوط بحاجة تانية.",
     R06Key.SELL_ACTION to "بيع",
+    R06Key.SELL_GAIN_NA to "المكسب مش متاح — التكلفة مش متسجلة",
 )
 
 internal val ENGLISH_R06_SELL_TEXTS: Map<R06Key, String> = mapOf(
@@ -59,4 +61,5 @@ internal val ENGLISH_R06_SELL_TEXTS: Map<R06Key, String> = mapOf(
     R06Key.SELL_ERR_CURRENCY to "The wallet's currency differs from the asset's.",
     R06Key.SELL_ERR_LINK to "This transfer doesn't fit the sale or is linked to something else.",
     R06Key.SELL_ACTION to "Sell",
+    R06Key.SELL_GAIN_NA to "Gain not available — the cost isn't recorded",
 )

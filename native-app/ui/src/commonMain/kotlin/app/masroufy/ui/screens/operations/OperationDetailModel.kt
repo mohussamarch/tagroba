@@ -64,7 +64,7 @@ data class DetailView(
     val category: CategoryField?,
     val fields: List<DetailField>,
     val flow: LinkFlow,
-    /** الطرف التاني في حوالة داخلة لسه ما اتقررش ⇒ كارت «مَن هذا؟» (`TransferParty`). */
+    /** الطرف التاني في حوالة (داخلة أو صادرة) لسه ما اتقررش ⇒ كارت «مَن هذا؟» (`TransferParty`). */
     val askParty: TransferPartyRef?,
     val transaction: Transaction,
 )
@@ -117,7 +117,8 @@ fun detailView(
     } else {
         DetailField(t(UiKey.OPERATION_DETAIL_KIND), rule.label, hint = if (tx.economicKindConfirmed) null else t(UiKey.OPERATION_DETAIL_KIND_ESTIMATED), kindRow = true)
     }
-    val party = if (flow == LinkFlow.TRANSFER_IN && !employerPayer) transferPartyOf(tx)?.takeIf { it.key !in decidedParties } else null
+    // smoke 0.5.4: الصادر لشخص كمان بيسأل «مَن هذا؟» (شخص ⇒ «سلفة» — نفس كارت «رسائل البنك» بـoutgoing)
+    val party = if ((flow == LinkFlow.TRANSFER_IN || flow == LinkFlow.TRANSFER_OUT) && !employerPayer) transferPartyOf(tx)?.takeIf { it.key !in decidedParties } else null
     return DetailView(
         id = tx.id,
         title = titleOf(tx, ctx),

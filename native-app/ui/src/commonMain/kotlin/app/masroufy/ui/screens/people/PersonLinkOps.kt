@@ -49,7 +49,8 @@ import kotlinx.coroutines.launch
 
 /** اسم العملية في السطر: التاجر · الطرف زي ما جه · أول الوصف. */
 internal fun opTitle(t: Transaction): String =
-    (t.rawMerchantName ?: transferPartyOf(t)?.label ?: t.note ?: t.rawDescription)?.let { logicalArabic(it).trim().take(48) }.orEmpty()
+    // smoke 0.5.4: رسايل الحوالات بتسيب اسم المحل فاضي ("") ⇒ كان بيطلع اسم فاضي بدل الطرف
+    (t.rawMerchantName?.takeIf { it.isNotBlank() } ?: transferPartyOf(t)?.label ?: t.note?.takeIf { it.isNotBlank() } ?: t.rawDescription)?.let { logicalArabic(it).trim().take(48) }.orEmpty()
 
 internal fun whyLabel(w: SuggestWhy): String = t(
     when (w) {

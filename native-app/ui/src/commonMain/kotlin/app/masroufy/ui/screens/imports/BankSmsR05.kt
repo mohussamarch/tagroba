@@ -125,10 +125,15 @@ class SmsR05(
     suspend fun recordParty(line: WaitLineUi) {
         val r = deps.sms?.confirmMessages(listOf(line.messageId))
         confirmed(r)
-        val id = r?.transactionIds?.firstOrNull() ?: return
-        if (runCatching { employerPayer(id) }.getOrDefault(false)) return
-        val txn = deps.transactions.load(id).transaction
-        transferPartyOf(txn)?.let { p -> parties = parties + Triple(p, id, txn.observedDirection == Direction.OUT) }
+        // smoke 0.5.4: الدفعة فيها الرسوم كعملية لوحدها (`SmsFeeEffect`) — أول معرّف ممكن يبقى الرسوم ⇒ الكارت ما كانش بيظهر.
+        // العملية اللي ليها طرف هي الحوالة نفسها.
+        for (id in r?.transactionIds.orEmpty()) {
+            val txn = runCatching { deps.transactions.load(id).transaction }.getOrNull() ?: continue
+            val party = transferPartyOf(txn) ?: continue
+            if (runCatching { employerPayer(id) }.getOrDefault(false)) return
+            parties = parties + Triple(party, id, txn.observedDirection == Direction.OUT)
+            return
+        }
     }
 
 

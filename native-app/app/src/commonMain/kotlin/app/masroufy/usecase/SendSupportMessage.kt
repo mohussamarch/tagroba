@@ -7,7 +7,11 @@ import app.masroufy.port.FeedbackInboxPort
 import app.masroufy.port.FeedbackRejected
 import app.masroufy.port.IdGenerator
 import app.masroufy.port.SupportOutboxPort
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.coroutines.cancellation.CancellationException
+
+/** smoke 0.5.4: أوفلاين، كتابة فايربيز بتفضل مستنية (~20 ث) ⇒ المحاولة الأولى بتقف بعد 5 ث و«محفوظ وهيتبعت» على طول. */
+const val SUPPORT_SEND_TIMEOUT_MS = 5_000L
 
 /** [SENT] = السيرفر أكّد الكتابة ⇒ «اتبعت» · [QUEUED] = محفوظ على الجهاز وهيتبعت في دورة الخلفية الجاية. */
 enum class SupportSendResult { SENT, QUEUED }
@@ -23,6 +27,8 @@ class SendSupportMessage(
     private val inbox: FeedbackInboxPort?,
     private val ids: IdGenerator,
     private val appVersion: String,
+    /** حد المحاولة الأولى (الإرسال من الشاشة). الإعادة في الخلفية ([flush]) من غير حد. */
+    private val sendTimeoutMs: Long = SUPPORT_SEND_TIMEOUT_MS,
 ) {
     suspend fun send(message: SupportMessage): SupportSendResult {
         val m = message.copy(text = message.text.trim().take(FEEDBACK_TEXT_MAX))
@@ -54,7 +60,8 @@ class SendSupportMessage(
     private suspend fun attempt(id: String, m: SupportMessage): Boolean {
         val box = inbox ?: return false
         return try {
-            box.send(id, FeedbackDoc.of(m, appVersion))
+            // الوقت خلص ⇒ «محفوظ» — نفس المعرّف بيتعاد في [flush] (لو الكتابة وصلت من طابور فايربيز ⇒ FeedbackRejected ⇒ بتتشال)
+            withTimeoutOrNull(sendTimeoutMs) { box.send(id, FeedbackDoc.of(m, appVersion)) } ?: return false
             outbox.sent(id)
             true
         } catch (e: CancellationException) {

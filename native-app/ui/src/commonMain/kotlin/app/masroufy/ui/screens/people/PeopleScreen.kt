@@ -37,6 +37,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.compose.foundation.background
+import app.masroufy.ui.theme.Ink
 import app.masroufy.core.Id
 import app.masroufy.ui.app.LocalSpace
 import app.masroufy.ui.components.SecondaryButton
@@ -146,9 +148,11 @@ internal fun PeopleScreen() {
             Box(Modifier.fillMaxWidth().height((viewDp + if (scrolls) RANGE + extra else 0f).dp)) {
                 // المسرح لازق في الشاشة وإنت بتسحب (زي `position: sticky`)
                 Box(Modifier.fillMaxWidth().height(viewDp.dp).offset { IntOffset(0, scroll.value) }) {
+                    // smoke 0.5.4: في «الكل» الكروت كانت بتعدّي تحت الهيدر الشفاف ⇒ الهيدر فوق كل حاجة وخلفيته بتبقى مصمتة مع التمرير
                     TabHeader(
                         t(UiKey.TAB_PEOPLE),
-                        Modifier.padding(start = Space.gutter, end = Space.gutter, top = (Space.gutter.value + top).dp),
+                        Modifier.zIndex(6f).background(Ink.background.copy(alpha = headerFill(p)))
+                            .padding(start = Space.gutter, end = Space.gutter, top = (Space.gutter.value + top).dp),
                         actions = {
                             SecondaryButton(t(UiKey.PEOPLE_EVENTS), onClick = { nav.push(EventsRoute) })
                             if (scrolls) SecondaryButton(if (p > 0.5f) t(UiKey.PEOPLE_BACK) else t(UiKey.PEOPLE_ALL, app.masroufy.core.sentenceNumber(ui!!.total)), onClick = toggleAll)
@@ -218,6 +222,9 @@ private fun cellsOf(ui: PeopleTabUi): List<List<Cell>> {
     val rest = ui.rest.map { Cell.Person(it) } + Cell.Add
     return listOf(ui.orbit.map { Cell.Person(it) }) + rest.chunked(5)
 }
+
+/** خلفية هيدر «الأشخاص»: شفاف فوق المسرح (p = 0) ⇒ مصمت من ثلث الطريق لـ«الكل» (الكروت بتتحرك لفوق تحته). */
+internal fun headerFill(p: Float): Float = (p * 3f).coerceIn(0f, 1f)
 
 private fun smooth(x: Float): Float = x.coerceIn(0f, 1f).let { it * it * (3 - 2 * it) }
 
