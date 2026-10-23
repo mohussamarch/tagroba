@@ -56,7 +56,7 @@ fun BnplHost() {
     val toaster = LocalToaster.current
     val scope = rememberCoroutineScope()
     var asks by remember(bnpl) { mutableStateOf<List<BnplAsk>>(emptyList()) }
-    val later = remember(bnpl) { mutableStateListOf<String>() }
+    val later = BnplLater.ids
     var categories by remember(bnpl) { mutableStateOf<List<Category>>(emptyList()) }
     var today by remember(bnpl) { mutableStateOf("") }
     // بعد الرد: اللوحة مستخبية لحد قراية رقمها [freshFrom] أو أكبر
@@ -166,6 +166,14 @@ fun BnplHost() {
         onPick = { state?.category = it; picking = false },
         onDismiss = { picking = false },
     )
+}
+
+/**
+ * فحص 0.5.3: «تخطّي» / «بعدين» / السحب لتحت كانوا بيتنسوا مع كل تبديل للبلد (`remember(bnpl)` بيتعمل من الأول) ⇒ لوحة تابي بتطلع تاني كل
+ * ما تبدّل للسعودية. دلوقتي البرنامج فاكر الاختيار طول ما هو مفتوح (لكل البلاد) — زي التصميم: مستخبي لحد ما التطبيق يتفتح تاني.
+ */
+internal object BnplLater {
+    val ids = mutableStateListOf<String>()
 }
 
 /** اللوحة بتظهر لو فيه سؤال، ومفيش رد لسه بيتحفظ، ومفيش رسالة بزرار («تراجع») ظاهرة — الرسالة دي لازم تتداس. */
