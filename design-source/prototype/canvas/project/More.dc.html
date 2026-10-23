@@ -43,7 +43,7 @@ a{color:#08634F}a:hover{color:#064B40}
 
     <sc-for list="{{groups}}" as="g" hint-placeholder-count="3">
       <div style="display: flex; flex-direction: column; gap: 8px">
-        <h2 style="margin: 0; font-size: 13px; font-weight: 700; color: #637570">{{g.title}}</h2>
+        <sc-if value="{{g.title}}" hint-placeholder-val="{{ true }}"><h2 style="margin: 0; font-size: 13px; font-weight: 700; color: #637570">{{g.title}}</h2></sc-if>
         <div style="border-radius: 22px; padding: 4px 8px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
           <sc-for list="{{g.items}}" as="it" hint-placeholder-count="3">
             <a href="{{it.href}}" onClick="{{it.go}}" class="m-press m-row" style="{{it.style}}">
@@ -60,6 +60,7 @@ a{color:#08634F}a:hover{color:#064B40}
                 <sc-if value="{{it.i.lock}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="3"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg></sc-if>
                 <sc-if value="{{it.i.lang}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10"></path><path d="M9 4v2c0 4-2 8-5 10"></path><path d="M6 10c1.5 3 4 5 7 6"></path><path d="M14 20l4-9 4 9"></path><path d="M15.5 17h5"></path></svg></sc-if>
                 <sc-if value="{{it.i.moon}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg></sc-if>
+                <sc-if value="{{it.i.gear}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg></sc-if>
                 <sc-if value="{{it.i.help}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M9.5 9.5a2.5 2.5 0 0 1 4.8 1c0 1.7-2.3 2-2.3 3.5"></path><path d="M12 17h.01"></path></svg></sc-if>
               </span>
               <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
@@ -87,28 +88,22 @@ class Component extends DCLogic {
       i: { [icon]: true },
       style: 'box-sizing: border-box; text-decoration: none; width: 100%; border: 0; background: transparent; font: inherit; color: #193D33; text-align: right; cursor: pointer; display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 8px; border-radius: 16px;' + (last ? '' : ' box-shadow: 0 1px 0 rgba(204,216,204,0.55);')
     });
+    // إعادة ترتيب «المزيد» (طلب المالك 2026-10-23: «بتجمع حاجات بتتكرر وملهاش لازمة، وحاجات ممكن نختصرها») — من 16 سطر لـ6
+    // اتشال: «ملفك» (نفس كارت الاسم فوق) · «البلدان» (العلم فوق اللوجو + جوه الإعدادات) · «المشاريع» (اتنقلت: بيكسب ⇐ الاستثمار، مصاريف ⇐ الميزانيات)
+    // اتدمج: رسايل البنك + كشف الحساب + دفعات الاستيراد ⇐ «الاستيراد» · النسخة + التصدير ⇐ «النسخة والتصدير» · التصنيفات + القواعد والتجار ⇐ سطر واحد
+    // والإشعارات والقفل واللغة والمحتوى الإسلامي (كانوا 3 منهم بيفتحوا نفس الصفحة) ⇐ سطر «الإعدادات» واحد
     const groups = [
-      { title: 'حسابك', items: [
-        item('user', 'ملفك', 'مكتمل 60%', false, 'Account'),
-        item('income', 'مصادر الدخل', 'الراتب يوم 28', false, 'IncomeHub'),
-        item('globe', 'البلدان', eg ? 'مصر · السعودية' : 'السعودية · مصر', true, 'Spaces')
+      { title: eg ? 'فلوسك' : 'أموالك', items: [
+        item('wallet', 'المحافظ', eg ? 'البنوك والكاش' : 'البنوك والنقد', false, 'Wallets'),
+        item('income', 'مصادر الدخل', eg ? 'شغلك والإيجار وغيره' : 'عملك والإيجار وغيره', false, 'IncomeHub'),
+        item('tag', eg ? 'التصنيفات والقواعد' : 'التصنيفات والقواعد', eg ? 'واللي البرنامج فاكره عن التجار' : 'وما يتذكره التطبيق عن التجار', true, 'Categories')
       ] },
-      { title: 'بياناتك', items: [
-        item('wallet', 'المحافظ', '', false, 'Wallets'),
-        item('tag', 'التصنيفات', '', false, 'Categories'),
-        item('tag', eg ? 'القواعد والتجار' : 'القواعد والتجار', eg ? 'اللي البرنامج فاكره' : 'ما يتذكره التطبيق', false, 'Rules'),
-        item('tag', 'المشاريع', eg ? 'كلّفني كام؟ · كسبت كام؟' : 'كم كلّفني؟ · كم كسبت؟', false, 'Projects'),
-        item('import', eg ? 'رسايل البنك' : 'رسائل البنك', eg ? '4 مستنية تأكيدك' : '4 بانتظار تأكيدك', false, 'BankSms'),
-        item('import', 'كشف الحساب', eg ? 'استيراد ملف من البنك' : 'استيراد ملف من البنك', false, 'StatementImport'),
-        item('import', eg ? 'دفعات الاستيراد' : 'دفعات الاستيراد', eg ? 'اللي اتسجّل من كل ملف، وترجّعه لو حبيت' : 'ما سُجّل من كل ملف، وإرجاعه', false, 'ImportBatches'),
-        item('backup', 'النسخة الاحتياطية', '', false, 'Backup'),
-        item('export', 'التصدير', eg ? 'ملف جدول من تاريخ لتاريخ' : 'ملف جدول من تاريخ إلى تاريخ', true, 'Backup')
+      { title: eg ? 'بياناتك' : 'بياناتك', items: [
+        item('import', 'الاستيراد', eg ? 'رسايل البنك · كشف حساب — 4 مستنية تأكيدك' : 'رسائل البنك · كشف حساب — 4 بانتظار تأكيدك', false, 'BankSms'),
+        item('backup', eg ? 'النسخة والتصدير' : 'النسخة والتصدير', eg ? 'آخر نسخة النهارده' : 'آخر نسخة اليوم', true, 'Backup')
       ] },
-      { title: 'الإعدادات', items: [
-        item('bell', 'الإشعارات', '', false, 'NotificationSettings'),
-        item('lock', 'القفل', '', false, 'AppSettings'),
-        item('lang', 'اللغة', '', false, 'AppSettings'),
-        item('moon', 'المحتوى الإسلامي', '', true, 'AppSettings')
+      { title: '', items: [
+        item('gear', 'الإعدادات', eg ? 'الإشعارات · القفل · المظهر · اللغة · البلدان' : 'الإشعارات · القفل · المظهر · اللغة · البلدان', true, 'AppSettings')
       ] }
     ];
     return {
