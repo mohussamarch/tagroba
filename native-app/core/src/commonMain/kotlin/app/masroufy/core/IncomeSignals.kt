@@ -50,7 +50,7 @@ fun payerQuestions(transactions: List<Transaction>, sources: List<IncomeSource>,
         val party = transferPartyOf(t) ?: continue
         if (party.key in known || party.key in skipParties || party.key in asked) continue
         val source = salariedActiveOn(sources, t.occurredAt, t.currency)
-            .filter { party.key !in it.declinedPayerKeys }
+            .filter { party.key !in it.declinedPayerKeys && it.endedAt == null } // فحص 0.5.3: الشغل اللي اتقفل ما يتسألش عنه
             .sortedWith(compareBy<IncomeSource> { it.payerKeys.isNotEmpty() }.thenByDescending { it.startedAt })
             .firstOrNull() ?: continue
         asked[party.key] = PayerQuestion(party, source.id, source.name, t.id, t.occurredAt)

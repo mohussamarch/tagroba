@@ -134,3 +134,19 @@ fun orderByCloseness(expense: Transaction, inflows: List<Transaction>): List<Tra
             .thenByDescending { it.occurredAt }.thenByDescending { it.sourceOrder },
     )
 }
+
+/** نافذة «نفس المبلغ» في اقتراح «قد تكون مرتبطة بـ» (فحص 0.5.3). */
+const val QUICK_REFUND_SAME_AMOUNT_DAYS: Int = 30
+
+/**
+ * فحص 0.5.3 — «قد تكون مرتبطة بـ» كان بيقترح استردادات ملهاش علاقة (444 · 333 · 1,250 على شراء قهوة). الاقتراح السريع بس (مش قايمة
+ * «عمليات تابعة» الكاملة) بقى: **نفس العملة** دايمًا (يعني نفس البلد)، وبعدها **نفس التاجر** أو **نفس المبلغ في حدود 30 يوم**.
+ */
+fun isQuickRefundCandidate(expense: Transaction, inflow: Transaction): Boolean {
+    if (inflow.observedDirection != Direction.IN || inflow.currency != expense.currency) return false
+    val sameMerchant = (expense.merchantId != null && expense.merchantId == inflow.merchantId) ||
+        normalizeCompact(expense.rawMerchantName.orEmpty()).let { it.isNotEmpty() && it == normalizeCompact(inflow.rawMerchantName.orEmpty()) }
+    if (sameMerchant) return true
+    val days = daysBetween(expense.occurredAt.take(10), inflow.occurredAt.take(10))
+    return inflow.amountMinor == expense.amountMinor && days in -QUICK_REFUND_SAME_AMOUNT_DAYS..QUICK_REFUND_SAME_AMOUNT_DAYS
+}

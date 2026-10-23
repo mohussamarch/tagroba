@@ -43,7 +43,10 @@ class QuickLinks(private val deps: QuickLinksDeps) {
         }
         if (t.observedDirection == Direction.OUT) {
             val view = deps.inflows?.load(transactionId)
-            if (view is LinkedInflowsView.Expense) out += view.candidates.take(LIMIT).map { QuickLink.Refund(it) }
+            // فحص 0.5.3: نفس التاجر أو نفس المبلغ (±30 يوم) وبنفس العملة بس — مش أي فلوس داخلة في النافذة
+            if (view is LinkedInflowsView.Expense) {
+                out += view.candidates.filter { app.masroufy.core.isQuickRefundCandidate(t, it) }.take(LIMIT).map { QuickLink.Refund(it) }
+            }
         }
         return out.take(LIMIT)
     }

@@ -111,7 +111,7 @@ internal class SmsGraph(
         val view = manage.refresh()
         val unmapped = auto.unmappedQuick().filter { it.spaceId == space.id }
         val wallets = c.shell.addOptions().wallets
-        val senderWallets = view.senders.associateWith { sender -> runCatching { auto.walletOf(space.id, sender) }.getOrNull() }
+        val senderWallets = countrySenderWallets(auto, view.senders)
         val reviews = mutableListOf<Pair<SenderReview, ReviewSmsInbox>>()
         for ((sender, walletId) in senderWallets) {
             val wallet = wallets.firstOrNull { it.id == walletId } ?: continue
@@ -143,11 +143,25 @@ internal class SmsGraph(
         val auto = auto()
         val view = manage.refresh()
         val unmapped = auto.unmappedQuick().filter { it.spaceId == space.id }
-        val senderWallets = view.senders.associateWith { sender -> runCatching { auto.walletOf(space.id, sender) }.getOrNull() }
+        val senderWallets = countrySenderWallets(auto, view.senders)
         SmsOverview(view, unmapped, emptyList(), senderWallets).also { settingsCache = it }
     }
 
     override fun cachedSettings(): SmsOverview? = settingsCache
+
+    /**
+     * فحص 0.5.3: محفظة كل مرسل **في البلد دي بس** — المرسل المعروف لبلد تانية (`AlRajhiBank` في مصر) ملوش محفظة هنا (ولا «الحساب البنكي
+     * الوحيد» بالتخمين)، ولو كان متربط هنا من قبل الربط ده بيتشال وقت التحميل.
+     */
+    private suspend fun countrySenderWallets(auto: AutoRecordSms, senders: List<String>): Map<String, Id?> {
+        val stored = runCatching { inbox.senderWallets(space.id) }.getOrDefault(emptyMap())
+        return senders.associateWith { sender ->
+            if (app.masroufy.core.senderBelongsElsewhere(sender, c.space.countryCode)) {
+                if (smsSenderKey(sender) in stored) runCatching { inbox.setSenderWallet(space.id, sender, null) }
+                null
+            } else runCatching { auto.walletOf(space.id, sender) }.getOrNull()
+        }
+    }
 
     override suspend fun record(categories: Map<String, Id>, includeSimilar: Set<String>): Int = work {
         var total = 0

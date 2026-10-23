@@ -98,13 +98,15 @@ object LedgerCodecs {
                 // §82-19 «أمانة ليك عنده»: بيتكتب لو true بس ⇒ أي دين قديم ونسخته هي هي بالحرف
                 opt("custodyHeld", o.custodyHeld.takeIf { it })
                 opt("note", o.note)
+                // فحص 0.5.3: دين «نقدًا» من «ضيف دين» — بيتكتب لو true بس
+                opt("cashOrigin", o.cashOrigin.takeIf { it })
             }
         },
         { r ->
             Obligation(
                 r.str("id"), r.str("personId"), r.strOrNull("originTransactionId"), r.wire("kind", ObligationKind::fromWire),
                 r.long("originalMinor"), r.wire("currency", Currency::valueOf), custodyHeld = r.boolOrNull("custodyHeld") == true,
-                note = r.strOrNull("note"),
+                note = r.strOrNull("note"), cashOrigin = r.boolOrNull("cashOrigin") == true,
             )
         },
     )

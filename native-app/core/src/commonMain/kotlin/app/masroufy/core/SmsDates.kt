@@ -201,7 +201,8 @@ internal fun egyptTransactionDate(body: String, receivedAt: String, knownLayout:
         // الجولة الخامسة: «يوم MM-DD» شهر-يوم في جمل الأهلي المصري بس — مرسل تاني «يوم 08-10» ممكن يبقى يوم-شهر: لو القرايتين
         // ممكنين (ومختلفين) ⇒ التاريخ مش واضح (كانت بتتسجل 10 أغسطس بدل 8 أكتوبر). الجولة التامنة: جملة الأهلي بأي فاصل شهر-يوم،
         // ومرسل تاني بـ«/» أو «.» يوم/شهر (العرف في مصر — زي «on 29/07»)
-        if (isNbeSentence(body)) return withYear(a, b, receivedAt, received)
+        // فحص 0.5.3: «يوم 23/10» في جملة الأهلي — شهر-يوم مستحيل (23 مش شهر) ⇒ يوم/شهر هي القراية الوحيدة (كانت «التاريخ مش واضح»)
+        if (isNbeSentence(body)) return withYear(a, b, receivedAt, received) ?: if (a > 12) withYear(b, a, receivedAt, received) else null
         if (m.groupValues[2] != "-") return withYear(b, a, receivedAt, received)
         val monthDay = withYear(a, b, receivedAt, received)
         val dayMonth = withYear(b, a, receivedAt, received)

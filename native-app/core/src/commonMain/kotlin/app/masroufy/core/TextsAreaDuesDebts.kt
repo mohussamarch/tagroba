@@ -85,6 +85,8 @@ internal val MSA_DUES_DEBTS_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.DEBTS_REASON_RECEIVABLE to "دين لك من عملية",
     UiKey.DEBTS_REASON_LOAN to "دين عليك من عملية",
     UiKey.DEBTS_REASON_OPENING to "دين قديم من قبل التطبيق",
+    UiKey.DEBTS_REASON_CASH_FOR to "دين لك نقدًا",
+    UiKey.DEBTS_REASON_CASH_ON to "دين عليك نقدًا",
     UiKey.DEBTS_REASON_CUSTODY to "أمانة عندك",
     UiKey.DEBTS_DUE_ON to "موعدها {0}",
     UiKey.DEBTS_NO_DUE to "بلا موعد",

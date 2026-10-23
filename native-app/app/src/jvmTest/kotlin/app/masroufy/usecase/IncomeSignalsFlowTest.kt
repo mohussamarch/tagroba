@@ -211,4 +211,16 @@ class IncomeSignalsFlowTest {
         assertEquals(1_000_000L to 1_100_000L, c.incomeBeforeAvgMinor to c.incomeAfterAvgMinor, "راتب 26 أبريل أول «بعد» — زي الرئيسية")
         assertEquals(100, c.incomeChangeTenthPercent)
     }
+
+    /** فحص 0.5.3: بعد «غيّرت عملي» المراجعة سألت «هل هذا راتب من» الشغل اللي اتقفل. */
+    @Test fun closedJobIsNeverAskedAbout() = runBlocking<Unit> {
+        val old = manage.add(IncomeSourceInput("مصدر قديم وهمي", "2026-01-01"))
+        txns.saveMany(listOf(deposit(star, "2026-03-27")))
+        assertEquals(old.id, signals.payerQuestions().single().sourceId)
+        manage.close(old.id, "2026-09-30")
+        assertTrue(signals.payerQuestions().isEmpty(), "الشغل اتقفل ⇒ ما فيش سؤال عنه")
+        val now = manage.add(IncomeSourceInput("مصدر جديد وهمي", "2026-10-01"))
+        txns.saveMany(listOf(deposit(moon, "2026-10-02")))
+        assertEquals(listOf(now.id), signals.payerQuestions().map { it.sourceId }, "الشغالة بس")
+    }
 }

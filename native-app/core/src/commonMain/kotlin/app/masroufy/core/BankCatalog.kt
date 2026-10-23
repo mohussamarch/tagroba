@@ -68,6 +68,18 @@ fun bankForSender(sender: String, country: String? = null): Bank? {
 }
 
 /**
+ * المرسل معروف في الدليل **لبلد تاني بس** (فحص 0.5.3: `AlRajhiBank` كان ظاهر في «إعداد القراءة» في مصر ومربوط ببنك مصري).
+ * مرسل مش في الدليل ⇒ false (ما نعرفش بلده، فبيفضل ظاهر). [country] null ⇒ false.
+ */
+fun senderBelongsElsewhere(sender: String, country: String?): Boolean {
+    if (country.isNullOrBlank()) return false
+    val key = senderKey(sender)
+    if (key.isEmpty()) return false
+    val hits = BANKS.filter { b -> b.senders.any { senderKey(it) == key } }
+    return hits.isNotEmpty() && hits.none { it.country.equals(country, true) }
+}
+
+/**
  * بنك المحفظة: المحفوظ فيها ([Wallet.bankId]) أولًا، وإلا من اسمها (محافظ قديمة قبل الدليل — «الراجحي» = مصرف الراجحي) لو الاسم
  * هو اسم البنك بالظبط أو فيه اسمه الكامل. الكاش ما لوش بنك. [country] = بلد المحفظة (الاسم المختصر «الأهلي» غير في البلدين).
  */

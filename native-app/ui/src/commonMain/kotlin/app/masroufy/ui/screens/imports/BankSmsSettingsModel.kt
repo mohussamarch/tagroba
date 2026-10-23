@@ -46,7 +46,17 @@ private suspend fun <T> quietly(block: suspend () -> T): T? = try {
 data class SenderUi(val sender: String, val walletId: Id?, val walletName: String?, val waiting: Int, val bank: Bank? = null)
 
 /** حالة «إعداد القراءة» (`BankSmsSettings`). [available] = الجهاز بيقرا رسايل. */
-data class SmsSettingsUi(val available: Boolean, val enabled: Boolean, val permission: Boolean, val senders: List<SenderUi>) {
+/**
+ * [senders] = مرسلين البلد دي بس (اللي بيتعرضوا). [allSenders] = قايمة الجهاز كلها (البلدين) — هي اللي بتتبعت لـ`enable` لما تضيف أو تشيل،
+ * عشان مرسلين البلد التانية ما يتمسحوش من القايمة.
+ */
+data class SmsSettingsUi(
+    val available: Boolean,
+    val enabled: Boolean,
+    val permission: Boolean,
+    val senders: List<SenderUi>,
+    val allSenders: List<String> = senders.map { it.sender },
+) {
     /** القراءة شغالة فعلًا (متفعّلة والإذن موجود). */
     val reading: Boolean get() = enabled && permission
 
@@ -64,12 +74,13 @@ data class SmsSettingsUi(val available: Boolean, val enabled: Boolean, val permi
 /** من صورة الصندوق (من غير تسجيل) ومحافظ البلد. [overview] = null ⇒ الجهاز ما بيقراش رسايل. [country] = بلد المساحة (اقتراح البنك من المرسل). */
 fun smsSettingsUi(overview: SmsOverview?, wallets: List<Wallet>, country: String? = null): SmsSettingsUi {
     if (overview == null) return SmsSettingsUi(available = false, enabled = false, permission = false, senders = emptyList())
-    val senders = overview.inbox.senders.map { sender ->
+    // فحص 0.5.3: كل بلد بتعرض مرسلينها بس — المرسل المعروف لبلد تانية (`AlRajhiBank` في مصر) ما يظهرش ولا يتربط هنا
+    val senders = overview.inbox.senders.filterNot { app.masroufy.core.senderBelongsElsewhere(it, country) }.map { sender ->
         val walletId = overview.senderWallets[sender]
         val waiting = overview.unmapped.firstOrNull { smsSenderKey(it.sender) == smsSenderKey(sender) }?.messages ?: 0
         SenderUi(sender, walletId, wallets.firstOrNull { it.id == walletId }?.name, waiting, bankForSender(sender, country))
     }
-    return SmsSettingsUi(available = true, enabled = overview.inbox.enabled, permission = overview.inbox.permission, senders = senders)
+    return SmsSettingsUi(available = true, enabled = overview.inbox.enabled, permission = overview.inbox.permission, senders = senders, allSenders = overview.inbox.senders)
 }
 
 /**
