@@ -106,7 +106,11 @@ class AppContainer(private val context: Context, private val problems: ProblemLo
     }
 
     private val online = networkStatus(context)
-    private val supportOutbox = app.masroufy.device.FileSupportOutbox(java.io.File(context.filesDir, "support/outbox.log"))
+    // «ابعتلنا» (OVERRIDES §114): نسخة على الجهاز + `inbox/{id}` على فايربيز (نسخ المحاكي ⇒ محاكي فايربيز) — الخلفية بتعيد المستنية
+    private val support = app.masroufy.usecase.SendSupportMessage(
+        app.masroufy.device.FileSupportOutbox(java.io.File(context.filesDir, "support/outbox.log")),
+        firebase?.let { app.masroufy.firestore.FirestoreFeedbackInbox(it.firestore) }, ids, BuildConfig.VERSION_NAME,
+    )
 
     fun appDeps(permissions: Permissions): AppDeps = object : AppDeps {
         override val session = appSession
@@ -117,7 +121,7 @@ class AppContainer(private val context: Context, private val problems: ProblemLo
         override val online = this@AppContainer.online
         override val remoteChanges = this@AppContainer.remoteChanges
         override val problems = this@AppContainer.problems.deps
-        override val support: app.masroufy.port.SupportOutboxPort = supportOutbox
+        override val support: app.masroufy.usecase.SendSupportMessage = this@AppContainer.support
     }
 
     /** تغييرات السيرفر في البلد الشغالة والحساب (`FirestoreSync.remoteChanges`) — من غير القيمة الأولى (مش تغيير). */
@@ -210,7 +214,7 @@ class AppContainer(private val context: Context, private val problems: ProblemLo
             Problems.report(ProblemCode.BACKGROUND_GAVE_UP)
             return null
         }
-        return backgroundCycle(spacesOf(ready), AndroidSmsInbox(context, ready.user.uid), AndroidDeviceNotifier(context), envFor(ready.user.uid), app.masroufy.device.AndroidNoticeMemory(context))
+        return backgroundCycle(spacesOf(ready), AndroidSmsInbox(context, ready.user.uid), AndroidDeviceNotifier(context), envFor(ready.user.uid), app.masroufy.device.AndroidNoticeMemory(context), support)
     }
 }
 
