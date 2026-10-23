@@ -43,12 +43,20 @@ body{margin:0}
     </div>
   </sc-for>
   <sc-if value="{{empty}}" hint-placeholder-val="{{ false }}"><span style="text-align: center; padding: 24px; font-size: 14px; color: #637570">{{emptyText}}</span></sc-if>
-  <a href="AssistantChat.dc.html" style="min-height: 52px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: #08634F; text-decoration: none; background: rgba(8,99,79,0.08)">{{askLabel}}</a>
+  <sc-if value="{{askClosed}}" hint-placeholder-val="{{ true }}"><button type="button" class="fq-press" onClick="{{openAsk}}" style="min-height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{askLabel}}</button></sc-if>
+  <sc-if value="{{askOpen}}" hint-placeholder-val="{{ false }}"><div class="fq-in" style="border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 10px; background: #FFFFFF">
+    <span style="font-size: 16px; font-weight: 700">{{sendTitle}}</span>
+    <textarea value="{{msg}}" onInput="{{typeMsg}}" rows="3" aria-label="{{sendTitle}}" placeholder="{{msgPh}}" style="box-sizing: border-box; width: 100%; border: 0; border-radius: 14px; padding: 12px; font: inherit; font-size: 15px; line-height: 1.6; resize: none; color: #193D33; background: #EFF3ED; outline: none"></textarea>
+    <button type="button" class="fq-press" onClick="{{send}}" disabled="{{sendOff}}" style="{{sendStyle}}">{{sendLabel}}</button>
+    <span style="font-size: 12px; color: #637570">{{sendNote}}</span>
+  </div></sc-if>
+  <sc-if value="{{askSent}}" hint-placeholder-val="{{ false }}"><div class="fq-in" role="status" style="min-height: 52px; border-radius: 18px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; font-weight: 700; color: #08634F; background: rgba(8,99,79,0.08)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"></path></svg>{{sentLabel}}</div></sc-if>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"مصر","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
 // الأسئلة الشائعة (أول نسخة 2026-10-15 كان فيها سؤال الاستثمار بس. طلب المالك 2026-10-17: «زيادة عددها … وتقسيمها لأقسام» — اتفتح 2026-10-23)
 // رد المالك 2026-10-23: «أسئلة السعودية غير مصر — مثلًا في مصر مفيش تابي وتمارا» + «وضّح في الزكاة بنستند على إيه وجايبين الأرقام والحساب منين» + «زوّد أسئلة»
+// «مالقيتش إجابتك؟» (اختيار المالك 2026-10-23): بيفتح «ابعتلنا سؤالك» جوه الصفحة، وكلمة البحث مكتوبة فيه، ⇐ «ابعت» ⇐ «اتبعت». بيروح فين (الدعم) لسه سؤال مفتوح
 // كل سؤال: [القسم، البلد (both/eg/sa)، سؤال مصر، إجابة مصر، سؤال السعودية، إجابة السعودية]. الإجابة سطر أو كذا سطر. الزكاة من OVERRIDES §62 بمصادرها
 const SECS = [['basics', 'الأساسيات'], ['balance', 'الرصيد والكاش', 'الرصيد والنقد'], ['sms', 'رسايل البنك', 'رسائل البنك'], ['ops', 'العمليات'], ['people', 'الديون والأشخاص'], ['bnpl', 'التقسيط'], ['zakat', 'الزكاة'], ['invest', 'الاستثمار'], ['privacy', 'الخصوصية']];
 const D = [
@@ -103,7 +111,7 @@ const D = [
 ];
 const norm = (t) => String(t || '').replace(/[إأآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').trim();
 class Component extends DCLogic {
-  constructor(props) { super(props); this.state = { sec: 'all', open: 0, q: '' }; }
+  constructor(props) { super(props); this.state = { sec: 'all', open: 0, q: '', ask: 'closed', msg: '' }; }
   renderVals() {
     const eg = (this.props.space ?? 'مصر') === 'مصر', s = this.state, q = norm(s.q);
     const chip = (on) => 'flex-shrink: 0; height: 40px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; cursor: pointer; white-space: nowrap; ' + (on ? 'font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'color: #193D33; background: #FFFFFF');
@@ -122,6 +130,10 @@ class Component extends DCLogic {
       searchPh: eg ? 'دوّر في الأسئلة' : 'ابحث في الأسئلة', q: s.q, typeQ: (e) => this.setState({ q: e && e.target ? e.target.value : '' }),
       secs: [['all', 'الكل']].concat(secs).map(([id, t, ts]) => ({ label: !eg && ts ? ts : t, on: s.sec === id ? 'true' : 'false', style: chip(s.sec === id), pick: () => this.setState({ sec: id }) })),
       groups, empty: !groups.length, emptyText: eg ? 'مفيش سؤال بالكلمة دي.' : 'لا يوجد سؤال بهذه الكلمة.',
+      askClosed: s.ask === 'closed', askOpen: s.ask === 'open', askSent: s.ask === 'sent', openAsk: () => this.setState({ ask: 'open', msg: s.q }),
+      msg: s.msg, typeMsg: (e) => this.setState({ msg: e && e.target ? e.target.value : '' }), sendOff: !s.msg.trim(), send: () => { if (s.msg.trim()) this.setState({ ask: 'sent' }); },
+      sendStyle: 'min-height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; ' + (s.msg.trim() ? 'color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'color: #637570; background: #E3EAE3'),
+      sendTitle: eg ? 'ابعتلنا سؤالك' : 'أرسل لنا سؤالك', msgPh: eg ? 'اكتب سؤالك' : 'اكتب سؤالك', sendLabel: eg ? 'ابعت' : 'أرسل', sendNote: eg ? 'هنضيفه للأسئلة لو مهم.' : 'سنضيفه للأسئلة إن كان مهمًا.', sentLabel: eg ? 'اتبعت' : 'تم الإرسال',
       askLabel: eg ? 'مالقيتش إجابتك؟ اسأل مصروفي' : 'لم تجد إجابتك؟ اسأل مصروفي'
     };
   }
