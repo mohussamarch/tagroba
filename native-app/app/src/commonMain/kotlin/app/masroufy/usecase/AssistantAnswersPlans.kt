@@ -31,10 +31,10 @@ internal suspend fun AnswerKit.nextSalary(): AssistReply {
             else -> b.line(TextKey.ASSIST_NEXT_SALARY, assistDate(next, ctx.today), assistDays(daysBetween(ctx.today, next)))
         }
     } else {
-        b.line(TextKey.ASSIST_NO_SALARY, ctx.space.name)
+        b.line(TextKey.ASSIST_NO_SALARY, ctx.space.label)
         if (active.isNotEmpty()) {
             val items = active.take(3).map { src -> "${src.name} ${nextPayDate(src, ctx.today, payday)?.let { assistDate(it, ctx.today) } ?: uiText(TextKey.ASSIST_NA)}" }
-            b.line(TextKey.ASSIST_SPACE_INCOME, ctx.space.name, assistList(items))
+            b.line(TextKey.ASSIST_SPACE_INCOME, ctx.space.label, assistList(items))
         }
     }
     b.link(ScreenLink.of(AssistScreen.INCOME_SOURCES))

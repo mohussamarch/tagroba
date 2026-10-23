@@ -135,7 +135,7 @@ private fun PayerCard(q: PayerQuestion, onAnswer: (Boolean) -> Unit) {
 private fun SourceCard(r: IncomeRowView, onClick: () -> Unit) {
     FloatingCard(Modifier.fillMaxWidth().alpha(if (r.ended) 0.85f else 1f), shape = RoundedCornerShape(20.dp), contentPadding = PaddingValues(horizontal = 14.dp, vertical = 12.dp), onClick = onClick, clickLabel = r.name) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconTile(if (r.ended) Ink.muted else Ink.primary, size = 40.dp, radius = 14.dp) { LucideIcon(incomeIcon(r.kind), size = 18.dp, tint = if (r.ended) Ink.muted else Ink.primary) }
+            app.masroufy.ui.app.WithActiveCountryMark { IconTile(if (r.ended) Ink.muted else Ink.primary, size = 40.dp, radius = 14.dp) { LucideIcon(incomeIcon(r.kind), size = 18.dp, tint = if (r.ended) Ink.muted else Ink.primary) } }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 BasicText(r.name, style = Type.of(15, FontWeight.Bold))
                 BasicText(r.meta, style = Type.caption().copy(color = Ink.muted))

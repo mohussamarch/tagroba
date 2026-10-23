@@ -59,6 +59,9 @@ internal fun SettleForm(target: SettleTarget, onSaved: (full: Boolean) -> Unit) 
     val scope = rememberCoroutineScope()
     var text by remember(target.obligationId) { mutableStateOf("") }
     var linkMode by remember(target.obligationId) { mutableStateOf(false) }
+    // §111-4: البلدين شغالين ⇒ «بعملة تانية» (عملة البلد التانية بسعر صرف)
+    val otherCurrency = app.masroufy.ui.app.LocalCountries.current.other?.currency?.takeIf { it != target.currency }
+    var fxMode by remember(target.obligationId) { mutableStateOf(false) }
     var failure by remember { mutableStateOf<String?>(null) }
     var saving by remember { mutableStateOf(false) }
     // §82-19: دين عليك والمبلغ أكبر من الباقي ⇒ «دفعت أكتر من اللي عليك» (الأرقام من حالة الاستخدام)
@@ -91,8 +94,13 @@ internal fun SettleForm(target: SettleTarget, onSaved: (full: Boolean) -> Unit) 
     }
     // «كيف تمّت؟»: بلا عملية · عملية موجودة (الحوالة اللي مستنية سؤال «هل هي سداد؟» — §75، مش متبني لسه ⇒ مفيش مرشح)
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        SelectChip(t(UiKey.SETTLE_HOW_FREE), !linkMode, { linkMode = false; failure = null }, Modifier.weight(1f), height = 44.dp)
-        SelectChip(t(UiKey.SETTLE_HOW_LINK), linkMode, { linkMode = true; failure = null }, Modifier.weight(1f), height = 44.dp)
+        SelectChip(t(UiKey.SETTLE_HOW_FREE), !linkMode && !fxMode, { linkMode = false; fxMode = false; failure = null }, Modifier.weight(1f), height = 44.dp)
+        SelectChip(t(UiKey.SETTLE_HOW_LINK), linkMode, { linkMode = true; fxMode = false; failure = null }, Modifier.weight(1f), height = 44.dp)
+        if (otherCurrency != null) SelectChip(t(app.masroufy.core.R06Key.CTY_FX_TOGGLE), fxMode, { fxMode = !fxMode; linkMode = false; failure = null }, Modifier.weight(1f), height = 44.dp)
+    }
+    if (fxMode && otherCurrency != null) {
+        SettleFxPanel(target, otherCurrency, onSaved)
+        return
     }
     if (linkMode) {
         Column(

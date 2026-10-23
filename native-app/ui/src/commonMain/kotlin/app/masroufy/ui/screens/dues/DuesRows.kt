@@ -83,7 +83,7 @@ internal fun DebtRow(row: DebtRowUi, onLongClick: (() -> Unit)? = null, onClick:
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        PersonInitial(row.initial, row.forYou)
+        app.masroufy.ui.app.WithActiveCountryMark { PersonInitial(row.initial, row.forYou) }
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             BasicText(row.name, style = Type.bodyBold(), maxLines = 1, overflow = TextOverflow.Ellipsis)
             BasicText(row.reason, style = Type.caption().copy(color = Ink.muted), maxLines = 1, overflow = TextOverflow.Ellipsis)

@@ -35,12 +35,11 @@ class ProfileSalaryTest {
         val saved = assertIs<SalarySaved.Ok>(salary().saveAll(mapOf(PROFILE_SALARY_KEY to 1_234_550)))
         assertEquals(1_234_550L, saved.state.amountMinor)
         assertTrue(saved.state.employers.isEmpty())
-        assertEquals(1_234_550L, profile.load().salaryMinor)
-        assertEquals(Currency.SAR, profile.load().salaryCurrency)
+        assertEquals(mapOf(Currency.SAR to 1_234_550L), profile.load().salaries)
         assertNull(salary(Currency.EGP).current().amountMinor, "المبلغ بالريال مش رقم في بلد بالجنيه")
         assertIs<SalarySaved.Invalid>(salary().save(0))
         assertIs<SalarySaved.Invalid>(salary().save(null))
-        assertEquals(1_234_550L, profile.load().salaryMinor, "المرفوض ما بيغيّرش حاجة")
+        assertEquals(1_234_550L, profile.load().salaries[Currency.SAR], "المرفوض ما بيغيّرش حاجة")
     }
 
     @Test fun aStoredRangeShowsUnansweredUntilTheExactAmountIsTyped() = runBlocking<Unit> {
@@ -62,10 +61,10 @@ class ProfileSalaryTest {
         assertTrue(s.declined)
         assertTrue(s.answered)
         assertNull(s.amountMinor)
-        assertNull(profile.load().salaryMinor)
+        assertNull(profile.load().salaries[Currency.SAR])
         assertEquals(12, salaryProfilePoints(s), "«مش عايز أقول» بتاخد الـ12 (رد المالك)")
         salary().save(710_000)
-        assertNull(profile.load().salaryDeclined, "كتابة المبلغ بعد كده بتلغي «مش عايز أقول»")
+        assertFalse(Currency.SAR in profile.load().salaryDeclinedIn, "كتابة المبلغ بعد كده بتلغي «مش عايز أقول»")
         assertEquals(12, salaryProfilePoints(salary().current()))
     }
 
@@ -77,7 +76,7 @@ class ProfileSalaryTest {
         assertNull(use.current().amountMinor, "فيه جهة ⇒ مبلغ الملف ما بيتستعملش (رد المالك)")
         use.save(1_100_000)
         assertEquals(1_100_000L, repo.listAll().single().expectedMinor, "الرقم اتكتب على الجهة نفسها")
-        assertNull(profile.load().salaryMinor, "ومش متكرر في الملف")
+        assertNull(profile.load().salaries[job.currency], "ومش متكرر في الملف")
         incomes.answerExpectedSalary(job.id, 1_150_000)
         assertEquals(1_150_000L, use.current().amountMinor, "تعديل «المرتب المتوقع» في مصادر الدخل هو نفسه رقم «ملفك»")
         use.decline()
@@ -96,7 +95,7 @@ class ProfileSalaryTest {
         val ok = assertIs<SalarySaved.Ok>(use.saveAll(mapOf(a.id to 900_000, b.id to 250_050))).state
         assertEquals(1_150_050L, ok.amountMinor, "المجموع = 9,000.00 + 2,500.50")
         assertEquals(mapOf(a.id to 900_000L, b.id to 250_050L), repo.listAll().associate { it.id to it.expectedMinor })
-        assertNull(profile.load().salaryMinor)
+        assertTrue(profile.load().salaries.isEmpty())
         use.decline()
         assertTrue(repo.listAll().all { it.expectedMinor == null }, "التخطي بيمسح مبلغ الاتنين")
     }

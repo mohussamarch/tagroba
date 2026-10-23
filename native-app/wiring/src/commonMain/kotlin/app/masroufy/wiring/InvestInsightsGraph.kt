@@ -38,6 +38,6 @@ class InvestInsightsGraph(c: AreaContext) : InvestInsightsDeps {
 /** «حاجاتي» للبلد (نسخة INSIGHTS لحد ما «الخطوة 0» تتدمج — §4.0 بند 4): نفس `ManageAssets` بتاع «الاستثمار». */
 internal fun holdingsOf(c: AreaContext): LoadHoldings {
     val r = c.repos
-    val assets = ManageAssets(ManageAssetsDeps(r.assets, r.assetLots, r.assetSales, r.assetPrices, c.env.ids, c.env.clock))
+    val assets = ManageAssets(ManageAssetsDeps(r.assets, r.assetLots, r.assetSales, r.assetPrices, c.env.ids, c.env.clock, c.space.countryCode))
     return LoadHoldings(LoadHoldingsDeps(assets, r.zakatFacts, c.space.currency))
 }

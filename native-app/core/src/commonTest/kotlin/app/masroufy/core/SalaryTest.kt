@@ -17,11 +17,11 @@ class SalaryTest {
 
     @Test fun anExactAmountOnTheProfileIsReadBackInItsCurrencyOnly() {
         val p = profileAfterSalary(blank, 1_234_567, Currency.SAR, onEmployer = false)
-        assertEquals(1_234_567L, p.salaryMinor)
-        assertEquals(Currency.SAR, p.salaryCurrency)
+        assertEquals(mapOf(Currency.SAR to 1_234_567L), p.salaries)
         assertEquals(1_234_567L, salaryState(p, emptyList(), Currency.SAR, today).amountMinor)
         assertNull(salaryState(p, emptyList(), Currency.EGP, today).amountMinor, "ريال ما يتعرضش في بلد بالجنيه")
-        assertEquals(800_000L, salaryState(blank.copy(salaryMinor = 800_000), emptyList(), Currency.EGP, today).amountMinor, "مبلغ قديم من غير عملة بيتعرض زي ما كان")
+        assertNull(salaryState(blank.copy(salaryMinor = 800_000), emptyList(), Currency.EGP, today).amountMinor, "cty-4: مبلغ قديم من غير عملة بيتحسب للسعودية بس")
+        assertEquals(800_000L, salaryState(blank.copy(salaryMinor = 800_000), emptyList(), Currency.SAR, today).amountMinor)
     }
 
     @Test fun aStoredRangeIsNeverAGuessedNumberAndStaysUnanswered() {
@@ -39,15 +39,16 @@ class SalaryTest {
 
     @Test fun declineAnswersTheQuestionWithoutANumber() {
         val p = profileAfterDecline(blank.copy(salaryMinor = 500_000, salaryCurrency = Currency.SAR, salaryRangeLegacy = "R1"), Currency.SAR)
-        assertNull(p.salaryMinor)
+        assertNull(p.salaries[Currency.SAR])
         assertNull(p.salaryRangeLegacy)
         val s = salaryState(p, emptyList(), Currency.SAR, today)
         assertTrue(s.declined)
         assertTrue(s.answered)
         assertNull(s.amountMinor)
-        val reparsed = parseStoredProfile(mapOf("salaryDeclined" to true, "salaryCurrency" to "EGP", "salaryMinor" to 100L))
-        assertEquals(true, reparsed.salaryDeclined)
-        assertEquals(Currency.EGP, reparsed.salaryCurrency)
+        val reparsed = parseStoredProfile(mapOf("salaryDeclined" to true, "salaryCurrency" to "EGP", "salaryMinor" to 100L)).withSalaryMigrated()
+        assertEquals(mapOf(Currency.EGP to 100L), reparsed.salaries, "cty-4: المبلغ القديم بيتنقل لبلد عملته")
+        assertEquals(setOf(Currency.SAR), reparsed.salaryDeclinedIn, "«أفضّل ما أقولش» القديم ⇒ السعودية")
+        assertNull(reparsed.salaryDeclined)
     }
 
     @Test fun theEmployerHoldsTheAmountAndTheProfileAmountIsUsedOnlyWithoutEmployers() {
@@ -56,7 +57,7 @@ class SalaryTest {
         assertEquals(listOf("a"), s.employers.map { it.id })
         assertEquals(1_500_000L, s.amountMinor)
         val p = profileAfterSalary(blank.copy(salaryMinor = 700_000, salaryCurrency = Currency.SAR), 1_600_000, Currency.SAR, onEmployer = true)
-        assertNull(p.salaryMinor, "الرقم على الجهة بس — ما يفضلش رقمين")
+        assertNull(p.salaries[Currency.SAR], "الرقم على الجهة بس — ما يفضلش رقمين")
         val withProfile = blank.copy(salaryMinor = 700_000, salaryCurrency = Currency.SAR)
         assertNull(salaryState(withProfile, listOf(job("b")), Currency.SAR, today).amountMinor, "فيه جهة ⇒ مبلغ الملف ما بيتستعملش (رد المالك)")
         assertEquals(700_000L, salaryState(withProfile, listOf(job("e", currency = Currency.EGP)), Currency.SAR, today).amountMinor, "جهة بعملة تانية مش جهة هنا")
@@ -91,5 +92,28 @@ class SalaryTest {
         assertFailsWith<BackupError> { checkBackupProfile(mapOf("salaryCurrency" to "XYZ")) }
         assertFailsWith<BackupError> { checkBackupProfile(mapOf("salaryDeclined" to "yes")) }
         assertEquals("2", parseStoredProfile(mapOf("salaryRange" to 2L)).salaryRangeLegacy)
+    }
+
+    /** cty-4: مرتب مصر ما بيمسحش مرتب السعودية، و«أفضّل ما أقولش» في مصر ما بيوصلش للسعودية. */
+    @Test fun eachCountryKeepsItsOwnSalaryAndItsOwnDecline() {
+        val sa = profileAfterSalary(blank, 1_000_000, Currency.SAR, onEmployer = false)
+        val both = profileAfterSalary(sa, 2_500_000, Currency.EGP, onEmployer = false)
+        assertEquals(1_000_000L, salaryState(both, emptyList(), Currency.SAR, today).amountMinor)
+        assertEquals(2_500_000L, salaryState(both, emptyList(), Currency.EGP, today).amountMinor)
+        val egDeclined = profileAfterDecline(both, Currency.EGP)
+        assertTrue(salaryState(egDeclined, emptyList(), Currency.EGP, today).declined)
+        assertEquals(1_000_000L, salaryState(egDeclined, emptyList(), Currency.SAR, today).amountMinor)
+        assertFalse(salaryState(profileAfterDecline(blank, Currency.EGP), emptyList(), Currency.SAR, today).declined, "رفض مصر مش رفض السعودية")
+    }
+
+    @Test fun theOldSingleSlotMovesToItsCountryOnRead() {
+        val old = parseStoredProfile(mapOf("payday" to 28L, "salaryMinor" to 1_250_000L)).withSalaryMigrated()
+        assertEquals(mapOf(Currency.SAR to 1_250_000L), old.salaries, "من غير عملة ⇒ السعودية (البلد الأصلية)")
+        assertNull(old.salaryMinor)
+        val fresh = parseStoredProfile(mapOf("payday" to 28L, "salaries" to mapOf("SAR" to 900_000L, "EGP" to 3_000_000L), "salaryDeclinedIn" to listOf("EGP")))
+        assertEquals(mapOf(Currency.SAR to 900_000L, Currency.EGP to 3_000_000L), fresh.salaries)
+        assertEquals(setOf(Currency.EGP), fresh.salaryDeclinedIn)
+        checkBackupProfile(mapOf("salaries" to mapOf("SAR" to 900_000L), "salaryDeclinedIn" to listOf("EGP")))
+        assertFailsWith<BackupError> { checkBackupProfile(mapOf("salaries" to mapOf("XYZ" to 1L))) }
     }
 }

@@ -79,7 +79,7 @@ fun OperationRow(
         ListRow(
             title = title,
             subtitle = subtitle,
-            leading = { IconTile(categoryColor) { LucideIcon(icon, size = 20.dp, tint = categoryColor) } },
+            leading = { app.masroufy.ui.app.WithActiveCountryMark { IconTile(categoryColor) { LucideIcon(icon, size = 20.dp, tint = categoryColor) } } },
             trailing = {
                 badges?.invoke(this)
                 AmountText(amountMinor, currency, tone = tone, showCurrency = false)

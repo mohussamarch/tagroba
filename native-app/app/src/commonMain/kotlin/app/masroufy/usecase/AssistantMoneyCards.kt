@@ -139,6 +139,6 @@ internal suspend fun TurnKit.confirmMoneyCard(msg: AssistMessage, d: TxnDraft): 
         deps.people!!.linkToPerson(tx.id, d.personId!!, kind, d.amountMinor)
         links += ScreenLink.of(AssistScreen.PERSON_PROFILE, "personId" to d.personId!!)
     }
-    val (t, key) = vary(AssistVariants.RECORDED, ctx.space.name)
+    val (t, key) = vary(AssistVariants.RECORDED, ctx.space.label)
     return TurnOut(listOf(text(t, msg.topic, links, opener = key)), listOf(msg.copy(state = CardState.DONE, card = d.copy(transactionId = tx.id))), countTopic = false)
 }

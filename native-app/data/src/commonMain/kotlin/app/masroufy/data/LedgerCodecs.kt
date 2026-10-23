@@ -15,6 +15,7 @@ import app.masroufy.core.ObligationKind
 import app.masroufy.core.PersonAllocation
 import app.masroufy.core.ReviewState
 import app.masroufy.core.Settlement
+import app.masroufy.core.SettlementFx
 import app.masroufy.core.SourceRecord
 import app.masroufy.core.Meal
 import app.masroufy.core.Transaction
@@ -126,8 +127,17 @@ object LedgerCodecs {
 
     val settlements: DocCodec<Settlement> = codec(
         "settlements", { it.id },
-        { s -> doc { req("id", s.id); req("transactionId", s.transactionId); req("obligationId", s.obligationId); req("amountMinor", s.amountMinor) } },
-        { r -> Settlement(r.str("id"), r.str("transactionId"), r.str("obligationId"), r.long("amountMinor")) },
+        { s ->
+            doc {
+                req("id", s.id); req("transactionId", s.transactionId); req("obligationId", s.obligationId); req("amountMinor", s.amountMinor)
+                // §111-4: السداد بعملة تانية — اختياري، والتسوية القديمة هي هي
+                opt("paidMinor", s.fx?.paidMinor); opt("paidCurrency", s.fx?.paidCurrency?.name); opt("fxRate4", s.fx?.rate4)
+            }
+        },
+        { r ->
+            val fx = r.longOrNull("paidMinor")?.let { paid -> SettlementFx(paid, r.wire("paidCurrency", Currency::valueOf), r.long("fxRate4")) }
+            Settlement(r.str("id"), r.str("transactionId"), r.str("obligationId"), r.long("amountMinor"), fx)
+        },
     )
 
     val sourceRecords: DocCodec<SourceRecord> = codec(

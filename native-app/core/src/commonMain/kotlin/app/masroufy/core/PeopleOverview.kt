@@ -129,6 +129,20 @@ fun peopleOverview(input: PeopleOverviewInput): PeopleOverview {
 }
 
 /**
+ * نفس الملخص **للبلد الشغالة بس** (cty-1 · OVERRIDES §111): الشريحة ولون الإطار والأقسام وعددها والإجماليات من سطور [spaceId] بس —
+ * عشان ما يبانش رقم جنيه تحت اسم شخص وانت في السعودية، والعدد يطابق المجموع. المؤرشف اللي ملوش رصيد هنا بيختفي.
+ * صفحة الشخص بتفضل تعرض البلدين (كل بلد بعملتها) — دي بتقرا `PersonAcrossSpaces` مش الدالة دي.
+ */
+fun PeopleOverview.onlySpace(spaceId: String): PeopleOverview {
+    val kept = rows.mapNotNull { r ->
+        val lines = r.balances.filter { it.spaceId == spaceId }
+        if (r.person.archived && lines.isEmpty()) return@mapNotNull null
+        r.copy(balances = lines, state = outlineState(lines, r.nextOccasion), giftBadges = r.giftBadges.filter { it.spaceId == spaceId })
+    }
+    return copy(rows = kept, sections = sections(kept), totals = totals(kept))
+}
+
+/**
  * الأقسام (اختيار Claude — المالك يقدر يغيّره): «لك عندهم» و«عليك لهم» كل اللي عنده سطر بالاتجاه ده — **الشخص اللي ليه وعليه بيظهر في
  * الاتنين** (من غير تقاص)؛ «مناسبات قريبة» اللي مالهمش أرصدة ومناسبتهم خلال 30 يوم (بالأقرب)؛ «بلا أرصدة» الباقي.
  */

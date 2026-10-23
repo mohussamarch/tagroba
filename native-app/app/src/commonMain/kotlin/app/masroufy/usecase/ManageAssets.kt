@@ -79,6 +79,8 @@ data class ManageAssetsDeps(
     val prices: AssetPriceRepository,
     val ids: IdGenerator,
     val clock: Clock,
+    /** cty-8: «النهارده» بتوقيت البلد دي (مش تاريخ جرينتش). */
+    val countryCode: String? = null,
 )
 
 private const val MAX_ASSET_NAME = 80
@@ -111,7 +113,7 @@ class ManageAssets(private val deps: ManageAssetsDeps) {
         val allLots = deps.lots.listAll()
         val allSales = deps.sales.listAll()
         val priceOf = deps.prices.listAll().associateBy { it.assetId }
-        val asOf = today ?: deps.clock.nowIso().take(10)
+        val asOf = today ?: app.masroufy.core.todayInCountry(deps.countryCode, deps.clock.nowIso())
 
         val rows = assets.map { asset ->
             val lots = allLots.filter { it.assetId == asset.id }
@@ -125,7 +127,10 @@ class ManageAssets(private val deps: ManageAssetsDeps) {
                 b.position.costBasisMinor.compareTo(a.position.costBasisMinor)
             }
         }
-        return PortfolioView(rows, computePortfolioTotals(rows.map { it.position }), computePortfolioTotals(rows.filter { !it.asset.archived }.map { it.position }))
+        // cty-10: المجموع بعملة البلد بس — أصل بعملة تانية (سجل قديم غلط) بيفضل في القايمة بس ما بيتجمعش
+        val home = deps.countryCode?.let { app.masroufy.core.countryPack(it).currency }
+        val counted = rows.filter { home == null || it.asset.currency == home }
+        return PortfolioView(rows, computePortfolioTotals(counted.map { it.position }), computePortfolioTotals(counted.filter { !it.asset.archived }.map { it.position }))
     }
 
     suspend fun addAsset(input: NewAsset): Asset {
@@ -142,7 +147,7 @@ class ManageAssets(private val deps: ManageAssetsDeps) {
             kind = storedKind,
             realEstate = realEstate,
             unitLabel = input.unitLabel?.let(::jsTrim)?.takeIf { it.isNotEmpty() } ?: ASSET_UNIT_DEFAULTS.getValue(input.kind),
-            currency = input.currency ?: Currency.SAR,
+            currency = input.currency ?: app.masroufy.core.countryPack(deps.countryCode).currency, // cty-10: عملة البلد مش الريال دايمًا
             archived = false,
             feedSymbol = input.feedSymbol?.takeIf { it.isNotEmpty() },
             note = input.note?.let(::jsTrim)?.takeIf { it.isNotEmpty() },

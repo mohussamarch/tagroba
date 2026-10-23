@@ -142,7 +142,7 @@ data class AlertCandidate(
 fun AlertCandidate.inSpace(space: Space, labelled: Boolean): AlertCandidate = copy(
     threadKey = if (space.id == DEFAULT_SPACE_ID) threadKey else "${space.id}:$threadKey",
     spaceId = space.id,
-    spaceLabel = if (labelled) space.name else null,
+    spaceLabel = if (labelled) space.label else null,
 )
 
 internal fun addDaysIso(date: IsoDate, days: Int): IsoDate = dayNumberToIso(toDayNumber(parseIsoDate(date)) + days)

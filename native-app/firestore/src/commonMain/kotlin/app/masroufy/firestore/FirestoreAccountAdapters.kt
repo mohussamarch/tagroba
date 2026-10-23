@@ -50,6 +50,10 @@ class FirestoreProfileRepository(private val space: FirestoreSpace) : ProfileRep
             profile.salaryCurrency?.let { put("salaryCurrency", it.name) }
             profile.salaryDeclined?.let { put("salaryDeclined", it) }
             profile.salaryRangeLegacy?.let { put("salaryRange", it) }
+            // cty-4: المرتب و«أفضّل ما أقولش» لكل بلد بعملتها
+            if (profile.salaries.isNotEmpty()) put("salaries", profile.salaries.entries.associate { it.key.name to it.value })
+            if (profile.paydays.isNotEmpty()) put("paydays", profile.paydays.mapValues { it.value.toLong() })
+            if (profile.salaryDeclinedIn.isNotEmpty()) put("salaryDeclinedIn", profile.salaryDeclinedIn.map { it.name }.sorted())
         }
         space.write { ref().set(doc) }
         // القراية الجاية من الذاكرة لازم تشوف الحفظ ده لحظتها (المستمع بيأكده بعدها)

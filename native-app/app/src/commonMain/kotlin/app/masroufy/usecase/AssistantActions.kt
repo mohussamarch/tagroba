@@ -67,7 +67,7 @@ private fun TurnKit.notExpenseReply(u: AssistUnderstanding): TurnOut? {
 
 /** سؤال بصراحة من غير كارت: مش مصروف · عملة تانية · مبلغين · يوم جاي · رقم مش صالح. */
 private fun TurnKit.honestQuestion(u: AssistUnderstanding): TurnOut? = notExpenseReply(u) ?: when {
-    u.signals.money.isForeign(ctx.currency) -> say(TextKey.ASSIST_FOREIGN, u.wire, ctx.space.name)
+    u.signals.money.isForeign(ctx.currency) -> say(TextKey.ASSIST_FOREIGN, u.wire, ctx.space.label)
     u.note == AssistNote.INVALID_AMOUNT -> say(TextKey.ASSIST_INVALID_AMOUNT, u.wire)
     u.note == AssistNote.TWO_AMOUNTS -> say(TextKey.ASSIST_TWO_AMOUNTS, u.wire)
     u.note == AssistNote.FUTURE_DATE -> say(TextKey.ASSIST_FUTURE_DATE, u.wire)
@@ -184,7 +184,7 @@ internal suspend fun TurnKit.confirmCard(msg: AssistMessage): TurnOut {
         ),
     )
     if (d.categoryChanged && d.merchantId != null && d.categoryId != null) deps.rules?.setMerchantCategory(d.merchantId!!, d.categoryId)
-    val (t, key) = vary(AssistVariants.RECORDED, ctx.space.name)
+    val (t, key) = vary(AssistVariants.RECORDED, ctx.space.label)
     val done = text(t, msg.topic, listOf(ScreenLink.of(AssistScreen.OPERATION_DETAIL, "transactionId" to tx.id)), opener = key)
     return TurnOut(listOf(done), listOf(msg.copy(state = CardState.DONE, card = d.copy(transactionId = tx.id))), countTopic = false)
 }

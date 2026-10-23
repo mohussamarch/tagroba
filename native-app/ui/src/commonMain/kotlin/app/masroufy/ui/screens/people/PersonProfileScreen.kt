@@ -54,6 +54,7 @@ import app.masroufy.ui.icons.LucideIcon
 import app.masroufy.ui.nav.LocalNavigator
 import app.masroufy.ui.screens.dues.DebtDetailRoute
 import app.masroufy.ui.text.t
+import kotlinx.coroutines.launch
 import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Radius
 import app.masroufy.ui.theme.Space
@@ -66,6 +67,18 @@ import app.masroufy.ui.theme.Type
 @Composable
 internal fun PersonProfileScreen(personId: String) {
     val deps = LocalSpace.current
+    // cty-6: دين البلد التانية في صفحة الشخص ⇒ سطر قصير «الدين ده في …» وزرار «بدّل» (قبل كده الدوسة ما كانتش بتعمل حاجة)
+    val toaster = app.masroufy.ui.shell.LocalToaster.current
+    val other = app.masroufy.ui.app.LocalCountries.current.other
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    val openAbroad: () -> Unit = {
+        if (other != null) {
+            val name = app.masroufy.core.countryLabel(other.countryCode)
+            toaster.show(t(app.masroufy.core.R06Key.CTY_ABROAD_DEBT, name), t(app.masroufy.core.R06Key.CTY_ABROAD_SWITCH)) {
+                scope.launch { deps.shell.switchSpace(other.id) }
+            }
+        }
+    }
     val nav = LocalNavigator.current
     val version = PeopleChanges.version
     var retry by remember { mutableStateOf(0) }
@@ -107,7 +120,7 @@ internal fun PersonProfileScreen(personId: String) {
             is Load.Ready -> {
                 val ui = l.value
                 if (ui == null) item { Head(null, top) { nav.pop() }; EmptyState(t(UiKey.PERSON_PAGE_NOT_FOUND)) }
-                else personBody(ui, top, ledger, deps.shell.today(), { nav.push(app.masroufy.ui.screens.operations.OperationDetailRoute(it)) }, { if (!it.startsWith(app.masroufy.usecase.ABROAD_ID_PREFIX)) nav.push(DebtDetailRoute(it)) }) { nav.pop() }
+                else personBody(ui, top, ledger, deps.shell.today(), { nav.push(app.masroufy.ui.screens.operations.OperationDetailRoute(it)) }, { if (!it.startsWith(app.masroufy.usecase.ABROAD_ID_PREFIX)) nav.push(DebtDetailRoute(it)) else openAbroad() }) { nav.pop() }
             }
         }
     }

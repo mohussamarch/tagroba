@@ -50,4 +50,7 @@ enum class R06Key : TextRef {
     /** r06-shared — قاعدة التجار المشتركة: الاقتراح · سجل المشاكل · كارت «القواعد والتجار». */
     CATEGORIZED_SHARED_MERCHANT, IMPORT_SRC_SHARED, PLOG_C_SHARED_SYNC, PLOG_C_SHARED_CONTRIBUTE,
     RULES_SYNC_LAST, RULES_SYNC_NEVER, RULES_SYNC_RUNNING, RULES_SYNC_DONE, RULES_SYNC_NOTHING, RULES_SYNC_FAILED,
+    /** r06-countries (OVERRIDES §111) — السداد بعملة تانية · دين البلد التانية · تحذير الأرشفة · بلد الإضافة — نصوصها في `TextsR06Country.kt`. */
+    CTY_FX_TOGGLE, CTY_FX_PAID, CTY_FX_RATE, CTY_FX_RATE_NEEDED, CTY_FX_RESULT, CTY_FX_SAME_CURRENCY, CTY_FX_DONE,
+    CTY_ABROAD_DEBT, CTY_ABROAD_SWITCH, CTY_ARCHIVE_OPEN, CTY_ADD_COUNTRY,
 }

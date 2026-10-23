@@ -56,7 +56,12 @@ data class Space(
     val currency: Currency,
     val createdAt: String,
     val archived: Boolean = false,
-)
+) {
+    /**
+     * cty-12: اسم البلد **للعرض** — بيتحسب من الكود بلغة/لهجة دلوقتي. [name] المتخزن اتكتب بلغة وقت الإنشاء، فبيفضل للنسخة الاحتياطية بس.
+     */
+    val label: String get() = countryLabel(countryCode)
+}
 
 /** تصنيف تاجر مشترك **جوه مساحة** غير السعودية ([MERCHANT_CATEGORIES_GROUP]) — معرّف المستند = معرّف التاجر. */
 data class MerchantCategory(val merchantId: Id, val categoryId: Id)
@@ -97,6 +102,12 @@ fun newSpaceFor(countryCode: String, existing: List<Space>, nowIso: String): Spa
 }
 
 /** كل المساحات للعرض: السعودية الأول، وبعدها السجل بترتيب الإنشاء. */
+/**
+ * cty-9 — **المصدر الوحيد** لـ«البلدين شغالين»: أكتر من بلد مفتوحة (المؤرشفة ما بتتحسبش). علامة البلد ([CountryMark] في الواجهة) والكلام
+ * «في البلدين» بيقروا من هنا بس.
+ */
+fun bothCountriesActive(spaces: List<Space>): Boolean = spaces.filter { !it.archived }.map { it.countryCode.uppercase() }.distinct().size > 1
+
 fun allSpaces(registry: List<Space>): List<Space> = listOf(defaultSpace()) + registry.filter { it.id != DEFAULT_SPACE_ID }.sortedBy { it.createdAt }
 
 /** المساحة الشغالة: المتخزنة على الجهاز لو موجودة ومش مؤرشفة، وإلا السعودية. */
