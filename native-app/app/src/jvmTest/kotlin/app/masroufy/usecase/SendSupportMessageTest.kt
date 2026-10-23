@@ -67,6 +67,26 @@ class SendSupportMessageTest {
         assertEquals(1, outbox.all().size)
     }
 
+    @Test fun aHangingWriteIsQueuedAfterTheTimeoutAndRetriedLater() = runBlocking {
+        val outbox = MemorySupportOutbox()
+        val hang = object : FeedbackInboxPort {
+            var stuck = true
+            val written = LinkedHashMap<String, FeedbackDoc>()
+            override suspend fun send(id: String, doc: FeedbackDoc) {
+                if (stuck) kotlinx.coroutines.awaitCancellation()
+                written[id] = doc
+            }
+        }
+        val use = SendSupportMessage(outbox, hang, SequentialIdGenerator(), "v", sendTimeoutMs = 50)
+        assertEquals(SupportSendResult.QUEUED, use.send(msg), "أوفلاين ⇒ «محفوظ» بعد الحد، مش بعد ما فايربيز يستسلم")
+        assertEquals(1, outbox.pending().size)
+        hang.stuck = false
+        assertEquals(1, use.flush())
+        assertEquals(1, hang.written.size)
+        assertTrue(outbox.pending().isEmpty())
+        assertEquals(5_000L, SUPPORT_SEND_TIMEOUT_MS)
+    }
+
     @Test fun noFirebaseMeansSavedOnlyAndTextIsCapped() = runBlocking {
         val outbox = MemorySupportOutbox()
         val use = SendSupportMessage(outbox, null, SequentialIdGenerator(), "v")
