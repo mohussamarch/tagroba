@@ -82,10 +82,15 @@ object AssetProjectCodecs {
             doc {
                 req("id", s.id); req("assetId", s.assetId); req("soldAt", s.soldAt); req("quantity", s.quantity)
                 req("grossProceedsMinor", s.grossProceedsMinor); req("feeMinor", s.feeMinor); opt("transactionId", s.transactionId)
+                // §112-4: بيتكتبوا بس لو موجودين ⇒ البيع القديم نسخته هي هي
+                opt("toWalletId", s.toWalletId); opt("gainMinor", s.gainMinor)
             }
         },
         { r ->
-            AssetSale(r.str("id"), r.str("assetId"), r.str("soldAt"), r.long("quantity"), r.long("grossProceedsMinor"), r.long("feeMinor"), r.strOrNull("transactionId"))
+            AssetSale(
+                r.str("id"), r.str("assetId"), r.str("soldAt"), r.long("quantity"), r.long("grossProceedsMinor"), r.long("feeMinor"), r.strOrNull("transactionId"),
+                r.strOrNull("toWalletId"), r.longOrNull("gainMinor"),
+            )
         },
     )
 

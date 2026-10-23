@@ -39,6 +39,12 @@ class InvestmentGraph(private val c: AreaContext) : InvestmentDeps {
     override val syncPrices = SyncAssetPrices(SyncAssetPricesDeps(r.assets, r.assetPrices))
     override val defaultRates = LoadDefaultRates()
     override val assets = ManageAssets(ManageAssetsDeps(r.assets, r.assetLots, r.assetSales, r.assetPrices, c.env.ids, c.env.clock, c.space.countryCode))
+    override val sell = app.masroufy.usecase.SellAsset(
+        app.masroufy.usecase.SellAssetDeps(
+            assets, r.assets, r.assetLots, r.assetSales, r.wallets, r.transactions,
+            app.masroufy.usecase.AddTransaction(app.masroufy.usecase.AddTransactionDeps(r.transactions, r.wallets, c.env.ids, c.env.clock)), c.env.clock,
+        ),
+    )
     override val acrossCountries by lazy {
         app.masroufy.usecase.AssetsAcrossCountries(
             c.session.spaces().map { (s, rr) ->

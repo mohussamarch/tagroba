@@ -83,7 +83,14 @@ val ASSET_UNIT_DEFAULTS = linkedMapOf(
 )
 
 data class AssetLot(val id: Id, val assetId: Id, val purchasedAt: IsoDate, val quantity: Quantity, val principalMinor: Halalas, val feeMinor: Halalas, val transactionId: Id? = null)
-data class AssetSale(val id: Id, val assetId: Id, val soldAt: IsoDate, val quantity: Quantity, val grossProceedsMinor: Halalas, val feeMinor: Halalas, val transactionId: Id? = null)
+/**
+ * [toWalletId] = «الفلوس راحت فين؟» (§112-4) · [transactionId] = العملية الداخلة (المربوطة أو اللي اتعملت) · [gainMinor] = المكسب
+ * (سالب = خسارة) وقت التسجيل (`saleOutcome`). الاتنين الجداد اختياريين: البيع القديم من غيرهم بيتقري زي ما هو.
+ */
+data class AssetSale(
+    val id: Id, val assetId: Id, val soldAt: IsoDate, val quantity: Quantity, val grossProceedsMinor: Halalas, val feeMinor: Halalas,
+    val transactionId: Id? = null, val toWalletId: Id? = null, val gainMinor: Halalas? = null,
+)
 /** "manual" أو "feed". التاريخ جزء من الرقم. */
 data class AssetPrice(val assetId: Id, val pricePerUnitMinor: Halalas, val asOf: IsoDate, val source: String)
 

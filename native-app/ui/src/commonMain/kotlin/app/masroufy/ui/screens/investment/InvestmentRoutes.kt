@@ -47,6 +47,9 @@ interface InvestmentDeps {
     /** الأصول: `listPortfolio` · `addAsset` · `linkToFeed` · `archiveAsset` · `recordPurchase` · `recordSale` · `setPrice`. */
     val assets: ManageAssets
 
+    /** «بيع أصل» (§112-4): `destinations` · `preview` · `matchingCredits` · `sell` — الفلوس راحت فين إجباري + المكسب أو الخسارة. */
+    val sell: app.masroufy.usecase.SellAsset
+
     /** «الصورة كاملة»: `setProfile` · `updatePricePerSqm` · `project`. */
     val growth: ManageAssetGrowth
 

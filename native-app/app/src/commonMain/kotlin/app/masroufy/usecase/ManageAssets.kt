@@ -189,7 +189,7 @@ class ManageAssets(private val deps: ManageAssetsDeps) {
      * بيع كلي أو جزئي. spec/02: «**لا دخل معيشة من كامل الحصيلة**» — الحصيلة بتتسجل هنا ومش بتتكتب كعملية دخل.
      * «مفيش بيع لأكتر من المملوك» متكتبة مرة واحدة في `computePosition` — والفحص قبل أي كتابة.
      */
-    suspend fun recordSale(input: SaleInput): RecordedSale {
+    suspend fun recordSale(input: SaleInput, toWalletId: Id? = null, gainMinor: Halalas? = null): RecordedSale {
         val asset = findAsset(input.assetId)
         val id = deps.ids.next("sale")
         val sale = AssetSale(
@@ -200,6 +200,8 @@ class ManageAssets(private val deps: ManageAssetsDeps) {
             grossProceedsMinor = requireAmount(input.grossProceedsMinor, uiText(TextKey.ASSET_LABEL_PROCEEDS)),
             feeMinor = requireAmount(input.feeMinor ?: 0, uiText(TextKey.ASSET_LABEL_FEES), allowZero = true),
             transactionId = input.transactionId?.takeIf { it.isNotEmpty() },
+            toWalletId = toWalletId, // §112-4 — من `SellAsset` بس
+            gainMinor = gainMinor,
         )
         if (sale.feeMinor > sale.grossProceedsMinor) {
             throw AssetError(uiText(TextKey.ASSET_FEES_OVER_PROCEEDS, formatMoney(sale.feeMinor), formatMoney(sale.grossProceedsMinor)))
