@@ -71,9 +71,9 @@ class MoreStateTest {
         val groups = moreGroups(moreView(null, 28, null, saudi))
         assertEquals(listOf(UiKey.MORE_GROUP_ACCOUNT, UiKey.MORE_GROUP_DATA, UiKey.MORE_GROUP_SETTINGS), groups.map { it.title })
         val routes = groups.flatMap { g -> g.items.map { it.to } }
-        listOf(AccountRoute, IncomeSourcesRoute, SpacesRoute, WalletsRoute, BackupRoute, NotificationSettingsRoute, AppSettingsRoute)
+        listOf(AccountRoute, IncomeHubRoute, SpacesRoute, WalletsRoute, BackupRoute, NotificationSettingsRoute, AppSettingsRoute)
             .forEach { assertTrue(it in routes, "$it مش في القايمة") }
-        val income = groups[0].items.first { it.to == IncomeSourcesRoute }
+        val income = groups[0].items.first { it.to == IncomeHubRoute }
         assertEquals(t(UiKey.MORE_INCOME_HINT, sentenceNumber(28)), income.hint)
         assertNull(groups[0].items.first { it.to == AccountRoute }.hint)
     }

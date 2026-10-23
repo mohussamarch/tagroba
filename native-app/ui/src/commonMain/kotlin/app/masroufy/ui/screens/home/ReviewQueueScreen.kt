@@ -100,6 +100,8 @@ fun ReviewQueueScreen() {
     }
     InnerScaffold(t(UiKey.REVIEW_QUEUE_TITLE)) {
         error?.let { msg -> item(key = "error") { SaveErrorBanner(msg) } }
+        // «ده مرتب؟» على إيداع جديد — اتنقل هنا من «مصادر الدخل» (OVERRIDES §112-6). مفيش سؤال ⇒ ما بيظهرش
+        item(key = "salary-ask") { app.masroufy.ui.screens.operations.SalaryReviewCard() }
         val d = data
         when {
             loadFailed -> item(key = "failed") { EmptyState(t(UiKey.SHELL_LOAD_FAILED)) }

@@ -57,6 +57,10 @@ class MoreGraph(private val c: AreaContext) : MoreDeps {
     override val employers = employerCases.employers
     override val employerRetro = employerCases.retro
 
+    /** §111-2 في «مصادر الدخل» (§112-6): مصادر كل البلاد المفتوحة دلوقتي (بتتقري كل مرة — البلاد ممكن تتفتح بعد بناء الرسم). */
+    override val employerLinks: app.masroufy.usecase.LinkEmployersAcrossCountries
+        get() = app.masroufy.usecase.LinkEmployersAcrossCountries(c.openSpaces().map { app.masroufy.usecase.EmployerSpaceSource(it.first.id, it.second.incomeSources) })
+
     override val alerts = c.shell.engine
 
     // `RunAlertEngine` مالوش دالة قراية للإعداد — نفس المخزن اللي `setGroupEnabled` بيكتب فيه

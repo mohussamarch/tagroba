@@ -27,7 +27,7 @@ import app.masroufy.ui.app.LocalDataChanges
 import app.masroufy.ui.app.LocalSpace
 import app.masroufy.ui.nav.LocalNavigator
 import app.masroufy.ui.screens.home.ReadState
-import app.masroufy.ui.screens.more.IncomeSourcesRoute
+import app.masroufy.ui.screens.more.IncomeHubRoute
 import app.masroufy.ui.theme.Radius
 import app.masroufy.usecase.ReturnsView
 import app.masroufy.usecase.TipView
@@ -89,7 +89,7 @@ fun LazyListScope.incomeRopeItem(state: InsightsState) {
     item(key = "rope") {
         when (val s = state.rope) {
             ReadState.Loading -> SectionSkeleton(210)
-            is ReadState.Ready -> { val nav = LocalNavigator.current; IncomeRopeCard(s.value) { nav.push(IncomeSourcesRoute) } }
+            is ReadState.Ready -> { val nav = LocalNavigator.current; IncomeRopeCard(s.value) { nav.push(IncomeHubRoute) } }
             ReadState.Failed -> FailedSection(app.masroufy.core.InvestInsightKey.ROPE_TITLE)
         }
     }

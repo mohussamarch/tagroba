@@ -39,6 +39,9 @@ internal object MoreIcons {
     /** «عميل» في مصادر الدخل. */
     val CLIENT = Lucide("MORE_CLIENT", "M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2", "M8 7a4 4 0 1 0 8 0a4 4 0 1 0 -8 0")
 
+    /** معاش (`IncomeHub.dc.html`): قلب. */
+    val PENSION = Lucide("MORE_PENSION", "M12 21s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.6-7 10-7 10z")
+
     /** ملف نسخة (لوحة اختيار الملف). */
     val FILE_JSON = Lucide("MORE_FILE_JSON", "M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z", "M14 2v4a2 2 0 0 0 2 2h4", "M10 12a1 1 0 0 0-1 1v1a1 1 0 0 1-1 1 1 1 0 0 1 1 1v1a1 1 0 0 0 1 1", "M14 18a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1 1 1 0 0 1-1-1v-1a1 1 0 0 0-1-1")
 }
