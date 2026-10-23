@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.dues
 
+import app.masroufy.ui.theme.Ink
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -55,7 +56,7 @@ internal fun DuesScaffold(
         if (bottomBar != null) {
             Row(
                 Modifier.align(Alignment.BottomCenter).fillMaxWidth()
-                    .background(Brush.verticalGradient(0f to Color(0x00EFF3ED), 0.3f to Color(0xF0EFF3ED), 1f to Color(0xF0EFF3ED)))
+                    .background(Brush.verticalGradient(0f to Ink.tintOf(Ink.background, 0x00), 0.3f to Ink.tintOf(Ink.background, 0xF0), 1f to Ink.tintOf(Ink.background, 0xF0)))
                     .navigationBarsPadding().padding(start = 20.dp, end = 20.dp, top = 14.dp, bottom = 26.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 content = bottomBar,

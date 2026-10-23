@@ -222,8 +222,8 @@ fun partyNewName(party: TransferPartyRef, typed: String): String = typed.trim().
 data class NewPersonDraft(val name: String, val circle: PersonCircle?)
 
 private object PartyInk {
-    val brown = Color(0xFF6B4600)
-    val buttonBg = Color(0xB3FFFFFF)
+    val brown get() = Ink.amberText
+    val buttonBg get() = Ink.glass(0xB3)
 }
 
 @Composable

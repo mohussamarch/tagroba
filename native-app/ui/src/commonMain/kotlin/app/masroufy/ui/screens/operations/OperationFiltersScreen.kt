@@ -169,7 +169,7 @@ fun OperationFiltersScreen(preset: Filters? = null) {
 @Composable
 private fun BottomAction(modifier: Modifier, results: Boolean, hits: List<app.masroufy.core.Transaction>?, onClick: () -> Unit) {
     Box(
-        modifier.fillMaxWidth().background(Brush.verticalGradient(0f to Color(0x00EFF3ED), 0.3f to Color(0xF0EFF3ED)))
+        modifier.fillMaxWidth().background(Brush.verticalGradient(0f to Ink.tintOf(Ink.background, 0x00), 0.3f to Ink.tintOf(Ink.background, 0xF0)))
             .navigationBarsPadding().padding(start = 20.dp, end = 20.dp, top = 14.dp, bottom = 26.dp),
     ) {
         if (results) SecondaryButton(t(UiKey.OPERATION_FILTERS_EDIT), onClick, Modifier.fillMaxWidth(), height = 52.dp)

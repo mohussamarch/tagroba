@@ -85,7 +85,7 @@ internal fun LazyListScope.personFlowItems(flow: DetailPersonFlow, v: DetailView
 @Composable
 private fun NeedsPersonBanner(category: String, onLink: () -> Unit) {
     Column(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(Radius.card)).background(Color(0x14C7861F)).padding(horizontal = 16.dp, vertical = 14.dp),
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(Radius.card)).background(Ink.amberTint).padding(horizontal = 16.dp, vertical = 14.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {

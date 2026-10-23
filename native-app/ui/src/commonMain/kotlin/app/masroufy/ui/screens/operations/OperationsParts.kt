@@ -183,12 +183,12 @@ internal fun LinkCard(
 
 /** ألوان الشارات من النموذج. */
 internal object ChipInk {
-    val amber = Ink.focus
-    val amberBg = Ink.alertBg
-    val green = Ink.primary
-    val greenBg = Ink.selected
-    val blue = Ink.transfer
-    val blueBg = Color(0x1A2469BA)
-    val grey = Ink.muted
-    val greyBg = Ink.tint(0x0F)
+    val amber get() = Ink.focus
+    val amberBg get() = Ink.alertBg
+    val green get() = Ink.primary
+    val greenBg get() = Ink.selected
+    val blue get() = Ink.transfer
+    val blueBg get() = Ink.tintOf(Ink.transfer, 0x1A)
+    val grey get() = Ink.muted
+    val greyBg get() = Ink.tint(0x0F)
 }

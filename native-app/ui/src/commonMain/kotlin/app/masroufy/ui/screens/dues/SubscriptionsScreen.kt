@@ -128,7 +128,7 @@ private fun CandidateCard(c: CandidateUi, error: String?, onYes: () -> Unit, onN
 }
 
 /** نص الشرح على الكارت الكهرماني (`#6B4600` في النموذج). */
-private val AMBER_INK = Color(0xFF6B4600)
+private val AMBER_INK get() = Ink.amberText
 
 @Composable
 private fun SubRow(r: SubRowUi, onLongClick: () -> Unit, onClick: () -> Unit) {

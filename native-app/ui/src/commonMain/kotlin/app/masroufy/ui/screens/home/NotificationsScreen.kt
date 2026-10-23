@@ -224,7 +224,7 @@ internal fun UndoBar(modifier: Modifier = Modifier, onUndo: () -> Unit) {
         BasicText(t(UiKey.NOTIFICATIONS_DROPPED), Modifier.weight(1f), style = Type.of(13, FontWeight.Bold).copy(color = Color.White))
         val press = rememberPress()
         Box(
-            Modifier.height(44.dp).pressScale(press).clip(RoundedCornerShape(14.dp)).background(Color(0x1AFFFFFF))
+            Modifier.height(44.dp).pressScale(press).clip(RoundedCornerShape(14.dp)).background(Ink.white(0x1A))
                 .tap(press, onClick = onUndo).padding(horizontal = 14.dp),
             contentAlignment = Alignment.Center,
         ) { BasicText(t(UiKey.NOTIFICATIONS_UNDO), style = Type.of(13, FontWeight.Bold).copy(color = Ink.selected)) }

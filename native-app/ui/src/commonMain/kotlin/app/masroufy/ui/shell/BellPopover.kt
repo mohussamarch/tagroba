@@ -149,7 +149,7 @@ private fun BellRow(item: BellItem, onDrop: () -> Unit) {
     val shape = RoundedCornerShape(16.dp)
     Row(
         Modifier.fillMaxWidth().defaultMinSize(minHeight = 52.dp).alpha(if (item.unread) 1f else 0.72f).clip(shape)
-            .background(if (item.unread) Color(0xBFFFFFFF) else Color.Transparent).padding(horizontal = 10.dp, vertical = 4.dp),
+            .background(if (item.unread) Ink.glass(0xBF) else Color.Transparent).padding(horizontal = 10.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

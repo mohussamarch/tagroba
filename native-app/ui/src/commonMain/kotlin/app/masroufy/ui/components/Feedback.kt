@@ -112,7 +112,7 @@ fun Modifier.mintSheen(play: Boolean): Modifier {
         val startX = size.width - p * 2f * band
         drawRect(
             Brush.linearGradient(
-                0.3f to Color.Transparent, 0.5f to Color(0xBFA6DEC1), 0.7f to Color.Transparent,
+                0.3f to Color.Transparent, 0.5f to Ink.tintOf(Ink.mint, 0xBF), 0.7f to Color.Transparent,
                 start = Offset(startX - band / 2f, 0f), end = Offset(startX + band / 2f, size.height * 0.36f),
             ),
         )
@@ -126,7 +126,7 @@ fun Modifier.mintSheen(play: Boolean): Modifier {
 fun Toast(text: String, modifier: Modifier = Modifier, dark: Boolean = false, action: String? = null, onAction: (() -> Unit)? = null) {
     val shape = RoundedCornerShape(if (dark) 18.dp else 22.dp)
     val surface = if (dark) Modifier.clip(shape).background(Ink.tint(0xEB))
-    else Modifier.layeredShadow(shape, Shadows.toast).clip(shape).background(Color(0xEBFFFFFF)).innerSheen(shape, Shadows.toast)
+    else Modifier.layeredShadow(shape, Shadows.toast).clip(shape).background(Ink.glass(0xEB)).innerSheen(shape, Shadows.toast)
     androidx.compose.foundation.layout.Row(
         modifier.then(surface).semantics { liveRegion = LiveRegionMode.Polite }.padding(horizontal = 16.dp, vertical = 10.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),

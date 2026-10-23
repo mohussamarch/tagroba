@@ -119,7 +119,7 @@ private fun SelectedCard(sel: Period, current: Period, today: IsoDate, canPrev: 
             }
             BasicText(
                 if (isNow) t(UiKey.PERIOD_PICKER_CURRENT) else t(UiKey.PERIOD_PICKER_PAST),
-                Modifier.clip(RoundedCornerShape(12.dp)).background(if (isNow) Ink.mint else Color(0x29FFFFFF)).padding(horizontal = 12.dp, vertical = 3.dp),
+                Modifier.clip(RoundedCornerShape(12.dp)).background(if (isNow) Ink.mint else Ink.white(0x29)).padding(horizontal = 12.dp, vertical = 3.dp),
                 style = Type.of(12, FontWeight.Bold).copy(color = if (isNow) Ink.heroStart else Color.White),
             )
             if (isNow) {
@@ -138,7 +138,7 @@ private fun GlassArrow(icon: Lucide, label: String, enabled: Boolean, onClick: (
     val press = rememberPress()
     Box(
         Modifier.size(48.dp).alpha(if (enabled) 1f else 0.35f).pressScale(press, enabled).clip(RoundedCornerShape(16.dp))
-            .background(Color(0x24FFFFFF)).tap(press, enabled, label = label, onClick = onClick),
+            .background(Ink.white(0x24)).tap(press, enabled, label = label, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) { LucideIcon(icon, size = 22.dp, tint = Color.White, contentDescription = label, modifier = Modifier.mirrorInLtr()) }
 }
@@ -202,7 +202,7 @@ private fun Tile(tile: PeriodTile, modifier: Modifier, onClick: () -> Unit) {
             BasicText(tile.name, Modifier.weight(1f, fill = false), style = Type.of(14, FontWeight.Bold).copy(color = ink), maxLines = 1)
             if (tile.isNow) BasicText(
                 t(UiKey.PERIOD_PICKER_NOW),
-                Modifier.clip(RoundedCornerShape(10.dp)).background(if (tile.selected) Color(0x2EFFFFFF) else Ink.selected).padding(horizontal = 6.dp),
+                Modifier.clip(RoundedCornerShape(10.dp)).background(if (tile.selected) Ink.white(0x2E) else Ink.selected).padding(horizontal = 6.dp),
                 style = Type.of(11, FontWeight.Bold).copy(color = if (tile.selected) Color.White else Ink.primary),
             )
         }

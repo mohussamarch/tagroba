@@ -66,7 +66,7 @@ internal fun DuplicateAskCard(t0: Transaction, onErased: (TxnErased) -> Unit, on
     var erasing by remember(t0.id) { mutableStateOf(false) }
     var error by remember(t0.id) { mutableStateOf<String?>(null) }
     Column(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(Radius.card)).background(Color(0x14C98A1E)).padding(horizontal = 16.dp, vertical = 14.dp),
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(Radius.card)).background(Ink.amberTint).padding(horizontal = 16.dp, vertical = 14.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         BasicText(t(R06Key.DUP_ASK_TITLE), style = Type.of(14, FontWeight.Bold))

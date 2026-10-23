@@ -81,7 +81,7 @@ fun RestorePreviewScreen(fileName: String, text: String) {
     }
     InnerScaffold(t(UiKey.RST_TITLE)) {
         item(key = "file") {
-            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Color(0x99FFFFFF)).padding(horizontal = 14.dp, vertical = 10.dp)) {
+            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Ink.glass(0x99)).padding(horizontal = 14.dp, vertical = 10.dp)) {
                 BasicText(fileName, Modifier.fillMaxWidth(), style = Type.of(13, FontWeight.Bold).copy(textDirection = TextDirection.Ltr, textAlign = TextAlign.End))
                 val plan = (phase as? Phase.Plan)?.plan ?: (phase as? Phase.Done)?.plan ?: (phase as? Phase.Applying)?.plan
                 plan?.let { p -> fullDate(p.file.exportedAt)?.let { BasicText(t(UiKey.RST_MADE_ON, it), style = Type.caption().copy(color = Ink.muted)) } }
@@ -97,7 +97,7 @@ fun RestorePreviewScreen(fileName: String, text: String) {
             }
             is Phase.Error -> item(key = "error") {
                 WarnBox(t(UiKey.RST_BAD_FILE), p.message) {
-                    BasicText(t(UiKey.RST_NOTHING_WRITTEN), style = Type.caption().copy(color = Color(0xFF6B4600)))
+                    BasicText(t(UiKey.RST_NOTHING_WRITTEN), style = Type.caption().copy(color = Ink.amberText))
                     TonalButton(t(UiKey.RST_OTHER_FILE), onClick = { nav.pop() }, height = 44.dp)
                 }
             }

@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.home
 
+import app.masroufy.ui.theme.CategoryInk
 import app.masroufy.core.UiKey
 import androidx.compose.ui.graphics.Color
 import app.masroufy.core.AlertGroup
@@ -26,7 +27,7 @@ enum class NotifIcon(val icon: Lucide, private val colorLazy: () -> Color) {
     MOVE(Lucide.ARROW_LEFT_RIGHT, { Ink.transfer }),
     BUDGET(Lucide.CIRCLE_ALERT, { Ink.expense }),
     DUE(Lucide.RECEIPT, { Ink.focus }),
-    DEBT(Lucide.HAND_COINS, { Color(0xFFA55060) }),
+    DEBT(Lucide.HAND_COINS, { CategoryInk.gifts }),
     OTHER(Lucide.BELL, { Ink.muted }),
     ;
     val color: Color get() = colorLazy()

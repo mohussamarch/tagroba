@@ -115,7 +115,7 @@ fun TextInput(
                 val style = Type.of(textSize).copy(textAlign = if (ltr || riyal) TextAlign.Left else TextAlign.Start)
                 val input = @Composable { Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterStart) {
                     // الخانة الإنجليزي (إيميل · أرقام) من الشمال لليمين بالكامل — حتى النص الباهت
-                    if (value.isEmpty() && placeholder != null) BasicText(placeholder, style = style.copy(color = Color(0xFF8A9A95)), maxLines = 1)
+                    if (value.isEmpty() && placeholder != null) BasicText(placeholder, style = style.copy(color = Ink.faded), maxLines = 1)
                     BasicTextField(
                         value = value,
                         onValueChange = {

@@ -200,8 +200,8 @@ private fun ChatHeader(title: String, subtitle: String, canStartNew: Boolean, on
     }
 }
 
-private val brandShadow = listOf(ShadowLayer(0.dp, 1.dp, 0.dp, Color(0x38FFFFFF), inset = true), ShadowLayer(0.dp, 8.dp, 18.dp, Color(0x40064B40)))
-private val boxShadow = listOf(ShadowLayer(0.dp, 10.dp, 26.dp, Color(0x1A1D3635)))
+private val brandShadow get() = listOf(ShadowLayer(0.dp, 1.dp, 0.dp, Ink.white(0x38), inset = true), ShadowLayer(0.dp, 8.dp, 18.dp, Color(0x40064B40)))
+private val boxShadow get() = listOf(ShadowLayer(0.dp, 10.dp, 26.dp, Ink.shadow(0x1A)))
 private val boxShadowFocused get() = listOf(ShadowLayer(0.dp, 10.dp, 26.dp, Ink.primary.copy(alpha = 0x2E / 255f)))
 
 /**
@@ -223,7 +223,7 @@ private fun InputBox(draft: String, onDraft: (String) -> Unit, onMic: () -> Unit
     ) {
         val inputLabel = t(UiKey.ASK_INPUT_LABEL, t(UiKey.ASK_TITLE))
         Box(Modifier.weight(1f).padding(horizontal = 12.dp), contentAlignment = Alignment.CenterStart) {
-            if (draft.isEmpty()) BasicText(t(UiKey.ASK_INPUT_HINT), style = Type.of(15).copy(color = Color(0xFF6E7F7A)), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            if (draft.isEmpty()) BasicText(t(UiKey.ASK_INPUT_HINT), style = Type.of(15).copy(color = Ink.muted), maxLines = 1, overflow = TextOverflow.Ellipsis)
             BasicTextField(
                 draft, { onDraft(latinizeDigits(it)) }, singleLine = true, textStyle = Type.of(15), cursorBrush = SolidColor(Ink.primary), interactionSource = focus,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send), keyboardActions = KeyboardActions(onSend = { onSend() }),
@@ -265,14 +265,14 @@ private fun Suggestions(bar: ChipBar, onPick: (ChipRef) -> Unit) {
     }
 }
 
-private val chipShadow = listOf(ShadowLayer(0.dp, 4.dp, 10.dp, Color(0x0F1D3635)))
+private val chipShadow get() = listOf(ShadowLayer(0.dp, 4.dp, 10.dp, Ink.shadow(0x0F)))
 
 @Composable
 private fun SuggestionChip(label: String, learned: Boolean, onClick: () -> Unit) {
     val press = rememberPress()
     val shape = RoundedCornerShape(22.dp)
     Box(
-        Modifier.height(44.dp).pressScale(press).layeredShadow(shape, chipShadow).clip(shape).background(if (learned) Ink.selected else Color(0xE0FFFFFF))
+        Modifier.height(44.dp).pressScale(press).layeredShadow(shape, chipShadow).clip(shape).background(if (learned) Ink.selected else Ink.glass(0xE0))
             .insetRing(shape, 1.dp, Ink.primary.copy(alpha = 0x2E / 255f)).tap(press, label = label, onClick = onClick).padding(horizontal = 16.dp),
         contentAlignment = Alignment.Center,
     ) { BasicText(label, style = Type.of(13, FontWeight.Medium).copy(color = Ink.primary), maxLines = 1) }

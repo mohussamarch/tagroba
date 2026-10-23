@@ -173,7 +173,7 @@ internal fun RowUndoBar(editor: RowEditor, modifier: Modifier = Modifier) {
         val press = rememberPress()
         val label = t(UiKey.PEOPLE_ROW_UNDO)
         Box(
-            Modifier.height(44.dp).pressScale(press).clip(RoundedCornerShape(14.dp)).background(Color(0x1AFFFFFF))
+            Modifier.height(44.dp).pressScale(press).clip(RoundedCornerShape(14.dp)).background(Ink.white(0x1A))
                 .tap(press, label = label, onClick = editor::undoRemove).padding(horizontal = 14.dp),
             contentAlignment = Alignment.Center,
         ) { BasicText(label, style = Type.of(13, FontWeight.Bold).copy(color = Ink.selected)) }

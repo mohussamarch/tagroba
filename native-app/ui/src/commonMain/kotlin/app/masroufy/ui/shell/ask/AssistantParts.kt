@@ -1,5 +1,6 @@
 package app.masroufy.ui.shell.ask
 
+import app.masroufy.ui.theme.CategoryInk
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -58,8 +59,8 @@ import app.masroufy.usecase.ChatView
 /** الكارت الهادي جوه الشات (`AssistantStart`): أبيض متدرج بزاوية 20 وظل قريب + بعيد خفيف. */
 internal val calmShadow = listOf(
     ShadowLayer(0.dp, 1.dp, 0.dp, Color.White, inset = true),
-    ShadowLayer(0.dp, 1.dp, 2.dp, Color(0x0D1D3635)),
-    ShadowLayer(0.dp, 10.dp, 24.dp, Color(0x141D3635)),
+    ShadowLayer(0.dp, 1.dp, 2.dp, Ink.shadow(0x0D)),
+    ShadowLayer(0.dp, 10.dp, 24.dp, Ink.shadow(0x14)),
 )
 
 /**
@@ -94,7 +95,7 @@ private fun StartCard(item: StartItem, onClose: (StartItem) -> Unit, onOpen: (Sc
     val (icon, tint) = when (item.kind) {
         StartItemKind.SMS_WAITING -> Lucide.MESSAGE_SQUARE_TEXT to Ink.focus
         StartItemKind.BILL_UNRECORDED -> Lucide.RECEIPT to Ink.focus
-        StartItemKind.CATEGORY_AT_THRESHOLD -> Lucide.UTENSILS to Color(0xFFA36A21)
+        StartItemKind.CATEGORY_AT_THRESHOLD -> Lucide.UTENSILS to CategoryInk.restaurants
         StartItemKind.DEBT_OVERDUE -> Lucide.HAND_COINS to Ink.expense.copy(alpha = 0xFF / 255f)
     }
     Row(
@@ -159,7 +160,7 @@ internal fun UndoBar(text: String, onUndo: () -> Unit) {
         val press = rememberPress()
         val label = t(AskKey.CHAT_UNDO)
         Box(
-            Modifier.height(44.dp).clip(RoundedCornerShape(12.dp)).background(Color(0x1AFFFFFF)).tap(press, label = label, onClick = onUndo).padding(horizontal = 12.dp),
+            Modifier.height(44.dp).clip(RoundedCornerShape(12.dp)).background(Ink.white(0x1A)).tap(press, label = label, onClick = onUndo).padding(horizontal = 12.dp),
             contentAlignment = Alignment.Center,
         ) { BasicText(label, style = Type.of(13, FontWeight.Bold).copy(color = Ink.mint)) }
     }

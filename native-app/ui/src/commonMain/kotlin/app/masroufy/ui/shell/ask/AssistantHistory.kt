@@ -59,8 +59,8 @@ import app.masroufy.usecase.HistoryRow
 
 private val listShadow = listOf(
     ShadowLayer(0.dp, 1.dp, 0.dp, Color.White, inset = true),
-    ShadowLayer(0.dp, 1.dp, 2.dp, Color(0x0D1D3635)),
-    ShadowLayer(0.dp, 10.dp, 24.dp, Color(0x121D3635)),
+    ShadowLayer(0.dp, 1.dp, 2.dp, Ink.shadow(0x0D)),
+    ShadowLayer(0.dp, 10.dp, 24.dp, Ink.shadow(0x12)),
 )
 
 /**

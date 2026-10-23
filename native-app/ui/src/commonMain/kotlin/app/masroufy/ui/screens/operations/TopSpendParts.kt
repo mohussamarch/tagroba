@@ -55,7 +55,7 @@ import app.masroufy.usecase.TopSpendView
 
 private val SHARE_REST get() = Ink.tint(0x2E)
 private val ROW_TRACK get() = Ink.tint(0x12)
-private val CHIP_IDLE = Color(0xB3FFFFFF)
+private val CHIP_IDLE get() = Ink.glass(0xB3)
 
 /**
  * شرايح الفترة: المختارة أخضر مليان بكتابة بيضا عريضة، والباقي أبيض شفاف بحد رفيع (التصميم). مجموعة اختيار اسمها «الفترة» (زي
