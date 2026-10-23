@@ -53,6 +53,8 @@ class MainActivity : FragmentActivity() {
         val deps = container.appDeps(permissions)
         // ميكروفون المساعد: نافذة التعرّف على الكلام بتاعة الجوال (§79.2-8) — لازم تتسجل هنا قبل ما الشاشة تبدأ
         val speech = AndroidSpeech(this)
+        // صورة الشخص (r06-person): نافذة اختيار الصور — على الجهاز بس، من غير رفع
+        val photos = AndroidPersonPhotos(this)
         // المظهر (فاتح · غامق · زي الجوال) وإخفاء الأرقام: المحفوظ على الجهاز بيتقرا قبل أول رسم عشان ما يبقاش فيه وميض
         val nightNow = (resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
         app.masroufy.ui.theme.Appearance.attach(AndroidPrefStore(this), nightNow)
@@ -62,7 +64,7 @@ class MainActivity : FragmentActivity() {
             // 0.5.2: أيقونات شريط الحالة والتنقل بتتبع مظهر البرنامج (فاتحة على الغامق) وقت الاختيار — مش مظهر الجوال
             val dark = app.masroufy.ui.theme.Appearance.isDark
             androidx.compose.runtime.LaunchedEffect(dark) { systemBars(dark) }
-            CompositionLocalProvider(LocalSpeech provides speech) { MasroufyApp(deps, shell, lock, reduceMotion = animationsOff()) }
+            CompositionLocalProvider(LocalSpeech provides speech, app.masroufy.ui.screens.people.LocalPersonPhotos provides photos) { MasroufyApp(deps, shell, lock, reduceMotion = animationsOff()) }
         }
         askNotificationsOnce(permissions)
     }

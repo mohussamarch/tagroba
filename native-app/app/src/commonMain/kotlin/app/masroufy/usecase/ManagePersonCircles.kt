@@ -1,6 +1,8 @@
 package app.masroufy.usecase
 
 import app.masroufy.core.Id
+import app.masroufy.core.PERSON_BADGES
+import app.masroufy.core.PERSON_HERO_COLOR_COUNT
 import app.masroufy.core.PersonCircle
 import app.masroufy.core.PersonCircleError
 import app.masroufy.core.PersonProfile
@@ -39,11 +41,31 @@ class ManagePersonCircles(private val deps: ManagePersonCirclesDeps) {
     suspend fun setProfile(personId: Id, circle: PersonCircle?, relationLabel: String?): PersonProfile? {
         checkPerson(personId)
         val label = cleanRelationLabel(relationLabel)
-        if (circle == null && label == null) {
-            deps.profiles.remove(personId)
+        // r06-person: التخصيص (اللون والرمز) بيفضل زي ما هو لما الدايرة أو الصلة تتغير
+        val old = profileOf(personId)
+        val profile = PersonProfile(personId, circle, label, deps.clock.nowIso(), heroColor = old?.heroColor, badge = old?.badge)
+        return write(profile)
+    }
+
+    /**
+     * r06-person (OVERRIDES §116-ب): تخصيص صفحة الشخص — [heroColor] من 0 لـ[PERSON_HERO_COLOR_COUNT]−1 (0 أو null = الأصلي ⇒ ما بيتكتبش)
+     * و[badge] واحد من [PERSON_BADGES] (null = من غير رمز). الدايرة والصلة بيفضلوا زي ما هم.
+     */
+    suspend fun setLook(personId: Id, heroColor: Int?, badge: String?): PersonProfile? {
+        checkPerson(personId)
+        require(heroColor == null || heroColor in 0 until PERSON_HERO_COLOR_COUNT) { "heroColor" }
+        require(badge == null || badge in PERSON_BADGES) { "badge" }
+        val old = profileOf(personId)
+        val profile = PersonProfile(personId, old?.circle, old?.relationLabel, deps.clock.nowIso(), heroColor = heroColor?.takeIf { it != 0 }, badge = badge)
+        return write(profile)
+    }
+
+    /** كله فاضي ⇒ المستند بيتشال (اختيار Claude). */
+    private suspend fun write(profile: PersonProfile): PersonProfile? {
+        if (profile.circle == null && profile.relationLabel == null && !profile.hasLook) {
+            deps.profiles.remove(profile.personId)
             return null
         }
-        val profile = PersonProfile(personId, circle, label, deps.clock.nowIso())
         deps.profiles.save(profile)
         return profile
     }

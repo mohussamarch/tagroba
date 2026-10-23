@@ -84,6 +84,12 @@ class BellHolder(val state: BellState?, val refresh: () -> Unit)
 val LocalBell = staticCompositionLocalOf { BellHolder(null) {} }
 
 /**
+ * r06-person: يفتح المساعد ومكتوب في خانته [String] (لسه ما اتبعتش — المستخدم بيكمّل المبلغ ويبعت). «قسّم فاتورة» في صفحة الشخص بيستعمله
+ * عشان يوصل لتقسيم المساعد الموجود (`AssistantSplit`). null برّه `AppShell` (اختبار).
+ */
+val LocalStartAsk = staticCompositionLocalOf<((String) -> Unit)?> { null }
+
+/**
  * الهيكل (`AppShell` = `App.dc.html`): الشاشة الظاهرة بحركتها (تبويب = تبديل سريع · داخلية = دخول من الشمال · رجوع = خروج) فوق خلفية الإضاءات،
  * والشريطين تحت في التبويبات بس، ولوحة «+» والمحادثة، وطبقة اللوحات والنوافذ (اللي بتموّه الشاشة — `Backdrop`).
  * حالة كل شاشة بتتحفظ بمفتاحها (`SaveableStateHolder`) — التبويبات الأربعة بترجع زي ما سبتها.
@@ -119,6 +125,7 @@ fun AppShell(shell: ShellState, registry: RouteRegistry, deps: SpaceDeps) {
         LocalCountries provides remember(deps) { CountriesInfo.of(deps.space, runCatching { deps.shell.openSpaces() }.getOrDefault(emptyList())) },
         LocalToaster provides shell.toaster,
         LocalBell provides BellHolder(shownBell) { bellTick++ },
+        LocalStartAsk provides { text: String -> shell.ask.draft = text; ask = false },
         LocalDataChanges provides shell.changes,
     ) {
         // الضغط برّه أي اختيار مفتوح بيلغيه، وبرّه خانات الكتابة بيقفل الكيبورد (HANDOVER §6.5 بند 11 — `OutsideTap.kt`)

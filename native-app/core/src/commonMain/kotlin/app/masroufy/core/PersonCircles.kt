@@ -32,8 +32,27 @@ enum class PersonCircle(val wire: String, val labelKey: TextKey) {
     }
 }
 
-/** دايرة الشخص وصلته بيك. [circle] null = لسه ما اتحددتش. */
-data class PersonProfile(val personId: Id, val circle: PersonCircle? = null, val relationLabel: String? = null, val updatedAt: String)
+/**
+ * دايرة الشخص وصلته بيك. [circle] null = لسه ما اتحددتش.
+ * r06-person (OVERRIDES §116-ب): تخصيص صفحته — [heroColor] رقم اللون من [PERSON_HERO_COLOR_COUNT] (null = الأخضر الأصلي) و[badge] الرمز اللي على
+ * صورته من [PERSON_BADGES]. اختياريين ⇒ المستندات القديمة بتتقري زي ما هي.
+ */
+data class PersonProfile(
+    val personId: Id,
+    val circle: PersonCircle? = null,
+    val relationLabel: String? = null,
+    val updatedAt: String,
+    val heroColor: Int? = null,
+    val badge: String? = null,
+) {
+    val hasLook: Boolean get() = heroColor != null || badge != null
+}
+
+/** ألوان خلفية صفحة الشخص (`PersonHero.dc.html` — 5). أول واحد = الأخضر الأصلي. */
+const val PERSON_HERO_COLOR_COUNT = 5
+
+/** الرموز اللي تتحط على صورة الشخص (`PersonHero.dc.html` — 8). */
+val PERSON_BADGES: List<String> = listOf("⭐", "❤️", "⚽", "☕", "🎮", "📚", "🌙", "🚗")
 
 /** الدايرة للعرض — اللي مالوش دايرة بيظهر «غيرهم». */
 fun circleOf(profile: PersonProfile?): PersonCircle = profile?.circle ?: PersonCircle.OTHER
