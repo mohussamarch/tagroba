@@ -32,6 +32,8 @@ fun smsRecordEffects(
     personRules: RecordEffect? = null,
 ): List<RecordEffect> = buildList {
     add(OwnAccountByLast4Effect(wallets))
+    // §112-3: رِجل الحساب التاني لوحدها (والدمج لما رسالة بنكه توصل) — بعد ما «حسابي التاني» اتحدد
+    add(OwnTransferLegEffect(wallets, txns))
     add(SmsSalaryEffect(inbox, spaceId))
     add(CashWithdrawalEffect(wallets))
     addAll(returns)

@@ -50,4 +50,6 @@ enum class R06Key : TextRef {
     /** r06-shared — قاعدة التجار المشتركة: الاقتراح · سجل المشاكل · كارت «القواعد والتجار». */
     CATEGORIZED_SHARED_MERCHANT, IMPORT_SRC_SHARED, PLOG_C_SHARED_SYNC, PLOG_C_SHARED_CONTRIBUTE,
     RULES_SYNC_LAST, RULES_SYNC_NEVER, RULES_SYNC_RUNNING, RULES_SYNC_DONE, RULES_SYNC_NOTHING, RULES_SYNC_FAILED,
+    /** r06-links (OVERRIDES §112) — نصوصها في `TextsR06Links.kt`: الرِجل التلقائية · تعديل العملية · الحسابات · المسح والأرشفة. */
+    OWN_LEG_AUTO_REASON, OWN_LEG_AUTO_NOTE,
 }
