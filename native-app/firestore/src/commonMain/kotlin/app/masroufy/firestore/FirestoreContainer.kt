@@ -109,8 +109,8 @@ class FirestoreContainer(val accountRoot: FirestoreSpace, val spaceRoot: Firesto
     /** النسخة الشاملة للحساب كله (§41.1) — من `users/{uid}` (الحساب + السعودية). البلاد التانية في الإصدار 3. */
     val fullBackup = FirestoreFullBackup(account, if (spaceId == DEFAULT_SPACE_ID && space !== account) listOf(space) else emptyList())
 
-    /** يوم المرتب واحد للحساب كله (رد المالك §64-١) ⇒ الملف على مستوى الحساب. */
-    val profile = FirestoreProfileRepository(account)
+    /** الملف على مستوى الحساب، وبداية الشهر المالي **لكل بلد** (OVERRIDES §111-3 — بدل §64-١): المستودع بيوري البلد دي يومها. */
+    val profile = app.masroufy.usecase.SpaceProfileRepository(FirestoreProfileRepository(account), spaceId)
     val referenceSeed = FirestoreReferenceSeed(space, merchantsAt = account)
     val sharedMerchants = FirestoreSharedMerchantCatalog(space.db)
     val spaces = FirestoreSpaceRegistry(account)

@@ -63,6 +63,8 @@ data class UserProfile(
     val salaries: Map<Currency, Halalas> = emptyMap(),
     /** «أفضّل ما أقولش» **لكل بلد** (عملتها). المفتاح `salaryDeclinedIn`. القديم [salaryDeclined] بيتنقل للسعودية (البلد الأصلية). */
     val salaryDeclinedIn: Set<Currency> = emptySet(),
+    /** §111-3: بداية الشهر المالي لكل بلد تانية (معرّف البلد ⇒ اليوم). السعودية = [payday]. المفتاح `paydays` (`CountryPayday.kt`). */
+    val paydays: Map<String, Int> = emptyMap(),
 )
 
 /** عدد الأشكال (المؤقتة لحد ما الكاركتر النهائي يتصمم — §73). */
@@ -110,6 +112,10 @@ fun parseStoredProfile(raw: Map<String, Any?>?): UserProfile {
             safeInteger(v)?.takeIf { it > 0 }?.let { c to it }
         }.toMap(),
         salaryDeclinedIn = (data["salaryDeclinedIn"] as? List<*>).orEmpty().mapNotNull { c -> Currency.entries.firstOrNull { it.name == c } }.toSet(),
+        paydays = (data["paydays"] as? Map<*, *>).orEmpty().mapNotNull { (k, v) ->
+            val day = safeInteger(v)?.takeIf { it in 1..31 }?.toInt() ?: return@mapNotNull null
+            (k as? String)?.takeIf(::isSpaceId)?.let { it to day }
+        }.toMap(),
     ).withSalaryMigrated()
 }
 

@@ -20,6 +20,7 @@ fun checkBackupProfile(profile: Any?) {
         if (!m.all { (k, v) -> Currency.entries.any { it.name == k } && isSafeInteger(v) && numberOf(v)!! >= 0 }) bad("salaries")
     }
     if (has("salaryDeclinedIn") && !((row["salaryDeclinedIn"] as? List<*>) ?: bad("salaryDeclinedIn")).all { c -> Currency.entries.any { it.name == c } }) bad("salaryDeclinedIn")
+    if (has("paydays") && !((row["paydays"] as? Map<*, *>) ?: bad("paydays")).all { (k, v) -> isSpaceId(k as? String) && isSafeInteger(v) && numberOf(v)!! in 1.0..31.0 }) bad("paydays")
     if (has("salaryCurrency") && Currency.entries.none { it.name == row["salaryCurrency"] }) bad("salaryCurrency")
     if (row.containsKey("payday")) {
         val payday = row["payday"]
