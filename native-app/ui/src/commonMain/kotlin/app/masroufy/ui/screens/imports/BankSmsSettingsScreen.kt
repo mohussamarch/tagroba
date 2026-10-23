@@ -134,11 +134,11 @@ fun BankSmsSettingsScreen() {
             val known = knownBankSenders(wallets, country)
             when {
                 u.senders.isEmpty() && known.isNotEmpty() -> withPermission {
-                    if (sms != null) connectKnownBanks(sms, wallets, country, emptyList())
+                    if (sms != null) connectKnownBanks(sms, wallets, country, u.allSenders)
                     toaster.show(t(UiKey.SMS_SETTINGS_STARTED), dark = true)
                 }
                 u.senders.isEmpty() -> sheet = SenderSheet.Add
-                else -> withPermission { sms?.enable(u.senders.map { it.sender }); toaster.show(t(UiKey.SMS_SETTINGS_STARTED), dark = true) }
+                else -> withPermission { sms?.enable(u.allSenders); toaster.show(t(UiKey.SMS_SETTINGS_STARTED), dark = true) }
             }
         }) }
         item(key = "senders") {
@@ -166,7 +166,7 @@ fun BankSmsSettingsScreen() {
         isLast = (ui?.senders?.size ?: 0) <= 1,
         onDismiss = { sheet = null },
         onSave = { name, wallet ->
-            val current = ui?.senders?.map { it.sender }.orEmpty()
+            val current = ui?.allSenders.orEmpty()
             when (val s = sheet) {
                 is SenderSheet.Edit -> act(UiKey.SMS_SETTINGS_LINKED, s.sender.sender, wallet.name) { sms?.chooseWallet(s.sender.sender, wallet.id) }
                 SenderSheet.Add -> withPermission {
@@ -181,7 +181,7 @@ fun BankSmsSettingsScreen() {
         onUnlink = { s -> sheet = null; act(UiKey.SMS_SETTINGS_UNLINKED) { sms?.chooseWallet(s.sender, null) } },
         onRemove = { s ->
             sheet = null
-            act(UiKey.SMS_SETTINGS_REMOVED, s.sender) { sms?.enable(sendersWithout(ui?.senders?.map { it.sender }.orEmpty(), s.sender)) }
+            act(UiKey.SMS_SETTINGS_REMOVED, s.sender) { sms?.enable(sendersWithout(ui?.allSenders.orEmpty(), s.sender)) }
         },
     )
     SmsPermissionSheet(
