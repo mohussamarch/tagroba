@@ -47,15 +47,20 @@ import kotlinx.coroutines.launch
 @Composable
 internal fun DarahimDetailExtras(t0: Transaction, categories: List<Category>, onErased: (TxnErased) -> Unit, onChanged: () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        if (t0.duplicateAskPending == true) DuplicateAskCard(t0, onErased, onChanged)
         if (t0.meal != null || isRestaurantCategory(t0.categoryId, categories)) MealChips(t0, categories, onChanged)
         ExclusionChips(t0, onChanged)
     }
 }
 
+/**
+ * fix053 (فحص 0.5.3: `duplicateAskPending = true` في فايربيز والكارت مش ظاهر): الكارت كان جوه [DarahimDetailExtras] اللي بيتخبى مع رجل التحويل
+ * بين البلدين (`locked`) وتحت كذا كارت. دلوقتي سطر لوحده تحت رأس التفاصيل على طول، وشرطه الوحيد السؤال نفسه — أي عملية عليها السؤال بتسأله.
+ */
+fun duplicateAskShown(t: Transaction): Boolean = t.duplicateAskPending == true
+
 /** §12-5 «مكرر؟»: «أيوه مكرر — شيله» = لوحة المسح الموجودة (بتراجعها) · «لأ، الاتنين صح» = السؤال يتقفل وما يرجعش. */
 @Composable
-private fun DuplicateAskCard(t0: Transaction, onErased: (TxnErased) -> Unit, onChanged: () -> Unit) {
+internal fun DuplicateAskCard(t0: Transaction, onErased: (TxnErased) -> Unit, onChanged: () -> Unit) {
     val ops = LocalSpace.current.operations
     val scope = rememberCoroutineScope()
     var erasing by remember(t0.id) { mutableStateOf(false) }

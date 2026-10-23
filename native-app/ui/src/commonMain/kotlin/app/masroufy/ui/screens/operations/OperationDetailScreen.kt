@@ -142,6 +142,7 @@ fun OperationDetailScreen(transactionId: Id, openPerson: Boolean = false) {
                 personFlowItems(person, v, personWindow) { u -> unlinkPerson(u.transactionId, t(UiKey.PLINK_UNDONE)) }
                 kindDone?.let { k -> item(key = "kind-undo") { KindUndoStrip(k, onClear = { kindDone = null }, onChanged = { reload++ }) } }
                 item(key = "hero") { DetailHero(v) }
+                if (duplicateAskShown(v.transaction)) item(key = "dup-ask") { DuplicateAskCard(v.transaction, onErased = { erased = it }) { reload++ } } // §12-5 · fix053
                 if (v.flow == LinkFlow.PURCHASE && !s.locked && deps.payerKinds != null) item(key = "await-refund") { AwaitRefundToggle(v.transaction) { reload++ } }
                 item(key = "quick-links") { QuickLinksSection(v.id, onChanged = { reload++ }) }
                 (linkedView as? app.masroufy.usecase.LinkedInflowsView.Inflow)?.let { li ->
