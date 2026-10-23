@@ -28,6 +28,16 @@ internal val MSA_R06_LINKS_TEXTS: Map<R06Key, String> = mapOf(
     R06Key.WALLET_HIDDEN_DONE to "أُخفي الحساب",
     R06Key.WALLET_SHOWN_DONE to "ظهر الحساب",
     R06Key.WALLETS_HIDDEN_SECTION to "مخفي",
+    R06Key.REMOVE_GONE to "غير موجودة",
+    R06Key.REMOVE_PLAN_LINKED to "عليها دفعات مرتبطة بعمليات، فلا تُحذف",
+    R06Key.REMOVE_PLAN_ACTION to "حذف الخطة",
+    R06Key.REMOVE_PLAN_TITLE to "حذف «{0}»؟",
+    R06Key.REMOVE_PLAN_BODY to "الخطة بلا دفعات. تقدر تتراجع خلال ثوانٍ.",
+    R06Key.REMOVE_PLAN_DONE to "حُذفت «{0}»",
+    R06Key.PERSON_ARCHIVE_ACTION to "أرشفة الشخص",
+    R06Key.PERSON_ARCHIVE_TITLE to "أرشفة «{0}»؟",
+    R06Key.PERSON_ARCHIVE_BODY to "يختفي من القوائم، وسجله وديونه تبقى كما هي.",
+    R06Key.PERSON_ARCHIVE_DONE to "أُرشف «{0}»",
 )
 
 internal val EGYPTIAN_R06_LINKS_TEXTS: Map<R06Key, String> = mapOf(
@@ -54,6 +64,16 @@ internal val EGYPTIAN_R06_LINKS_TEXTS: Map<R06Key, String> = mapOf(
     R06Key.WALLET_HIDDEN_DONE to "الحساب اتخفى",
     R06Key.WALLET_SHOWN_DONE to "الحساب ظهر",
     R06Key.WALLETS_HIDDEN_SECTION to "مخفي",
+    R06Key.REMOVE_GONE to "مش موجودة",
+    R06Key.REMOVE_PLAN_LINKED to "عليها دفعات مربوطة بعمليات، فمش هتتمسح",
+    R06Key.REMOVE_PLAN_ACTION to "امسح الخطة",
+    R06Key.REMOVE_PLAN_TITLE to "تمسح «{0}»؟",
+    R06Key.REMOVE_PLAN_BODY to "الخطة مالهاش دفعات. تقدر تتراجع في ثواني.",
+    R06Key.REMOVE_PLAN_DONE to "«{0}» اتمسحت",
+    R06Key.PERSON_ARCHIVE_ACTION to "أرشف الشخص",
+    R06Key.PERSON_ARCHIVE_TITLE to "تأرشف «{0}»؟",
+    R06Key.PERSON_ARCHIVE_BODY to "هيختفي من القوايم، وسجله وديونه زي ما هم.",
+    R06Key.PERSON_ARCHIVE_DONE to "«{0}» اتأرشف",
 )
 
 internal val ENGLISH_R06_LINKS_TEXTS: Map<R06Key, String> = mapOf(
@@ -80,4 +100,14 @@ internal val ENGLISH_R06_LINKS_TEXTS: Map<R06Key, String> = mapOf(
     R06Key.WALLET_HIDDEN_DONE to "Account hidden",
     R06Key.WALLET_SHOWN_DONE to "Account shown",
     R06Key.WALLETS_HIDDEN_SECTION to "Hidden",
+    R06Key.REMOVE_GONE to "Not found",
+    R06Key.REMOVE_PLAN_LINKED to "It has payments linked to operations, so it cannot be deleted",
+    R06Key.REMOVE_PLAN_ACTION to "Delete plan",
+    R06Key.REMOVE_PLAN_TITLE to "Delete «{0}»?",
+    R06Key.REMOVE_PLAN_BODY to "The plan has no payments. You can undo for a few seconds.",
+    R06Key.REMOVE_PLAN_DONE to "«{0}» deleted",
+    R06Key.PERSON_ARCHIVE_ACTION to "Archive person",
+    R06Key.PERSON_ARCHIVE_TITLE to "Archive «{0}»?",
+    R06Key.PERSON_ARCHIVE_BODY to "Hidden from lists. History and debts stay as they are.",
+    R06Key.PERSON_ARCHIVE_DONE to "«{0}» archived",
 )

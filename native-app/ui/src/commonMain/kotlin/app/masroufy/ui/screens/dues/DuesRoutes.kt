@@ -43,6 +43,9 @@ interface DuesDeps {
     /** الأقساط ومواعيد الديون — `list` · `save` · `unlink` · `setDebtTerms` · `clearDebtTerms`. */
     val installments: ManageInstallments
 
+    /** r06-links: مسح خطة التقسيط اللي مالهاش دفعات — مع «تراجع». null = مش متاح. */
+    val remove: app.masroufy.usecase.RemoveDues? get() = null
+
     /** الاشتراكات والفواتير — `load` · `save`. */
     val recurring: ManageRecurring
 

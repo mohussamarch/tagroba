@@ -47,6 +47,7 @@ class DuesGraph(private val c: AreaContext) : DuesDeps {
     )
 
     override val recurring = ManageRecurring(ManageRecurringDeps(r.recurring, r.transactions, r.categories, env.ids))
+    override val remove = app.masroufy.usecase.RemoveDues(r.installmentPlans, r.installmentPayments) // r06-links
 
     /** r051 — لوحة «ادفع بعدين» (الهيكل `BnplHost`) بنفس `installments` اللي فوق، واسم المحفظة والتصنيف. */
     override val bnpl = app.masroufy.usecase.BnplCharges(
