@@ -1337,6 +1337,14 @@
       "y": 33500,
       "w": 358,
       "h": 330
+    },
+    "AddDebtSheet.dc.html": {
+      "is_interactive": true,
+      "title": "ضيف دين · AddDebtSheet (من الديون في المستحقات)",
+      "x": 7800,
+      "y": 33500,
+      "w": 390,
+      "h": 844
     }
   },
   "createdOnFiles": {
@@ -1661,7 +1669,8 @@
     "LinkMap.dc.html",
     "TipStrip.dc.html",
     "Support.dc.html",
-    "SupportForm.dc.html"
+    "SupportForm.dc.html",
+    "AddDebtSheet.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"

@@ -41,14 +41,14 @@ a{color:#08634F}
   <sc-if value="{{showMain}}" hint-placeholder-val="{{ true }}">
     <div style="display: flex; flex-direction: column; gap: 14px">
       <div style="display: flex; gap: 10px">
-        <a href="OwedToYou.dc.html" class="d-press" style="flex: 1 1 0; min-width: 0; text-decoration: none; color: #193D33; border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 4px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <a href="DuesDebts.dc.html" class="d-press" style="flex: 1 1 0; min-width: 0; text-decoration: none; color: #193D33; border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 4px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
           <span style="font-size: 14px; font-weight: 700">{{lakTitle}}</span>
           <span dir="ltr" style="text-align: right; font-size: 20px; font-weight: 700; color: #13764D; font-variant-numeric: tabular-nums">{{lakTotal}}</span>
           <sc-for list="{{lakLines}}" as="l" hint-placeholder-count="2">
             <span style="display: flex; justify-content: space-between; font-size: 11px; color: #637570"><span>{{l.label}}</span><span dir="ltr" style="font-variant-numeric: tabular-nums">{{l.amount}}</span></span>
           </sc-for>
         </a>
-        <a href="YouOwe.dc.html" class="d-press" style="flex: 1 1 0; min-width: 0; text-decoration: none; color: #193D33; border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 4px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <a href="DuesDebts.dc.html" class="d-press" style="flex: 1 1 0; min-width: 0; text-decoration: none; color: #193D33; border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 4px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
           <span style="font-size: 14px; font-weight: 700">عليك</span>
           <span dir="ltr" style="text-align: right; font-size: 20px; font-weight: 700; color: #BE3D48; font-variant-numeric: tabular-nums">{{alekTotal}}</span>
           <sc-for list="{{alekLines}}" as="l" hint-placeholder-count="2">
@@ -122,11 +122,11 @@ class Component extends DCLogic {
     };
     const T = { debt: '#2469BA', sub: '#A55060', inst: '#4D747C', rosca: '#27785B' };
     const rows = [
-      ['debt', eg ? 'سلفة فهد' : 'سلفة فهد', eg ? 'ميعادها كان 20 سبتمبر · من 17 يوم' : 'موعدها 20 سبتمبر · منذ 17 يومًا', 120000, 'in', 'late', 'OwedToYou.dc.html'],
+      ['debt', eg ? 'سلفة فهد' : 'سلفة فهد', eg ? 'ميعادها كان 20 سبتمبر · من 17 يوم' : 'موعدها 20 سبتمبر · منذ 17 يومًا', 120000, 'in', 'late', 'DebtDetail.dc.html'],
       ['sub', eg ? 'اشتراك الجيم' : 'اشتراك النادي الرياضي', eg ? '9 أكتوبر · بعد يومين' : '9 أكتوبر · بعد يومين', 19900, 'out', 'soon', 'Subscriptions.dc.html'],
       ['inst', 'قسط السيارة', eg ? '27 أكتوبر · القسط 13 من 36' : '27 أكتوبر · القسط 13 من 36', 145000, 'out', 'next', 'Installments.dc.html'],
       ['rosca', eg ? 'جمعية العيلة' : 'جمعية العائلة', eg ? '1 نوفمبر · وده دورك' : '1 نوفمبر · وفيه دورك', 100000, 'out', 'next', 'Roscas.dc.html'],
-      ['debt', eg ? 'سلفة عمر' : 'سلفة عمر', '1 نوفمبر', 200000, 'out', 'next', 'YouOwe.dc.html']
+      ['debt', eg ? 'سلفة عمر' : 'سلفة عمر', '1 نوفمبر', 200000, 'out', 'next', 'DebtDetail.dc.html']
     ];
     const items = rows.map(([kind, name, sub, v, dir, s, href], i) => ({
       name, sub, href, i: { [kind]: true },

@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>ضيف دين — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+.ad-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1)}
+.ad-press:active{transform:scale(.97)}
+.ad-up{animation:ad-up 320ms cubic-bezier(.2,.8,.2,1) both}
+@keyframes ad-up{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion: reduce){.ad-press{transition:none}.ad-press:active{transform:none}.ad-up{animation:none}}
+.ad-in::placeholder{color:#8A9A95}
+</style>
+</helmet>
+<div style="position: absolute; inset: 0; z-index: 9; font-family: SAR, 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <button type="button" onClick="{{close}}" aria-label="{{closeLabel}}" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+  <div role="dialog" aria-modal="true" aria-label="{{title}}" class="ad-up" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 92%; overflow-y: auto; box-sizing: border-box; border-radius: 30px 30px 0 0; padding: 10px 16px 24px; display: flex; flex-direction: column; gap: 12px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -14px 40px rgba(16,45,53,0.18)">
+    <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: #CCD8CC"></span>
+    <span style="font-size: 18px; font-weight: 700">{{title}}</span>
+    <div role="radiogroup" aria-label="{{title}}" style="display: flex; gap: 8px"><sc-for list="{{sides}}" as="sd" hint-placeholder-count="2"><button type="button" role="radio" aria-checked="{{sd.on}}" class="ad-press" onClick="{{sd.pick}}" style="{{sd.style}}">{{sd.label}}</button></sc-for></div>
+    <span style="font-size: 13px; font-weight: 700; color: #637570">{{whoLabel}}</span>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px"><sc-for list="{{people}}" as="p" hint-placeholder-count="5"><button type="button" role="radio" aria-checked="{{p.on}}" class="ad-press" onClick="{{p.pick}}" style="{{p.style}}">{{p.label}}</button></sc-for></div>
+    <sc-if value="{{isNew}}" hint-placeholder-val="{{ false }}"><input class="ad-in" value="{{newName}}" onInput="{{typeName}}" placeholder="{{namePh}}" aria-label="{{namePh}}" style="{{field}}"></sc-if>
+    <div style="display: flex; gap: 8px">
+      <input class="ad-in" inputmode="decimal" value="{{amount}}" onInput="{{typeAmount}}" placeholder="{{amountPh}}" aria-label="{{amountPh}}" style="{{amountField}}">
+      <input class="ad-in" value="{{reason}}" onInput="{{typeReason}}" placeholder="{{reasonPh}}" aria-label="{{reasonPh}}" style="{{reasonField}}">
+    </div>
+    <span style="font-size: 13px; font-weight: 700; color: #637570">{{dueLabel}}</span>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px"><sc-for list="{{dues}}" as="d" hint-placeholder-count="3"><button type="button" role="radio" aria-checked="{{d.on}}" class="ad-press" onClick="{{d.pick}}" style="{{d.style}}">{{d.label}}</button></sc-for></div>
+    <span style="font-size: 13px; font-weight: 700; color: #637570">{{howLabel}}</span>
+    <div style="display: flex; flex-direction: column; gap: 8px"><sc-for list="{{hows}}" as="h" hint-placeholder-count="3"><button type="button" role="radio" aria-checked="{{h.on}}" class="ad-press" onClick="{{h.pick}}" style="{{h.style}}"><span style="font-size: 14px; font-weight: 700">{{h.label}}</span><span style="font-size: 12px; color: #637570">{{h.hint}}</span></button></sc-for></div>
+    <button type="button" class="ad-press" onClick="{{save}}" disabled="{{off}}" style="{{saveStyle}}">{{saveLabel}}</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"side":{"editor":"enum","options":["lak","alek"],"default":"lak","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"مصر","section":"الحالة"},"onClose":{"editor":null},"onSave":{"editor":null},"$preview":{"width":390,"height":844}}'>
+// «ضيف دين» (قرار المالك 2026-10-23 على مراجعة الربط، OVERRIDES §112: الديون الأساسية في «المستحقات» فيها «ضيف دين» و«سدّد»)
+// ليك ولا عليك · الشخص (موجود أو جديد) · المبلغ والسبب · الميعاد (اختياري) · الفلوس اتحركت إزاي: عملية متسجلة · كاش · دين قديم (قبل البرنامج — من غير حركة فلوس)
+// المبلغ بالوحدة الصغرى (عدد صحيح) — toMinor زي SettleSheet. الأسماء مخترعة
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { side: props.side || 'lak', who: '', newName: '', amount: '', reason: '', due: 'none', how: 'op' }; }
+  toMinor(text) { const t = String(text || '').replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  renderVals() {
+    const eg = (this.props.space ?? 'مصر') === 'مصر', T = (sa, e) => (eg ? e : sa), s = this.state;
+    const chip = (on) => 'height: 40px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #FFFFFF; background: #08634F' : 'color: #193D33; background: #EFF3ED');
+    const tile = (on, c) => 'flex: 1 1 0; min-height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; ' + (on ? 'color: #FFFFFF; background: ' + c : 'color: #193D33; background: #EFF3ED');
+    const field = 'box-sizing: border-box; height: 48px; border: 0; border-radius: 14px; padding: 0 12px; font: inherit; font-size: 15px; color: #193D33; background: #EFF3ED; outline: none';
+    const amt = this.toMinor(s.amount), named = s.who === 'new' ? !!s.newName.trim() : !!s.who, ok = named && amt > 0;
+    const lak = s.side === 'lak';
+    return {
+      title: T('أضف دينًا', 'ضيف دين'), closeLabel: T('إغلاق', 'اقفل'), close: () => { if (this.props.onClose) this.props.onClose(); },
+      sides: [['lak', T('لي عند أحد', 'ليا عند حد'), '#13764D'], ['alek', T('عليّ لأحد', 'عليا لحد'), '#BE3D48']].map(([id, label, c]) => ({ label, on: s.side === id ? 'true' : 'false', style: tile(s.side === id, c), pick: () => this.setState({ side: id }) })),
+      whoLabel: lak ? T('عند مين؟', 'عند مين؟') : T('لمن؟', 'لمين؟'),
+      people: ['خالد', 'فهد', 'نورة', 'عمر'].map((n) => [n, n]).concat([['new', T('+ شخص جديد', '+ شخص جديد')]]).map(([id, label]) => ({ label, on: s.who === id ? 'true' : 'false', style: chip(s.who === id), pick: () => this.setState({ who: id }) })),
+      isNew: s.who === 'new', newName: s.newName, typeName: (e) => this.setState({ newName: e.target.value }), namePh: T('اسمه', 'اسمه'), field,
+      amount: s.amount, typeAmount: (e) => this.setState({ amount: e.target.value }), amountPh: T('المبلغ', 'المبلغ'), amountField: field + '; width: 120px; flex-shrink: 0; font-variant-numeric: tabular-nums',
+      reason: s.reason, typeReason: (e) => this.setState({ reason: e.target.value }), reasonPh: T('السبب (اختياري)', 'السبب (لو حابب)'), reasonField: field + '; flex: 1 1 auto; min-width: 0',
+      dueLabel: T('الموعد', 'الميعاد'),
+      dues: [['none', T('بلا موعد', 'من غير ميعاد')], ['week', T('بعد أسبوع', 'بعد أسبوع')], ['month', T('بعد شهر', 'بعد شهر')], ['pick', T('تاريخ…', 'تاريخ…')]].map(([id, label]) => ({ label, on: s.due === id ? 'true' : 'false', style: chip(s.due === id), pick: () => this.setState({ due: id }) })),
+      howLabel: T('كيف تحرّك المال؟', 'الفلوس اتحركت إزاي؟'),
+      hows: [
+        ['op', T('عملية مسجّلة', 'عملية متسجلة'), lak ? T('تحويل خرج منك — نربطه بالدين', 'تحويل خرج منك — هنربطه بالدين') : T('تحويل وصلك — نربطه بالدين', 'تحويل وصلك — هنربطه بالدين')],
+        ['cash', T('نقدًا', 'كاش'), lak ? T('يخرج من محفظة النقد', 'هيطلع من محفظة الكاش') : T('يدخل محفظة النقد', 'هيدخل محفظة الكاش')],
+        ['old', T('دين قديم', 'دين قديم'), T('قبل التطبيق — بلا حركة مال الآن', 'من قبل البرنامج — مفيش فلوس اتحركت دلوقتي')]
+      ].map(([id, label, hint]) => ({ label, hint, on: s.how === id ? 'true' : 'false', pick: () => this.setState({ how: id }),
+        style: 'border: 0; border-radius: 16px; padding: 10px 14px; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; font: inherit; text-align: right; cursor: pointer; color: #193D33; background: ' + (s.how === id ? 'rgba(8,99,79,0.08); box-shadow: inset 0 0 0 2px #08634F' : '#EFF3ED') })),
+      off: !ok, saveLabel: T('أضف', 'ضيف'),
+      save: () => { if (ok && this.props.onSave) this.props.onSave({ side: s.side, who: s.who === 'new' ? s.newName.trim() : s.who, minor: amt, how: s.how, due: s.due }); },
+      saveStyle: 'min-height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer; ' + (ok ? 'color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'color: #637570; background: #E3EAE3')
+    };
+  }
+}
+</script>
+</body>
+</html>

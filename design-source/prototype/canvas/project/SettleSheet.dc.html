@@ -25,7 +25,7 @@ body{margin:0}
 </style>
 </helmet>
 <div dir="rtl" style="width: 100%; min-width: 350px; display: flex; flex-direction: column; gap: 6px; font-family: SAR, 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
-  <button type="button" class="ss-press" onClick="{{openSheet}}" disabled="{{blocked}}" aria-describedby="ss-why" style="{{triggerStyle}}">{{triggerLabel}}</button>
+  <sc-if value="{{showTrigger}}" hint-placeholder-val="{{ true }}"><button type="button" class="ss-press" onClick="{{openSheet}}" disabled="{{blocked}}" aria-describedby="ss-why" style="{{triggerStyle}}">{{triggerLabel}}</button></sc-if>
   <sc-if value="{{hasWhy}}" hint-placeholder-val="{{ false }}">
     <span id="ss-why" style="font-size: 12px; color: #637570; text-align: center">{{why}}</span>
   </sc-if>
@@ -80,13 +80,13 @@ body{margin:0}
   </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"side":{"editor":"enum","options":["lak","alek"],"default":"lak","section":"الحالة"},"person":{"editor":"enum","options":["فهد","خالد","عمر"],"default":"فهد","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"remaining":{"editor":"int","default":120000,"section":"الحالة"},"offline":{"editor":"boolean","default":false,"section":"الحالة"},"candLabel":{"editor":"enum","options":["","حوالة واردة في 5 أكتوبر"],"default":"حوالة واردة في 5 أكتوبر","section":"الحالة"},"candAmount":{"editor":"int","default":50000,"section":"الحالة"},"onSave":{"editor":null},"$preview":{"width":350,"height":560}}'>
+<script type="text/x-dc" data-dc-script data-props='{"side":{"editor":"enum","options":["lak","alek"],"default":"lak","section":"الحالة"},"person":{"editor":"enum","options":["فهد","خالد","عمر"],"default":"فهد","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"remaining":{"editor":"int","default":120000,"section":"الحالة"},"offline":{"editor":"boolean","default":false,"section":"الحالة"},"candLabel":{"editor":"enum","options":["","حوالة واردة في 5 أكتوبر"],"default":"حوالة واردة في 5 أكتوبر","section":"الحالة"},"candAmount":{"editor":"int","default":50000,"section":"الحالة"},"onSave":{"editor":null},"bare":{"editor":"boolean","default":false,"section":"الحالة"},"onClose":{"editor":null},"$preview":{"width":350,"height":560}}'>
 const withCur = (v, c) => (c === '\u20C1' ? '\u2066\u20C1\u00A0' + v + '\u2069' : v + ' ' + c); // رمز الريال الرسمي على شمال الرقم بمسافة (البنك المركزي السعودي) — الجنيه بعد الرقم زي ما هو
 class Component extends DCLogic {
   constructor(props) {
     super(props);
     // how: link (عملية متسجلة — الأقرب متعلّم) · cash (كاش — بتتسجل في محفظة الكاش) · مفيش دفع من غير عملية (طلب المالك 2026-10-17)
-    this.state = { open: false, how: 'link', pick: 0, amount: '', custody: false };
+    this.state = { open: !!props.bare, how: 'link', pick: 0, amount: '', custody: false };
   }
   toMinor(text) { const t = String(text || '').replace(/[٠-٩۰-۹]/g, (d) => ('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10)).replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
   fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
@@ -161,7 +161,8 @@ class Component extends DCLogic {
         this.setState({ open: false });
         if (typeof this.props.onSave === 'function') this.props.onSave(Math.min(amt, remaining), extra, link);
       },
-      closeSheet: () => this.setState({ open: false })
+      showTrigger: !this.props.bare,
+      closeSheet: () => { this.setState({ open: false }); if (this.props.onClose) this.props.onClose(); }
     };
   }
 }

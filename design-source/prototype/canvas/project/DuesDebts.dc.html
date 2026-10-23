@@ -28,6 +28,7 @@ input::placeholder{color:#8A9A95}
     <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
       <a href="Operations.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
       <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><h1 style="margin: 0; font-size: 22px; font-weight: 700">الديون</h1><span style="font-size: 12px; color: #637570">{{subTitle}}</span></span>
+      <button type="button" class="m-press" onClick="{{openAdd}}" style="height: 40px; padding: 0 14px; flex-shrink: 0; border: 0; border-radius: 14px; display: flex; align-items: center; gap: 4px; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>{{addLabel}}</button>
     </div>
 
     <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
@@ -66,17 +67,18 @@ input::placeholder{color:#8A9A95}
             <span style="font-size: 12px; color: #637570">{{g.order}}</span>
             <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
               <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="3">
-                <div style="{{r.wrapStyle}}">
+                <div style="{{r.wrapFlex}}">
                   <sc-if value="{{r.linked}}" hint-placeholder-val="{{ true }}">
-                    <a href="DebtDetail.dc.html" data-keep="{{r.keep}}" class="m-press" aria-label="{{r.aria}}" style="display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 10px 0; text-decoration: none; color: #193D33">
+                    <a href="DebtDetail.dc.html" data-keep="{{r.keep}}" class="m-press" aria-label="{{r.aria}}" style="flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 10px 0; text-decoration: none; color: #193D33">
                       <span style="{{r.avatar}}">{{r.initial}}</span>
                       <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 700">{{r.name}}</span><span style="font-size: 12px; color: #637570">{{r.reason}}</span><span style="{{r.chipStyle}}">{{r.chip}}</span></span>
                       <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px"><span dir="ltr" style="{{r.amountStyle}}">{{r.amount}}</span><span style="font-size: 11px; color: #637570">{{r.due}}</span></span>
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#637570" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-inline-end: -4px"><path d="M15 6l-6 6 6 6"></path></svg>
                     </a>
+                    <button type="button" class="m-press" onClick="{{r.settle}}" style="{{r.actStyle}}">{{r.actLabel}}</button>
                   </sc-if>
                   <sc-if value="{{r.plain}}" hint-placeholder-val="{{ false }}">
-                    <div style="display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 10px 0">
+                    <div style="flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 10px 0">
                       <span style="{{r.avatar}}">{{r.initial}}</span>
                       <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 700">{{r.name}}</span><span style="font-size: 12px; color: #637570">{{r.reason}}</span><span style="{{r.chipStyle}}">{{r.chip}}</span></span>
                       <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px"><span dir="ltr" style="{{r.amountStyle}}">{{r.amount}}</span><span style="font-size: 11px; color: #637570">{{r.due}}</span><span style="font-size: 10px; color: #8A9A95">{{later}}</span></span>
@@ -99,6 +101,9 @@ input::placeholder{color:#8A9A95}
       </div>
     </sc-if>
   </div>
+  <sc-if value="{{addOpen}}" hint-placeholder-val="{{ false }}"><dc-import name="AddDebtSheet" space="{{spaceName}}" side="{{addSide}}" on-close="{{closeAll}}" on-save="{{added}}" hint-size="390px,844px"></dc-import></sc-if>
+  <sc-if value="{{settleOpen}}" hint-placeholder-val="{{ false }}"><div style="position: absolute; inset: 0; z-index: 9"><dc-import name="SettleSheet" bare="{{true}}" space="{{spaceName}}" side="{{stSide}}" person="{{stWho}}" remaining="{{stLeft}}" on-close="{{closeAll}}" on-save="{{settled}}" hint-size="390px,844px"></dc-import></div></sc-if>
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}"><div role="status" style="position: absolute; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 10; padding: 12px 18px; border-radius: 18px; font-size: 14px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92)">{{toast}}</div></sc-if>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","فاضي"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
@@ -106,9 +111,12 @@ const withCur = (v, c) => (c === '\u20C1' ? '\u2066\u20C1\u00A0' + v + '\u2069' 
 class Component extends DCLogic {
   constructor(props) {
     super(props);
+    // add: شيت «ضيف دين» · st: شيت السداد لصف معيّن (قرار المالك 2026-10-23، §112 — الديون الأساسية هنا، والأشخاص وصفحة الشخص بيوصلوها)
     // side: all · lak · alek (الكارت المضغوط بيصفّي، والضغط تاني يرجّع الكل)
-    this.state = { q: '', side: 'all' };
+    this.state = { q: '', side: 'all', add: false, st: null, toast: '' };
   }
+  componentDidUpdate() { if (this.state.toast && !this._t) this._t = setTimeout(() => { this._t = null; this.setState({ toast: '' }); }, 2200); }
+  componentWillUnmount() { clearTimeout(this._t); }
   fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
   renderVals() {
     const st = this.props.state ?? 'عادي';
@@ -152,7 +160,9 @@ class Component extends DCLogic {
           amountStyle: 'font-size: 16px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; color: ' + (lak ? '#13764D' : '#BE3D48'),
           chipStyle: 'align-self: flex-start; margin-top: 2px; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 12px; color: ' + S[sig][0] + '; background: ' + S[sig][1],
           avatar: 'width: 40px; height: 40px; border-radius: 20px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; ' + (lak ? 'background: #DCEBD6; color: #08634F' : 'background: rgba(190,61,72,0.10); color: #BE3D48'),
-          wrapStyle: i === rows.length - 1 ? '' : 'border-bottom: 1px solid rgba(204,216,204,0.55)'
+          wrapFlex: 'display: flex; align-items: center; gap: 8px; ' + (i === rows.length - 1 ? '' : 'border-bottom: 1px solid rgba(204,216,204,0.55)'),
+          actLabel: lak ? T('حصّل', 'حصّل') : T('سدّد', 'سدّد'), settle: () => this.setState({ st: { side: id, who: name, left: minor * k } }),
+          actStyle: 'height: 36px; padding: 0 12px; flex-shrink: 0; border: 0; border-radius: 12px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; color: #08634F; background: rgba(8,99,79,0.10)'
         }))
       };
     };
@@ -167,7 +177,13 @@ class Component extends DCLogic {
       amountStyle: 'text-align: right; font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (id === 'lak' ? '#13764D' : '#BE3D48'),
       pick: () => this.setState({ side: s.side === id ? 'all' : id })
     }));
+    const st0 = s.st || {};
     return {
+      spaceName: eg ? 'مصر' : 'السعودية', addLabel: T('أضف دينًا', 'ضيف دين'), openAdd: () => this.setState({ add: true }), addOpen: s.add, addSide: s.side === 'alek' ? 'alek' : 'lak',
+      settleOpen: !!s.st, stSide: st0.side || 'lak', stWho: st0.who || '', stLeft: st0.left || 0,
+      closeAll: () => this.setState({ add: false, st: null }),
+      added: () => this.setState({ add: false, toast: T('أُضيف الدين', 'الدين اتضاف') }), settled: () => this.setState({ st: null, toast: T('تم التسجيل', 'اتسجل') }),
+      hasToast: !!s.toast, toast: s.toast,
       subTitle: T('مع الأشخاص، لك وعليك كلٌّ على حدة', 'مع الناس، ليك وعليك كل واحد لوحده'),
       isEmpty: empty, showMain: !empty,
       emptyTitle: T('لا ديون مع أحد', 'مفيش ديون مع حد'),
