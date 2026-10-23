@@ -1353,6 +1353,14 @@
       "y": 33500,
       "w": 390,
       "h": 844
+    },
+    "PersonHero.dc.html": {
+      "is_interactive": true,
+      "title": "رأس صفحة الشخص · PersonHero (الستارة · المناسبات السنوية · القايمة السريعة)",
+      "x": 8680,
+      "y": 33500,
+      "w": 390,
+      "h": 620
     }
   },
   "createdOnFiles": {
@@ -1679,7 +1687,8 @@
     "Support.dc.html",
     "SupportForm.dc.html",
     "AddDebtSheet.dc.html",
-    "IncomeHub.dc.html"
+    "IncomeHub.dc.html",
+    "PersonHero.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"

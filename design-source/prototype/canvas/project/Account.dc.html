@@ -216,7 +216,7 @@ class Component extends DCLogic {
     const carVal = p.car === true && p.carToWork !== null ? YES + (p.carToWork ? (eg ? ' · بروح بيها الشغل' : ' · أذهب بها للدوام') : (eg ? ' · مش للشغل' : ' · ليست للدوام')) : yn(p.car);
     const groups = [
       { title: 'عنك', rows: [row('الاسم', p.name, 'name', p.name), row('النوع', GENDER[p.gender], 'gender', p.gender), row(eg ? 'بتعول مين' : 'من تعول', p.deps ? (p.deps.length ? p.deps.map((d) => label(DEPS, d)).join('، ') : (eg ? 'محدش' : 'لا أحد')) : null, 'deps', p.deps ? p.deps.slice() : [])] },
-      { title: 'الدخل', rows: [row(eg ? 'المرتب' : 'الراتب', salNum ? withCur(this.amt(p.salary, true), cur) : p.salary === 'skip' ? SKIP : null, 'salary', salNum ? this.amt(p.salary, false) : '',
+      { title: 'الدخل', rows: [Object.assign(row(eg ? 'مصادر الدخل' : 'مصادر الدخل', eg ? 'شغلك والإيجار' : 'عملك والإيجار', 'income', '', eg ? 'مكانها الأساسي هنا' : 'مكانها الأساسي هنا'), { open: () => { if (window.location) window.location.href = 'IncomeHub.dc.html'; } }), row(eg ? 'المرتب' : 'الراتب', salNum ? withCur(this.amt(p.salary, true), cur) : p.salary === 'skip' ? SKIP : null, 'salary', salNum ? this.amt(p.salary, false) : '',
           salOld ? (eg ? 'إجابتك القديمة كانت نطاق — اكتب المبلغ بالظبط' : 'إجابتك السابقة كانت نطاقًا — اكتب المبلغ بالضبط') : (eg ? 'بالظبط، عشان التوقع يبقى أدق' : 'بالضبط، ليكون التوقع أدق')),
         row(eg ? 'يوم المرتب' : 'يوم الراتب', 'يوم ' + n(p.payday), 'payday', p.payday, eg ? 'واحد للحساب كله، ومنه بيبدأ شهرك المالي' : 'واحد للحساب كله، ومنه يبدأ شهرك المالي')] },
       { title: eg ? 'حياتك' : 'حياتك', note: eg ? 'على أساسها بتظهرلك التصنيفات اللي تخصك بس.' : 'بناءً عليها تظهر لك التصنيفات التي تخصك فقط.',

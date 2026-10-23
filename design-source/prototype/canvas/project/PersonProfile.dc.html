@@ -18,6 +18,8 @@ a{color:#08634F}a:hover{color:#064B40}
 .m-press:active{transform:scale(.97)}
 .m-veil{animation:m-fade 220ms cubic-bezier(.2,.7,.3,1) both}
 .m-sheet{animation:m-up 450ms cubic-bezier(.2,.7,.3,1) both}
+.m-pop{animation:m-pop 420ms cubic-bezier(.18,.9,.28,1.08) both}
+@keyframes m-pop{from{opacity:0;transform:translateY(-8px) scale(.94)}to{opacity:1;transform:none}}
 @keyframes m-fade{from{opacity:0}to{opacity:1}}
 @keyframes m-up{from{transform:translateY(100%)}to{transform:none}}
 @media (prefers-reduced-motion: reduce){.m-press{transition:none}.m-press:active{transform:none}.m-sheet{animation:m-fade 150ms both}}
@@ -27,59 +29,22 @@ a{color:#08634F}a:hover{color:#064B40}
 <div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: SAR, 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
   <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding-bottom: 40px; display: flex; flex-direction: column; gap: 14px">
 
-    <div style="height: 168px; border-radius: 0 0 28px 28px; padding: 20px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: flex-start; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), radial-gradient(70% 60% at 0% 100%, rgba(150,243,204,0.18), transparent 60%), linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 -1px 0 rgba(255,255,255,0.12), 0 20px 44px rgba(6,75,64,0.22)">
-      <a href="People.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: #DAF8E9; text-decoration: none; background: linear-gradient(145deg, rgba(255,255,255,0.24), rgba(255,255,255,0.03) 48%, rgba(150,243,204,0.16)); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: inset 1px 1px 2px rgba(200,255,235,0.45), inset -1px -2px 3px rgba(0,47,48,0.28), 0 8px 16px rgba(0,42,53,0.14)">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>
-      </a>
-      <span style="font-size: 12px; color: #DCEBD6; padding-top: 14px">{{circleLine}}</span>
-    </div>
-
-    <div style="margin-top: -66px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 0 20px">
-      <div style="display: flex; align-items: flex-end; justify-content: center; gap: 14px">
-        <sc-for list="{{occR}}" as="o" hint-placeholder-count="1"><button type="button" class="m-press" onClick="{{o.open}}" aria-label="{{o.aria}}" style="{{o.style}}"><span style="{{o.dot}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="{{o.icon}}"></path></svg></span><span style="font-size: 11px; font-weight: 700; color: #637570; white-space: nowrap">{{o.when}}</span></button></sc-for>
-        <div style="position: relative; width: 104px; height: 104px; flex-shrink: 0">
-          <div aria-hidden="true" style="width: 104px; height: 104px; border-radius: 52px; overflow: hidden; display: flex; align-items: flex-end; justify-content: center; background: linear-gradient(170deg, #E6F2EA 0%, #CFE6D8 100%); box-shadow: 0 0 0 4px #FAF9F3, 0 12px 28px rgba(0,30,25,0.22)"><svg width="84" height="84" viewBox="0 0 24 24" fill="#8DB8A3"><circle cx="12" cy="8.2" r="4.2"></circle><path d="M3.5 24c0-5 3.8-8.6 8.5-8.6s8.5 3.6 8.5 8.6z"></path></svg></div>
-          <button type="button" class="m-press" aria-label="{{photoLabel}}" style="position: absolute; bottom: 2px; left: 2px; width: 32px; height: 32px; border: 0; border-radius: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #FFFFFF; background: #08634F; box-shadow: 0 0 0 3px #FAF9F3"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg></button>
-        </div>
-        <sc-for list="{{occL}}" as="o" hint-placeholder-count="2"><button type="button" class="m-press" onClick="{{o.open}}" aria-label="{{o.aria}}" style="{{o.style}}"><span style="{{o.dot}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="{{o.icon}}"></path></svg></span><span style="font-size: 11px; font-weight: 700; color: #637570; white-space: nowrap">{{o.when}}</span></button></sc-for>
-      </div>
-      <h1 style="margin: 6px 0 0; font-size: 22px; font-weight: 700">خالد</h1>
-      <span style="font-size: 13px; color: #637570">{{relLine}}</span>
-      <sc-if value="{{occWedding}}" hint-placeholder-val="{{ false }}"><span style="margin-top: 8px; align-self: stretch"><dc-import name="OccasionSheet" space="{{spaceName}}" person="خالد" kind="wedding" month="10" day="18" year="2026" yearly="{{false}}" hint-size="350px,80px"></dc-import></span></sc-if>
-      <sc-if value="{{occBirthday}}" hint-placeholder-val="{{ false }}"><span style="margin-top: 8px; align-self: stretch"><dc-import name="OccasionSheet" space="{{spaceName}}" person="خالد" kind="birthday" month="3" day="2" yearly="{{true}}" hint-size="350px,80px"></dc-import></span></sc-if>
-      <sc-if value="{{occAdd}}" hint-placeholder-val="{{ false }}"><span style="margin-top: 8px; align-self: stretch"><dc-import name="OccasionSheet" space="{{spaceName}}" person="خالد" hint-size="350px,48px"></dc-import></span></sc-if>
-    </div>
+    <dc-import name="PersonHero" space="{{spaceName}}" on-menu="{{openMenu}}" hint-size="390px,276px"></dc-import>
+    <div style="margin-top: -6px; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 0 20px"><h1 style="margin: 0; font-size: 24px; font-weight: 700">خالد</h1><span style="font-size: 13px; color: #637570">{{relLine}}</span></div>
 
     <div style="display: flex; gap: 10px; padding: 0 20px">
-      <div style="flex: 1 1 0; min-width: 0; border-radius: 18px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
-        <span style="font-size: 12px; color: #637570">{{lakLabel}}</span>
-        <span dir="ltr" style="text-align: right; font-size: 20px; font-weight: 700; color: #13764D; font-variant-numeric: tabular-nums">{{lakAmount}}</span>
-        <span style="align-self: flex-start; font-size: 11px; font-weight: 700; color: #956000; padding: 2px 8px; border-radius: 12px; background: #FBF0DD">{{waitingSignal}}</span>
-      </div>
-      <div style="flex: 1 1 0; min-width: 0; border-radius: 18px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
-        <span style="font-size: 12px; color: #637570">{{alekLabel}}</span>
-        <span style="font-size: 20px; font-weight: 700; color: #637570">{{alekNone}}</span>
-        <span style="font-size: 11px; color: #637570">بلا مقاصة بين الرقمين</span>
-      </div>
+      <a href="DuesDebts.dc.html" class="m-press" style="flex: 1 1 0; min-width: 0; text-decoration: none; color: #193D33; border-radius: 20px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><span style="font-size: 12px; color: #637570">{{lakLabel}}</span><span dir="ltr" style="text-align: right; font-size: 20px; font-weight: 700; color: #13764D; font-variant-numeric: tabular-nums">{{lakAmount}}</span><span style="align-self: flex-start; font-size: 11px; font-weight: 700; color: #956000; padding: 2px 8px; border-radius: 12px; background: #FBF0DD">{{waitingSignal}}</span></a>
+      <a href="DuesDebts.dc.html" class="m-press" style="flex: 1 1 0; min-width: 0; text-decoration: none; color: #193D33; border-radius: 20px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><span style="font-size: 12px; color: #637570">{{alekLabel}}</span><span style="font-size: 20px; font-weight: 700; color: #637570">{{alekNone}}</span><span style="font-size: 11px; color: #637570">{{noNet}}</span></a>
     </div>
-    <a href="DuesDebts.dc.html" class="m-press" style="margin: -4px 20px 0; min-height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; font-size: 14px; font-weight: 700; color: #08634F; text-decoration: none; background: rgba(8,99,79,0.08)">{{debtsLink}}<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg></a>
+
+    <sc-if value="{{hasNotice}}" hint-placeholder-val="{{ true }}"><button type="button" class="m-press" onClick="{{openCal}}" style="margin: 0 20px; border: 0; border-radius: 20px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; font: inherit; text-align: right; cursor: pointer; color: #193D33; background: #FBE9EE"><span style="width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #A55060; background: rgba(255,255,255,0.7)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12v9H4v-9M2 7h20v5H2zM12 21V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg></span><span style="flex: 1 1 auto; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">{{noticeTitle}}</span><span style="font-size: 12px; color: #637570">{{noticeSub}}</span></span></button></sc-if>
 
     <div style="display: flex; flex-direction: column; gap: 8px; padding: 0 20px">
-      <h2 style="margin: 0; font-size: 18px; font-weight: 700">{{actionsTitle}}</h2>
-      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px">
-        <sc-for list="{{actions}}" as="a" hint-placeholder-count="4">
-          <button type="button" class="m-press" onClick="{{a.open}}" style="border: 0; min-height: 84px; border-radius: 18px; padding: 10px 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; font: inherit; font-size: 12px; font-weight: 700; line-height: 1.4; color: #193D33; cursor: pointer; text-align: center; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
-            <span style="width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: rgba(8,99,79,0.10); color: #08634F; box-shadow: inset 0 1px 0 rgba(255,255,255,0.7)">
-              <sc-if value="{{a.i.rosca}}" hint-placeholder-val="{{ true }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"></circle><path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path><path d="M7 6h1v4"></path><path d="M16.71 13.88l.7.71-2.82 2.82"></path></svg></sc-if>
-              <sc-if value="{{a.i.project}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path><rect width="20" height="14" x="2" y="6" rx="2"></rect></svg></sc-if>
-              <sc-if value="{{a.i.link}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M19 8v6M22 11h-6"></path></svg></sc-if>
-              <sc-if value="{{a.i.split}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"></path><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><path d="M12 17.5v-11"></path></svg></sc-if>
-            </span>
-            {{a.label}}
-          </button>
-        </sc-for>
+      <h2 style="margin: 0; font-size: 15px; font-weight: 700; color: #637570">{{onceTitle}}</h2>
+      <div style="display: flex; align-items: stretch; gap: 8px">
+        <div class="m-scroll" style="flex: 1 1 auto; min-width: 0; display: flex; gap: 8px; overflow-x: auto"><sc-for list="{{once}}" as="o" hint-placeholder-count="2"><button type="button" class="m-press" onClick="{{openCal}}" style="flex: 0 0 auto; border: 0; border-radius: 16px; padding: 10px 12px; display: flex; align-items: center; gap: 8px; font: inherit; cursor: pointer; color: #193D33; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><span style="{{o.tile}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="{{o.icon}}"></path></svg></span><span style="display: flex; flex-direction: column; align-items: flex-start"><span style="font-size: 13px; font-weight: 700; white-space: nowrap">{{o.title}}</span><span style="font-size: 11px; color: #637570; white-space: nowrap">{{o.date}}</span></span></button></sc-for></div>
+        <button type="button" class="m-press" onClick="{{openCal}}" aria-label="{{calLabel}}" style="width: 56px; flex-shrink: 0; border: 0; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; cursor: pointer; color: #08634F; background: rgba(8,99,79,0.10)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M8 3v4M16 3v4M3 10h18M12 13v5M9.5 15.5h5"></path></svg></button>
       </div>
-      <span style="font-size: 12px; color: #637570">{{futureNote}}</span>
     </div>
 
     <div style="display: flex; flex-direction: column; gap: 8px; padding: 0 20px">
@@ -105,6 +70,24 @@ a{color:#08634F}a:hover{color:#064B40}
       </div>
     </div>
   </div>
+
+  <sc-if value="{{menuOpen}}" hint-placeholder-val="{{ false }}"><div style="position: absolute; inset: 0; z-index: 7">
+    <button type="button" class="m-veil" onClick="{{closeMenu}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.16); backdrop-filter: blur(8px) saturate(0.88); -webkit-backdrop-filter: blur(8px) saturate(0.88)"></button>
+    <div role="menu" aria-label="{{menuTitle}}" class="m-pop" style="position: absolute; top: 268px; right: 20px; width: 240px; border-radius: 24px; padding: 8px; display: flex; flex-direction: column; gap: 2px; background: rgba(255,255,255,0.86); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); box-shadow: inset 0 1px 0 #FFFFFF, 0 18px 40px rgba(16,45,53,0.22)">
+      <sc-for list="{{menuItems}}" as="mi" hint-placeholder-count="5"><button type="button" role="menuitem" class="m-press" onClick="{{mi.go}}" style="height: 48px; border: 0; border-radius: 16px; padding: 0 10px; display: flex; align-items: center; gap: 10px; font: inherit; font-size: 15px; text-align: right; cursor: pointer; color: #193D33; background: transparent"><span style="width: 32px; height: 32px; border-radius: 10px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #08634F; background: rgba(8,99,79,0.10)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="{{mi.icon}}"></path></svg></span>{{mi.label}}</button></sc-for>
+    </div>
+  </div></sc-if>
+
+  <sc-if value="{{calOpen}}" hint-placeholder-val="{{ false }}"><div style="position: absolute; inset: 0; z-index: 8">
+    <button type="button" class="m-veil" onClick="{{closeCal}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.16); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px)"></button>
+    <div role="dialog" aria-modal="true" aria-label="{{calTitle}}" class="m-sheet" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 90%; overflow-y: auto; border-radius: 32px 32px 0 0; padding: 10px 20px 28px; display: flex; flex-direction: column; gap: 12px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%)">
+      <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(99,117,112,0.35)"></span>
+      <span style="display: flex; align-items: center; gap: 8px"><h2 style="margin: 0; flex: 1 1 auto; font-size: 18px; font-weight: 700">{{calTitle}}</h2><span style="font-size: 14px; font-weight: 700; color: #637570">{{calMonth}}</span></span>
+      <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; text-align: center"><sc-for list="{{weekdays}}" as="w" hint-placeholder-count="7"><span style="font-size: 11px; color: #8A9A95">{{w.t}}</span></sc-for><sc-for list="{{days}}" as="d" hint-placeholder-count="31"><span style="{{d.style}}">{{d.t}}</span></sc-for></div>
+      <sc-for list="{{onceAll}}" as="o" hint-placeholder-count="2"><div style="display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(204,216,204,0.55)"><span style="{{o.tile}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="{{o.icon}}"></path></svg></span><span style="flex: 1 1 auto; font-size: 14px; font-weight: 700">{{o.title}}</span><span style="font-size: 12px; color: #637570">{{o.date}}</span></div></sc-for>
+      <dc-import name="OccasionSheet" space="{{spaceName}}" person="خالد" hint-size="350px,48px"></dc-import>
+    </div>
+  </div></sc-if>
 
   <sc-if value="{{sheetOpen}}" hint-placeholder-val="{{ false }}">
     <div style="position: absolute; inset: 0; z-index: 8">
@@ -143,7 +126,7 @@ a{color:#08634F}a:hover{color:#064B40}
 <script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
 const withCur = (v, c) => (c === '\u20C1' ? '\u2066\u20C1\u00A0' + v + '\u2069' : v + ' ' + c); // رمز الريال الرسمي على شمال الرقم بمسافة (البنك المركزي السعودي) — الجنيه بعد الرقم زي ما هو
 class Component extends DCLogic {
-  constructor(props) { super(props); this.state = { sheet: null, amount: '', occ: null }; }
+  constructor(props) { super(props); this.state = { sheet: null, amount: '', menu: false, cal: false }; }
   toMinor(text) {
     const t = String(text || '').replace(/[٠-٩۰-۹]/g, (d) => '٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10).replace(/٫/g, '.').replace(/[^0-9.]/g, '');
     if (!t) return null;
@@ -151,18 +134,30 @@ class Component extends DCLogic {
     return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10);
   }
   fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
-  // المناسبات علامات صغيرة جنب الصورة (توجيه المالك 2026-10-23 عن طريق جلسة كوتلن: «في الهيدر الأخضر جنب الدايرة، بأخف شكل، علامات صغيرة»)
-  // الدوسة بتفتح كارت المناسبة تحت الاسم، ودوسة تانية بتقفله. «+» بتضيف مناسبة. مخترعة
-  occ(eg) {
-    const o = this.state.occ, pick = (k) => () => this.setState({ occ: o === k ? null : k });
-    const badge = (k, icon, when, aria, c, bg) => ({ icon, when, aria, open: pick(k),
-      style: 'border: 0; padding: 0; background: transparent; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; font: inherit',
-      dot: 'width: 40px; height: 40px; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: ' + c + '; background: ' + bg + '; box-shadow: ' + (o === k ? '0 0 0 2px ' + c : 'inset 0 1px 0 rgba(255,255,255,0.7), 0 6px 14px rgba(29,54,53,0.10)') });
+  // صفحة الشخص (طلب المالك 2026-10-23 برسمة): الرأس في PersonHero · «القايمة السريعة» (نفس قايمة العمليات) فيها الإجراءات اللي كانت «اعملوا سوا»
+  // كروت ليك/عليك سطر ثابت ما يتغيرش · تحته التنبيه لو فيه (مناسبة مرة واحدة قرّبت) · شريط مناسبات المرة الواحدة ومربع التقويم على الشمال · وبعدين السجل
+  extra(eg) {
+    const T = (sa, e) => (eg ? e : sa), s = this.state;
+    const GIFT = 'M20 12v9H4v-9M2 7h20v5H2zM12 21V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z', GRAD = 'M22 10 12 5 2 10l10 5 10-5zM6 12v5c3 2 9 2 12 0v-5';
+    const tile = (c, bg) => 'width: 30px; height: 30px; border-radius: 10px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: ' + c + '; background: ' + bg;
+    const once = [[GIFT, T('زفاف خالد', 'فرح خالد'), '18 أكتوبر', '#A55060', '#FBE9EE'], [GRAD, T('تخرّجه', 'تخرجه'), '5 يونيو 2027', '#2469BA', 'rgba(36,105,186,0.10)']].map(([icon, title, date, c, bg]) => ({ icon, title, date, tile: tile(c, bg) }));
+    const open = (id) => () => this.setState({ menu: false, sheet: id, amount: '' });
+    const first = 4; // 1 أكتوبر 2026 = خميس (الأسبوع بيبدأ السبت)
     return {
-      occR: [badge('wedding', 'M20 12v9H4v-9M2 7h20v5H2zM12 21V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z', eg ? 'بعد 11 يوم' : 'بعد 11 يومًا', eg ? 'فرح خالد، بعد 11 يوم' : 'زفاف خالد، بعد 11 يومًا', '#A55060', '#FBE9EE')],
-      occL: [badge('birthday', 'M4 21h16v-8H4zM4 16c2 0 2-1.5 4-1.5s2 1.5 4 1.5 2-1.5 4-1.5 2 1.5 4 1.5M12 13V9M12 6.5a1.5 1.5 0 0 0 1.5-1.5c0-1-1.5-3-1.5-3s-1.5 2-1.5 3A1.5 1.5 0 0 0 12 6.5z', '2 مارس', eg ? 'عيد ميلاد خالد، 2 مارس' : 'يوم ميلاد خالد، 2 مارس', '#956000', '#FBF0DD'),
-        badge('add', 'M12 5v14M5 12h14', eg ? 'مناسبة' : 'مناسبة', eg ? 'ضيف مناسبة' : 'أضف مناسبة', '#08634F', 'rgba(8,99,79,0.10)')],
-      occWedding: o === 'wedding', occBirthday: o === 'birthday', occAdd: o === 'add'
+      openMenu: () => this.setState({ menu: true }), closeMenu: () => this.setState({ menu: false }), menuOpen: s.menu, menuTitle: T('القائمة السريعة', 'القايمة السريعة'),
+      menuItems: [
+        ['M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17M7 21l1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9', T('أضف دينًا', 'ضيف دين'), () => { if (window.location) window.location.href = 'DuesDebts.dc.html'; }],
+        ['M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1zM8 8h8M8 12h8', T('قسّم فاتورة', 'قسّم فاتورة'), open('split')],
+        ['M12 3a9 9 0 1 0 9 9M12 7v5l3 2', eg ? 'جمعية' : 'دعوة لجمعية', open('rosca')],
+        ['M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16M3 8h18v12H3z', 'مشروع مشترك', open('project')],
+        ['M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7', T('طلب اتصال', 'طلب اتصال'), open('link')]
+      ].map(([icon, label, go]) => ({ icon, label, go })),
+      noNet: T('بلا مقاصة', 'من غير خصم'),
+      hasNotice: true, noticeTitle: T('زفاف خالد بعد 11 يومًا', 'فرح خالد بعد 11 يوم'), noticeSub: T('18 أكتوبر · ذكّرني قبلها بأسبوع', '18 أكتوبر · هفكّرك قبلها بأسبوع'),
+      onceTitle: T('مناسبات مرة واحدة', 'مناسبات مرة واحدة'), once, onceAll: once, calLabel: T('التقويم', 'التقويم'),
+      openCal: () => this.setState({ cal: true }), closeCal: () => this.setState({ cal: false }), calOpen: s.cal, calTitle: T('مناسبات خالد', 'مناسبات خالد'), calMonth: T('أكتوبر 2026', 'أكتوبر 2026'),
+      weekdays: ['س', 'ح', 'ن', 'ث', 'ر', 'خ', 'ج'].map((t) => ({ t })),
+      days: Array.from({ length: first + 31 }, (_, i) => { const d = i - first + 1, on = d === 18, today = d === 7; return { t: d > 0 ? String(d) : '', style: 'height: 34px; display: flex; align-items: center; justify-content: center; border-radius: 12px; font-size: 13px; ' + (on ? 'font-weight: 700; color: #FFFFFF; background: #A55060' : today ? 'font-weight: 700; color: #08634F; box-shadow: inset 0 0 0 1.5px #08634F' : 'color: #193D33') }; })
     };
   }
   renderVals() {
@@ -194,8 +189,7 @@ class Component extends DCLogic {
       amountStyle: 'font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (dir === 'out' ? '#BE3D48' : '#13764D')
     });
     return {
-      ...this.occ(eg),
-      photoLabel: eg ? 'ضيف صورة' : 'أضف صورة',
+      ...this.extra(eg),
       circleLine: eg ? 'الصحاب' : 'الأصدقاء',
       relLine: eg ? 'صاحبك من الجامعة · بتتعاملوا كتير' : 'صديقك من الجامعة · تعامل متكرر',
       spaceName: eg ? 'مصر' : 'السعودية',
