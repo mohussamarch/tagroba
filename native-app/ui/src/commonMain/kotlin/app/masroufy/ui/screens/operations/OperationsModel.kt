@@ -17,7 +17,7 @@ import app.masroufy.usecase.TransactionsScreenData
  * الحالات زي النموذج: بيحمّل · خطأ (الشريط فوق، **والقايمة اللي اتحمّلت قبل كده بتفضل تحته**) · فاضي · عادي · تقريبي · غير متاح.
  * [partiesWaiting] = الأطراف المستنية ردك (`ManageTransfers.zone().questions`) لشريط التحويلات.
  */
-data class OpsUi(val view: OpsView? = null, val loading: Boolean = true, val failed: Boolean = false, val partiesWaiting: Int = 0) {
+data class OpsUi(val view: OpsView? = null, val loading: Boolean = true, val failed: Boolean = false, val partiesWaiting: Int = 0, val salaryAsks: Int = 0) {
     /** «بيحمّل» = لسه مفيش ولا مرة اتحمّلت (إعادة المحاولة بتسيب القايمة القديمة ظاهرة). */
     val skeleton: Boolean get() = loading && view == null && !failed
 }
@@ -29,7 +29,7 @@ fun OpsUi.retrying(): OpsUi = copy(loading = true)
  * نتيجة التحميل: [view] `null` = فشل ⇒ الشريط فوق والقايمة القديمة (لو فيه) زي ما هي. [parties] `null` (فشل الزون لوحده) ⇒ العدد القديم.
  */
 fun OpsUi.loaded(view: OpsView?, parties: Int?): OpsUi =
-    if (view == null) copy(loading = false, failed = true) else OpsUi(view, loading = false, failed = false, partiesWaiting = parties ?: partiesWaiting)
+    if (view == null) copy(loading = false, failed = true) else OpsUi(view, loading = false, failed = false, partiesWaiting = parties ?: partiesWaiting, salaryAsks = salaryAsks)
 
 data class OpsView(
     /** «أكتوبر» — اسم الشهر اللي الفترة بتخلص فيه (الشهر المالي من يوم الراتب). */
@@ -72,11 +72,13 @@ data class Banner(val kind: BannerKind, val text: String)
  * الرسايل من الجهاز) ⇒ `null` ⇒ الشريط ما بيظهرش. [reviewCount] من `TransactionsScreenData.needsReviewCount`، و[partiesWaiting] من
  * `ManageTransfers.zone().questions`.
  */
-fun banners(bankSmsWaiting: Int?, reviewCount: Int, partiesWaiting: Int): List<Banner> = buildList {
+fun banners(bankSmsWaiting: Int?, reviewCount: Int, partiesWaiting: Int, salaryAsks: Int = 0): List<Banner> = buildList {
     if (bankSmsWaiting != null && bankSmsWaiting > 0) {
         add(Banner(BannerKind.BANK_SMS, countText(bankSmsWaiting, UiKey.OPERATIONS_SMS_ONE, UiKey.OPERATIONS_SMS_TWO, UiKey.OPERATIONS_SMS_FEW, UiKey.OPERATIONS_SMS_MANY)))
     }
     if (reviewCount > 0) add(Banner(BannerKind.REVIEW, t(UiKey.OPERATIONS_BANNER_REVIEW, operationsCount(reviewCount))))
+    // «ده مرتب؟» (§112-6): جوه «محتاجة مراجعة» — لو مفيش عمليات للمراجعة، الشريط نفسه بيظهر بالسؤال عشان يتوصل له
+    else if (salaryAsks > 0) add(Banner(BannerKind.REVIEW, t(app.masroufy.core.R06Key.INC_REVIEW_SALARY)))
     if (partiesWaiting > 0) {
         add(Banner(BannerKind.TRANSFERS, countText(partiesWaiting, UiKey.OPERATIONS_PARTIES_ONE, UiKey.OPERATIONS_PARTIES_TWO, UiKey.OPERATIONS_PARTIES_FEW, UiKey.OPERATIONS_PARTIES_MANY)))
     }

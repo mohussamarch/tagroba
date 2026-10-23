@@ -98,6 +98,8 @@ fun OperationsScreen() {
         refreshing = false // دايرة «اسحب لتحت» بتفضل ظاهرة لحد ما القراية دي تخلص
         val parties = attempt { app.masroufy.perf.PerfTrace.span("ops:zone") { deps.transfers.zone().questions.size } }
         if (parties != null && ui.view != null) ui = ui.copy(partiesWaiting = parties)
+        val asks = attempt { space.more.incomeSignals.payerQuestions().size } // «ده مرتب؟» في المراجعة (§112-6)
+        if (asks != null && ui.view != null) ui = ui.copy(salaryAsks = asks)
     }
     // وضع «تحديد» والأفعال الجماعية (قايمة المالك §6.5 بند 15) — الحالة في [OpsSelection]، والمجموع والكتابة من `BulkTransactions`
     var sel by remember(deps) { mutableStateOf(OpsSelection()) }
@@ -219,7 +221,7 @@ private fun LazyListScope.operationsTab(ui: OpsUi, onRetry: () -> Unit, onOpen: 
     }
     item(key = "filter-chips") { SelectChip(t(UiKey.OPERATIONS_FILTER_TRANSFERS), transfersOnly, onTransfersOnly) }
     // شريط رسايل البنك: عددها مالوش حالة استخدام في «العمليات» لسه (صندوق الرسايل شغل منطقة الاستيراد) ⇒ `null` ⇒ ما بيظهرش
-    items(banners(bankSmsWaiting = null, reviewCount = v.reviewCount, partiesWaiting = ui.partiesWaiting), key = { "banner-${it.kind}" }) { b -> BannerItem(b) }
+    items(banners(bankSmsWaiting = null, reviewCount = v.reviewCount, partiesWaiting = ui.partiesWaiting, salaryAsks = ui.salaryAsks), key = { "banner-${it.kind}" }) { b -> BannerItem(b) }
     // «دفعت الإيجار؟» (`QuickAddStrip`) بيستنى حالة استخدام «المتوقع ولم يُسجَّل» — من غيرها ما بيظهرش
     item(key = "summary") { Summary(v.incomeMinor, v.expenseMinor, v.currency, v.approx) }
     items(if (transfersOnly) onlyTransfers(v.days) else v.days, key = { "day-${it.date}" }) { day ->

@@ -35,7 +35,7 @@ import app.masroufy.ui.screens.dues.ZakatRoute
 import app.masroufy.ui.screens.more.AccountRoute
 import app.masroufy.ui.screens.more.AppSettingsRoute
 import app.masroufy.ui.screens.more.BackupRoute
-import app.masroufy.ui.screens.more.IncomeSourcesRoute
+import app.masroufy.ui.screens.more.IncomeHubRoute
 import app.masroufy.ui.screens.more.MoreRoute
 import app.masroufy.ui.screens.more.NotificationSettingsRoute
 import app.masroufy.ui.screens.more.SpacesRoute
@@ -128,7 +128,7 @@ fun targetOf(link: ScreenLink): AssistTarget {
         AssistScreen.SAVINGS_GOALS, AssistScreen.GOAL_DETAIL -> push(SavingsGoalsRoute)
         AssistScreen.MORE -> push(MoreRoute)
         AssistScreen.ACCOUNT -> push(AccountRoute)
-        AssistScreen.INCOME_SOURCES, AssistScreen.JOB_CHANGE -> push(IncomeSourcesRoute)
+        AssistScreen.INCOME_SOURCES, AssistScreen.JOB_CHANGE -> push(IncomeHubRoute)
         AssistScreen.SPACES, AssistScreen.SPACE_SWITCHER -> push(SpacesRoute)
         AssistScreen.WALLETS -> push(WalletsRoute)
         AssistScreen.WALLET_DETAIL -> push(a["walletId"]?.let(::WalletDetailRoute) ?: WalletsRoute)

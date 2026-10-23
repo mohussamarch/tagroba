@@ -133,8 +133,7 @@ fun moreGroups(view: MoreView): List<MoreGroup> = listOf(
         UiKey.MORE_GROUP_ACCOUNT,
         listOf(
             MoreItem(Lucide.USER, UiKey.MORE_ITEM_PROFILE, null, AccountRoute),
-            MoreItem(MoreIcons.INCOME, UiKey.MORE_ITEM_INCOME, view.incomeHint, IncomeSourcesRoute),
-            MoreItem(MoreIcons.INCOME, UiKey.EMPLOYER_MORE_ITEM, t(UiKey.EMPLOYER_MORE_HINT), EmployersRoute),
+            MoreItem(MoreIcons.INCOME, UiKey.MORE_ITEM_INCOME, view.incomeHint, IncomeHubRoute),
             MoreItem(Lucide.GLOBE, UiKey.MORE_ITEM_SPACES, view.spacesHint, SpacesRoute),
         ),
     ),

@@ -61,7 +61,7 @@ private enum class Step { CLOSE, NEW, ASK }
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun JobChangeSheet(mode: JobSheetMode?, current: List<IncomeSource>, monthStart: Int, onClose: () -> Unit, onDone: () -> Unit) {
+fun JobChangeSheet(mode: JobSheetMode?, current: List<IncomeSource>, monthStart: Int, onClose: () -> Unit, onDone: () -> Unit, addKind: IncomeSourceKind = IncomeSourceKind.JOB) {
     var shown by remember { mutableStateOf<JobSheetMode?>(null) }
     if (mode != null) shown = mode
     val m = shown ?: return
@@ -86,7 +86,7 @@ fun JobChangeSheet(mode: JobSheetMode?, current: List<IncomeSource>, monthStart:
         if (mode == null) return@LaunchedEffect
         step = if (mode == JobSheetMode.Add) Step.NEW else Step.CLOSE
         oldId = (mode as? JobSheetMode.Close)?.source?.id ?: changeable.firstOrNull()?.id
-        end = today; name = ""; kind = IncomeSourceKind.JOB; error = null; busy = false; result = null; queue = emptyList(); done = emptyList()
+        end = today; name = ""; kind = addKind; error = null; busy = false; result = null; queue = emptyList(); done = emptyList()
         start = if (mode == JobSheetMode.Change) plusDays(today, 1) else today
     }
 

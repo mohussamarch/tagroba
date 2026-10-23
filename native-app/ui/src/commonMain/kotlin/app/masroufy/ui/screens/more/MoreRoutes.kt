@@ -121,8 +121,13 @@ object EmployersRoute : Route {
     override val name = "Employers"
 }
 
-object IncomeSourcesRoute : Route {
-    override val name = "IncomeSources"
+object IncomeHubRoute : Route {
+    override val name = "IncomeHub"
+}
+
+/** نوع واحد من «مصادر الدخل» (OVERRIDES §112-6): دلوقتي · اللي فات · «غيّرت شغلي». */
+data class IncomeKindRoute(val kind: app.masroufy.core.IncomeSourceKind) : Route {
+    override val name = "IncomeKind"
 }
 
 data class IncomeSourceDetailRoute(val sourceId: Id) : Route {
@@ -151,7 +156,8 @@ fun RouteRegistry.registerMore() {
     screen<BalanceWhyRoute> { r -> BalanceWhyScreen(r.walletId) }
     screen<SmsRepairRoute> { r -> SmsRepairScreen(r.walletId) }
     screen<FixMyBalanceRoute> { r -> FixMyBalanceScreen(r.walletId) }
-    screen<IncomeSourcesRoute> { IncomeSourcesScreen() }
+    screen<IncomeHubRoute> { IncomeHubScreen() }
+    screen<IncomeKindRoute> { r -> IncomeKindScreen(r.kind) }
     screen<EmployersRoute> { EmployersScreen() }
     screen<IncomeSourceDetailRoute> { r -> IncomeSourceDetailScreen(r.sourceId) }
     screen<BackupRoute> { BackupScreen() }

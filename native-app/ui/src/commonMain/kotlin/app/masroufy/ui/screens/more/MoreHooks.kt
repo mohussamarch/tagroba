@@ -48,6 +48,9 @@ interface MoreHooks {
 
     /** «طبّق على اللي فات» بعد تغيير جهة أو حساباتها (معاينة بالعدد ⇒ نسخة ⇒ تطبيق ⇒ تراجع). */
     val employerRetro: app.masroufy.usecase.EmployerRetroApply? get() = null
+
+    /** §111-2 «جهة واحدة بمبلغين» في «مصادر الدخل» (§112-6): الجهات الشغالة في كل البلاد المفتوحة. null ⇒ مبلغ البلد دي بس. */
+    val employerLinks: app.masroufy.usecase.LinkEmployersAcrossCountries? get() = null
 }
 
 interface MainWalletAccess {
