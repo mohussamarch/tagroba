@@ -1,21 +1,27 @@
 package app.masroufy.ui.screens.more
 
 import app.masroufy.core.InvestInsightKey
+import app.masroufy.core.R06Key
 import app.masroufy.ui.screens.investment.insights.FaqRoute
+import app.masroufy.core.Space
 import app.masroufy.core.TextRef
 import app.masroufy.core.UiKey
+import app.masroufy.core.countryLabel
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import app.masroufy.ui.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,7 +30,6 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import app.masroufy.core.TextKey
 import app.masroufy.ui.app.LocalSpace
 import app.masroufy.ui.app.MeInfo
 import app.masroufy.ui.components.FloatingCard
@@ -35,52 +40,92 @@ import app.masroufy.ui.icons.LucideIcon
 import app.masroufy.ui.nav.LocalNavigator
 import app.masroufy.ui.nav.Route
 import app.masroufy.ui.screens.common.InnerScaffold
-import app.masroufy.ui.screens.imports.BankSmsRoute
+import app.masroufy.ui.shell.LocalToaster
 import app.masroufy.ui.shell.MeAvatar
+import app.masroufy.ui.shell.countryLabel
 import app.masroufy.ui.screens.budgets.CategoriesRoute
-import app.masroufy.ui.screens.budgets.RulesRoute
-import app.masroufy.ui.screens.imports.ImportBatchesRoute
-import app.masroufy.ui.screens.imports.StatementImportRoute
-import app.masroufy.ui.screens.people.ProjectsRoute
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
+import kotlinx.coroutines.launch
 
 /**
- * «المزيد» (`More` — من الترس، OVERRIDES §74): كارت «ملفك» فوق + 3 مجموعات (حسابك · بياناتك · الإعدادات — §76). السطور التانية من
- * البيانات بس: يوم الراتب من الملف · أسماء البلاد المفتوحة. اللي مالوش مصدر لسه (نسبة «ملفك %» · «4 بانتظار تأكيدك») **ما بيتكتبش** (القاعدة 10).
+ * «المزيد» (`More` — من الترس، OVERRIDES §74 · إعادة الترتيب §116 · `More.dc.html` فرع التصميم c37ce76a): كارت الملف وجنبه علم البلد ([MeRow]) +
+ * 3 مجموعات: **فلوسك** (المحافظ · التصنيفات والقواعد) · **بياناتك** (الاستيراد · النسخة والتصدير) · **الإعدادات** سطر واحد بترس.
+ * اتشال: «ملفك» (نفس الكارت) · «مصادر الدخل» (بقت في «ملفك» — §116-1) · «البلدان» (العلم + القايمة السريعة) · «المشاريع» · المكرر.
+ * اللي مالوش مصدر لسه («4 بانتظار تأكيدك» · «آخر نسخة اليوم» في النموذج) **ما بيتكتبش** (القاعدة 10).
  */
 @Composable
 fun MoreScreen() {
     val deps = LocalSpace.current
     val nav = LocalNavigator.current
+    val toaster = LocalToaster.current
+    val scope = rememberCoroutineScope()
+    val admin = deps.more.spacesAdmin
     var me by remember(deps) { mutableStateOf<MeInfo?>(null) }
     var payday by remember(deps) { mutableStateOf<Int?>(null) }
     var spaces by remember(deps) { mutableStateOf<List<SpaceCard>?>(null) }
+    var archived by remember(deps) { mutableStateOf<List<Space>>(emptyList()) }
+    var tick by remember { mutableIntStateOf(0) }
+    val country = rememberCountryMenu()
     LaunchedEffect(deps) {
         me = runCatching { deps.shell.me() }.getOrNull()
         payday = runCatching { deps.more.profile.load().payday }.getOrNull()
-        spaces = runCatching { deps.more.spaces() }.getOrNull()
     }
+    LaunchedEffect(deps, tick) {
+        spaces = runCatching { deps.more.spaces() }.getOrNull()
+        archived = runCatching { admin?.archived() }.getOrNull().orEmpty()
+    }
+
+    // نفس `act` بتاع «البلدان»: زرار واحد شغال في المرة · رسالة بعد ما يخلص · تحميل البلاد تاني
+    fun act(block: suspend () -> String?) {
+        if (country.busy) return
+        country.busy = true
+        scope.launch {
+            val done = runCatching { block() }
+            country.busy = false
+            country.sheet = null
+            done.getOrNull()?.let { toaster.show(it, dark = true) }
+            tick++
+        }
+    }
+
+    val open = spaces.orEmpty().map { it.space }
     val view = moreView(me, payday, spaces, deps.space)
+    val menuItems = {
+        countryMenuItems(
+            open,
+            onAdd = { country.sheet = SpaceSheet.Add },
+            onArchive = { s -> country.sheet = SpaceSheet.Archive(s, s.id == deps.space.id) },
+            onManage = { nav.push(SpacesRoute) },
+        )
+    }
     InnerScaffold(t(UiKey.MORE_TITLE), actions = { HeaderTiles(onFaq = { nav.push(FaqRoute) }, onSupport = { nav.push(SupportRoute) }) }) {
-        item(key = "me") { MeCard(me, view) { nav.push(AccountRoute) } }
-        for (group in moreGroups(view)) item(key = group.title.name) {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                GroupTitle(t(group.title))
-                GroupCard {
-                    group.items.forEachIndexed { i, it ->
-                        MenuRow(it.icon, t(it.label), it.hint, last = i == group.items.lastIndex, onClick = { nav.push(it.to) })
+        item(key = "me") {
+            MeRow(
+                me, view, deps.space, open, country, menuItems,
+                onProfile = { nav.push(AccountRoute) },
+                onSwap = { target -> act { if (deps.shell.switchSpace(target.id)) t(UiKey.SPACE_SWITCHED, countryLabel(target)) else null } },
+            )
+        }
+        moreGroups().forEachIndexed { gi, group ->
+            item(key = "g$gi") {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    group.title?.let { GroupTitle(t(it)) }
+                    GroupCard {
+                        group.items.forEachIndexed { i, it ->
+                            MenuRow(it.icon, t(it.label), it.hint, last = i == group.items.lastIndex, onClick = { nav.push(it.to) })
+                        }
                     }
                 }
             }
         }
     }
-}
-
-@Composable
-private fun MeCard(me: MeInfo?, view: MoreView, onClick: () -> Unit) {
-    MeCardBody(me, view, onClick)
+    CountryHosts(
+        country, admin != null, open, archived,
+        onCreate = { code -> act { admin?.create(code); t(UiKey.SPC_CREATED, countryLabel(code)) } },
+        onArchive = { s -> act { admin?.archive(s.id); t(UiKey.SPC_ARCHIVED_DONE, countryLabel(s.countryCode)) } },
+    )
 }
 
 /** علامتين فوق «المزيد» (تصميم 6935136c): «الأسئلة الشائعة» (؟) و«الدعم» (سماعة) — مربع 36 زاوية 12 زي أيقونات السطور، بينهم 6. */
@@ -102,10 +147,14 @@ private fun HeaderTile(icon: Lucide, label: String, onClick: () -> Unit) {
     }
 }
 
+/** كارت الملف: الضغطة ⇒ «ملفك» · الطويلة ⇒ القايمة السريعة ([MeRow]). */
 @Composable
-private fun MeCardBody(me: MeInfo?, view: MoreView, onClick: () -> Unit) {
-    FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp), onClick = onClick, clickLabel = t(UiKey.ME_PROFILE)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+internal fun MeCardBody(me: MeInfo?, view: MoreView, onLongClick: (() -> Unit)? = null, onClick: () -> Unit) {
+    FloatingCard(
+        Modifier.fillMaxWidth().fillMaxHeight(), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp),
+        onClick = onClick, onLongClick = onLongClick, clickLabel = t(UiKey.ME_PROFILE),
+    ) {
+        Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
             MeAvatar(46.dp, me?.profilePercent, Modifier.size(46.dp), character = me?.character)
             Column(Modifier.weight(1f)) {
                 BasicText(view.name ?: t(UiKey.ACC_NO_NAME), style = Type.of(16, FontWeight.Bold))
@@ -119,7 +168,8 @@ private fun MeCardBody(me: MeInfo?, view: MoreView, onClick: () -> Unit) {
 /** سطر في قايمة «المزيد»: [hint] = null ⇒ مفيش سطر تاني (مش «0»). */
 data class MoreItem(val icon: Lucide, val label: TextRef, val hint: String?, val to: Route)
 
-data class MoreGroup(val title: TextRef, val items: List<MoreItem>)
+/** [title] = null ⇒ مجموعة من غير عنوان (سطر «الإعدادات» لوحده — زي النموذج). */
+data class MoreGroup(val title: TextRef?, val items: List<MoreItem>)
 
 /** اللي بيتعرض في «المزيد» من البيانات — دالة نقية (بتتختبر على JVM). */
 data class MoreView(val name: String?, val spaceLine: String, val incomeHint: String?, val spacesHint: String?)
@@ -133,38 +183,21 @@ fun moreView(me: MeInfo?, payday: Int?, spaces: List<SpaceCard>?, active: app.ma
     return MoreView(name, line, income, names?.takeIf { it.isNotEmpty() }?.joinToString(" · "))
 }
 
-fun moreGroups(view: MoreView): List<MoreGroup> = listOf(
+/** المجموعات بالظبط زي `More.dc.html` (c37ce76a): 5 سطور. التصنيفات ⇒ القواعد والتجار من جوه («القواعد» في آخر الصفحة). */
+fun moreGroups(): List<MoreGroup> = listOf(
     MoreGroup(
-        UiKey.MORE_GROUP_ACCOUNT,
+        R06Key.MR_GROUP_MONEY,
         listOf(
-            MoreItem(Lucide.USER, UiKey.MORE_ITEM_PROFILE, null, AccountRoute),
-            MoreItem(MoreIcons.INCOME, UiKey.MORE_ITEM_INCOME, view.incomeHint, IncomeHubRoute),
-            MoreItem(Lucide.GLOBE, UiKey.MORE_ITEM_SPACES, view.spacesHint, SpacesRoute),
+            MoreItem(MoreIcons.WALLET_CARD, UiKey.MORE_ITEM_WALLETS, t(R06Key.MR_WALLETS_HINT), WalletsRoute),
+            MoreItem(Lucide.TAG, R06Key.MR_CATS, t(R06Key.MR_CATS_HINT), CategoriesRoute),
         ),
     ),
     MoreGroup(
         UiKey.MORE_GROUP_DATA,
         listOf(
-            MoreItem(MoreIcons.WALLET_CARD, UiKey.MORE_ITEM_WALLETS, null, WalletsRoute),
-            MoreItem(Lucide.TAG, UiKey.MORE_ITEM_CATEGORIES, null, CategoriesRoute),
-            MoreItem(Lucide.TAG, UiKey.MORE_ITEM_RULES, t(UiKey.MORE_HINT_RULES), RulesRoute),
-            MoreItem(Lucide.TAG, UiKey.MORE_ITEM_PROJECTS, t(UiKey.MORE_HINT_PROJECTS), ProjectsRoute),
-            MoreItem(MoreIcons.IMPORT, UiKey.MORE_ITEM_BANK_SMS, null, BankSmsRoute),
-            MoreItem(MoreIcons.IMPORT, UiKey.MORE_ITEM_STATEMENT, t(UiKey.MORE_HINT_STATEMENT), StatementImportRoute),
-            MoreItem(MoreIcons.IMPORT, UiKey.MORE_ITEM_BATCHES, t(UiKey.MORE_HINT_BATCHES), ImportBatchesRoute),
-            MoreItem(MoreIcons.BACKUP, UiKey.MORE_ITEM_BACKUP, null, BackupRoute),
-            MoreItem(MoreIcons.EXPORT, UiKey.MORE_ITEM_EXPORT, t(UiKey.MORE_HINT_EXPORT), BackupRoute),
+            MoreItem(MoreIcons.IMPORT, R06Key.MR_IMPORT, t(R06Key.MR_IMPORT_HINT), ImportHubRoute),
+            MoreItem(MoreIcons.BACKUP, R06Key.MR_BACKUP, null, BackupRoute),
         ),
     ),
-    MoreGroup(
-        UiKey.MORE_GROUP_SETTINGS,
-        listOf(
-            MoreItem(Lucide.BELL, UiKey.MORE_ITEM_NOTIFICATIONS, null, NotificationSettingsRoute),
-            MoreItem(Lucide.LOCK, UiKey.MORE_ITEM_LOCK, null, AppSettingsRoute),
-            MoreItem(Lucide.LANGUAGES, UiKey.MORE_ITEM_LANGUAGE, null, AppSettingsRoute),
-            MoreItem(Lucide.MOON, UiKey.MORE_ITEM_ISLAMIC, null, AppSettingsRoute),
-            // fix053 (فحص 0.5.3 ز): «سجل المشاكل» كان آخر «القفل واللغة» بس ومحدش لاقيه من «المزيد»
-            MoreItem(Lucide.FILE_TEXT, UiKey.PLOG_TITLE, t(UiKey.PLOG_OPEN_HINT), ProblemLogRoute),
-        ),
-    ),
+    MoreGroup(null, listOf(MoreItem(Lucide.SETTINGS, R06Key.MR_SETTINGS, t(R06Key.MR_SETTINGS_HINT), SettingsHubRoute))),
 )

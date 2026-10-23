@@ -151,7 +151,8 @@ fun AccountScreen(openBuilder: Boolean = false) {
                 GroupTitle(t(g.title))
                 if (g.note != null) BasicText(t(g.note), Modifier.padding(horizontal = 4.dp), style = Type.caption().copy(color = Ink.muted))
                 GroupCard {
-                    g.rows.forEachIndexed { i, r -> AnswerRow(r, last = i == g.rows.lastIndex) { editing = AccountEdit.Field(r.field, draftOf(p, r.field, salary)) } }
+                    g.rows.forEachIndexed { i, r -> AnswerRow(r, last = i == g.rows.lastIndex) {
+                        if (r.field == AccountField.INCOME_SOURCES) nav.push(IncomeHubRoute) else editing = AccountEdit.Field(r.field, draftOf(p, r.field, salary)) } }
                 }
             }
         }
@@ -200,6 +201,7 @@ private fun draftOf(p: UserProfile, field: AccountField, salary: app.masroufy.co
     AccountField.GENDER -> p.gender
     AccountField.DEPENDENTS -> p.dependentKinds.orEmpty()
     AccountField.SALARY -> salaryDraft(salary)
+    AccountField.INCOME_SOURCES -> null
     AccountField.PAYDAY -> p.payday
     AccountField.CAR -> p.hasCar
     AccountField.RENTER -> p.renter

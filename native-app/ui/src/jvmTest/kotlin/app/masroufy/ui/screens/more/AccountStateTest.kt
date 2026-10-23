@@ -45,7 +45,7 @@ class AccountStateTest {
         val groups = accountGroups(blank, Currency.SAR)
         assertEquals(listOf(UiKey.ACC_GROUP_ABOUT, UiKey.ACC_GROUP_INCOME, UiKey.ACC_GROUP_LIFE), groups.map { it.title })
         assertEquals(UiKey.ACC_LIFE_NOTE, groups[2].note)
-        assertEquals(UiKey.ACC_SALARY_HINT, groups[1].rows[0].hint)
+        assertEquals(UiKey.ACC_SALARY_HINT, groups[1].rows[1].hint)
     }
 
     @Test
@@ -88,7 +88,7 @@ class AccountStateTest {
         assertEquals(amountLabel(1_150_050, Currency.SAR), salaryValue(blank, Currency.SAR, total))
         assertEquals(UiKey.ACC_SALARY_TOTAL_OF, salaryHint(total))
         assertEquals(sentenceNumber(2), salaryHintArg(total))
-        val row = accountGroups(blank, Currency.SAR, total)[1].rows[0]
+        val row = accountGroups(blank, Currency.SAR, total)[1].rows[1]
         assertEquals(t(UiKey.ACC_SALARY_TOTAL_OF, sentenceNumber(2)), t(row.hint!!, row.hintArg!!))
         assertEquals(listOf("a", "b"), salaryKeys(total))
         val draft = salaryDraft(total)

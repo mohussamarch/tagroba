@@ -85,9 +85,9 @@ class IncomeHubModelTest {
 
     @Test
     fun employersMenuIsGoneAndIncomeOpensTheHub() {
-        val routes = moreGroups(moreView(null, 28, null, Space(app.masroufy.core.DEFAULT_SPACE_ID, "السعودية", "SA", Currency.SAR, "2025-01-01T00:00:00Z"))).flatMap { g -> g.items.map { it.to } }
+        val routes = moreGroups().flatMap { g -> g.items.map { it.to } }
         assertFalse(EmployersRoute in routes, "«جهات العمل» ما بقتش في «المزيد»")
-        assertTrue(IncomeHubRoute in routes)
+        assertFalse(IncomeHubRoute in routes, "«مصادر الدخل» بقت في «ملفك» (OVERRIDES §116-1)")
     }
 
     @Test

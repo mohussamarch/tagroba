@@ -164,4 +164,6 @@ fun RouteRegistry.registerMore() {
     screen<RestorePreviewRoute> { r -> RestorePreviewScreen(r.fileName, r.text) }
     screen<ProblemLogRoute> { ProblemLogScreen() }
     screen<SupportRoute> { SupportScreen() }
+    screen<ImportHubRoute> { ImportHubScreen() }
+    screen<SettingsHubRoute> { SettingsHubScreen() }
 }

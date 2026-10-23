@@ -73,4 +73,7 @@ enum class R06Key : TextRef {
     /** r06-sell (OVERRIDES §112-4) — «بيع أصل»: الفلوس راحت فين · الربط · المكسب أو الخسارة — نصوصها في `TextsR06Sell.kt`. */
     SELL_TO, SELL_TO_BANK, SELL_TO_CASH, SELL_TO_OTHER, SELL_NO_WALLETS, SELL_LINK, SELL_NO_LINK, SELL_NO_MATCH, SELL_GAIN, SELL_LOSS,
     SELL_COST_SHARE, SELL_NOTE, SELL_ERR_WALLET, SELL_ERR_CURRENCY, SELL_ERR_LINK, SELL_ACTION,
+    /** r06-more (OVERRIDES §116) — «المزيد» الجديدة وصفحتي «الاستيراد» و«الإعدادات» والقايمة السريعة للبلد — نصوصها في `TextsR06More.kt`. */
+    MR_GROUP_MONEY, MR_WALLETS_HINT, MR_CATS, MR_CATS_HINT, MR_IMPORT, MR_IMPORT_HINT, MR_BACKUP, MR_SETTINGS, MR_SETTINGS_HINT, MR_SET_LANG,
+    MR_SWAP_TO, MR_ADD_COUNTRY, MR_ARCHIVE_COUNTRY, MR_QUICK_TITLE, MR_INCOME_VALUE,
 }

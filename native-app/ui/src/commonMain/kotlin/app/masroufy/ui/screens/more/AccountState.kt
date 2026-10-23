@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.more
 
+import app.masroufy.core.R06Key
 import app.masroufy.core.TextRef
 import app.masroufy.core.UiKey
 import app.masroufy.core.Currency
@@ -17,7 +18,8 @@ import app.masroufy.ui.text.t
  * «ملفك» (`Account`) — من الملف للعرض، **دالة نقية** (بتتختبر على JVM). [AccountRow.value] = null ⇒ «لم تُجب بعد» (مش «لا» — القاعدة 10).
  * الحفظ نفسه في `ManageProfile.saveWithQuestions` (التأكد من القيم هناك) — هنا بس بيتبني الملف الجديد من اختيار المستخدم.
  */
-enum class AccountField { NAME, GENDER, DEPENDENTS, SALARY, PAYDAY, CAR, RENTER, MAID, BUSINESS }
+/** [INCOME_SOURCES] = سطر رابط بس («مصادر الدخل ›» ⇒ IncomeHub — OVERRIDES §116-1)، مالوش لوحة سؤال. */
+enum class AccountField { NAME, GENDER, DEPENDENTS, INCOME_SOURCES, SALARY, PAYDAY, CAR, RENTER, MAID, BUSINESS }
 
 /** [hintArg] = قيمة `{0}` في [hint] (مثلًا عدد الوظايف في «مجموع مرتبات N وظايف»). */
 data class AccountRow(val field: AccountField, val label: TextRef, val value: String?, val hint: TextRef? = null, val hintArg: String? = null)
@@ -94,6 +96,8 @@ fun accountGroups(p: UserProfile, currency: Currency, salary: SalaryState? = nul
     AccountGroup(
         UiKey.ACC_GROUP_INCOME, null,
         listOf(
+            // r06-more (OVERRIDES §116-1 · `Account.dc.html`): «مصادر الدخل» بيتها هنا — أول سطر في الدخل وبيفتح IncomeHub
+            AccountRow(AccountField.INCOME_SOURCES, UiKey.MORE_ITEM_INCOME, t(R06Key.MR_INCOME_VALUE)),
             AccountRow(AccountField.SALARY, UiKey.ACC_SALARY, salaryValue(p, currency, salary), salaryHint(salary), salaryHintArg(salary)),
             AccountRow(AccountField.PAYDAY, UiKey.ACC_PAYDAY, t(UiKey.ACC_DAY_N, sentenceNumber(p.payday)), UiKey.ACC_PAYDAY_HINT),
         ),
@@ -135,5 +139,5 @@ fun applyAnswer(p: UserProfile, field: AccountField, draft: Any?): UserProfile? 
     AccountField.RENTER -> (draft as? Boolean)?.let { p.copy(renter = it) }
     AccountField.MAID -> (draft as? Boolean)?.let { p.copy(domesticWorker = it) }
     AccountField.BUSINESS -> (draft as? Boolean)?.let { p.copy(business = it) }
-    AccountField.SALARY -> null
+    AccountField.SALARY, AccountField.INCOME_SOURCES -> null
 }
