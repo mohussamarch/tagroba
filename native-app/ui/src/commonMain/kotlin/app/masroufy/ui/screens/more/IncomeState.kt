@@ -114,9 +114,15 @@ fun firstOfMonth(iso: IsoDate, monthsAhead: Int = 0): IsoDate {
 fun endDateChoices(today: IsoDate, payday: Int): List<IsoDate> =
     listOf(today, plusDays(firstOfMonth(today), -1), plusDays(periodForDate(today, payday).start, -1)).distinct()
 
-/** «بدأ إمتى؟» بعد «غيّرت شغلي»: بكرة · أول الشهر الجاي · اليوم. ولإضافة مصدر قديم: اليوم · بداية الشهر المالي · أول السنة. */
-fun startDateChoices(today: IsoDate, payday: Int, change: Boolean): List<IsoDate> =
-    if (change) listOf(plusDays(today, 1), firstOfMonth(today, 1), today).distinct()
+/**
+ * «بدأ إمتى؟» بعد «غيّرت شغلي»: اليوم اللي بعد ما القديم خلص · أول الشهر اللي بعده · اليوم ([endedOn] مش معروف ⇒ من النهارده زي الأول).
+ * ولإضافة مصدر قديم: اليوم · بداية الشهر المالي · أول السنة. (smoke 0.5.4: قفل يوم 27 سبتمبر كان بيقترح 24 أكتوبر بدل 28 سبتمبر.)
+ */
+fun startDateChoices(today: IsoDate, payday: Int, change: Boolean, endedOn: IsoDate? = null): List<IsoDate> =
+    if (change) {
+        val from = endedOn?.takeIf { app.masroufy.core.isValidIsoDate(it) } ?: today
+        listOf(plusDays(from, 1), firstOfMonth(from, 1), today).distinct()
+    }
     else listOf(today, periodForDate(today, payday).start, today.take(4) + "-01-01").distinct()
 
 /** كلمة اليوم في الشريحة: «اليوم» بدل تاريخ النهارده. */

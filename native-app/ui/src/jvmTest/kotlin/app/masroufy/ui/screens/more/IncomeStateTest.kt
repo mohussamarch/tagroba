@@ -125,6 +125,9 @@ class IncomeStateTest {
         assertEquals(2, endDateChoices("2026-10-09", 1).size)
 
         assertEquals(listOf("2026-10-10", "2026-11-01", "2026-10-09"), startDateChoices("2026-10-09", 28, change = true))
+        // smoke 0.5.4: القديم خلص 27 سبتمبر ⇒ الجديد من 28 سبتمبر (مش من بكرة)
+        assertEquals(listOf("2026-09-28", "2026-10-01", "2026-10-23"), startDateChoices("2026-10-23", 28, change = true, endedOn = "2026-09-27"))
+        assertEquals(listOf("2026-10-24", "2026-11-01", "2026-10-23"), startDateChoices("2026-10-23", 28, change = true, endedOn = ""), "تاريخ ناقص ⇒ من النهارده")
         assertEquals(listOf("2026-10-09", periodForDate("2026-10-09", 28).start, "2026-01-01"), startDateChoices("2026-10-09", 28, change = false))
         assertEquals(2, startDateChoices("2026-01-05", 1, change = false).size)
     }
