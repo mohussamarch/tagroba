@@ -58,17 +58,18 @@
       <sc-if value="{{hasEmoji}}" hint-placeholder-val="{{ false }}"><span aria-hidden="true" style="position: absolute; top: 2px; right: 2px; width: 36px; height: 36px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 20px; background: #FFFFFF; box-shadow: 0 0 0 3px #FAF9F3, 0 4px 10px rgba(0,30,25,0.18)">{{emoji}}</span></sc-if>
       <button type="button" class="ph-press" aria-label="{{photoLabel}}" style="position: absolute; bottom: 4px; left: 4px; width: 34px; height: 34px; border: 0; border-radius: 17px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #FFFFFF; background: #08634F; box-shadow: 0 0 0 3px #FAF9F3"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg></button>
     </div>
-    <div style="width: 72px; display: flex; flex-direction: column; align-items: center; gap: 4px">
-      <span aria-label="{{linkAria}}" style="width: 44px; height: 44px; border-radius: 22px; display: flex; align-items: center; justify-content: center; color: #637570; background: #FFFFFF; box-shadow: 0 6px 16px rgba(29,54,53,0.12)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"></path><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"></path><path d="M3 3l18 18" stroke="#BE3D48"></path></svg></span>
+    <button type="button" class="ph-press" onClick="{{link}}" aria-label="{{linkAria}}" style="width: 72px; border: 0; padding: 0; background: transparent; cursor: pointer; font: inherit; display: flex; flex-direction: column; align-items: center; gap: 4px">
+      <span style="width: 44px; height: 44px; border-radius: 22px; display: flex; align-items: center; justify-content: center; color: #637570; background: #FFFFFF; box-shadow: 0 6px 16px rgba(29,54,53,0.12)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"></path><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"></path><path d="M3 3l18 18" stroke="#BE3D48"></path></svg></span>
       <span style="font-size: 11px; font-weight: 700; color: #637570">{{linkLabel}}</span>
-    </div>
+    </button>
   </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"مصر","section":"الحالة"},"open":{"editor":"boolean","default":false,"section":"الحالة"},"onMenu":{"editor":null},"$preview":{"width":390,"height":420}}'>
+<script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"مصر","section":"الحالة"},"open":{"editor":"boolean","default":false,"section":"الحالة"},"onMenu":{"editor":null},"onLink":{"editor":null},"$preview":{"width":390,"height":420}}'>
 // رأس صفحة الشخص (طلب المالك 2026-10-23 برسمة):
 // • المناسبات اللي بتتكرر كل سنة = أيقونات صغيرة فوق في الخلفية الخضرا من غير كلام (كل ما يتضاف حاجة سنوية بتتحط هنا)
 // • الصورة كبيرة · اسحب لتحت ⇐ الأخضر ينزل زي الستارة لحد ما الدايرة تبقى تحت، وتظهر المناسبات كروت كبيرة تتنقل بينها، ولون الخلفية وإيموجي صغير على الصورة
+// • شمال الصورة: علامة الاتصال = زرار «طلب اتصال» (اتشال من القايمة السريعة — طلب المالك 2026-10-23)
 // • يمين الصورة (أول عنصر في RTL): زرار «القايمة السريعة» (نفس قايمة العمليات بالضغطة الطويلة) · شمالها: متصلين ولا لأ (مستقبلي — لما كل شخص يبقى ليه حساب)
 const CLOSED = 196, OPEN = 470;
 const ICON = { birthday: 'M4 21h16v-8H4zM4 16c2 0 2-1.5 4-1.5s2 1.5 4 1.5 2-1.5 4-1.5 2 1.5 4 1.5M12 13V9M12 6.5a1.5 1.5 0 0 0 1.5-1.5c0-1-1.5-3-1.5-3s-1.5 2-1.5 3A1.5 1.5 0 0 0 12 6.5z', friends: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8', gift: 'M20 12v9H4v-9M2 7h20v5H2zM12 21V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z', grad: 'M22 10 12 5 2 10l10 5 10-5zM6 12v5c3 2 9 2 12 0v-5' };
@@ -101,7 +102,7 @@ class Component extends DCLogic {
       emojis: ['⭐', '❤️', '⚽', '☕'].map((ch) => ({ ch, aria: T('ضع ', 'حط ') + ch, pick: () => this.setState({ emoji: s.emoji === ch ? '' : ch }),
         style: 'width: 32px; height: 32px; border: 0; border-radius: 16px; cursor: pointer; font-size: 16px; background: ' + (s.emoji === ch ? '#FFFFFF' : 'rgba(255,255,255,0.18)') })),
       hasEmoji: !!s.emoji, emoji: s.emoji,
-      linkLabel: T('غير متصل', 'مش متصل'), linkAria: T('لستما متصلين — قريبًا', 'مش متصلين — قريب'),
+      linkLabel: T('غير متصل', 'مش متصل'), linkAria: T('اطلب الاتصال بخالد', 'اطلب اتصال بخالد'), link: () => { if (this.props.onLink) this.props.onLink(); },
       photoLabel: T('أضف صورة', 'ضيف صورة'),
       menu: () => { if (this.props.onMenu) this.props.onMenu(); }, menuLabel: T('القائمة السريعة', 'القايمة السريعة'), menuShort: T('معه', 'معاه')
     };

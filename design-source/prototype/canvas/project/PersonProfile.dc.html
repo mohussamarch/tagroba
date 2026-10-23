@@ -29,7 +29,7 @@ a{color:#08634F}a:hover{color:#064B40}
 <div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: SAR, 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
   <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding-bottom: 40px; display: flex; flex-direction: column; gap: 14px">
 
-    <dc-import name="PersonHero" space="{{spaceName}}" on-menu="{{openMenu}}" hint-size="390px,276px"></dc-import>
+    <dc-import name="PersonHero" space="{{spaceName}}" on-menu="{{openMenu}}" on-link="{{openLink}}" hint-size="390px,276px"></dc-import>
     <div style="margin-top: -6px; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 0 20px"><h1 style="margin: 0; font-size: 24px; font-weight: 700">خالد</h1><span style="font-size: 13px; color: #637570">{{relLine}}</span></div>
 
     <div style="display: flex; gap: 10px; padding: 0 20px">
@@ -144,13 +144,13 @@ class Component extends DCLogic {
     const open = (id) => () => this.setState({ menu: false, sheet: id, amount: '' });
     const first = 4; // 1 أكتوبر 2026 = خميس (الأسبوع بيبدأ السبت)
     return {
+      openLink: () => this.setState({ menu: false, sheet: 'link', amount: '' }),
       openMenu: () => this.setState({ menu: true }), closeMenu: () => this.setState({ menu: false }), menuOpen: s.menu, menuTitle: T('القائمة السريعة', 'القايمة السريعة'),
       menuItems: [
         ['M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17M7 21l1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9', T('أضف دينًا', 'ضيف دين'), () => { if (window.location) window.location.href = 'DuesDebts.dc.html'; }],
         ['M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1zM8 8h8M8 12h8', T('قسّم فاتورة', 'قسّم فاتورة'), open('split')],
         ['M12 3a9 9 0 1 0 9 9M12 7v5l3 2', eg ? 'جمعية' : 'دعوة لجمعية', open('rosca')],
-        ['M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16M3 8h18v12H3z', 'مشروع مشترك', open('project')],
-        ['M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7', T('طلب اتصال', 'طلب اتصال'), open('link')]
+        ['M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16M3 8h18v12H3z', 'مشروع مشترك', open('project')]
       ].map(([icon, label, go]) => ({ icon, label, go })),
       noNet: T('بلا مقاصة', 'من غير خصم'),
       hasNotice: true, noticeTitle: T('زفاف خالد بعد 11 يومًا', 'فرح خالد بعد 11 يوم'), noticeSub: T('18 أكتوبر · ذكّرني قبلها بأسبوع', '18 أكتوبر · هفكّرك قبلها بأسبوع'),
