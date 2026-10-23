@@ -22,10 +22,13 @@ import kotlin.time.measureTime
 
 /** «ممكن تكون مربوطة بـ» (2026-10-16): مرشحين من «عمليات تابعة» بس، لحد 3، وسريع على بيانات كبيرة. كل المبالغ مخترعة. */
 class QuickLinksTest {
-    private fun txn(id: String, date: String, minor: Long, dir: Direction, kind: EconomicKind = EconomicKind.PURCHASE) = Transaction(
+    private fun txn(
+        id: String, date: String, minor: Long, dir: Direction, kind: EconomicKind = EconomicKind.PURCHASE, merchant: String? = null,
+        currency: Currency = Currency.SAR,
+    ) = Transaction(
         id = id, occurredAt = date, datePrecision = "day", sourceOrder = 1, economicKind = kind, economicKindConfirmed = true,
-        observedDirection = dir, amountMinor = minor, currency = Currency.SAR, categoryConfirmed = false, excludedFromBudget = false,
-        reviewState = ReviewState.CONFIRMED, isCashTagged = false, createdAt = "x", updatedAt = "x", walletId = "w-1",
+        observedDirection = dir, amountMinor = minor, currency = currency, categoryConfirmed = false, excludedFromBudget = false,
+        reviewState = ReviewState.CONFIRMED, isCashTagged = false, createdAt = "x", updatedAt = "x", walletId = "w-1", rawMerchantName = merchant,
     )
 
     private fun world(extra: Int): Pair<MemoryTransactionRepository, QuickLinks> {
@@ -35,9 +38,14 @@ class QuickLinksTest {
         }
         val txns = MemoryTransactionRepository(
             noise + listOf(
-                txn("buy", "2026-10-01", 40_000, Direction.OUT),
-                txn("ref1", "2026-10-03", 10_000, Direction.IN, EconomicKind.REFUND_RECEIVED),
-                txn("ref2", "2026-10-05", 5_000, Direction.IN, EconomicKind.REFUND_RECEIVED),
+                txn("buy", "2026-10-01", 40_000, Direction.OUT, merchant = "QA CAFE"),
+                // نفس التاجر (أي مبلغ) · نفس المبلغ في حدود 30 يوم
+                txn("ref1", "2026-10-03", 10_000, Direction.IN, EconomicKind.REFUND_RECEIVED, merchant = "qa  cafe"),
+                txn("ref2", "2026-10-05", 40_000, Direction.IN, EconomicKind.REFUND_RECEIVED),
+                // فحص 0.5.3: ملهاش علاقة — مبلغ تاني من غير تاجر · نفس المبلغ بعد 45 يوم · نفس التاجر بعملة تانية (بلد تانية)
+                txn("other", "2026-10-02", 44_400, Direction.IN, EconomicKind.REFUND_RECEIVED),
+                txn("late", "2026-11-15", 40_000, Direction.IN, EconomicKind.REFUND_RECEIVED),
+                txn("egp", "2026-10-04", 40_000, Direction.IN, EconomicKind.REFUND_RECEIVED, merchant = "QA CAFE", currency = Currency.EGP),
             ),
         )
         val inflows = LinkInflows(
