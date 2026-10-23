@@ -250,12 +250,12 @@ internal class SmsGraph(
     }
 
     override suspend fun historyStart(senders: List<String>, from: IsoDate?, progress: (SmsRunProgress) -> Unit) =
-        work { history()?.start(space.id, senders, from, progress, memo)?.let { mine(it) }.also { readMark() } }
+        work { history()?.start(space.id, senders, from, scopedProgress(inbox, manage, progress), memo)?.let { mine(it) }.also { readMark() } }
 
     override suspend fun historyReport() = work { history()?.report()?.let { mine(it) } }
 
     override suspend fun confirmShapes(messageIds: List<String>, progress: (SmsRunProgress) -> Unit) =
-        work { history()?.confirmShapes(messageIds, progress, memo)?.let { mine(it) }.also { readMark() } }
+        work { history()?.confirmShapes(messageIds, scopedProgress(inbox, manage, progress), memo)?.let { mine(it) }.also { readMark() } }
 
     /**
      * fix053 (بلاغ المالك — §112-5): التقرير بيلف على كل البلاد — هنا بلد الشاشة بس: أشكالها، والمستني والصندوق = رسايلها بس
