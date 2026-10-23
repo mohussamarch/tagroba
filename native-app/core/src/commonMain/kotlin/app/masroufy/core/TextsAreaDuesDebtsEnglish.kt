@@ -83,6 +83,8 @@ internal val ENGLISH_DUES_DEBTS_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.DEBTS_REASON_RECEIVABLE to "Owed to you from a transaction",
     UiKey.DEBTS_REASON_LOAN to "You owe from a transaction",
     UiKey.DEBTS_REASON_OPENING to "Old debt from before the app",
+    UiKey.DEBTS_REASON_CASH_FOR to "Owed to you in cash",
+    UiKey.DEBTS_REASON_CASH_ON to "You owe in cash",
     UiKey.DEBTS_REASON_CUSTODY to "Held in trust",
     UiKey.DEBTS_DUE_ON to "Due {0}",
     UiKey.DEBTS_NO_DUE to "No due date",

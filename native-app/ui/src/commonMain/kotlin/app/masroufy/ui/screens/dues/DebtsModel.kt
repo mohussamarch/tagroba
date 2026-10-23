@@ -74,6 +74,8 @@ internal fun reasonOf(o: Obligation): String = when {
     // r06-debts: السبب اللي اتكتب في «ضيف دين»
     !o.note.isNullOrBlank() -> o.note.orEmpty()
     o.originTransactionId == null -> t(UiKey.DEBTS_REASON_OPENING)
+    // فحص 0.5.3: دين «نقدًا» كان مكتوب تحته «دين لك من عملية»
+    o.cashOrigin -> t(if (o.kind == ObligationKind.RECEIVABLE) UiKey.DEBTS_REASON_CASH_FOR else UiKey.DEBTS_REASON_CASH_ON)
     o.kind == ObligationKind.RECEIVABLE -> t(UiKey.DEBTS_REASON_RECEIVABLE)
     o.kind == ObligationKind.LOAN_PAYABLE -> t(UiKey.DEBTS_REASON_LOAN)
     else -> t(UiKey.DEBTS_REASON_CUSTODY)

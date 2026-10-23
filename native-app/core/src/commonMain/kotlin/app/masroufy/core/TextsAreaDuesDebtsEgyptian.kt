@@ -84,6 +84,8 @@ internal val EGYPTIAN_DUES_DEBTS_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.DEBTS_REASON_RECEIVABLE to "دين ليك من عملية",
     UiKey.DEBTS_REASON_LOAN to "دين عليك من عملية",
     UiKey.DEBTS_REASON_OPENING to "دين قديم من قبل التطبيق",
+    UiKey.DEBTS_REASON_CASH_FOR to "دين ليك كاش",
+    UiKey.DEBTS_REASON_CASH_ON to "دين عليك كاش",
     UiKey.DEBTS_REASON_CUSTODY to "أمانة عندك",
     UiKey.DEBTS_DUE_ON to "ميعادها {0}",
     UiKey.DEBTS_NO_DUE to "من غير ميعاد",

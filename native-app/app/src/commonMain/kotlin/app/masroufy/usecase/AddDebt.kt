@@ -135,8 +135,9 @@ class AddDebt(
                 }
             }
             var saved = obligation!!
-            if (reason != null) {
-                saved = saved.copy(note = reason)
+            val cashOrigin = input.money == DebtMoney.Cash
+            if (reason != null || cashOrigin) {
+                saved = saved.copy(note = reason ?: saved.note, cashOrigin = cashOrigin || saved.cashOrigin)
                 obligations.saveMany(listOf(saved))
             }
             if (dueAt != null) installments.setDebtTerms(DebtTerms(saved.id, personId, firstDueAt = dueAt))

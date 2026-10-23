@@ -29,6 +29,7 @@ import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -120,6 +121,16 @@ class AddDebtTest {
         assertEquals(5_000L, tx.amountMinor)
         assertEquals("غدا", tx.note)
         assertEquals("غدا", obligations.listByPerson("p-1").single().note)
+        assertTrue(obligations.listByPerson("p-1").single().cashOrigin, "فحص 0.5.3: الدين النقدي متعلّم «نقدًا»")
+    }
+
+    @Test fun cashDebtWithoutReasonIsMarkedCashAndOldDebtIsNot() = runBlocking {
+        addDebt.add(input(side = DebtSideIn.FOR_YOU, amount = 15_000, money = DebtMoney.Cash))
+        val cash = obligations.listByPerson("p-1").single()
+        assertTrue(cash.cashOrigin)
+        assertEquals(null, cash.note)
+        addDebt.add(input(side = DebtSideIn.FOR_YOU, amount = 2_000, money = DebtMoney.Old))
+        assertFalse(obligations.listByPerson("p-1").single { it.id != cash.id }.cashOrigin)
     }
 
     @Test fun badInputWritesNothing() = runBlocking<Unit> {
