@@ -138,3 +138,49 @@ describe('sharedMerchants: قايمة التجار المشتركة (§25.1 · �
     await assertFails(deleteDoc(doc(nobody(), 'sharedMerchants/KEEP-SHOP')))
   })
 })
+
+// «ابعتلنا» — inbox/{id} (OVERRIDES §114 · PLAN-0.6 §16): كتابة بس، المفاتيح بالظبط، من غير قراية ولا تعديل ولا مسح
+const feedback = (extra = {}) => ({ kind: 'question', country: 'eg', text: 'TEST QUESTION', appVersion: 'kotlin-0.6', createdAt: serverTimestamp(), ...extra })
+const send = (db, id, data) => setDoc(doc(db, 'inbox', id), data)
+
+describe('inbox: «ابعتلنا» كتابة بس (§114)', () => {
+  test('أي داخل (alice · bob) يكتب مستند جديد بالحقول الخمسة بالظبط — والمش داخل لأ', async () => {
+    await assertSucceeds(send(alice(), 'fb-a', feedback()))
+    await assertSucceeds(send(bob(), 'fb-b', feedback({ kind: 'problem', country: 'sa' })))
+    await assertSucceeds(send(alice(), 'fb-c', feedback({ kind: 'suggestion', text: 'x'.repeat(2000) })))
+    await assertFails(send(nobody(), 'fb-n', feedback()))
+  })
+
+  test('حقول زيادة (uid · إيميل · مبلغ) أو ناقصة ⇒ مرفوض', async () => {
+    await assertFails(send(alice(), 'fb-1', feedback({ uid: 'alice' })))
+    await assertFails(send(alice(), 'fb-2', feedback({ email: 'a@example.com' })))
+    await assertFails(send(alice(), 'fb-3', feedback({ amountMinor: 1500 })))
+    const { appVersion, ...noVersion } = feedback()
+    await assertFails(send(alice(), 'fb-4', noVersion))
+    const { createdAt, ...noTime } = feedback()
+    await assertFails(send(alice(), 'fb-5', noTime))
+  })
+
+  test('الأنواع والأطوال: النوع والبلد من القايمة · النص 1-2000 · النسخة 1-40 · الوقت وقت السيرفر', async () => {
+    await assertFails(send(alice(), 'fb-6', feedback({ kind: 'spam' })))
+    await assertFails(send(alice(), 'fb-7', feedback({ country: 'ae' })))
+    await assertFails(send(alice(), 'fb-8', feedback({ text: '' })))
+    await assertFails(send(alice(), 'fb-9', feedback({ text: 'x'.repeat(2001) })))
+    await assertFails(send(alice(), 'fb-10', feedback({ text: 42 })))
+    await assertFails(send(alice(), 'fb-11', feedback({ appVersion: 'v'.repeat(41) })))
+    await assertFails(send(alice(), 'fb-12', feedback({ createdAt: Timestamp.fromDate(new Date('2026-01-01T00:00:00Z')) })))
+  })
+
+  test('لا قراية ولا تعديل ولا مسح — حتى صاحب المستند', async () => {
+    await assertSucceeds(send(alice(), 'fb-own', feedback()))
+    await assertFails(getDoc(doc(alice(), 'inbox/fb-own')))
+    await assertFails(getDocs(collection(alice(), 'inbox')))
+    await assertFails(getDocs(collection(bob(), 'inbox')))
+    await assertFails(getDoc(doc(nobody(), 'inbox/fb-own')))
+    await assertFails(updateDoc(doc(alice(), 'inbox/fb-own'), { text: 'changed' }))
+    // نفس المعرّف تاني (إعادة محاولة بعد ما الأولى وصلت) = تعديل ⇒ مرفوض (التطبيق بيشيلها من المستنية)
+    await assertFails(send(alice(), 'fb-own', feedback()))
+    await assertFails(deleteDoc(doc(alice(), 'inbox/fb-own')))
+    await assertFails(deleteDoc(doc(bob(), 'inbox/fb-own')))
+  })
+})
