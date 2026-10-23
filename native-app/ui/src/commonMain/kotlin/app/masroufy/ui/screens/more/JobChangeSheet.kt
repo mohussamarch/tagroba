@@ -195,18 +195,18 @@ private fun payDone(freq: app.masroufy.core.PayFrequency, day: Int): String =
 @Composable
 private fun Label(text: String) = BasicText(text, style = Type.of(13, FontWeight.Bold).copy(color = Ink.muted))
 
-/** شرائح التاريخ + «تاريخ آخر» بخانة (سنة-شهر-يوم). */
+/**
+ * شرائح التاريخ + «تاريخ آخر» بشبكة الشهر (`DateField` — منتقي التاريخ بتاع البرنامج، مش خانة كتابة).
+ * «تاريخ آخر» بيفضّي الاختيار (`onPick("")`) لحد ما تختار يوم ⇒ زرار الحفظ مقفول وعمره ما يرجع للنهارده بهدوء
+ * (فحص 0.5.3: كتابة `01-01-2025` كانت بتتحفظ بتاريخ النهارده).
+ */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun DateChoices(choices: List<IsoDate>, selected: IsoDate, today: IsoDate, onPick: (IsoDate) -> Unit) {
     var custom by remember { mutableStateOf(false) }
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         for (d in choices) FillChip(dateChipLabel(d, today), !custom && selected == d) { custom = false; onPick(d) }
-        FillChip(t(UiKey.JOB_OTHER_DATE), custom) { custom = true }
+        FillChip(t(UiKey.JOB_OTHER_DATE), custom) { if (!custom) { custom = true; onPick("") } }
     }
-    if (custom) {
-        var text by remember { mutableStateOf(selected) }
-        TextInput(text, { text = it.trim(); if (isValidIsoDate(text)) onPick(text) }, placeholder = today, ltr = true,
-            error = if (text.isNotEmpty() && !isValidIsoDate(text)) t(UiKey.JOB_DATE_BAD) else null)
-    }
+    if (custom) app.masroufy.ui.screens.people.DateField(selected.takeIf { isValidIsoDate(it) }, today, onPick = onPick)
 }
