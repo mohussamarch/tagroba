@@ -50,6 +50,8 @@ internal data class PersonPageUi(
     val occasions: List<UpcomingOccasion>,
     val history: List<HistoryRow>,
     val badges: List<String>,
+    /** r06-person: لون خلفية الرأس والرمز اللي على الصورة (`PersonProfile`). */
+    val look: PersonLookUi = PersonLookUi(),
 )
 
 internal fun personPageUi(
@@ -95,5 +97,6 @@ internal fun personPageUi(
         occasions = occasions,
         history = history,
         badges = badgeLines,
+        look = PersonLookUi(profile?.heroColor ?: 0, profile?.badge),
     )
 }

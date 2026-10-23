@@ -36,16 +36,16 @@ import app.masroufy.ui.theme.Type
  * صفحة الشخص (جولة r05): الأرصدة (ليك · عليك · الصافي لكل عملة) · «السجل بينا» كله الأحدث الأول (السطر بيفتح العملية أو الدين) · الديون المفتوحة ·
  * اللي اتقفلت (مطوية). الصفحة الفاضية بس لو مفيش ولا حاجة فعلًا — بسطر بيقول تعمل إيه.
  */
+/**
+ * مفاتيح الأقسام اللي بتترسم. r06-person (OVERRIDES §116-ب): سطر «لك/عليك/الصافي» **اتشال** — كان بيكرر كروت «لك/عليك» الثابتة فوق
+ * (ملحوظة التصميم: «يفضل الكروت بس»). [LedgerUi.totals] لسه بيتحسب بس مش بيترسم.
+ */
+internal fun ledgerItemKeys(ui: LedgerUi): List<String> = buildList {
+    add("ledger-history")
+    if (ui.open.isNotEmpty() || ui.settled.isNotEmpty()) add("ledger-debts")
+}
+
 internal fun LazyListScope.personLedgerItems(ui: LedgerUi, modifier: Modifier, onTxn: (Id) -> Unit, onDebt: (Id) -> Unit) {
-    if (ui.totals.isNotEmpty()) item(key = "ledger-totals") {
-        Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            for (tot in ui.totals) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                TotalBox(t(UiKey.PLINK_TOTAL_LAK), tot.lakMinor, tot, AmountTone.INCOME, Modifier.weight(1f))
-                TotalBox(t(UiKey.PLINK_TOTAL_ALEK), tot.alekMinor, tot, AmountTone.EXPENSE, Modifier.weight(1f))
-                TotalBox(t(UiKey.PLINK_TOTAL_NET), tot.netMinor, tot, if (tot.netMinor >= 0L) AmountTone.INCOME else AmountTone.EXPENSE, Modifier.weight(1f))
-            }
-        }
-    }
     item(key = "ledger-history") {
         Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             BasicText(t(UiKey.PLINK_PAGE_HISTORY), style = Type.section())
@@ -62,7 +62,7 @@ internal fun LazyListScope.personLedgerItems(ui: LedgerUi, modifier: Modifier, o
             }
         }
     }
-    if (ui.open.isNotEmpty() || ui.settled.isNotEmpty()) item(key = "ledger-debts") {
+    if ("ledger-debts" in ledgerItemKeys(ui)) item(key = "ledger-debts") {
         var showSettled by remember { mutableStateOf(false) }
         Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             BasicText(t(UiKey.PLINK_PAGE_OPEN_DEBTS), style = Type.section())
@@ -77,14 +77,6 @@ internal fun LazyListScope.personLedgerItems(ui: LedgerUi, modifier: Modifier, o
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun TotalBox(title: String, minor: Long, tot: LedgerTotalsUi, tone: AmountTone, modifier: Modifier) {
-    FloatingCard(modifier, shape = RoundedCornerShape(Radius.control), contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp)) {
-        BasicText(title, style = Type.caption().copy(color = Ink.muted))
-        AmountText(minor, tot.currency, Modifier.fillMaxWidth(), size = 16, color = tone.color)
     }
 }
 

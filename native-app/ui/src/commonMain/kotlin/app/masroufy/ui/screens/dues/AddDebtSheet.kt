@@ -66,22 +66,22 @@ private const val NEW_PERSON = "+new"
  * الحفظ كله في حالة الاستخدام `AddDebt` (الشاشة ما بتحسبش — بتقرا الرقم المكتوب بس). [DuesDeps.addDebt] null ⇒ الزرار مش ظاهر أصلًا.
  */
 @Composable
-internal fun AddDebtSheet(visible: Boolean, initialSide: DebtSide, onDismiss: () -> Unit, onSaved: (AddedDebt) -> Unit) {
+internal fun AddDebtSheet(visible: Boolean, initialSide: DebtSide, onDismiss: () -> Unit, presetPersonId: String? = null, onSaved: (AddedDebt) -> Unit) {
     Sheet(visible = visible, onDismiss = onDismiss, title = t(R06Key.AD_TITLE), closeLabel = t(UiKey.SHELL_CLOSE), spacing = 12.dp) {
-        if (visible) SheetScroll { AddDebtForm(if (initialSide == DebtSide.ON_YOU) DebtSideIn.ON_YOU else DebtSideIn.FOR_YOU, onSaved) }
+        if (visible) SheetScroll { AddDebtForm(if (initialSide == DebtSide.ON_YOU) DebtSideIn.ON_YOU else DebtSideIn.FOR_YOU, presetPersonId, onSaved) }
     }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun AddDebtForm(initial: DebtSideIn, onSaved: (AddedDebt) -> Unit) {
+private fun AddDebtForm(initial: DebtSideIn, presetPersonId: String?, onSaved: (AddedDebt) -> Unit) {
     val space = LocalSpace.current
     val add = space.dues.addDebt ?: return
     val currency = space.space.currency
     val toaster = LocalToaster.current
     val scope = rememberCoroutineScope()
     var side by remember { mutableStateOf(initial) }
-    var who by remember { mutableStateOf<String?>(null) }
+    var who by remember { mutableStateOf(presetPersonId) } // r06-person: «ضيف دين» من صفحة الشخص ⇒ الشخص متختار
     var newName by remember { mutableStateOf("") }
     var amount by remember { mutableStateOf("") }
     var reason by remember { mutableStateOf("") }
