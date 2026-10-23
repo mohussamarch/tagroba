@@ -163,7 +163,13 @@ sealed interface SmsParseResult {
     data class Ok(val row: SmsRow) : SmsParseResult
 
     /** [foreign] موجود بس لو السبب «عملة أجنبية» والباقي كله اتقري (§75-12) · [foreignUnread] لو أجنبية والمبلغ الأجنبي مش مقروء بالظبط. */
-    data class Rejected(val reason: String, val foreign: SmsForeignPending? = null, val foreignUnread: SmsForeignUnread? = null) : SmsParseResult
+    data class Rejected(
+        val reason: String,
+        val foreign: SmsForeignPending? = null,
+        val foreignUnread: SmsForeignUnread? = null,
+        /** OVERRIDES §112-5: شكل رسالة بنك من البلد التانية ⇒ بتتقري هناك بس — `ManageSmsInbox` ما بيعرضهاش هنا خالص (ولا تتعد). */
+        val otherCountry: Boolean = false,
+    ) : SmsParseResult
 }
 
 internal const val DAY_MS = 86_400_000L

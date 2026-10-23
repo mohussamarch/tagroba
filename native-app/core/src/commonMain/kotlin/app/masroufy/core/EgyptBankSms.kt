@@ -108,7 +108,7 @@ fun parseEgyptBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult 
     if (hasBidiOverride(message.body) || hasBidiInsideNumber(message.body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_HIDDEN_TEXT))
     // الجولة التامنة: رسالة سطور أولها عنوان بنك سعودي معروف («PoS Purchase\nAmount: EGP 1,250.00 …» = كارت سعودي اتخصم بالجنيه) ⇒ بتتقري
     // في السعودية (بتستنى هناك ومعاها المبلغ بالجنيه §75-12) — كانت بتبان هنا «جاهزة» شراء مصري
-    if ('\n' in body.trim() && hasSaudiKnownTitle(body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_OTHER_COUNTRY))
+    if ('\n' in body.trim() && hasSaudiKnownTitle(body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_OTHER_COUNTRY), otherCountry = true)
     // الجولة السادسة: العملة بتتعرف من غير التشكيل («ريال عُماني») — النص نفسه (البصمة والوصف) زي ما هو
     val plain = withoutTashkeel(body)
     // أي دليل عملة أجنبية (كود · رمز «$» · اسم «US Dollars»/«ين» · مقابل بالجنيه بعد مبلغ تاني) زي الدولار بالظبط (§75-12)

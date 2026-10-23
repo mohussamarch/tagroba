@@ -187,7 +187,7 @@ fun parseBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult {
     // الجولة السابعة: علامة قلب اتجاه (LRO/RLO) ⇒ المعروض غير المقروء ⇒ ما بنقراش · جملة واحدة على قالب بنك مصري ⇒ بتتقري في مصر
     // الجولة التامنة: علامة اتجاه **جوه رقم** («SAR 1⁧,234.5⁩0») ⇒ نفس الحكم (المعروض غير المقروء)
     if (hasBidiOverride(message.body) || hasBidiInsideNumber(message.body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_HIDDEN_TEXT))
-    if ('\n' !in body.trim() && hasEgyptianKnownHead(body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_OTHER_COUNTRY))
+    if ('\n' !in body.trim() && hasEgyptianKnownHead(body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_OTHER_COUNTRY), otherCountry = true)
     // الجولة السابعة: سطرين مبلغ («Amount … Amount …») = أكتر من عملية في رسالة واحدة — أول مبلغ كان بيكسب والتاني بيضيع
     if (repeatedAmountLines(body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_MULTIPLE_AMOUNTS))
     val unclear = SmsParseResult.Rejected(uiText(TextKey.SMS_DIRECTION_UNCLEAR))

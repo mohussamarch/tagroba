@@ -105,6 +105,8 @@ internal class SmsSpace(
     val parse: (BankSmsMessage, Int) -> SmsParseResult = ::parseBankSms,
     /** §75-10: نافذة الدمج بين الكشف والرسالة (null = من غير دمج — زي الأول). */
     val window: Int? = null,
+    /** §112-5: قرّاية البلاد التانية (زي `otherCountryReaders` في التشغيل). */
+    val elsewhere: List<(BankSmsMessage, Int) -> SmsParseResult> = emptyList(),
 ) {
     val txnStore = MemoryTransactionRepository()
     val txns = FlakyTxns(txnStore)
@@ -126,7 +128,7 @@ internal class SmsSpace(
     /** آثار رسايل البنك بتاعة S1 زي التشغيل الحقيقي: «حسابي التاني» بآخر 4 أرقام (§75-11) · «ده راتبك؟» (§75-2). */
     fun smsEffects(inbox: SmsInboxPort): List<RecordEffect> = listOf(OwnAccountByLast4Effect(wallets), SmsSalaryEffect(inbox, spaceId))
 
-    fun lane(inbox: SmsInboxPort) = SmsLane.of(spaceId, importDeps(smsEffects(inbox)), ManageSmsInbox(inbox, parse), wallets)
+    fun lane(inbox: SmsInboxPort) = SmsLane.of(spaceId, importDeps(smsEffects(inbox)), ManageSmsInbox(inbox, parse, elsewhere), wallets)
 
     /** شاشة رسايل البنك للبلد دي — زي التشغيل الحقيقي (مراجعة S1): من البلد نفسها (`SmsLane.screen`) بالتعلّم والآثار والمحافظ. */
     fun screen(inbox: SmsInboxPort) = lane(inbox).screen()

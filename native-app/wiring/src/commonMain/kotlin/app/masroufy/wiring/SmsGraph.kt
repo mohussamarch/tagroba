@@ -61,7 +61,7 @@ internal class SmsGraph(
     private val io: CoroutineContext = Dispatchers.Default,
 ) : SmsDeps {
     private val space = c.space
-    private val manage = ManageSmsInbox(inbox, parse)
+    private val manage = ManageSmsInbox(inbox, parse, otherCountryReaders(c.space.countryCode))
     private val base = review(manage)
 
     /** مراجعة كل بنك من آخر [overview] — «سجّل الكل» بيسجّل نفس اللي اتعرض (الجلسة جوه كل `ReviewSmsInbox`). */
@@ -117,7 +117,7 @@ internal class SmsGraph(
             val wallet = wallets.firstOrNull { it.id == walletId } ?: continue
             val key = smsSenderKey(sender)
             if (view.items.none { smsSenderKey(it.sender) == key }) continue
-            val one = review(ManageSmsInbox(SenderInbox(inbox, key), parse))
+            val one = review(ManageSmsInbox(SenderInbox(inbox, key), parse, otherCountryReaders(c.space.countryCode)))
             reviews += SenderReview(sender, wallet.id, one.load(targetOf(wallet, wallets))) to one
         }
         last = reviews

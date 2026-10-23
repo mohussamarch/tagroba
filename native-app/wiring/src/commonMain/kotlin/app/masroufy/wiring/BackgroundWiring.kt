@@ -96,5 +96,17 @@ fun smsHistory(spaces: List<Pair<Space, SpaceRepositories>>, inbox: SmsInboxPort
 internal fun smsLaneOf(space: Space, r: SpaceRepositories, env: DeviceEnv, inbox: SmsInboxPort): SmsLane? {
     val pack = countryPack(space.countryCode)
     val reader = pack.smsReader ?: return null
-    return SmsLane.of(space.id, smsImportDeps(space.id, r, env, inbox, shareMerchantOf(space, r, env)), ManageSmsInbox(inbox) { m, n -> reader.parseTimed(m, n, pack.timeZone) }, r.wallets, pack.timeZone)
+    val manage = ManageSmsInbox(inbox, { m, n -> reader.parseTimed(m, n, pack.timeZone) }, otherCountryReaders(space.countryCode))
+    return SmsLane.of(space.id, smsImportDeps(space.id, r, env, inbox, shareMerchantOf(space, r, env)), manage, r.wallets, pack.timeZone)
+}
+
+/**
+ * OVERRIDES §112-5 (قرار المالك 2026-10-23): قرّاية **البلاد التانية** (كل حزمة ليها قارئ غير بلد [countryCode]) — `ManageSmsInbox` بيخبّي
+ * بيهم رسايل البلد التانية من «ما اتفهمتش» هنا. الرسالة بتتسجل في بلدها من التسجيل لوحده (كل البلاد)، ولو مالهاش بلد عند المالك بتتساب في هدوء.
+ */
+internal fun otherCountryReaders(countryCode: String?): List<app.masroufy.port.BankSmsParser> {
+    val here = countryPack(countryCode).code
+    return app.masroufy.core.COUNTRY_PACKS.values.filter { it.code != here }.mapNotNull { pack ->
+        pack.smsReader?.let { reader -> { m: app.masroufy.core.BankSmsMessage, n: Int -> reader.parseTimed(m, n, pack.timeZone) } }
+    }
 }
