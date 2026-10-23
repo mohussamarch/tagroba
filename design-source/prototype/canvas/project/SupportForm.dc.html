@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>ابعتلنا — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+.sf-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1)}
+.sf-press:active{transform:scale(.98)}
+.sf-in{animation:sf-in 240ms cubic-bezier(.2,.8,.2,1) both}
+@keyframes sf-in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.sf-press{transition:none}.sf-press:active{transform:none}.sf-in{animation:none}}
+</style>
+</helmet>
+<div style="font-family: SAR, 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <sc-if value="{{open}}" hint-placeholder-val="{{ true }}"><div class="sf-in" style="border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 10px; background: #FFFFFF">
+    <span style="font-size: 16px; font-weight: 700">{{title}}</span>
+    <div role="radiogroup" aria-label="{{kindLabel}}" style="display: flex; gap: 8px"><sc-for list="{{kinds}}" as="k" hint-placeholder-count="3"><button type="button" role="radio" aria-checked="{{k.on}}" class="sf-press" onClick="{{k.pick}}" style="{{k.style}}">{{k.label}}</button></sc-for></div>
+    <textarea value="{{msg}}" onInput="{{typeMsg}}" rows="4" aria-label="{{title}}" placeholder="{{ph}}" style="box-sizing: border-box; width: 100%; border: 0; border-radius: 14px; padding: 12px; font: inherit; font-size: 15px; line-height: 1.6; resize: none; color: #193D33; background: #EFF3ED; outline: none"></textarea>
+    <button type="button" class="sf-press" onClick="{{send}}" disabled="{{off}}" style="{{sendStyle}}">{{sendLabel}}</button>
+    <span style="font-size: 12px; color: #637570">{{note}}</span>
+  </div></sc-if>
+  <sc-if value="{{sent}}" hint-placeholder-val="{{ false }}"><div class="sf-in" role="status" style="min-height: 52px; border-radius: 18px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; font-weight: 700; color: #08634F; background: rgba(8,99,79,0.08)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"></path></svg>{{sentLabel}}</div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"prefill":{"editor":"text","default":"","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"مصر","section":"الحالة"},"$preview":{"width":358,"height":330}}'>
+// «ابعتلنا» (اختيار المالك 2026-10-23): سؤال · اقتراح · مشكلة (السعودي «شكوى») + نص ⇐ «ابعت» ⇐ «اتبعت»
+// بيروح: يتحفظ عندنا ⇐ مهمة آلية تفتحه مشكلة في مستودع جيت هاب خاص (المستودع العام ممنوع). بيتستخدم في الأسئلة الشائعة وصفحة الدعم
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { msg: props.prefill || '', kind: 'q', sent: false }; }
+  renderVals() {
+    const eg = (this.props.space ?? 'مصر') === 'مصر', s = this.state, ok = !!s.msg.trim();
+    const ph = { q: eg ? 'اكتب سؤالك' : 'اكتب سؤالك', idea: eg ? 'اكتب اقتراحك' : 'اكتب اقتراحك', bug: eg ? 'إيه اللي حصل؟' : 'ماذا حدث؟' }[s.kind];
+    return {
+      open: !s.sent, sent: s.sent, title: eg ? 'ابعتلنا' : 'أرسل لنا', kindLabel: eg ? 'نوعه' : 'النوع',
+      kinds: [['q', 'سؤال', 'سؤال'], ['idea', 'اقتراح', 'اقتراح'], ['bug', 'مشكلة', 'شكوى']].map(([id, e, a]) => ({ label: eg ? e : a, on: s.kind === id ? 'true' : 'false', pick: () => this.setState({ kind: id }),
+        style: 'flex: 1 1 0; height: 40px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; cursor: pointer; ' + (s.kind === id ? 'font-weight: 700; color: #FFFFFF; background: #08634F' : 'color: #193D33; background: #EFF3ED') })),
+      msg: s.msg, ph, typeMsg: (e) => this.setState({ msg: e && e.target ? e.target.value : '' }), off: !ok, send: () => { if (ok) this.setState({ sent: true }); },
+      sendStyle: 'min-height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; ' + (ok ? 'color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'color: #637570; background: #E3EAE3'),
+      sendLabel: eg ? 'ابعت' : 'أرسل', note: eg ? 'بنقرا كل رسالة.' : 'نقرأ كل رسالة.', sentLabel: eg ? 'اتبعت' : 'تم الإرسال'
+    };
+  }
+}
+</script>
+</body>
+</html>

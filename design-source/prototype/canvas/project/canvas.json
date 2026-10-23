@@ -1321,6 +1321,22 @@
       "y": 33500,
       "w": 358,
       "h": 80
+    },
+    "Support.dc.html": {
+      "is_interactive": true,
+      "title": "الدعم · Support (علامة السماعة فوق المزيد)",
+      "x": 6960,
+      "y": 33500,
+      "w": 390,
+      "h": 844
+    },
+    "SupportForm.dc.html": {
+      "is_interactive": true,
+      "title": "ابعتلنا · SupportForm (سؤال · اقتراح · مشكلة)",
+      "x": 7400,
+      "y": 33500,
+      "w": 358,
+      "h": 330
     }
   },
   "createdOnFiles": {
@@ -1643,7 +1659,9 @@
     "ReviewEntry.dc.html",
     "AppMap.dc.html",
     "LinkMap.dc.html",
-    "TipStrip.dc.html"
+    "TipStrip.dc.html",
+    "Support.dc.html",
+    "SupportForm.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"
