@@ -148,4 +148,27 @@ class PeoplePresenterTest {
         assertEquals("Owes you 600.00", en.orbit[0].chip)
         assertEquals("You owe 2,000.00", en.orbit[2].chip)
     }
+
+    /** cty-1: شخص عليه دين مصري بس ⇒ وانت في السعودية ما ليهوش شريحة ولا بيتعد، والعدد يطابق المجموع. */
+    @Test fun theChipAndCountsUseOnlyTheActiveCountry() = runBlocking<Unit> {
+        val egypt = app.masroufy.core.newSpaceFor("EG", emptyList(), "2026-01-01T00:00:00Z")
+        val egObligations = MemoryObligationRepository(listOf(Obligation("o-eg", "p-4", null, ObligationKind.RECEIVABLE, 99_900, Currency.EGP)))
+        val both = LoadPeopleOverview(
+            LoadPeopleOverviewDeps(
+                people, MemoryPersonProfileRepository(), MemoryPersonRelationRepository(), MemoryOccasionRepository(),
+                listOf(
+                    PeopleSpaceSource(defaultSpace(), obligationRepo, settlements, MemoryLifeEventRepository(), MemoryEventLinkRepository(), MemoryTransactionRepository()),
+                    PeopleSpaceSource(egypt, egObligations, MemorySettlementRepository(), MemoryLifeEventRepository(), MemoryEventLinkRepository(), MemoryTransactionRepository()),
+                ),
+            ),
+        ).acrossSpaces(TODAY)
+        val sa = peopleTabUi(both, DEFAULT_SPACE_ID, Currency.SAR)
+        assertNull(sa.all.first { it.id == "p-4" }.chip, "دين مصر ما بيبانش في السعودية")
+        assertEquals(2, sa.owedPeople, "العدد = اللي في المجموع بس")
+        assertEquals(listOf(MoneyLine(75_000, Currency.SAR)), sa.owed)
+        val eg = peopleTabUi(both, egypt.id, Currency.EGP)
+        assertEquals(1, eg.owedPeople)
+        assertEquals(listOf(MoneyLine(99_900, Currency.EGP)), eg.owed)
+        assertNull(eg.all.first { it.id == "p-1" }.chip, "دين السعودية ما بيبانش في مصر")
+    }
 }

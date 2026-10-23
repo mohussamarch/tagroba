@@ -17,6 +17,7 @@ import app.masroufy.core.PersonOutlineState
 import app.masroufy.core.PersonOverviewRow
 import app.masroufy.core.TextKey
 import app.masroufy.core.dayMonth
+import app.masroufy.core.onlySpace
 import app.masroufy.core.daysBetween
 import app.masroufy.ui.components.AmountTone
 import app.masroufy.ui.components.amountLabel
@@ -78,7 +79,9 @@ internal fun peopleWithoutBalances(rows: List<PersonRow>, row: PeopleRow? = null
  * الشبكة: «لك عندهم» ثم «عليك لهم» ثم «مناسبات قريبة» ثم الباقي — زي أقسام `PeopleOverview` (من غير تكرار).
  * الصف فوق شخصيتك من [row] (`ManagePeopleRow` — ترتيبك، أو «المُعالون أولًا ثم الأكثر تعاملًا» — §84)؛ اللي مش في الصف بيفضل في الشبكة.
  */
-internal fun peopleTabUi(o: PeopleOverview, spaceId: String, currency: Currency, row: PeopleRow? = null): PeopleTabUi {
+internal fun peopleTabUi(all: PeopleOverview, spaceId: String, currency: Currency, row: PeopleRow? = null): PeopleTabUi {
+    // cty-1: الشريحة والإطار والعدد من البلد الشغالة بس — زي المجموع فوق
+    val o = all.onlySpace(spaceId)
     val byId = o.rows.associateBy { it.person.id }
     val order = (o.sections.flatMap { it.personIds } + o.rows.map { it.person.id }).distinct().mapNotNull { byId[it] }
     val active = order.filter { !it.person.archived }.associateBy { it.person.id }
