@@ -1,0 +1,46 @@
+# مصروفي — صندوق الملاحظات ⇒ مشاكل (OVERRIDES §113 · §114 · PLAN-0.6 §16).
+# ⚠️ قالب: مكانه الحقيقي في المستودع الخاص mohussamarch/masroufy-feedback تحت .github/workflows/feedback.yml
+#    (مع inbox-to-issues.mjs و builtin-rules.json في جذر نفس المستودع). شوف README.md جنبه.
+# كل 3 ساعات (حوالي 240 دقيقة في الشهر من الـ2,000 المجانية للمستودع الخاص).
+name: feedback-inbox
+
+on:
+  schedule:
+    - cron: '17 */3 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write # حفظ .feedback-state (عدّ مساهمات تنبيه التصنيف)
+  issues: write
+
+concurrency:
+  group: feedback-inbox
+  cancel-in-progress: false
+
+jobs:
+  inbox:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install firebase-admin
+        run: npm install --no-save --no-audit --no-fund firebase-admin@12.7.0
+
+      - name: Inbox to issues + category alerts
+        env:
+          FIREBASE_SA_JSON: ${{ secrets.FIREBASE_SA_JSON }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node inbox-to-issues.mjs
+
+      - name: Save category-alert state
+        run: |
+          git config user.name "feedback-bot"
+          git config user.email "feedback-bot@users.noreply.github.com"
+          git add .feedback-state
+          git diff --cached --quiet || git commit -m "feedback state"
+          git push
