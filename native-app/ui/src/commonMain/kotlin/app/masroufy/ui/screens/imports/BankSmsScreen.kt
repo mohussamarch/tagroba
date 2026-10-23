@@ -55,6 +55,9 @@ private sealed interface PickFor {
  * «رسائل البنك» (`BankSms`): حالة القراءة · «بانتظار تأكيدك» (`SmsWaiting`) · اللي سُجّل تلقائيًا اليوم (لمعة نعناعي على اللي اتسجل دلوقتي)
  * بتصنيفه (المقترح يتأكد، والمتجر الجديد يتصنّف ⇒ «تم — سيُصنَّف دائمًا»). الترس ⇒ `BankSmsSettings`. الآيفون ⇒ «الصق رسالة».
  */
+/** فحص 0.5.3 (ب): تحميل تاني بعد «اقرأها الآن» بالمدة دي (ملي ثانية). */
+internal const val AWAY_SETTLE_MS = 1_200L
+
 @Composable
 fun BankSmsScreen() {
     val space = LocalSpace.current
@@ -156,6 +159,12 @@ fun BankSmsScreen() {
                 toaster.show(e.message ?: t(UiKey.IMPORTS_LOAD_FAILED), dark = true)
             }
             reload++
+            // فحص 0.5.3 (ب): الرسالة اللي اتقرت فضلت في «بانتظار تأكيدك» لحد ما الشاشة اتفتحت تاني — التحميل اللي على طول بعد القراية
+            // ممكن يلحق قبل ما التسجيل يبان في المعاينة، فتحميل تاني بعد لحظة على نفس الشاشة (من غير ما تقفلها وتفتحها)
+            if ((away as? AwayState.Done)?.recorded?.let { it > 0 } == true) {
+                kotlinx.coroutines.delay(AWAY_SETTLE_MS)
+                reload++
+            }
         }
     }
 
