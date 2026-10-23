@@ -25,7 +25,7 @@ import kotlinx.serialization.json.jsonPrimitive
 object BundledSeeds : SpaceSeedSourceLoader {
     private val tree: RawCategoryTree by lazy { parseCategoryTree(CATEGORY_TREE_JSON) }
     private val rules: List<RawRule> by lazy {
-        Json.parseToJsonElement(RULE_REFERENCE_JSON).jsonArray.map { RawRule(it.opt("word"), it.opt("cat")) }
+        Json.parseToJsonElement(RULE_REFERENCE_JSON).jsonArray.map { RawRule(it.opt("word"), it.opt("cat"), it.opt("mode")) }
     }
 
     /** معرّفات شجرة تصنيفات البلد (نفس المعرّف في كل الحسابات) — قاعدة التجار المشتركة بتقبل التصنيفات دي بس. */

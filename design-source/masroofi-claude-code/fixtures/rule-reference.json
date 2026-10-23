@@ -1266,5 +1266,121 @@
   {
     "word": "الشركة السعودية للكهرباء",
     "cat": "كهرباء"
+  },
+  {
+    "word": "elage",
+    "cat": "ترفيه"
+  },
+  {
+    "word": "digimax for informatio",
+    "cat": "ترفيه"
+  },
+  {
+    "word": "alsammar company",
+    "cat": "ترفيه"
+  },
+  {
+    "word": "star zon est",
+    "cat": "ترفيه"
+  },
+  {
+    "word": "arsan operation co",
+    "cat": "ترفيه"
+  },
+  {
+    "word": "fadaa alibdaa",
+    "cat": "ترفيه"
+  },
+  {
+    "word": "najmeh alhasb llnskh",
+    "cat": "سفر"
+  },
+  {
+    "word": "ccavf worldwide",
+    "cat": "سفر"
+  },
+  {
+    "word": "سداد",
+    "cat": "فواتير ومرافق"
+  },
+  {
+    "word": "alharamain national",
+    "cat": "صحة وصيدليات"
+  },
+  {
+    "word": "shrkh hb alabdaa llhla",
+    "cat": "حلاقة"
+  },
+  {
+    "word": "nmc",
+    "cat": "صيدلية",
+    "mode": "exact"
+  },
+  {
+    "word": "سلام",
+    "cat": "صيدلية",
+    "mode": "exact"
+  },
+  {
+    "word": "wryd alshyt company",
+    "cat": "مستشفى وعيادة"
+  },
+  {
+    "word": "dar alkhalig alarabi",
+    "cat": "مطاعم"
+  },
+  {
+    "word": "restaurants",
+    "cat": "مطاعم"
+  },
+  {
+    "word": "promising future",
+    "cat": "مطاعم"
+  },
+  {
+    "word": "huna",
+    "cat": "مطاعم",
+    "mode": "exact"
+  },
+  {
+    "word": "هنا",
+    "cat": "مطاعم",
+    "mode": "exact"
+  },
+  {
+    "word": "samulji",
+    "cat": "مطاعم"
+  },
+  {
+    "word": "wahmi",
+    "cat": "مطاعم"
+  },
+  {
+    "word": "kampa",
+    "cat": "مطاعم"
+  },
+  {
+    "word": "etoile company",
+    "cat": "حلويات ومخبوزات"
+  },
+  {
+    "word": "mahal saad hamdan",
+    "cat": "قهوة ومشروبات"
+  },
+  {
+    "word": "samsm basta",
+    "cat": "قهوة ومشروبات"
+  },
+  {
+    "word": "nas talqimah",
+    "cat": "قهوة ومشروبات"
+  },
+  {
+    "word": "al joud advanced",
+    "cat": "قهوة ومشروبات"
+  },
+  {
+    "word": "elabd cafee",
+    "cat": "قهوة ومشروبات"
   }
 ]

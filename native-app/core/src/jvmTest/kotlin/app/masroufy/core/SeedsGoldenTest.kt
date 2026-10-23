@@ -64,7 +64,7 @@ class SeedsGoldenTest {
         "aliases" to aliases.map { (k, v) -> listOf(k, v) },
         "wordOverrides" to wordOverrides.map { (k, v) -> listOf(k, v) },
     )
-    private fun rules(e: JsonElement) = e.jsonArray.map { RawRule(it.opt("word"), it.opt("cat")) }
+    private fun rules(e: JsonElement) = e.jsonArray.map { RawRule(it.opt("word"), it.opt("cat"), it.opt("mode")) }
     private fun merchants(e: JsonElement) = e.jsonArray.map { RawMerchant(it.opt("name"), it.opt("cat"), it.opt("confidence")) }
     private fun LoadedReferences.toJson() = obj(
         "rules" to rules.map { r -> obj("id" to r.id, "priority" to r.priority, "matchText" to r.matchText, "matchMode" to r.matchMode.wire, "categoryId" to r.categoryId, "enabled" to r.enabled) },

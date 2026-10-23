@@ -79,9 +79,16 @@ fun backgroundCycle(
             duplicateScans = spaces.map { (space, r) -> app.masroufy.usecase.DuplicateChargeAsks(space.id, r.transactions, env.clock) },
             categoryRepairs = spaces.map { (space, r) -> app.masroufy.usecase.RepairMissingDefaultSubs(r.categories, app.masroufy.seed.BundledSeeds, countryPack(space.countryCode)) },
             // r06-1e (§110-2): قواعد محلات دراهم للحسابات الموجودة — مرة واحدة لكل بلد (علامة «خلص» في إعدادات الحساب)
-            ruleRepairs = spaces.map { (space, r) ->
-                app.masroufy.usecase.RepairDarahimRules(
-                    space.id, r.categories, r.rules, app.masroufy.seed.BundledSeeds, countryPack(space.countryCode), r.assistant.settings, env.clock,
+            ruleRepairs = spaces.flatMap { (space, r) ->
+                listOf(
+                    app.masroufy.usecase.RepairDarahimRules(
+                        space.id, r.categories, r.rules, app.masroufy.seed.BundledSeeds, countryPack(space.countryCode), r.assistant.settings, env.clock,
+                    ),
+                    // الدفعة التانية (§109 تعديل — مراجعة المالك 2026-10-23): علامة «خلص» لوحدها
+                    app.masroufy.usecase.RepairDarahimRules(
+                        space.id, r.categories, r.rules, app.masroufy.seed.BundledSeeds, countryPack(space.countryCode), r.assistant.settings, env.clock,
+                        app.masroufy.usecase.DARAHIM_RULES2_REPAIR, app.masroufy.usecase.DARAHIM_RULES2_FROM_PRIORITY, Int.MAX_VALUE,
+                    ),
                 )
             },
         ),

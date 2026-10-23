@@ -18,6 +18,12 @@ const val DARAHIM_RULES_FROM_PRIORITY = 229
 /** اسم التصليح الثابت في علامة «خلص» (`repairDone.darahimRules.<spaceId>`). */
 const val DARAHIM_RULES_REPAIR = "darahimRules"
 
+/** أول قاعدة من الدفعة التانية (OVERRIDES §109 تعديل — مراجعة المالك 2026-10-23): 317 بند قبلها ⇒ من `rule-0318`. */
+const val DARAHIM_RULES2_FROM_PRIORITY = 318
+
+/** علامة «خلص» للدفعة التانية. */
+const val DARAHIM_RULES2_REPAIR = "darahimRules2"
+
 /**
  * r06-1e (OVERRIDES §110-2 — رد المالك: قواعد محلات دراهم «بتتضاف للحسابات الموجودة كمان»): **تصليح مرة واحدة لكل بلد** في دورة الخلفية
  * (بعد `RepairMissingDefaultSubs` — عشان فرعيات زي «عصير» تبقى موجودة).
@@ -35,27 +41,31 @@ class RepairDarahimRules(
     private val pack: CountryPack,
     private val settings: UserSettingsStore,
     private val clock: Clock,
+    /** اسم علامة «خلص» ونطاق الأولويات من البذرة — الافتراضي الدفعة الأولى؛ الدفعة التانية [DARAHIM_RULES2_REPAIR]. */
+    private val repair: String = DARAHIM_RULES_REPAIR,
+    private val fromPriority: Int = DARAHIM_RULES_FROM_PRIORITY,
+    private val untilPriority: Int = DARAHIM_RULES2_FROM_PRIORITY,
 ) {
     /** عدد القواعد اللي اتضافت، أو null لو اتعمل قبل كده (أو الحساب مش متزرع). */
     suspend fun run(): Int? {
-        val key = repairDoneKey(DARAHIM_RULES_REPAIR, spaceId)
+        val key = repairDoneKey(repair, spaceId)
         if (settings.listAll().any { it.key == key }) return null
         val mine = categories.listAll()
         if (mine.isEmpty()) return null
-        val added = missingDarahimRules(rules.listAll(), seeds.load(pack).rules, mine)
+        val added = missingDarahimRules(rules.listAll(), seeds.load(pack).rules, mine, fromPriority, untilPriority)
         if (added.isNotEmpty()) rules.saveMany(added)
-        settings.save(UserSetting.RepairDone(spaceId, DARAHIM_RULES_REPAIR, clock.nowIso()))
+        settings.save(UserSetting.RepairDone(spaceId, repair,clock.nowIso()))
         return added.size
     }
 }
 
 /** قواعد دراهم الناقصة من [existing] (نقية — للاختبار): من غير تكرار معرّف أو كلمة، وتصنيفها موجود، وأولويتها بعد آخر قاعدة. */
-fun missingDarahimRules(existing: List<ClassificationRule>, seeded: List<ClassificationRule>, categories: List<Category>): List<ClassificationRule> {
+fun missingDarahimRules(existing: List<ClassificationRule>, seeded: List<ClassificationRule>, categories: List<Category>, fromPriority: Int = DARAHIM_RULES_FROM_PRIORITY, untilPriority: Int = DARAHIM_RULES2_FROM_PRIORITY): List<ClassificationRule> {
     val ids = existing.mapTo(HashSet()) { it.id }
     val words = existing.mapTo(HashSet()) { normalizeText(it.matchText) }
     val categoryIds = categories.mapTo(HashSet()) { it.id }
     var priority = (existing.maxOfOrNull { it.priority } ?: 0) + 10
-    return seeded.filter { it.priority >= DARAHIM_RULES_FROM_PRIORITY }
+    return seeded.filter { it.priority in fromPriority until untilPriority }
         .filter { it.id !in ids && it.categoryId in categoryIds && words.add(normalizeText(it.matchText)) }
         .map { it.copy(priority = priority++) }
 }

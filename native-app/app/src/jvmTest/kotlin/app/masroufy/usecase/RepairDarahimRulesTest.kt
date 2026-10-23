@@ -20,7 +20,7 @@ import kotlin.test.assertTrue
 class RepairDarahimRulesTest {
     @Test fun oldAccountGetsDarahimRulesOnceWithoutTouchingOwnerChoices() = runBlocking<Unit> {
         val seed = BundledSeeds.load(SAUDI_PACK)
-        val darahim = seed.rules.filter { it.priority >= DARAHIM_RULES_FROM_PRIORITY }
+        val darahim = seed.rules.filter { it.priority in DARAHIM_RULES_FROM_PRIORITY until DARAHIM_RULES2_FROM_PRIORITY }
         assertTrue(darahim.size > 10, "قايمة دراهم في البذرة")
         val oldRules = seed.rules.filter { it.priority < DARAHIM_RULES_FROM_PRIORITY }
         // المالك عنده قاعدة بنفس كلمة واحدة من دراهم بتصنيف تاني (اختياره) + قاعدة عملها بأولوية عالية
@@ -61,7 +61,7 @@ class RepairDarahimRulesTest {
 
     @Test fun ruleWhoseCategoryIsMissingIsSkipped() = runBlocking<Unit> {
         val seed = BundledSeeds.load(SAUDI_PACK)
-        val darahim = seed.rules.filter { it.priority >= DARAHIM_RULES_FROM_PRIORITY }
+        val darahim = seed.rules.filter { it.priority in DARAHIM_RULES_FROM_PRIORITY until DARAHIM_RULES2_FROM_PRIORITY }
         val gone = darahim.first().categoryId
         val out = missingDarahimRules(emptyList(), seed.rules, seed.categories.filter { it.id != gone })
         assertTrue(out.none { it.categoryId == gone } && out.isNotEmpty())
