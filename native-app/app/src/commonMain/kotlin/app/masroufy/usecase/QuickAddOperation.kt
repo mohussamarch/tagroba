@@ -44,6 +44,8 @@ data class AddOperationDraft(
     val categoryId: Id? = null,
     val incomeKind: EconomicKind? = null,
     val name: String = "",
+    /** r06-links: يوم العملية — null = النهارده (الافتراضي في اللوحة). ما ينفعش بعد النهارده. */
+    val date: IsoDate? = null,
 )
 
 sealed interface AddOperationResult {
@@ -78,6 +80,8 @@ class QuickAddOperation(
         val minor = tryParseMoney(draft.amountText, currency)
         if (minor == null || minor <= 0) return AddOperationResult.Invalid(uiText(UiKey.ADD_AMOUNT_INVALID))
         val walletId = draft.walletId ?: return AddOperationResult.Invalid(uiText(UiKey.ADD_NO_WALLET))
+        val day = draft.date ?: today()
+        if (day > today()) return AddOperationResult.Invalid(uiText(app.masroufy.core.R06Key.ADD_DATE_FUTURE))
         val kind = when (draft.kind) {
             AddKind.OUT -> EconomicKind.PURCHASE
             AddKind.IN -> draft.incomeKind ?: return AddOperationResult.Invalid(uiText(TextKey.TXN_KIND_REQUIRED))
@@ -87,7 +91,7 @@ class QuickAddOperation(
             val txn = add.add(
                 NewTransactionInput(
                     amountMinor = minor,
-                    occurredAt = today(),
+                    occurredAt = day,
                     walletId = walletId,
                     transferToWalletId = if (draft.kind == AddKind.MOVE) draft.toWalletId else null,
                     economicKind = kind,

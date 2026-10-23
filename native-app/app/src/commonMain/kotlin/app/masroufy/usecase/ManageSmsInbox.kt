@@ -29,6 +29,11 @@ class ManageSmsInbox(
     /** الصندوق نفسه — `SmsLane` بيبني منه تعلّم البلد (§77-A) عشان الشاشة والخلفية يقروا نفس التخزين. */
     internal val port: SmsInboxPort,
     private val parse: BankSmsParser,
+    /**
+     * OVERRIDES §112-5: قرّاية البلاد التانية. رسالة القارئ ده رفضها وقارئ بلد تانية فاهمها = رسالة البلد دي ⇒ ما بتظهرش هنا (بتتسجل
+     * هناك — التسجيل لوحده بيلف على كل البلاد). فاضية = البلد دي بس (زي الأول).
+     */
+    private val elsewhere: List<BankSmsParser> = emptyList(),
 ) {
     val available: Boolean get() = port.available
 
@@ -42,7 +47,13 @@ class ManageSmsInbox(
         messages = state.messages,
         items = state.messages.mapIndexedNotNull { index, message ->
             if (ids != null && message.id !in ids) return@mapIndexedNotNull null
-            InboxItem(message.id, message.sender, message.receivedAt, parse(message.message(), index + 1))
+            val parsed = parse(message.message(), index + 1)
+            // OVERRIDES §112-5 (قرار المالك 2026-10-23): رسالة على شكل البلد التانية بتتقري وتتسجل هناك (التسجيل لوحده بيلف على كل البلاد) —
+            // هنا ما بتظهرش «ما اتفهمتش» ولا بتتعد في أي «مستنية». القديم كمان: الصندوق بيتفهم من الأول كل مرة، فمفيش صفوف متخزنة تتنضف
+            if (parsed is SmsParseResult.Rejected && (parsed.otherCountry || elsewhere.any { it(message.message(), index + 1) is SmsParseResult.Ok })) {
+                return@mapIndexedNotNull null
+            }
+            InboxItem(message.id, message.sender, message.receivedAt, parsed)
         },
     )
 
@@ -59,7 +70,7 @@ class ManageSmsInbox(
 
     suspend fun enable(senders: List<String>): InboxView {
         val clean = senders.map(::jsTrim).filter { it.isNotEmpty() }.distinct()
-        if (clean.isEmpty() || clean.size > 10 || clean.any { it.length > 50 }) {
+        if (clean.isEmpty() || clean.size > app.masroufy.core.MAX_SMS_SENDERS || clean.any { it.length > 50 }) {
             throw IllegalArgumentException(uiText(TextKey.SMS_SENDER_REQUIRED_MANY))
         }
         port.enable(clean)

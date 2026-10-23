@@ -33,7 +33,7 @@ class AndroidBankSms(private val context: Context, private val zone: ZoneId) : B
         val end = runCatching { LocalDate.parse(to) }.getOrNull()
         val names = senders.map { it.trim() }
         val days = if (start != null && end != null) ChronoUnit.DAYS.between(start, end) else -1
-        if (days < 0 || days > 366 || names.isEmpty() || names.size > 10 || names.any { it.isEmpty() || it.length > 50 }) {
+        if (days < 0 || days > 366 || names.isEmpty() || names.size > app.masroufy.core.MAX_SMS_SENDERS || names.any { it.isEmpty() || it.length > 50 }) {
             throw IllegalArgumentException(uiText(TextKey.SMS_READ_ARGS))
         }
         if (context.checkSelfPermission(Manifest.permission.READ_SMS) != PackageManager.PERMISSION_GRANTED) {

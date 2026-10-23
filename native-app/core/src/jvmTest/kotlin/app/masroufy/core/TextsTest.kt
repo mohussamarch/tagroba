@@ -70,6 +70,8 @@ class TextsTest {
             EGYPTIAN_INVEST_FUTURE_TEXTS.keys +
             // «حاجاتي» في الاستثمار (r05 HOLDINGS — `TextsInvestHold.kt`)
             EGYPTIAN_INVEST_HOLD_TEXTS.keys +
+            // r06-links (`TextsR06Links.kt` — OVERRIDES §112)
+            EGYPTIAN_R06_LINKS_TEXTS.keys +
             // «الاستثمار» الجديد — حزمة INSIGHTS (r05): النصايح · الحبل · اللي رجعلك · الأسئلة الشائعة (`TextsInvestInsight.kt`)
             EGYPTIAN_INVEST_INSIGHT_TEXTS.keys +
             // r051 — لوحة «ادفع بعدين» (`TextsBnplSheet.kt` — نوع [BnplKey] لوحده بعد دمج 0.6)

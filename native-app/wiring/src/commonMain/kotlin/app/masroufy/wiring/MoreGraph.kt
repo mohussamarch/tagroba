@@ -165,6 +165,8 @@ class MoreGraph(private val c: AreaContext) : MoreDeps {
 
         override suspend fun setLast4(walletId: Id, last4: String?): String? = attempt { manage.setLast4(walletId, last4) }
 
+        override suspend fun setHidden(walletId: Id, hidden: Boolean): String? = attempt { manage.setHidden(walletId, hidden) }
+
         private suspend fun attempt(block: suspend () -> Unit): String? = try {
             block()
             null

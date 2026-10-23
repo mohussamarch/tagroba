@@ -21,14 +21,14 @@ data class WalletNow(val wallet: Wallet, val balanceMinor: Halalas?)
 
 data class WithYouNow(
     val currency: Currency,
-    /** كل المحافظ (البنوك الأول بترتيبها، والكاش آخر حاجة). */
+    /** كل المحافظ (البنوك الأول بترتيبها، والكاش آخر حاجة) — **ومعاها المخفية** (§112-1: «حساباتي» بتعرضها تحت «مخفي»). */
     val wallets: List<WalletNow>,
     val totalMinor: Halalas?,
     val cashMinor: Halalas?,
 ) {
     /** عدسات «معك الآن» (`HeroBanks`): البنوك والمحافظ الإلكترونية — كل اللي مش كاش. */
-    val banks: List<WalletNow> get() = wallets.filter { it.wallet.kind != CASH }
-    val cash: List<WalletNow> get() = wallets.filter { it.wallet.kind == CASH }
+    val banks: List<WalletNow> get() = wallets.filter { it.wallet.kind != CASH && !it.wallet.hiddenOnHome }
+    val cash: List<WalletNow> get() = wallets.filter { it.wallet.kind == CASH && !it.wallet.hiddenOnHome }
 }
 
 private const val CASH = "cash"
@@ -41,8 +41,10 @@ class LoadWithYouNow(private val wallets: WalletRepository, private val txns: Tr
         val rows = if (from <= today) txns.listByDateRange(from, today) else emptyList()
         val balances = walletBalancesOn(all, rows, today)
         val list = all.map { WalletNow(it, balances[it.id]) }
-        val total = if (list.any { it.balanceMinor == null }) null else sumMoney(list.map { it.balanceMinor!! })
-        val cashWallets = list.filter { it.wallet.kind == CASH }
+        // OVERRIDES §112-1: الحساب المخفي فلوسه برّه «معك الآن» (ورصيده المجهول ما بيخليش المجموع «غير متاح»)
+        val shown = list.filter { !it.wallet.hiddenOnHome }
+        val total = if (shown.isEmpty() || shown.any { it.balanceMinor == null }) null else sumMoney(shown.map { it.balanceMinor!! })
+        val cashWallets = shown.filter { it.wallet.kind == CASH }
         val cash = if (cashWallets.isEmpty() || cashWallets.any { it.balanceMinor == null }) null else sumMoney(cashWallets.map { it.balanceMinor!! })
         return WithYouNow(currency, list, total, cash)
     }

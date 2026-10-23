@@ -121,7 +121,11 @@ class SmsFlowGoldenTest {
 
     @Test
     fun readBankSms() {
-        Golden.check("smsFlow", "readBankSms") { input ->
+        // OVERRIDES §112-7: حالة «11 مرسل ⇒ خطأ» اتلغت (الحد 25 لكل بلد) — السلوك الجديد في `elevenSendersAreReadNow`
+        val superseded = { input: kotlinx.serialization.json.JsonElement ->
+            input.field("kind").str == "read" && strings(input.field("request").field("senders")).size in 11..app.masroufy.core.MAX_SMS_SENDERS
+        }
+        Golden.check("smsFlow", "readBankSms", superseded) { input ->
             runBlocking {
                 if (input.field("kind").str == "paste") {
                     val port = object : BankSmsPort {
@@ -143,9 +147,23 @@ class SmsFlowGoldenTest {
         }
     }
 
+    /** OVERRIDES §112-7: 11 مرسل بقوا مسموحين (الحد 25 لكل بلد) — كانوا خطأ في ملف المرجع القديم. */
+    @Test
+    fun elevenSendersAreReadNow() = runBlocking<Unit> {
+        val port = object : BankSmsPort {
+            override val available = true
+            override suspend fun read(from: String, to: String, senders: List<String>) = BankSmsRead(emptyList(), false)
+        }
+        ReadBankSms(port, ::parseBankSms).read("2026-09-01", "2026-09-30", (0..10).map { "BANK$it" })
+    }
+
     @Test
     fun manageSmsInbox() {
-        Golden.check("smsFlow", "manageSmsInbox") { input ->
+        // OVERRIDES §112-7: «فعّل 11 مرسل ⇒ خطأ» اتلغت (الحد 25 لكل بلد)
+        val superseded = { input: kotlinx.serialization.json.JsonElement ->
+            input.field("steps").jsonArray.any { s -> s.field("kind").str == "enable" && strings(s.field("senders")).size in 11..app.masroufy.core.MAX_SMS_SENDERS }
+        }
+        Golden.check("smsFlow", "manageSmsInbox", superseded) { input ->
             val manage = ManageSmsInbox(MemorySmsInbox(input.field("inbox").jsonArray.map(::queued), available = true), ::parseBankSms)
             runBlocking {
                 val out = input.field("steps").jsonArray.map { step ->

@@ -46,7 +46,7 @@ class AndroidSmsInbox(private val context: Context, private val uid: String) : S
 
     override suspend fun enable(senders: List<String>): SmsInboxState {
         val names = senders.map { it.trim() }.toSet()
-        if (names.isEmpty() || names.size > 10 || names.any { it.isEmpty() || it.length > 50 }) throw IllegalArgumentException(uiText(TextKey.SMS_SENDERS_REQUIRED))
+        if (names.isEmpty() || names.size > app.masroufy.core.MAX_SMS_SENDERS || names.any { it.isEmpty() || it.length > 50 }) throw IllegalArgumentException(uiText(TextKey.SMS_SENDERS_REQUIRED))
         if (!granted()) throw SmsPermissionError(uiText(TextKey.SMS_INBOX_PERMISSION_MISSING))
         return withStore {
             it.configure(uid, names)

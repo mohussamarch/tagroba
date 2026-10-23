@@ -184,18 +184,9 @@ class ManageTransfers(private val deps: ManageTransfersDeps) {
         val last4 = party.last4 ?: return emptyList()
         val target = deps.wallets?.listAll()?.firstOrNull { walletLast4(it.accountLast4) == last4 } ?: return emptyList()
         val all = everything()
-        val ids = all.map { it.id }.toSet()
         return mine.filter { it.walletId != null && it.walletId != target.id && it.currency == target.currency && !it.id.endsWith(OWN_LEG_SUFFIX) }
-            .mapNotNull { t ->
-                val direction = if (t.observedDirection == Direction.OUT) Direction.IN else Direction.OUT
-                val there = all.any { o -> o.walletId == target.id && o.observedDirection == direction && o.amountMinor == t.amountMinor && o.occurredAt.take(10) == t.occurredAt.take(10) }
-                if (t.id + OWN_LEG_SUFFIX in ids || there) return@mapNotNull null
-                t.copy(
-                    id = t.id + OWN_LEG_SUFFIX, walletId = target.id, observedDirection = direction, economicKind = EconomicKind.INTERNAL_TRANSFER,
-                    economicKindConfirmed = true, reviewState = ReviewState.CONFIRMED, categoryId = null, categoryConfirmed = false,
-                    statedBalanceMinor = null, linkedExpenseId = null, linkedInflowMinor = null, supportAskPending = null, createdAt = now, updatedAt = now,
-                )
-            }
+            // §112-3: يوم قبل أو بعد (البنك التاني ممكن يسجّل الوارد تاني يوم) — `ownLegAlreadyThere` · الرِجل نفسها `ownLegOn`
+            .mapNotNull { t -> if (ownLegAlreadyThere(all, t, target.id)) null else ownLegOn(t, target.id, now) }
     }
 
     private companion object {

@@ -93,11 +93,21 @@ class ManageWallets(
      */
     suspend fun setLast4(walletId: Id, last4: String?): Wallet {
         val wallet = wallets.findById(walletId) ?: throw WalletError(uiText(TextKey.NOT_AVAILABLE))
-        val digits = last4?.let { normalizeDigits(jsTrim(it)) }?.ifEmpty { null }
+        // r06-links: لو كتب الرقم كله بناخد آخر 4 بس — الرقم الكامل عمره ما بيتخزن (CLAUDE.md #11)
+        val typed = last4?.let { normalizeDigits(jsTrim(it)) }?.filterNot { it == ' ' || it == '-' }?.ifEmpty { null }
+        val digits = typed?.let { t -> t.filter { c -> c in '0'..'9' }.takeIf { it.length > 4 }?.takeLast(4) ?: t }
         if (digits != null && (wallet.kind == "cash" || digits.length != 4 || !digits.all { it in '0'..'9' })) throw WalletError(uiText(UiKey.WADD_ERR_LAST4))
         if (digits != null && wallets.listAll().any { it.id != walletId && walletLast4(it.accountLast4) == digits }) throw WalletError(uiText(UiKey.WADD_ERR_LAST4))
         val updated = wallet.copy(accountLast4 = digits)
         wallets.save(updated)
+        return updated
+    }
+
+    /** OVERRIDES §112-1: إخفاء حساب من الرئيسية ومن رقم «معك الآن» (أو إظهاره) — الحساب وحركاته زي ما هم. */
+    suspend fun setHidden(walletId: Id, hidden: Boolean): Wallet {
+        val wallet = wallets.findById(walletId) ?: throw WalletError(uiText(TextKey.NOT_AVAILABLE))
+        val updated = wallet.copy(hiddenOnHome = hidden)
+        if (updated != wallet) wallets.save(updated)
         return updated
     }
 

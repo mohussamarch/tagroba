@@ -53,11 +53,11 @@ data class SmsSettingsUi(val available: Boolean, val enabled: Boolean, val permi
     /** الإذن اتسحب وهي متفعّلة ⇒ تنبيه «سُحب إذن الرسائل». */
     val permissionLost: Boolean get() = enabled && !permission
 
-    /** أقصى 10 مرسلين (`ManageSmsInbox.enable`). */
+    /** أقصى عدد مرسلين (`MAX_SMS_SENDERS` — 25 لكل بلد §112-7). */
     val full: Boolean get() = senders.size >= MAX_SENDERS
 
     companion object {
-        const val MAX_SENDERS = 10
+        val MAX_SENDERS: Int get() = app.masroufy.core.MAX_SMS_SENDERS
     }
 }
 

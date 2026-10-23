@@ -87,6 +87,7 @@ fun AddOperationSheet(visible: Boolean, onClose: () -> Unit, onVoice: () -> Unit
     var to by remember { mutableStateOf<String?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
     var saving by remember { mutableStateOf(false) }
+    var date by remember { mutableStateOf<String?>(null) } // r06-links: null = النهارده
 
     // فيه محفظة أساسية للبلد دي وقت ما اللوحة اتفتحت؟ لأ ⇒ «بتصرف عادةً منين؟» واللي يختاره بيبقى الأساسي بعد الحفظ (المحرك —
     // `ShellDeps.addWalletDefault` على الحساب لكل بلد · `MainWallet.kt`)
@@ -94,7 +95,7 @@ fun AddOperationSheet(visible: Boolean, onClose: () -> Unit, onVoice: () -> Unit
     var askPrompt by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(visible, shell) {
         if (!visible) return@LaunchedEffect
-        kind = AddKind.OUT; amountText = ""; category = null; income = null; error = null
+        kind = AddKind.OUT; amountText = ""; category = null; income = null; error = null; date = null
         val start = app.masroufy.perf.PerfTrace.mark()
         val o = shell.addOptions()
         options = o
@@ -161,13 +162,18 @@ fun AddOperationSheet(visible: Boolean, onClose: () -> Unit, onVoice: () -> Unit
             for (w in o?.wallets.orEmpty().take(3)) key(w.id) { SelectChip(w.name, from == w.id, { from = w.id; if (to == w.id) to = null }) }
         }
         if (o != null && o.wallets.isEmpty()) FieldError(t(UiKey.ADD_NO_WALLET))
+        // r06-links: التاريخ — افتراضيه النهارده، ونفس خانة التاريخ اللي في باقي البرنامج (`DateField`)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            FieldLabel(t(app.masroufy.core.R06Key.ADD_DATE))
+            app.masroufy.ui.screens.people.DateField(date ?: shell.today(), shell.today(), { date = it; error = null }, Modifier.weight(1f))
+        }
         PrimaryButton(
             if (saving) t(UiKey.ADD_SAVING) else t(UiKey.ADD_SAVE),
             onClick = {
                 if (!ready || saving) return@PrimaryButton
                 saving = true
                 scope.launch {
-                    val draft = AddOperationDraft(kind, amountText, from, to, category?.id, income, name = category?.name.orEmpty())
+                    val draft = AddOperationDraft(kind, amountText, from, to, category?.id, income, name = category?.name.orEmpty(), date = date)
                     when (val r = shell.addOperation(draft)) {
                         is AddOperationResult.Invalid -> error = r.message
                         is AddOperationResult.Saved -> {

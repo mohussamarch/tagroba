@@ -23,7 +23,8 @@ import app.masroufy.usecase.WithYouNow
  * المحافظ وتفاصيل المحفظة — من «معك الآن» (`LoadWithYouNow`) وحركات الشهر (`LoadTransactionsScreen`) للعرض، **دوال نقية** (JVM).
  * مفيش جمع ولا طرح هنا: الأرصدة والمجموع جايين جاهزين من حالة الاستخدام، والرصيد المجهول `null` ⇒ «غير متاح» (القاعدة 10).
  */
-enum class WalletGroupKind(val title: TextRef) { BANKS(UiKey.WLIST_BANKS), DIGITAL(UiKey.WLIST_DIGITAL), CASH(UiKey.WLIST_CASH) }
+/** [HIDDEN] = «مخفي» آخر القايمة (OVERRIDES §112-1) — من هنا بيرجع يظهر. */
+enum class WalletGroupKind(val title: TextRef) { BANKS(UiKey.WLIST_BANKS), DIGITAL(UiKey.WLIST_DIGITAL), CASH(UiKey.WLIST_CASH), HIDDEN(app.masroufy.core.R06Key.WALLETS_HIDDEN_SECTION) }
 
 data class WalletRowView(
     val id: Id,
@@ -70,11 +71,12 @@ fun walletRow(w: WalletNow, mainId: Id?, country: String? = null): WalletRowView
 
 /** القايمة: البنوك · المحافظ الإلكترونية (لو فيه) · الكاش — بترتيب «معك الآن» جوه كل مجموعة. */
 fun walletsView(now: WithYouNow, mainId: Id?, country: String? = null): WalletsView {
-    val rows = now.wallets.map { walletRow(it, mainId, country) to groupOf(it.wallet.kind) }
+    val rows = now.wallets.map { walletRow(it, mainId, country) to if (it.wallet.hiddenOnHome) WalletGroupKind.HIDDEN else groupOf(it.wallet.kind) }
+    val shown = now.wallets.filter { !it.wallet.hiddenOnHome }
     val groups = WalletGroupKind.entries.mapNotNull { g ->
         rows.filter { it.second == g }.map { it.first }.takeIf { it.isNotEmpty() }?.let { WalletGroupView(g, it) }
     }
-    return WalletsView(now.totalMinor, now.wallets.size, now.wallets.filter { it.balanceMinor == null }.map { it.wallet.name }, groups)
+    return WalletsView(now.totalMinor, shown.size, shown.filter { it.balanceMinor == null }.map { it.wallet.name }, groups)
 }
 
 /** سطر تحت «معك الآن»: اللي رصيدها مش معروف بالاسم، وإلا «في N محافظ في هذا البلد». */
