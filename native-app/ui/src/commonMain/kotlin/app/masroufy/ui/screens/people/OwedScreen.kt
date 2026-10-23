@@ -113,7 +113,7 @@ private fun TotalHero(ui: OwedUi, owed: Boolean) {
 private fun OwedRow(r: OwedRowUi, owed: Boolean, last: Boolean, onLongClick: () -> Unit, onClick: () -> Unit) {
     val press = rememberPress()
     Rowed(last, Modifier.pressScale(press).tap(press, label = r.name, onLongClick = onLongClick, onClick = onClick)) {
-        InitialCircle(r.name, 40.dp)
+        app.masroufy.ui.app.WithActiveCountryMark { InitialCircle(r.name, 40.dp) }
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             BasicText(r.name, style = Type.bodyBold())
             BasicText(r.reason, style = Type.caption().copy(color = Ink.muted))

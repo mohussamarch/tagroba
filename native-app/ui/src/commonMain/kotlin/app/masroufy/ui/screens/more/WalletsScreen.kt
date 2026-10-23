@@ -152,7 +152,11 @@ fun walletMeta(r: WalletRowView): String = if (r.last4 != null) t(UiKey.WLIST_ME
 
 /** عدسة المحفظة 40: الكاش أخضر فاتح برمز الفلوس، والبنك لوجوه من دليل البنوك ([bank] — §81)، وإلا أول حرف من اسمه في دايرة ([BankLogo]). */
 @Composable
-fun WalletLens(name: String, cash: Boolean, size: androidx.compose.ui.unit.Dp = 40.dp, bank: Bank? = null) {
+fun WalletLens(name: String, cash: Boolean, size: androidx.compose.ui.unit.Dp = 40.dp, bank: Bank? = null) =
+    app.masroufy.ui.app.WithActiveCountryMark { WalletLensPlain(name, cash, size, bank) }
+
+@Composable
+private fun WalletLensPlain(name: String, cash: Boolean, size: androidx.compose.ui.unit.Dp, bank: Bank?) {
     if (!cash) return BankLogo(bank, name, size = size)
     val shape = RoundedCornerShape(14.dp)
     Box(Modifier.size(size).clip(shape).background(Ink.selected), contentAlignment = Alignment.Center) {

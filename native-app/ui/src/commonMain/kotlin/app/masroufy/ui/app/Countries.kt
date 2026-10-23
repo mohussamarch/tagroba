@@ -87,3 +87,8 @@ fun WithCountryMark(countryCode: String?, modifier: Modifier = Modifier, icon: @
         CountryMark(code, Modifier.align(AbsoluteAlignment.TopLeft).offset(x = (-3).dp - RING, y = (-3).dp - RING))
     }
 }
+
+/** نفس [WithCountryMark] ببلد الشاشة (البلد الشغالة) — للمحافظ والكروت والديون ومصادر الدخل والعمليات اللي كلها من البلد دي. */
+@Composable
+fun WithActiveCountryMark(modifier: Modifier = Modifier, icon: @Composable () -> Unit) =
+    WithCountryMark(LocalCountries.current.active?.countryCode, modifier, icon)

@@ -32,7 +32,7 @@ class GatherAllSpaceAlerts(
     private val sms: AutoRecordSms? = null,
 ) {
     suspend fun gather(today: IsoDate, profileCompletionPercent: Int? = null): List<AlertCandidate> {
-        val labelled = sources.size > 1
+        val labelled = app.masroufy.core.bothCountriesActive(sources.map { it.space }) // cty-9: المصدر الوحيد
         val out = mutableListOf<AlertCandidate>()
         for (s in sources) {
             val perSpace = GatherAlerts(s.deps.copy(occasions = null, sms = null)).gather(s.input.copy(profileCompletionPercent = null))
@@ -69,7 +69,7 @@ class PersonAcrossSpaces(private val books: List<PersonSpaceBook>) {
         obligations.groupBy { it.currency }.map { (currency, inCurrency) ->
             val ids = inCurrency.map { it.id }.toSet()
             val balance = computePersonBalance(personId, inCurrency, settlements.filter { it.obligationId in ids })
-            PersonSpaceDebt(b.space.id, b.space.name, currency, balance.receivableMinor, balance.payableLoanMinor, balance.payableCustodyMinor)
+            PersonSpaceDebt(b.space.id, b.space.label, currency, balance.receivableMinor, balance.payableLoanMinor, balance.payableCustodyMinor)
         }.filter { it.receivableMinor != 0L || it.payableLoanMinor != 0L || it.payableCustodyMinor != 0L }
     }
 }

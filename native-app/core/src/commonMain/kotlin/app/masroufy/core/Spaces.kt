@@ -56,7 +56,12 @@ data class Space(
     val currency: Currency,
     val createdAt: String,
     val archived: Boolean = false,
-)
+) {
+    /**
+     * cty-12: اسم البلد **للعرض** — بيتحسب من الكود بلغة/لهجة دلوقتي. [name] المتخزن اتكتب بلغة وقت الإنشاء، فبيفضل للنسخة الاحتياطية بس.
+     */
+    val label: String get() = countryLabel(countryCode)
+}
 
 /** تصنيف تاجر مشترك **جوه مساحة** غير السعودية ([MERCHANT_CATEGORIES_GROUP]) — معرّف المستند = معرّف التاجر. */
 data class MerchantCategory(val merchantId: Id, val categoryId: Id)

@@ -32,7 +32,8 @@ class AssistantGraph(private val c: AreaContext, private val areas: SpaceGraph) 
 
     override suspend fun context(tab: AssistTab): AssistContext = AssistContext(
         nowIso = c.env.clock.nowIso(), today = c.env.today(), hour = c.env.hourNow(), space = c.space, tab = tab, platform = AssistPlatform.ANDROID,
-        spaceCount = runCatching { c.session.spaces().size }.getOrDefault(1).coerceAtLeast(1),
+        // cty-9: «البلدين شغالين» من المصدر الوحيد (المؤرشفة ما بتتحسبش)
+        spaceCount = runCatching { c.session.spaces().map { it.first } }.getOrDefault(emptyList()).let { s -> if (app.masroufy.core.bothCountriesActive(s)) s.count { !it.archived } else 1 },
     )
 
     internal suspend fun deps(): AssistantDeps = AssistantDeps(
@@ -63,7 +64,7 @@ class AssistantGraph(private val c: AreaContext, private val areas: SpaceGraph) 
             budget = areas.budgets.budgetScreen,
             leftover = areas.budgets.leftover,
             cash = areas.home.cash,
-            categorySpend = LoadCategorySpend(LoadCategorySpendDeps(r.transactions, r.categories, r.allocations)),
+            categorySpend = LoadCategorySpend(LoadCategorySpendDeps(r.transactions, r.categories, r.allocations, c.space.currency)),
             lastAt = FindLastAtMerchant(r.transactions, r.wallets),
             people = areas.people.overview,
             personAcross = PersonAcrossSpaces(books),

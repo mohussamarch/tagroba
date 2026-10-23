@@ -33,7 +33,7 @@ internal const val NEW_SPLIT = "__new__"
 internal suspend fun TurnKit.splitReply(u: AssistUnderstanding, existingChoice: String?): TurnOut {
     val s = u.signals
     if (u.note == AssistNote.TWO_AMOUNTS) return TurnOut(listOf(text(uiText(TextKey.ASSIST_TWO_AMOUNTS), u.wire)), countTopic = false)
-    if (s.money.isForeign(ctx.currency)) return TurnOut(listOf(text(uiText(TextKey.ASSIST_FOREIGN, ctx.space.name), u.wire)), countTopic = false)
+    if (s.money.isForeign(ctx.currency)) return TurnOut(listOf(text(uiText(TextKey.ASSIST_FOREIGN, ctx.space.label), u.wire)), countTopic = false)
     val p = parseSplit(s)
     p.newNames.firstOrNull()?.takeIf { deps.people != null }?.let { name ->
         val ask = bot(AssistMessageKind.CHOICE, uiText(TextKey.ASSIST_ADD_PERSON, quoted(name)), u.wire).copy(

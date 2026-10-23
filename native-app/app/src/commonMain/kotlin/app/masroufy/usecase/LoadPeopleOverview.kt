@@ -66,7 +66,7 @@ class LoadPeopleOverview(private val deps: LoadPeopleOverviewDeps) {
                 val links = s.links.listByPerson(p.id)
                 if (links.isEmpty()) continue
                 val txns = s.txns.findByIds(links.map { it.transactionId }.distinct())
-                personGiftBadges(p.id, events, links, txns).forEach { badges += p.id to SpaceGiftBadge(s.space.id, s.space.name, it) }
+                personGiftBadges(p.id, events, links, txns).forEach { badges += p.id to SpaceGiftBadge(s.space.id, s.space.label, it) }
             }
         }
         return peopleOverview(
