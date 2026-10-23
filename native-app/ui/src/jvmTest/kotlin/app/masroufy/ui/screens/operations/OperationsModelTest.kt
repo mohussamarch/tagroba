@@ -81,6 +81,16 @@ class OperationsModelTest {
         assertEquals(listOf("8 عمليات نوعها مش أكيد", "طرفين مستنيين ردك"), banners(null, 8, 2).map { it.text })
     }
 
+    /** OVERRIDES §112-6: سؤال «ده مرتب؟» بقى جوه «محتاجة مراجعة» — الشريط بيظهر بيه لوحده لو مفيش عمليات للمراجعة. */
+    @Test fun salaryQuestionAppearsInTheReviewEntry() {
+        val only = banners(bankSmsWaiting = null, reviewCount = 0, partiesWaiting = 0, salaryAsks = 1)
+        assertEquals(listOf(BannerKind.REVIEW), only.map { it.kind })
+        assertEquals(app.masroufy.ui.text.t(app.masroufy.core.R06Key.INC_REVIEW_SALARY), only.single().text)
+        val both = banners(null, 3, 0, salaryAsks = 1)
+        assertEquals(1, both.count { it.kind == BannerKind.REVIEW }, "شريط مراجعة واحد — السؤال جوّاه")
+        assertTrue(banners(null, 0, 0, salaryAsks = 0).isEmpty())
+    }
+
     @Test fun arabicCountWordsFollowTheNumber() {
         assertEquals(listOf("عملية واحدة", "عمليتان", "5 عمليات", "12 عملية"), listOf(1, 2, 5, 12).map(::operationsCount))
     }
