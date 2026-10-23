@@ -46,10 +46,14 @@ class OperationsGraph(private val c: AreaContext) : OperationsDeps {
     override val transactions = LoadTransactionsScreen(
         LoadTransactionsScreenDeps(r.transactions, r.categories, r.allocations, r.merchants, r.tags, r.transactionTags, work = c.env.work),
     )
+    /** قاعدة التجار المشتركة: تأكيد تصنيف شراء (تفاصيل العملية · لوحة التصنيف · التحديد) بيرفع اسم المحل مش مؤكد. */
+    private val share = shareMerchantOf(c)
+
     override val edit = EditTransaction(
         EditTransactionDeps(
             r.transactions, r.categories, r.tags, r.transactionTags, r.uow, ids, clock,
             allocations = r.allocations, settlements = r.settlements, spaceLegs = legs,
+            onCategoryConfirmed = share?.onCategoryConfirmed,
         ),
     )
     override val kinds = SetEconomicKind(SetEconomicKindDeps(r.transactions, r.categories, r.uow, clock, legs, personLinks = r.personLinks))
@@ -98,6 +102,7 @@ class OperationsGraph(private val c: AreaContext) : OperationsDeps {
         app.masroufy.usecase.BulkTransactionsDeps(
             r.transactions, r.categories, r.projects, r.projectLinks, r.tags, r.transactionTags, r.sourceRecords, r.uow, ids, clock,
             linked = txnLinks::linked, spaceLegs = legs, erase = erase, personLinks = r.personLinks,
+            onCategoryConfirmed = share?.onCategoryConfirmed,
         ),
     )
 

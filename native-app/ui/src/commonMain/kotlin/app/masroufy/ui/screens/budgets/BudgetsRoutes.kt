@@ -48,6 +48,18 @@ interface BudgetsDeps {
 
     /** «طبّق القواعد على السابق» بمعاينة الأول — `preview` · `applyCategories`. */
     val history: ReviewHistory
+
+    /** قاعدة التجار المشتركة (r06-shared): «حدّث الآن» وآخر تحديث. null ⇒ «غير متاح» بسببه (الاختبار · الآيفون لحد ما يتجمّع). */
+    val sharedMerchants: SharedMerchantsUi? get() = null
+}
+
+/** كارت «قاعدة التجار المشتركة» في «القواعد والتجار». */
+interface SharedMerchantsUi {
+    /** آخر مزامنة نجحت على الجهاز ده — null = لسه. */
+    suspend fun lastSync(): app.masroufy.core.LastReadWhen?
+
+    /** مزامنة دلوقتي — null = فشلت (واتسجلت في «سجل المشاكل»). */
+    suspend fun syncNow(): app.masroufy.usecase.SharedSyncResult?
 }
 
 /** ميزانية تصنيف واحد (`CategoryBudget`) — من أي صف في «الميزانيات» ومن المساعد. */

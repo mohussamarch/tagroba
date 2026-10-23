@@ -35,10 +35,11 @@ fun importDeps(r: SpaceRepositories, env: DeviceEnv) = ImportStatementDeps(
  * بيرفض من غير آثار S1. التصنيف اللي المالك اختاره بيتحفظ للمحل (`MerchantMemory` من غير رفع للقايمة المشتركة)، وخصم الاشتراك بيحرّك
  * ميعاده. ⚠️ «اللي رجع» من غير روابط الدين (`ReturnsWiring` محتاج روابط الأشخاص والمستحقات) ⇒ `SmsLane.of` بيضيفها بتسأل بس — HANDOVER.
  */
-fun smsImportDeps(spaceId: String, r: SpaceRepositories, env: DeviceEnv, inbox: SmsInboxPort) = importDeps(r, env).copy(
+fun smsImportDeps(spaceId: String, r: SpaceRepositories, env: DeviceEnv, inbox: SmsInboxPort, share: app.masroufy.usecase.ShareMerchantCategory? = null) = importDeps(r, env).copy(
     effects = smsRecordEffects(
         spaceId, r.wallets, inbox, r.categories,
-        remember = RememberChosenCategoryEffect(MerchantMemory(r.merchants, env.ids)), subscriptions = r.recurring,
+        // التصنيف اللي المالك اختاره (شراء صادر) بيترفع كمان لقاعدة التجار المشتركة لو [share] موجود (رد المالك 2026-10-22)
+        remember = RememberChosenCategoryEffect(MerchantMemory(r.merchants, env.ids, share?.hook)), subscriptions = r.recurring,
         txns = r.transactions, sources = r.sourceRecords,
         // A2: «مستحقات دايمًا» و«سجّل تحويلاته لوحده» أول ما الرسالة تتسجل (الخلفية · التسجيل لوحده · تأكيد المالك)
         personRules = app.masroufy.usecase.PersonRulesEffect(personLinksOf(r, env.ids, env.clock, SpaceLegsOf(spaceId, r.spaceTransfers)).rules),
@@ -69,6 +70,8 @@ fun backgroundCycle(
     val catchUp = spaces.firstOrNull()?.let { (_, r) -> SmsCatchUp(inbox, r.assistant.settings, lanes.map { it.spaceId }, env.clock) }
     return RunBackgroundCycle(
         BackgroundCycleDeps(sms = auto, candidates = null, engine = null, notifier = notifier, smsCatchUp = catchUp, smsNotices = notices,
+            // r06-shared: قاعدة التجار المشتركة — التغييرات من آخر مؤشر كل دورة (رد المالك 2026-10-22)
+            sharedMerchants = syncSharedMerchantsOf(spaces, env),
             openingDebtRepairs = spaces.map { (space, r) -> app.masroufy.usecase.RepairOpeningDebtCurrency(r.people, r.obligations, space.currency) },
             duplicateScans = spaces.map { (space, r) -> app.masroufy.usecase.DuplicateChargeAsks(space.id, r.transactions, env.clock) },
             categoryRepairs = spaces.map { (space, r) -> app.masroufy.usecase.RepairMissingDefaultSubs(r.categories, app.masroufy.seed.BundledSeeds, countryPack(space.countryCode)) },
@@ -93,5 +96,5 @@ fun smsHistory(spaces: List<Pair<Space, SpaceRepositories>>, inbox: SmsInboxPort
 internal fun smsLaneOf(space: Space, r: SpaceRepositories, env: DeviceEnv, inbox: SmsInboxPort): SmsLane? {
     val pack = countryPack(space.countryCode)
     val reader = pack.smsReader ?: return null
-    return SmsLane.of(space.id, smsImportDeps(space.id, r, env, inbox), ManageSmsInbox(inbox) { m, n -> reader.parseTimed(m, n, pack.timeZone) }, r.wallets, pack.timeZone)
+    return SmsLane.of(space.id, smsImportDeps(space.id, r, env, inbox, shareMerchantOf(space, r, env)), ManageSmsInbox(inbox) { m, n -> reader.parseTimed(m, n, pack.timeZone) }, r.wallets, pack.timeZone)
 }

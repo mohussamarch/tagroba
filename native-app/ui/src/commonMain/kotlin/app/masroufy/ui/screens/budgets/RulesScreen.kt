@@ -53,7 +53,7 @@ import kotlinx.coroutines.launch
 /**
  * «القواعد والتجار» (`Rules` — من «المزيد» ومن آخر «التصنيفات»): التجار اللي التطبيق فاكر تصنيفهم (أقوى من أي قاعدة) · قواعدك بالترتيب
  * (القفل مش المسح) · «طبّق على السابق» بمعاينة الأول (`ReviewHistory`) · قاعدة التجار المشتركة. الحالات: بيحمّل · خطأ · فاضي · عادي.
- * ⚠️ مزامنة القاعدة المشتركة (`SharedMerchants.sync`) مش متوصلة في التجميع لسه ⇒ الزرار مقفول و«غير متاح» بسببه (missingLogic).
+ * قاعدة التجار المشتركة (r06-shared): «حدّث الآن» شغال وآخر تحديث ظاهر؛ من غير توصيل (الاختبار · الآيفون) ⇒ مقفول و«غير متاح» بسببه.
  */
 @Composable
 fun RulesScreen() {
@@ -95,7 +95,7 @@ fun RulesScreen() {
                     }
                 }
                 item(key = "apply") { ApplyCard(apply, deps, today = space.shell.today(), hasRules = r.rules.any { it.enabled } || r.merchants.isNotEmpty()) { reload++ } }
-                item(key = "sync") { SyncCard() }
+                item(key = "sync") { SyncCard(deps.sharedMerchants) { reload++ } }
             }
         }
     }

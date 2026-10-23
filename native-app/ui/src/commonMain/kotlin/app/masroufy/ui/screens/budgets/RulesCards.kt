@@ -135,17 +135,49 @@ fun ApplyCard(holder: ApplyHolder, deps: BudgetsDeps, today: IsoDate, hasRules: 
 }
 
 /**
- * «قاعدة التجار المشتركة»: أسماء محلات وتصنيفها المبدئي من مستخدمين تانيين (من غير مبالغ ولا تواريخ). ⚠️ `SharedMerchants.sync` محتاج كتالوج
- * فايربيز المشترك ومؤشرات المزامنة — مش موجودين في التجميع (`SpaceRepositories`/`DeviceEnv`) ⇒ الزرار مقفول و«غير متاح» بسببه، من غير ما نتظاهر.
+ * «قاعدة التجار المشتركة»: أسماء محلات وتصنيفها المبدئي من مستخدمين تانيين (من غير مبالغ ولا تواريخ). r06-shared: «حدّث الآن» بيعمل مزامنة
+ * ([SharedMerchantsUi.syncNow]) وتحته آخر تحديث على الجهاز ده. [shared] = null (من غير توصيل) ⇒ الزرار مقفول و«غير متاح» بسببه.
+ * [onSynced] بعد مزامنة جابت تجار جداد أو اقتراحات (قايمة التجار فوق بتتحدث).
  */
 @Composable
-fun SyncCard() {
+fun SyncCard(shared: SharedMerchantsUi?, onSynced: () -> Unit) {
+    val toaster = LocalToaster.current
+    val scope = rememberCoroutineScope()
+    var last by androidx.compose.runtime.remember(shared) { mutableStateOf<app.masroufy.ui.screens.imports.LastReadState?>(null) }
+    var running by androidx.compose.runtime.remember(shared) { mutableStateOf(false) }
+    androidx.compose.runtime.LaunchedEffect(shared) {
+        if (shared != null) runCatching { shared.lastSync() }.onSuccess { last = app.masroufy.ui.screens.imports.LastReadState(it) }
+    }
     FloatingCard(Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             BasicText(t(UiKey.RULES_SYNC_TITLE), style = Type.of(15, FontWeight.Bold))
             BasicText(t(UiKey.RULES_SYNC_BODY), style = Type.of(13).copy(color = Ink.muted))
-            BasicText(t(UiKey.RULES_SYNC_NA), style = Type.captionBold().copy(color = Ink.focus))
-            TonalButton(t(UiKey.RULES_SYNC_BTN), {}, Modifier.fillMaxWidth(), enabled = false)
+            if (shared == null) {
+                BasicText(t(UiKey.RULES_SYNC_NA), style = Type.captionBold().copy(color = Ink.focus))
+                TonalButton(t(UiKey.RULES_SYNC_BTN), {}, Modifier.fillMaxWidth(), enabled = false)
+                return@Column
+            }
+            last?.let { s ->
+                val text = s.last?.let { t(app.masroufy.core.R06Key.RULES_SYNC_LAST, app.masroufy.ui.screens.imports.whenText(it)) }
+                    ?: t(app.masroufy.core.R06Key.RULES_SYNC_NEVER)
+                BasicText(text, style = Type.caption().copy(color = Ink.muted))
+            }
+            val label = if (running) t(app.masroufy.core.R06Key.RULES_SYNC_RUNNING) else t(UiKey.RULES_SYNC_BTN)
+            TonalButton(label, {
+                if (!running) scope.launch {
+                    running = true
+                    val r = runCatching { shared.syncNow() }.getOrNull()
+                    running = false
+                    if (r == null) {
+                        toaster.show(t(app.masroufy.core.R06Key.RULES_SYNC_FAILED))
+                    } else {
+                        val n = r.added + r.filled + r.suggested
+                        toaster.show(if (n == 0) t(app.masroufy.core.R06Key.RULES_SYNC_NOTHING) else t(app.masroufy.core.R06Key.RULES_SYNC_DONE, n.toString()))
+                        runCatching { shared.lastSync() }.onSuccess { last = app.masroufy.ui.screens.imports.LastReadState(it) }
+                        if (n > 0) onSynced()
+                    }
+                }
+            }, Modifier.fillMaxWidth(), enabled = !running)
         }
     }
 }

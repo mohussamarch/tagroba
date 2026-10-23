@@ -28,6 +28,9 @@ object BundledSeeds : SpaceSeedSourceLoader {
         Json.parseToJsonElement(RULE_REFERENCE_JSON).jsonArray.map { RawRule(it.opt("word"), it.opt("cat")) }
     }
 
+    /** معرّفات شجرة تصنيفات البلد (نفس المعرّف في كل الحسابات) — قاعدة التجار المشتركة بتقبل التصنيفات دي بس. */
+    fun categoryIds(pack: CountryPack): Set<String> = buildCountryCategoryTree(tree, pack).categories.map { it.id }.toSet()
+
     override suspend fun load(pack: CountryPack): SeedSource {
         val built = buildCountryCategoryTree(tree, pack)
         return SeedSource(built.categories, loadReferences(rules, emptyList(), built.categories, built).rules, emptyList())

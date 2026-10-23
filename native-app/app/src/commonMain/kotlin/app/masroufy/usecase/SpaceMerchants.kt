@@ -26,7 +26,11 @@ class SpaceMerchantRepository(
 
     private fun inSpace(m: Merchant, categories: Map<Id, Id>, known: Set<Id>): Merchant {
         val here = categories[m.id]
-        return m.copy(verifiedCategoryId = here, suggestedCategoryId = if (here == null) m.verifiedCategoryId?.takeIf { it in known } else null)
+        return m.copy(
+            verifiedCategoryId = here, suggestedCategoryId = if (here == null) m.verifiedCategoryId?.takeIf { it in known } else null,
+            // اقتراح القاعدة المشتركة من شجرة السعودية — بس لو موجود وشغال في شجرة البلد دي
+            sharedCategoryId = m.sharedCategoryId?.takeIf { it in known },
+        )
     }
 
     override suspend fun listAll(): List<Merchant> {
@@ -44,7 +48,7 @@ class SpaceMerchantRepository(
         val identity = merchants.mapNotNull { m ->
             val before = existing[m.id]
             // تصنيف السعودية زي ما هو، والاقتراح بيتشال — عمره ما بيوصل للمستند المشترك
-            val kept = m.copy(verifiedCategoryId = before?.verifiedCategoryId, suggestedCategoryId = null)
+            val kept = m.copy(verifiedCategoryId = before?.verifiedCategoryId, suggestedCategoryId = null, sharedCategoryId = before?.sharedCategoryId)
             kept.takeIf { it != before }
         }
         shared.saveMany(identity)

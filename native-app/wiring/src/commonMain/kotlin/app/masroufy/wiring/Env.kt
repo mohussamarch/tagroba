@@ -56,6 +56,8 @@ class DeviceEnv(
     val characterDraft: app.masroufy.ui.screens.character.CharacterDraftStore? = null,
     /** r06: «آخر مرة قرا لوحده» في الخلفية (الجهاز ده بس). null (الاختبار · الآيفون) ⇒ الشاشة بتقول «لسه ما قراش لوحده». */
     val backgroundRead: app.masroufy.port.BackgroundReadPort? = null,
+    /** r06-shared: مؤشرات مزامنة قاعدة التجار المشتركة (لكل حساب، على الجهاز). null (الاختبار · الآيفون) ⇒ ولا رفع ولا مزامنة. */
+    val sharedCursors: app.masroufy.usecase.SharedMerchantCursors? = null,
 )
 
 /**

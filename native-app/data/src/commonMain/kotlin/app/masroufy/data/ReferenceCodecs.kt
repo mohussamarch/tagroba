@@ -76,12 +76,13 @@ object ReferenceCodecs {
             doc {
                 req("id", m.id); req("displayName", m.displayName); req("normalizedName", m.normalizedName); opt("aliases", m.aliases)
                 opt("logoAsset", m.logoAsset); opt("logoSource", m.logoSource); opt("verifiedCategoryId", m.verifiedCategoryId)
+                opt("sharedCategoryId", m.sharedCategoryId)
             }
         },
         { r ->
             Merchant(
                 r.str("id"), r.str("displayName"), r.str("normalizedName"), r.strings("aliases"), r.strOrNull("logoAsset"),
-                r.strOrNull("logoSource"), r.strOrNull("verifiedCategoryId"),
+                r.strOrNull("logoSource"), r.strOrNull("verifiedCategoryId"), sharedCategoryId = r.strOrNull("sharedCategoryId"),
             )
         },
     )

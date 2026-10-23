@@ -55,5 +55,18 @@ class BudgetsGraph(c: AreaContext) : BudgetsDeps {
 
     override val categories = ManageCategories(ManageCategoriesDeps(r.categories, c.env.ids))
     override val rules = ManageRules(ManageRulesDeps(r.rules, r.merchants, r.categories, c.env.ids))
+    // r06-shared: المزامنة دايمًا على البلد الافتراضية (التجار على مستوى الحساب) — من أي بلد شغالة
+    override val sharedMerchants = syncSharedMerchantsOf(c.session.spaces(), c.env)?.let { sync ->
+        object : app.masroufy.ui.screens.budgets.SharedMerchantsUi {
+            override suspend fun lastSync() = kotlinx.coroutines.withContext(c.env.work) {
+                sync.lastSyncAt()?.let { app.masroufy.core.isoInstantMillis(it) }?.let { at ->
+                    app.masroufy.core.lastReadWhen(at, c.env.nowMillis(), c.env.backgroundRead?.zoneOffsetMillis(at) ?: 0L)
+                }
+            }
+
+            override suspend fun syncNow() = kotlinx.coroutines.withContext(c.env.work) { sync.run() }
+        }
+    }
+
     override val history = ReviewHistory(CategorizeTransactionsDeps(r.transactions, r.merchants, r.categories, r.rules, r.uow, c.env.clock), r.wallets)
 }

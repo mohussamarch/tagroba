@@ -106,6 +106,7 @@ fun sourceLabel(source: CategorizationSource?): TextRef = when (source) {
     CategorizationSource.RULE -> UiKey.IMPORT_REVIEW_SRC_RULE
     CategorizationSource.SOURCE_CATEGORY -> UiKey.IMPORT_REVIEW_SRC_BANK
     CategorizationSource.OTHER_COUNTRY_MERCHANT -> UiKey.IMPORT_REVIEW_SRC_OTHER_COUNTRY
+    CategorizationSource.SHARED_MERCHANT -> app.masroufy.core.R06Key.IMPORT_SRC_SHARED
     CategorizationSource.NONE, null -> UiKey.IMPORT_REVIEW_SRC_NEW
 }
 
