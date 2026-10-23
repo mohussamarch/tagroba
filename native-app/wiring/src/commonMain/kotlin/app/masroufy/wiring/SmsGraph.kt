@@ -121,7 +121,11 @@ internal class SmsGraph(
             reviews += SenderReview(sender, wallet.id, one.load(targetOf(wallet, wallets))) to one
         }
         last = reviews
-        SmsOverview(view, unmapped, reviews.map { it.first }, senderWallets, result?.recordedTransactionIds.orEmpty())
+        // fix053 (فحص 0.5.3 ب): رسالة اتسجلت («اقرأها الآن») ولسه في الصندوق بتطلع «مكررة» في المعاينة — بتتشال هنا على طول (زي ما التسجيل
+        // بيشيل المكرر) بدل ما تفضل في العدّ («بانتظار تأكيدك» 619) لحد قفل البرنامج وفتحه
+        val recordedAlready = reviews.flatMap { (shown, _) -> shown.review.duplicates.map { it.messageId } }.distinct()
+        val shownView = if (recordedAlready.isEmpty()) view else runCatching { manage.dismiss(recordedAlready) }.getOrDefault(view)
+        SmsOverview(shownView, unmapped, reviews.map { it.first }, senderWallets, result?.recordedTransactionIds.orEmpty())
     }
 
     override suspend fun recordNew(): List<Id> = work { auto().runNew(memo).recordedTransactionIds.also { readMark(it.isNotEmpty()) } }
