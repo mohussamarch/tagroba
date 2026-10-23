@@ -2,6 +2,7 @@ package app.masroufy.usecase
 
 import app.masroufy.core.AlertCandidate
 import app.masroufy.core.LocalMoment
+import app.masroufy.core.SmsStateNotice
 import app.masroufy.core.hashContent
 import app.masroufy.core.smsConfirmCandidate
 import app.masroufy.port.DeviceNotifier
@@ -48,6 +49,11 @@ data class BackgroundCycleDeps(
      * بتتحفظ في الحساب. فشله ما بيوقفش حاجة (الدورة الجاية بتعيده).
      */
     val smsCatchUp: SmsCatchUp? = null,
+    /**
+     * PLAN-0.6 §13 (ج): إشعارات حالة القراية (شكل جديد مستني · الإذن اتسحب · رسايل فاتته) — بعد خطوة الرسايل، **من غير المحرك**.
+     * فشلها ما بيوقفش حاجة. null = مش متوصلة.
+     */
+    val smsNotices: SmsStateNotices? = null,
     /** مراجعة 0.3 بند 7: الدورة كلها (الصندوق واللحاق والمحرك) برّه خيط الواجهة — التطبيق ممكن يشغّلها وهو مفتوح. */
     val work: CoroutineContext = Dispatchers.Default,
 )
@@ -63,6 +69,8 @@ data class BackgroundCycleResult(
     val delivery: NoticeDelivery?,
     /** لحاق الاشتراكات فشل في بلد واحدة على الأقل (الباقي كمّل). */
     val subscriptionsFailed: Boolean = false,
+    /** إشعارات حالة القراية اللي اتبعتت في الدورة دي ([SmsStateNotices]). */
+    val smsNotices: List<SmsStateNotice> = emptyList(),
 )
 
 class RunBackgroundCycle(private val deps: BackgroundCycleDeps) {
@@ -83,6 +91,8 @@ class RunBackgroundCycle(private val deps: BackgroundCycleDeps) {
             }
         }
         if (!smsFailed) deps.smsCatchUp?.let { catchUp -> runCatchingNotCancel { catchUp.after() } }
+        // §13 (ج): المسجّل لوحده عمره ما بيوصل هنا كإشعار — الحالات التلاتة بس
+        val notices = if (deps.sms == null) emptyList() else deps.smsNotices?.let { n -> runCatchingNotCancel { n.check(sms, smsFailed) } }.orEmpty()
         for (repair in deps.reversalRepairs) runCatchingNotCancel { repair.run() }
         for (repair in deps.openingDebtRepairs) runCatchingNotCancel { repair.run() }
         for (repair in deps.categoryRepairs) runCatchingNotCancel { repair.run() }
@@ -92,7 +102,7 @@ class RunBackgroundCycle(private val deps: BackgroundCycleDeps) {
         for (match in deps.subscriptions) if (runCatchingNotCancel { match.catchUp(now.date) } == null) subscriptionsFailed = true
         val candidates = deps.candidates
         val engine = deps.engine
-        if (candidates == null || engine == null) return BackgroundCycleResult(sms, smsFailed, null, false, null, subscriptionsFailed)
+        if (candidates == null || engine == null) return BackgroundCycleResult(sms, smsFailed, null, false, null, subscriptionsFailed, notices)
 
         var alertsFailed = false
         val run = try {
@@ -108,7 +118,7 @@ class RunBackgroundCycle(private val deps: BackgroundCycleDeps) {
             null
         }
         val delivery = run?.let { deliver(it) }
-        return BackgroundCycleResult(sms, smsFailed, run, alertsFailed, delivery, subscriptionsFailed)
+        return BackgroundCycleResult(sms, smsFailed, run, alertsFailed, delivery, subscriptionsFailed, notices)
     }
 
     private suspend fun deliver(run: AlertRun): NoticeDelivery? {

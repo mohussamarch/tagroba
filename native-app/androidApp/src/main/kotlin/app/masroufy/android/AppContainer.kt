@@ -194,7 +194,7 @@ class AppContainer(private val context: Context, private val problems: ProblemLo
             Problems.report(ProblemCode.BACKGROUND_GAVE_UP)
             return null
         }
-        return backgroundCycle(spacesOf(ready), AndroidSmsInbox(context, ready.user.uid), AndroidDeviceNotifier(context), envFor(ready.user.uid))
+        return backgroundCycle(spacesOf(ready), AndroidSmsInbox(context, ready.user.uid), AndroidDeviceNotifier(context), envFor(ready.user.uid), app.masroufy.device.AndroidNoticeMemory(context))
     }
 }
 

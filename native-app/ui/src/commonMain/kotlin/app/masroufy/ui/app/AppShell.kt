@@ -71,6 +71,9 @@ class ShellState {
     /** المحادثة مع المساعد — بتفضل لو الشات اتقفل أو اتنقلت أو البلد اتبدّل، لحد «محادثة جديدة» (§67 · آخر §76). */
     val ask = AskState()
 
+    /** PLAN-0.6 §13 (ج): ضغطة على إشعار حالة القراية ⇒ «رسائل البنك» أول ما الهيكل يجهز (الجهاز بيعلّمها — `MainActivity`). */
+    var openBankSms by mutableStateOf(false)
+
     /** لوحة/نافذة مفتوحة ⇒ تتقفل · شاشة داخلية ⇒ رجوع · تبويب ⇒ الرئيسية · الرئيسية ⇒ `false` (الجهاز يقفل التطبيق). */
     fun handleBack(): Boolean = overlays.handleBack() || navigator.back()
 }
@@ -96,6 +99,11 @@ fun AppShell(shell: ShellState, registry: RouteRegistry, deps: SpaceDeps) {
     // الجرس بيتقري تاني كمان بعد أي كتابة (عملية جديدة ممكن تغيّر الأسئلة ونقط التبويبات)
     LaunchedEffect(deps, bellTick, shell.changes.version) { bell = runCatching { deps.shell.bell() }.getOrNull() }
     // حساب جديد خالص (مفيش ولا محفظة والأسئلة ما خلصتش) ⇒ أسئلة البداية لوحدها بدل رئيسية فاضية. حساب فيه بيانات ما بيتفتحلوش (`shouldStart`)
+    LaunchedEffect(deps, shell.openBankSms) {
+        if (!shell.openBankSms) return@LaunchedEffect
+        shell.openBankSms = false
+        if (nav.stack.lastOrNull()?.route != app.masroufy.ui.screens.imports.BankSmsRoute) nav.push(app.masroufy.ui.screens.imports.BankSmsRoute)
+    }
     LaunchedEffect(deps) {
         if (runCatching { deps.onboarding.onboard.shouldStart() }.getOrDefault(false) && nav.stack.none { it.route == OnboardingRoute }) nav.push(OnboardingRoute)
     }

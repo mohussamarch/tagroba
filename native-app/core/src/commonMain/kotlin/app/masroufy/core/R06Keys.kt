@@ -45,4 +45,6 @@ enum class R06Key : TextRef {
     AWAY_TITLE, AWAY_BODY, AWAY_READ, AWAY_READING, AWAY_KEEP, AWAY_DONE, AWAY_DONE_WAIT, AWAY_NEVER_BODY, AWAY_MORE,
     /** المظهر الليلي (فاتح · غامق · زي الجوال) وزرار إخفاء الأرقام — NP_ (التصميم NightPrivacy). */
     NP_THEME_TITLE, NP_THEME_LIGHT, NP_THEME_DARK, NP_THEME_AUTO, NP_EYE_HIDE, NP_EYE_SHOW, NP_START_TITLE, NP_START_SUB,
+    /** PLAN-0.6 §13 (ج) — إشعارات حالة القراية في الخلفية (شاشة القفل: من غير أرقام ولا أسامي) — نصوصها في `TextsR06Notify.kt`. */
+    NOTIFY_SMS_NEW_SHAPE, NOTIFY_SMS_PERMISSION_OFF, NOTIFY_SMS_MISSED,
 }
