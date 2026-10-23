@@ -183,7 +183,7 @@ fun TransferPartyCard(party: TransferPartyRef, transactionId: Id, onChanged: () 
             // «تجاهل» بعد الـ8 ثواني: من غير «تراجع» هنا — بيرجع من «حسابات متجاهَلة»
             if (d != PartyDecision.NotThis) TonalButton(t(UiKey.TRANSFER_PARTY_UNDO), {
                 if (d is NewPartyDecision) undoNew(d) else scope.launch {
-                    val err = failureOf { deps.transfers.forget(party.key) }
+                    val err = failureOf { if ((d as? PartyDecision.AsPerson)?.kind == app.masroufy.core.EconomicKind.LOAN_GRANTED) answers?.undoLend(transactionId); deps.transfers.forget(party.key) }
                     if (err == null) {
                         decision = null
                         onChanged()
@@ -200,8 +200,10 @@ fun TransferPartyCard(party: TransferPartyRef, transactionId: Id, onChanged: () 
                 val start = answers?.markDues(party, transactionId, person.id) ?: return@act null
                 return@act NewPartyDecision.Dues(person.name, start.settledCount, start.choices, start.undo)
             }
-            deps.transfers.markPerson(party, person.id)
-            deps.kinds.setOne(transactionId, kind)
+            // r06-polish: «سلفة» على الصادر ⇒ دين «ليك» مربوط بالعملية (حالة الاستخدام — مش الشاشة)
+            val a = answers
+            if (a != null) a.markPerson(party, transactionId, person.id, kind)
+            else { deps.transfers.markPerson(party, person.id); deps.kinds.setOne(transactionId, kind) }
             PartyDecision.AsPerson(person.name, kind, added = who == null)
         }
     }

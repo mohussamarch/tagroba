@@ -118,6 +118,14 @@ class OperationsGraph(private val c: AreaContext) : OperationsDeps {
     // r06-darahim (§12-5): «مكرر؟» — «لأ، الاتنين صح» من التفاصيل (العلامة بتتكتب في دورة الخلفية)
     override val duplicates = app.masroufy.usecase.DuplicateChargeAsks("", r.transactions, clock)
 
+    // r06-polish: «سلفة» من «مَن هذا؟» ⇒ دين بنفس «ضيف دين» (الميعاد مش مستعمل هنا — «من غير ميعاد»)
+    private val installmentsForDebts = app.masroufy.usecase.ManageInstallments(
+        app.masroufy.usecase.ManageInstallmentsDeps(
+            r.installmentPlans, r.installmentPayments, r.roscaEntries, r.debtTerms, r.obligations, r.transactions, r.uow, ids, clock,
+            r.categories, zakatPayments = r.zakatPayments, eventLinks = r.eventLinks,
+        ),
+    )
+
     // ردود «مَن هذا؟» الجديدة (طلبات المالك 2026-10-16): «مستحقات دايمًا» بنفس طريق «ده سداد؟» (`AnswerTransferAsks`)
     private val personLedger = app.masroufy.usecase.PersonLedgerRepos(r.obligations, r.settlements, r.allocations)
     private val transferAsks = app.masroufy.usecase.AnswerTransferAsks(
@@ -126,7 +134,9 @@ class OperationsGraph(private val c: AreaContext) : OperationsDeps {
     override val recentCategories = app.masroufy.usecase.RecentCategories(r.transactions, r.categories, clock)
     override val quickLinks = app.masroufy.usecase.QuickLinks(app.masroufy.usecase.QuickLinksDeps(r.transactions, linkedInflows, r.incomeSources, incomeAnswers))
     override val partyAnswers = app.masroufy.usecase.TransferPartyAnswers(
-        app.masroufy.usecase.TransferPartyAnswersDeps(r.transactions, r.transferParties, transfers, transferAsks, kinds, personLedger, r.uow, clock, rules = personLinks.rules, personLinks = r.personLinks),
+        app.masroufy.usecase.TransferPartyAnswersDeps(r.transactions, r.transferParties, transfers, transferAsks, kinds, personLedger, r.uow, clock, rules = personLinks.rules, personLinks = r.personLinks,
+            lend = app.masroufy.usecase.AddDebt(people, personLinks, installmentsForDebts, r.obligations), links = personLinks,
+        ),
     )
 
     override suspend fun payday(): Int = c.shell.profile.load().payday
