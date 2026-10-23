@@ -95,7 +95,11 @@ class SmsHistory(private val deps: SmsHistoryDeps) {
         if (!state.enabled) return null
         val marks = inbox.readMarks() ?: return null
         val asked = points.all()[spaceId]?.asked.orEmpty().toSet()
-        val fresh = state.senders.filter { smsSenderKey(it) !in asked }
+        // fix053 (§112-5): مرسل البلد التانية (رسايله على شكلها، أو مربوط بمحفظة هناك بس) ما يتسألش عنه هنا
+        lane.review.inboxView(state, null)
+        val mine = inbox.senderWallets(spaceId).keys
+        val theirs = deps.sms.lanes.filter { it.spaceId != spaceId }.flatMapTo(HashSet()) { inbox.senderWallets(it.spaceId).keys } - mine
+        val fresh = state.senders.filter { smsSenderKey(it) !in asked && smsSenderKey(it) !in theirs && !lane.review.otherCountrySender(it) }
         if (fresh.isEmpty()) return null
         val oldest = inbox.oldestMessageAt(fresh) ?: return null
         // بنك اتضاف بعد الربط: رسايله اللي قبل المؤشر عمرها ما اتقريت ⇒ نفس السؤال
