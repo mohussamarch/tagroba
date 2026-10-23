@@ -247,7 +247,7 @@ private fun BannerItem(b: Banner) {
     val nav = LocalNavigator.current
     when (b.kind) {
         BannerKind.BANK_SMS -> WaitingBanner(b.text, Ink.focus, Ink.alertBg) { nav.push(BankSmsRoute) }
-        BannerKind.REVIEW -> WaitingBanner(b.text, Ink.transfer, Color(0x142469BA)) { nav.push(ReviewQueueRoute) }
+        BannerKind.REVIEW -> WaitingBanner(b.text, Ink.transfer, Ink.tintOf(Ink.transfer, 0x14)) { nav.push(ReviewQueueRoute) }
         BannerKind.TRANSFERS -> WaitingBanner(b.text, Ink.primary, Ink.primary.copy(alpha = 0x14 / 255f)) { nav.push(TransfersRoute) }
     }
 }

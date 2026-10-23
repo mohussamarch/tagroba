@@ -65,9 +65,9 @@ private fun PayerCard(q: PayerQuestion, onAnswer: (Boolean) -> Unit) {
         Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(Ink.alertBg).padding(horizontal = 16.dp, vertical = 14.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        BasicText(t(UiKey.INCSRC_PAYER_Q, q.sourceName), style = Type.of(15, FontWeight.Bold).copy(color = Color(0xFF6B4600)))
+        BasicText(t(UiKey.INCSRC_PAYER_Q, q.sourceName), style = Type.of(15, FontWeight.Bold).copy(color = Ink.amberText))
         val from = q.party.last4?.let { t(UiKey.INCSRC_PAYER_FROM_LAST4, dayMonth(q.date), q.party.label, sentenceDigits(it)) } ?: t(UiKey.INCSRC_PAYER_FROM, dayMonth(q.date), q.party.label)
-        BasicText(from, style = Type.caption().copy(color = Color(0xFF6B4600)))
+        BasicText(from, style = Type.caption().copy(color = Ink.amberText))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             PrimaryButton(t(UiKey.MORE_YES), onClick = { onAnswer(true) }, modifier = Modifier.weight(1f))
             TonalButton(t(UiKey.MORE_NO), onClick = { onAnswer(false) }, modifier = Modifier.weight(1f), muted = true)

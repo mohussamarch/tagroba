@@ -150,7 +150,7 @@ private fun MonthStartBox(ask: Boolean, day: Int?, monthStart: Int, answer: Bool
             day == monthStart -> t(UiKey.INCEDIT_MONTH_SAME, sentenceNumber(monthStart))
             else -> t(UiKey.INCEDIT_MONTH_INFO, sentenceNumber(monthStart))
         }
-        BasicText(head, style = Type.of(14, FontWeight.Bold).copy(color = if (ask) Color(0xFF6B4600) else Ink.primary))
+        BasicText(head, style = Type.of(14, FontWeight.Bold).copy(color = if (ask) Ink.amberText else Ink.primary))
         if (ask) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 SelectChip(t(UiKey.JOB_MONTH_YES), answer == true, onClick = { onAnswer(true) }, height = 48.dp)

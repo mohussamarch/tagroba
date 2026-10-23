@@ -207,7 +207,7 @@ private fun AskBar(modifier: Modifier, backdrop: Backdrop, onAsk: () -> Unit, on
     }
 }
 
-private val micGlass = app.masroufy.ui.glass.cssLinear(145f, 0f to Color(0xFAFFFFFF), 0.55f to Color(0xCCE3EFE6), 1f to Color(0xE6C9E6D4))
+private val micGlass get() = app.masroufy.ui.glass.cssLinear(145f, 0f to Ink.micTop, 0.55f to Ink.micMid, 1f to Ink.micBottom)
 private val micShadow = listOf(
     app.masroufy.ui.glass.ShadowLayer(1.dp, 1.dp, 2.dp, Color.White, inset = true),
     app.masroufy.ui.glass.ShadowLayer((-1).dp, (-2).dp, 3.dp, Ink.primary.copy(alpha = 0x29 / 255f), inset = true),

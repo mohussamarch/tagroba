@@ -92,7 +92,7 @@ internal fun BnplPlanCard(v: BnplPlanView, today: IsoDate, startOpen: Boolean = 
                 for (s in v.steps) {
                     val fill = when (s.state) {
                         BnplStepState.PAID -> Ink.primary
-                        BnplStepState.NEXT -> Color(0xFFF3C96B)
+                        BnplStepState.NEXT -> Ink.amber
                         BnplStepState.LATER -> Ink.tint(0x1A)
                     }
                     Box(Modifier.weight(1f).height(8.dp).clip(RoundedCornerShape(4.dp)).background(fill))

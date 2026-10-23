@@ -72,7 +72,7 @@ fun GroupCard(modifier: Modifier = Modifier, horizontal: Dp = 8.dp, content: @Co
 /** خط رفيع تحت الصف (`0 1px 0 rgba(204,216,204,0.55)`). */
 @Composable
 fun RowRule() {
-    Box(Modifier.fillMaxWidth().height(1.dp).background(Color(0x8CCCD8CC)))
+    Box(Modifier.fillMaxWidth().height(1.dp).background(Ink.line))
 }
 
 /** صف في قايمة «المزيد»: أيقونة 36 · الاسم 15 · السطر التاني 12 · سهم 16. صفوف القوايم بتفضل بكلامها (KOTLIN-MAP §3). */
@@ -184,7 +184,7 @@ fun NoteBox(body: String, modifier: Modifier = Modifier, title: String? = null) 
 fun WarnBox(title: String?, body: String?, modifier: Modifier = Modifier, action: (@Composable () -> Unit)? = null) {
     Column(modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Ink.alertBg).padding(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         if (title != null) BasicText(title, style = Type.of(14, FontWeight.Bold).copy(color = Ink.focus))
-        if (body != null) BasicText(body, style = Type.of(13).copy(color = Color(0xFF6B4600)))
+        if (body != null) BasicText(body, style = Type.of(13).copy(color = Ink.amberText))
         action?.invoke()
     }
 }

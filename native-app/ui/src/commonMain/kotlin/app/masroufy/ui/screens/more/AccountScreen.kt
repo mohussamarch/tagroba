@@ -240,7 +240,7 @@ private fun AccountHead(p: UserProfile, me: MeInfo?, email: String?, onBuild: ()
 private fun CharacterHero(look: app.masroufy.core.CharacterLook) {
     Box(
         Modifier.fillMaxWidth().height(252.dp).clip(RoundedCornerShape(22.dp)).background(Glass.heroBase)
-            .background(Brush.radialGradient(listOf(Color(0x2EFFFFFF), Color.Transparent), center = Offset(Float.POSITIVE_INFINITY, 0f), radius = 420f)),
+            .background(Brush.radialGradient(listOf(Ink.white(0x2E), Color.Transparent), center = Offset(Float.POSITIVE_INFINITY, 0f), radius = 420f)),
         contentAlignment = Alignment.BottomCenter,
     ) {
         CharacterArt(look, CharacterLayer.FULL, Modifier.size(width = (240 * 200 / 440).dp, height = 240.dp), label = t(UiKey.CHAR_FULL_LABEL))

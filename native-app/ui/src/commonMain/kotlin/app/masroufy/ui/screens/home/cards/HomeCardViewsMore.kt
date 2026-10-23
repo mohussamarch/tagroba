@@ -53,7 +53,7 @@ import app.masroufy.usecase.HomeScreenData
 /** عدد «آخر العمليات» في الكارت (زي النموذج). */
 private const val RECENT_ON_HOME = 3
 
-private val bubble = Color(0xFFEAF3EC)
+private val bubble get() = Ink.bubble
 
 /**
  * «شخصيتك بتكلمك»: راس «شخصيتك» (`CharacterArt` · `CharacterLayer.HEAD`) من الملف — ولو لسه ما اتبنتش الشكل المحايد (`NeutralFigure`).

@@ -1,5 +1,6 @@
 package app.masroufy.ui.shell
 
+import app.masroufy.ui.theme.CategoryInk
 import app.masroufy.core.TextRef
 import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
@@ -49,8 +50,8 @@ import app.masroufy.ui.theme.Type
 /** رمز نوع الميعاد ولونه (النموذج: اشتراك كهرماني · مناسبة وفرح وردي · قسط رمادي أزرق · يوم الراتب أخضر). */
 enum class UpcomingIcon(val icon: Lucide, private val colorLazy: () -> Color) {
     SUBSCRIPTION(Lucide.RECEIPT, { Ink.focus }),
-    OCCASION(Lucide.GIFT, { Color(0xFFA55060) }),
-    EVENT(Lucide.GEM, { Color(0xFFA55060) }),
+    OCCASION(Lucide.GIFT, { CategoryInk.gifts }),
+    EVENT(Lucide.GEM, { CategoryInk.gifts }),
     INSTALLMENT(Lucide.CAR, { Color(0xFF4D747C) }),
     DEBT(Lucide.HAND_COINS, { Ink.transfer }),
     PAYDAY(Lucide.BANKNOTE, { Ink.income }),

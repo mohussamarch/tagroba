@@ -46,6 +46,13 @@ data class TransferPartyAnswersDeps(
     val rules: PersonRules? = null,
     /** R4/N4: «حاجة تانية» ما بتغيّرش نوع عملية مربوطة بشخص (المفتوحة ⇒ «فك الربط الأول»). null ⇒ مفيش فحص. */
     val personLinks: app.masroufy.port.PersonLinkRepository? = null,
+    /**
+     * r06-polish: «سلفة» على الصادر لشخص ⇒ دين «ليك» عليه مربوط بالعملية بنفس طريق «ضيف دين» (عملية متسجلة — [AddDebt.add]). null ⇒ النوع بس
+     * (الطريق القديم — اختبارات قديمة).
+     */
+    val lend: AddDebt? = null,
+    /** «تراجع» عن السلفة: فك الربط بيشيل الدين ويرجّع النوع ([ManagePersonLinks.unlink]). */
+    val links: ManagePersonLinks? = null,
 )
 
 /** تراجع عن رد واحد: القرار قبله (null = ما كانش فيه) · العمليات قبله · العمليات اللي اتسجل عليها سداد. */
@@ -78,6 +85,29 @@ class TransferPartyAnswers(private val deps: TransferPartyAnswersDeps) {
         }
         return PartyUndo(party.key, before, listOf(t))
     }
+
+    /**
+     * «شخص» من «مَن هذا؟» بنوع للمبلغ ده: الطرف بيتفتكر للشخص، و**«سلفة» على الصادر** (قرض ممنوح) ⇒ دين «ليك» على الشخص بمبلغ العملية
+     * مربوط بيها ([AddDebt] — كان النوع بس بيتغير ومفيش دين، r06-polish). غير كده ⇒ النوع بس (مؤكد). بيرجّع الدين لو اتكتب.
+     */
+    suspend fun markPerson(party: TransferPartyRef, transactionId: Id, personId: Id, kind: EconomicKind): AddedDebt? {
+        val t = load(transactionId)
+        val lend = deps.lend
+        deps.transfers.markPerson(party, personId)
+        if (kind == EconomicKind.LOAN_GRANTED && lend != null && t.observedDirection == Direction.OUT) {
+            return lend.add(
+                NewDebt(
+                    DebtSideIn.FOR_YOU, DebtWho.Existing(personId), t.amountMinor, reason = null, due = DebtDueChoice.NONE, pickedDate = null,
+                    money = DebtMoney.Operation(t.id), today = deps.clock.nowIso().take(10), currency = t.currency,
+                ),
+            )
+        }
+        deps.kinds.setOne(transactionId, kind)
+        return null
+    }
+
+    /** «تراجع» عن «سلفة» من [markPerson]: فك ربط العملية بالشخص (الدين بيتشال والنوع بيرجع). false = مكانش فيه ربط. */
+    suspend fun undoLend(transactionId: Id): Boolean = deps.links?.unlink(transactionId, remember = false) ?: false
 
     /** «حاجة تانية»: [label] بيتفتكر للحساب وبيتحط على المبلغ ده وكل وارد منه نوعه لسه ما اتأكدش (القديم كمان). */
     suspend fun markLabel(party: TransferPartyRef, transactionId: Id, label: String, kind: EconomicKind?): PartyUndo {

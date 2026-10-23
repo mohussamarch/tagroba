@@ -5,7 +5,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -44,8 +43,8 @@ import kotlinx.coroutines.withContext
  * - القراية **ما بتتلغيش** لما تغيير جديد ييجي وهي شغالة (التغييرات بتتلم في قراية واحدة بعدها) ⇒ الربط اللي اتكتب رسالته و«تراجع» ما بيضيعوش.
  * - الخصم اللي اتربط لوحده بالقسط الجاي ⇒ رسالة «الدفعة 3 من 4 اتعلّمت اتدفعت» + «تراجع» (`undoAutoLink`) — واللوحة بتستنى الرسالة دي
  *   تخلص (أو «تراجع») عشان الرسالة ما تبقاش مدفونة ورا ستارة اللوحة.
- * - أول سؤال مستني ⇒ اللوحة («أول خصم» أو «أنهي مشترى»). «تخطّي» و«بعدين» أو السحب لتحت ⇒ مستخبي لحد ما التطبيق يتفتح تاني (من غير ما
- *   يتكتب حاجة — زي النموذج).
+ * - أول سؤال مستني ⇒ اللوحة («أول خصم» أو «أنهي مشترى»). «تخطّي» و«بعدين» أو السحب لتحت ⇒ مستخبي لكل بلد لوحدها، ومتفتكر بعد قفل
+ *   البرنامج كمان ([BnplLater] — r06-polish).
  * - بعد أي رد اللوحة بتستخبى لحد قراية **بدأت بعد ما الرد اتحفظ** ⇒ مفيش سؤال قديم (خصم اتربط لوحده في نفس اللحظة) بيترد عليه.
  */
 @Composable
@@ -56,7 +55,8 @@ fun BnplHost() {
     val toaster = LocalToaster.current
     val scope = rememberCoroutineScope()
     var asks by remember(bnpl) { mutableStateOf<List<BnplAsk>>(emptyList()) }
-    val later = BnplLater.ids
+    val spaceId = space.space.id
+    val later = BnplLater.ids(spaceId)
     var categories by remember(bnpl) { mutableStateOf<List<Category>>(emptyList()) }
     var today by remember(bnpl) { mutableStateOf("") }
     // بعد الرد: اللوحة مستخبية لحد قراية رقمها [freshFrom] أو أكبر
@@ -104,7 +104,7 @@ fun BnplHost() {
     val showing = bnplSheetShown(state != null, holding, toaster.holdsAction)
 
     fun answer(a: BnplAnswer) {
-        later += a.transactionId
+        BnplLater.add(spaceId, a.transactionId)
         holding = true
         scope.launch {
             try {
@@ -120,7 +120,7 @@ fun BnplHost() {
                 throw e
             } catch (e: Exception) {
                 // الرد ما اتحفظش ⇒ اللوحة ترجع، ورسالة الغلط اللي مكتوبة للمالك (الأقساط أو الربط) بتظهر
-                later.remove(a.transactionId)
+                BnplLater.remove(spaceId, a.transactionId)
                 bnplErrorText(e)?.let { toaster.show(it, dark = true) }
             }
             DuesChanges.bump()
@@ -130,7 +130,7 @@ fun BnplHost() {
     }
 
     val title = state?.let { t(if (it.setup) BnplKey.BNPL2_SETUP_TITLE else BnplKey.BNPL2_WHICH_TITLE) } ?: ""
-    Sheet(showing && !picking && multi == null, onDismiss = { state?.let { later += it.ask.transaction.id } }, title = title, closeLabel = t(UiKey.SHELL_CLOSE), spacing = 14.dp) {
+    Sheet(showing && !picking && multi == null, onDismiss = { state?.let { BnplLater.add(spaceId, it.ask.transaction.id) } }, title = title, closeLabel = t(UiKey.SHELL_CLOSE), spacing = 14.dp) {
         val s = state ?: return@Sheet
         val t0 = s.ask.transaction
         BnplSheetContent(
@@ -139,20 +139,20 @@ fun BnplHost() {
             maxBody = maxBody,
             onOtherCategory = { picking = true },
             onAnswer = ::answer,
-            onLater = { later += t0.id },
+            onLater = { BnplLater.add(spaceId, t0.id) },
             onMulti = { multi = t0.id }.takeIf { space.dues.bnplSplit != null },
         )
     }
     BnplMultiSheet(multi.takeIf { showing }, onDismiss = { multi = null }) { undo, n ->
         multi = null
-        later += undo.transactionId
+        BnplLater.add(spaceId, undo.transactionId)
         DuesChanges.bump()
         changes.changed()
         toaster.show(t(app.masroufy.core.R06Key.BNPL_MULTI_DONE, n.toString()), t(BnplKey.BNPL2_UNDO)) {
             scope.launch {
                 val ok = runCatching { withContext(Dispatchers.Default) { space.dues.bnplSplit?.undo(undo) } }.isSuccess
                 toaster.show(t(if (ok) BnplKey.BNPL2_UNDONE else BnplKey.BNPL2_UNDO_FAILED), dark = true)
-                later.remove(undo.transactionId)
+                BnplLater.remove(spaceId, undo.transactionId)
                 DuesChanges.bump()
                 changes.changed()
             }
@@ -166,14 +166,6 @@ fun BnplHost() {
         onPick = { state?.category = it; picking = false },
         onDismiss = { picking = false },
     )
-}
-
-/**
- * فحص 0.5.3: «تخطّي» / «بعدين» / السحب لتحت كانوا بيتنسوا مع كل تبديل للبلد (`remember(bnpl)` بيتعمل من الأول) ⇒ لوحة تابي بتطلع تاني كل
- * ما تبدّل للسعودية. دلوقتي البرنامج فاكر الاختيار طول ما هو مفتوح (لكل البلاد) — زي التصميم: مستخبي لحد ما التطبيق يتفتح تاني.
- */
-internal object BnplLater {
-    val ids = mutableStateListOf<String>()
 }
 
 /** اللوحة بتظهر لو فيه سؤال، ومفيش رد لسه بيتحفظ، ومفيش رسالة بزرار («تراجع») ظاهرة — الرسالة دي لازم تتداس. */

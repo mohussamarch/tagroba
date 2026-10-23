@@ -94,8 +94,8 @@ private fun BnplChoice(title: String, sub: String?, on: Boolean, note: String?, 
         if (note != null) {
             BasicText(
                 note,
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(Color(0xFFFBF0DD)).padding(horizontal = 10.dp, vertical = 8.dp),
-                style = Type.of(12, lineHeight = 1.6).copy(color = Color(0xFF6B4600)),
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(Ink.alertBg).padding(horizontal = 10.dp, vertical = 8.dp),
+                style = Type.of(12, lineHeight = 1.6).copy(color = Ink.amberText),
             )
         }
     }

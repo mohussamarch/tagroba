@@ -193,7 +193,7 @@ private fun SplitCardView(messageId: String, d: SplitDraft, state: CardState, ac
                 BasicText(s.name, Modifier.weight(1f), style = Type.body(), maxLines = 1, overflow = TextOverflow.Ellipsis)
                 BasicText(formatMoney(s.amountMinor, d.currency), style = Type.of(14, FontWeight.Bold))
             }
-            if (i < d.shares.lastIndex) Box(Modifier.fillMaxWidth().padding(vertical = 1.dp).heightIn(min = 1.dp).background(Color(0x8CCCD8CC)))
+            if (i < d.shares.lastIndex) Box(Modifier.fillMaxWidth().padding(vertical = 1.dp).heightIn(min = 1.dp).background(Ink.line))
         }
     }
     if (state != CardState.PENDING) return Settled(state)

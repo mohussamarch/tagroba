@@ -1,5 +1,6 @@
 package app.masroufy.ui.overlay
 
+import app.masroufy.ui.theme.Ink
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -210,7 +211,7 @@ private fun SheetFrame(
             verticalArrangement = Arrangement.spacedBy(spacing),
         ) {
             // المقبض 40×4 — السحب من أول 44 نقطة في اللوحة (زي النموذج: App.dc.html)
-            Box(Modifier.align(Alignment.CenterHorizontally).size(width = 40.dp, height = 4.dp).clip(RoundedCornerShape(2.dp)).background(Color(0x59637570)))
+            Box(Modifier.align(Alignment.CenterHorizontally).size(width = 40.dp, height = 4.dp).clip(RoundedCornerShape(2.dp)).background(Ink.tintOf(Ink.muted, 0x59)))
             Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(spacing), content = content)
         }
     }

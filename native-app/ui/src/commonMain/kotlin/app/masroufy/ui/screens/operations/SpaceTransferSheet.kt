@@ -92,7 +92,7 @@ fun NewSpaceTransferSheet(visible: Boolean, books: List<SpaceWallets>, activeId:
             }
             val live = d?.let { rateLine(fromMinor, it.from.currency, toMinor, it.to.currency) }
             Row(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Color(0x142469BA)).padding(horizontal = 12.dp, vertical = 8.dp),
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Ink.tintOf(Ink.transfer, 0x14)).padding(horizontal = 12.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 BasicText(t(UiKey.SPACE_TRANSFER_SCREEN_LIVE_RATE), style = Type.caption().copy(color = Ink.transfer))

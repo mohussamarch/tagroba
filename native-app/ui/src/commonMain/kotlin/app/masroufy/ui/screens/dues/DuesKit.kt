@@ -123,10 +123,10 @@ internal fun LoadFailed(onRetry: () -> Unit) {
 @Composable
 internal fun StatusChip(text: String, chip: Chip, modifier: Modifier = Modifier, onHero: Boolean = false) {
     val (ink, bg) = when (chip) {
-        Chip.OVERDUE -> if (onHero) Color(0xFFFFD0D2) to Color(0x33FFA8AC) else Ink.expense to Ink.expense.copy(alpha = 0.10f)
+        Chip.OVERDUE -> if (onHero) Color(0xFFFFD0D2) to Ink.tintOf(Ink.rose, 0x33) else Ink.expense to Ink.expense.copy(alpha = 0.10f)
         Chip.SOON -> if (onHero) Ink.amber to Ink.amber.copy(alpha = 0.16f) else Ink.focus to Ink.alertBg
-        Chip.UPCOMING -> if (onHero) Ink.selected to Color(0x29DCEBD6) else Ink.primary to Ink.selected
-        Chip.CALM -> if (onHero) Ink.onHeroMuted to Color(0x1FFFFFFF) else Ink.muted to Ink.muted.copy(alpha = 0.10f)
+        Chip.UPCOMING -> if (onHero) Ink.selected to Ink.tintOf(Ink.onHeroMuted, 0x29) else Ink.primary to Ink.selected
+        Chip.CALM -> if (onHero) Ink.onHeroMuted to Ink.white(0x1F) else Ink.muted to Ink.muted.copy(alpha = 0.10f)
         Chip.MUTED -> if (onHero) Ink.text to Ink.card.copy(alpha = 0.8f) else Ink.muted to Ink.muted.copy(alpha = 0.12f)
     }
     Box(modifier.clip(RoundedCornerShape(12.dp)).background(bg).padding(horizontal = 8.dp, vertical = 2.dp)) {
@@ -139,7 +139,7 @@ internal fun StatusChip(text: String, chip: Chip, modifier: Modifier = Modifier,
 internal fun CountBar(done: Int, total: Int, onHero: Boolean, fill: Color = if (onHero) Ink.heroProgress else Ink.primary) {
     val part = if (total <= 0) 0f else (done.coerceIn(0, total).toFloat() / total)
     val shape = RoundedCornerShape(4.dp)
-    Box(Modifier.fillMaxWidth().height(8.dp).clip(shape).background(if (onHero) Color(0x2EFFFFFF) else Ink.tint(0x14))) {
+    Box(Modifier.fillMaxWidth().height(8.dp).clip(shape).background(if (onHero) Ink.white(0x2E) else Ink.tint(0x14))) {
         if (part > 0f) Box(Modifier.fillMaxWidth(part).height(8.dp).clip(shape).background(fill))
     }
 }

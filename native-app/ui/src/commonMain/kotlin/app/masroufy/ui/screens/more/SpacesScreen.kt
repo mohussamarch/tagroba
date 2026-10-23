@@ -169,7 +169,7 @@ private fun SpaceCardBox(c: SpaceCardView, canAdmin: Boolean, onSwitch: () -> Un
         }
     }
     if (c.archived) Column(
-        Modifier.fillMaxWidth().clip(shape).background(Color(0x8CFFFFFF)).insetRing(shape, 1.dp, Color(0xB3CCD8CC)).padding(horizontal = 16.dp, vertical = 14.dp),
+        Modifier.fillMaxWidth().clip(shape).background(Ink.glass(0x8C)).insetRing(shape, 1.dp, Color(0xB3CCD8CC)).padding(horizontal = 16.dp, vertical = 14.dp),
     ) { body() }
     else FloatingCard(Modifier.fillMaxWidth().then(if (c.active) Modifier.insetRing(shape, 1.5.dp, Ink.primary.copy(alpha = 0x73 / 255f)) else Modifier), shape = shape, contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)) { body() }
 }

@@ -84,7 +84,7 @@ internal fun HideNumbersButton() {
     val hidden = Appearance.numbersHidden
     val label = t(if (hidden) R06Key.NP_EYE_SHOW else R06Key.NP_EYE_HIDE)
     Box(
-        Modifier.size(44.dp).pressScale(press).clip(RoundedCornerShape(14.dp)).background(Color(0x1FFFFFFF))
+        Modifier.size(44.dp).pressScale(press).clip(RoundedCornerShape(14.dp)).background(Ink.white(0x1F))
             .tap(press, label = label, onClick = { Appearance.toggleNumbers() }),
         contentAlignment = Alignment.Center,
     ) { LucideIcon(if (hidden) Lucide.EYE_OFF else Lucide.EYE, size = 20.dp, tint = Ink.onPrimary, contentDescription = label) }
@@ -97,7 +97,7 @@ private fun CashChip(text: String, onClick: () -> Unit) {
     val shape = RoundedCornerShape(18.dp)
     Row(
         Modifier.heightIn(min = 36.dp).pressScale(press).clip(shape)
-            .background(cssLinear(145f, 0f to Color(0x38FFFFFF), 1f to Color(0x0FFFFFFF)))
+            .background(cssLinear(145f, 0f to Ink.white(0x38), 1f to Ink.white(0x0F)))
             .tap(press, label = t(UiKey.CASH_DETAILS_OPEN), onClick = onClick)
             .padding(start = 10.dp, end = 12.dp, top = 6.dp, bottom = 6.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),

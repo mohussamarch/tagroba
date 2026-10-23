@@ -122,7 +122,7 @@ private fun SourceHero(s: IncomeSource) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 BasicText(s.name, Modifier.weight(1f), style = Type.of(20, FontWeight.Bold).copy(color = Ink.onPrimary))
                 val ended = s.endedAt != null
-                Box(Modifier.clip(RoundedCornerShape(12.dp)).background(if (ended) Color(0x29FFFFFF) else Ink.mint).padding(horizontal = 10.dp, vertical = 3.dp)) {
+                Box(Modifier.clip(RoundedCornerShape(12.dp)).background(if (ended) Ink.white(0x29) else Ink.mint).padding(horizontal = 10.dp, vertical = 3.dp)) {
                     BasicText(t(if (ended) UiKey.INCSRC_ENDED else UiKey.INCSRC_ONGOING), style = Type.of(12, FontWeight.Bold).copy(color = if (ended) Color.White else Ink.heroStart))
                 }
             }
@@ -164,7 +164,7 @@ private fun CompareBox(r: CompareRow) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             BasicText(t(r.label), Modifier.weight(1f), style = Type.of(13, FontWeight.Bold))
             val (ink, bg) = when (r.trend) {
-                Trend.GOOD -> Ink.income to Color(0x1A13764D)
+                Trend.GOOD -> Ink.income to Ink.tintOf(Ink.income, 0x1A)
                 Trend.BAD -> Ink.expense to Ink.expense.copy(alpha = 0x14 / 255f)
                 Trend.FLAT -> Ink.muted to Ink.tint(0x0F)
             }

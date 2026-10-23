@@ -55,15 +55,44 @@ object Ink {
 
     /** [text] بشفافية [alpha] من 255 — بديل `Color(0x0A193D33)` (خطوط وأسطح خفيفة بتتبدل مع المظهر). */
     fun tint(alpha: Int): Color = text.copy(alpha = alpha / 255f)
+
+    // ─── r06-polish (المظهر الليلي — الجزء الأول): بدايل الألوان الثابتة اللي كانت في الشاشات ───
+
+    /** أي لون من هنا بشفافية [alpha] من 255 (مثلًا `tintOf(transfer, 0x14)` بدل `Color(0x142469BA)`) — بيتبدل مع المظهر لو اللون بيتبدل. */
+    fun tintOf(color: Color, alpha: Int): Color = color.copy(alpha = alpha / 255f)
+
+    /** أبيض شفاف **ثابت** — لمعة وأزرار على البطاقة البترولية (بترولية في المظهرين ⇒ ما بيتغيرش). */
+    fun white(alpha: Int): Color = Color.White.copy(alpha = alpha / 255f)
+
+    /** زجاج فاتح على الخلفية (أبيض شفاف في الفاتح ⇒ لون الكارت الغامق بنفس الشفافية في الغامق). */
+    fun glass(alpha: Int): Color = card.copy(alpha = alpha / 255f)
+
+    /** ظل (`#1D3635` بشفافية) — نفس اللون في المظهرين. */
+    fun shadow(alpha: Int): Color = Color(0xFF1D3635).copy(alpha = alpha / 255f)
+
+    /** نص بني على كروت «محتاجة رد» الكهرمانية. */
+    val amberText get() = mix(0xFF6B4600, 0xFFF3C96B)
+
+    /** خلفية كهرمانية خفيفة (كارت تنبيه صغير جوه التفاصيل). */
+    val amberTint get() = mix(0x14C98A1E, 0x1FF3C96B)
+
+    /** فقاعة هادية (كروت الرئيسية). */
+    val bubble get() = mix(0xFFEAF3EC, 0xFF24342E)
+
+    /** زرار الميكروفون الزجاجي في الشريط (من فوق لتحت). */
+    val micTop get() = mix(0xFAFFFFFF, 0xFA24342E)
+    val micMid get() = mix(0xCCE3EFE6, 0xCC1E2D27)
+    val micBottom get() = mix(0xE6C9E6D4, 0xE6183A2E)
 }
 
 /** ألوان التصنيفات — للأيقونة وخلفيتها بشفافية 12% بس. **المبلغ ما بيورثش لون التصنيف.** */
 object CategoryInk {
-    val restaurants = Color(0xFFA36A21)
-    val shopping = Color(0xFF3866A7)
-    val savings = Color(0xFF27785B)
-    val transport = Color(0xFF4D747C)
-    val gifts = Color(0xFFA55060)
+    // r06-polish: نسخة أفتح للغامق عشان الأيقونة تبان على الكارت الغامق
+    val restaurants get() = mix(0xFFA36A21, 0xFFE0A55A)
+    val shopping get() = mix(0xFF3866A7, 0xFF8FB4EA)
+    val savings get() = mix(0xFF27785B, 0xFF5FC79B)
+    val transport get() = mix(0xFF4D747C, 0xFF8FB8C0)
+    val gifts get() = mix(0xFFA55060, 0xFFE48F9F)
 }
 
 /** سلّم الزوايا (DESIGN-SYSTEM «المقاسات والزوايا») — ممنوع زاوية من برّه السلّم. */

@@ -1,5 +1,6 @@
 package app.masroufy.ui.components
 
+import app.masroufy.ui.theme.Ink
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -86,7 +87,7 @@ fun FloatingCard(
     )
 }
 
-private val heroGlowTop = Color(0x33FFFFFF)
+private val heroGlowTop get() = Ink.white(0x33)
 private val heroGlowBottom = Color(0x2E96F3CC)
 
 /**
@@ -149,7 +150,7 @@ fun LensOnHero(modifier: Modifier = Modifier, shape: Shape = RoundedCornerShape(
     )
 }
 
-private val sheenTop = Brush.horizontalGradient(listOf(Color.Transparent, Color(0xD9FFFFFF), Color.Transparent))
+private val sheenTop get() = Brush.horizontalGradient(listOf(Color.Transparent, Ink.glass(0xD9), Color.Transparent))
 private val sheenBottom = Brush.horizontalGradient(listOf(Color.Transparent, Color(0xB3AAFCDB), Color.Transparent))
 
 /** علوية: top 2 · left 14% · عرض 56% · ارتفاع 2 · مايلة -8° — سفلية: bottom 2 · right 12% · عرض 46% · ارتفاع 3. */
@@ -177,6 +178,6 @@ fun Divider(modifier: Modifier = Modifier) {
 /** فاصل رأسي رفيع (جوه البطاقة البطلة: `rgba(255,255,255,0.14)`). */
 @Composable
 fun HeroDivider(modifier: Modifier = Modifier) {
-    Box(modifier.fillMaxWidth().height(1.dp).background(Color(0x24FFFFFF)))
+    Box(modifier.fillMaxWidth().height(1.dp).background(Ink.white(0x24)))
 }
 
