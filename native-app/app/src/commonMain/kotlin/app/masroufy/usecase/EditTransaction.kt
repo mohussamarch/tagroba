@@ -59,6 +59,8 @@ data class EditTransactionDeps(
      * ما قبل §75-16 (ملفات المرجع بتشتغل كده). الرفع للقايمة المشتركة هنا من [onCategoryConfirmed] زي ما هو، مش منه.
      */
     val merchantMemory: MerchantMemory? = null,
+    /** r06-links: تغيير حساب العملية ([EditTransaction.setWallet]) — null ⇒ مرفوض. */
+    val wallets: app.masroufy.port.WalletRepository? = null,
 )
 
 class EditTransaction(private val deps: EditTransactionDeps) {
@@ -115,6 +117,31 @@ class EditTransaction(private val deps: EditTransactionDeps) {
             transactionId,
             TransactionPatch(amountMinor = fields.amountMinor, originalAmountMinor = fields.originalAmountMinor, updatedAt = deps.clock.nowIso()),
         )
+    }
+
+    /**
+     * r06-links (خريطة الربط — «المبلغ والتاريخ والحساب ما بيتعدلوش»): تاريخ العملية. يوم صحيح ومش بعد النهارده، ورِجل «التحويل لنفسك»
+     * بين البلاد مقفولة زي المبلغ. الساعة المخفية بتتشال (اليوم اتغيّر ⇒ الساعة القديمة ما بقتش صح).
+     */
+    suspend fun setDate(transactionId: Id, date: app.masroufy.core.IsoDate) {
+        val transaction = find(transactionId)
+        if (deps.spaceLegs?.isLeg(transactionId) == true) throw IllegalStateException(uiText(TextKey.SPACE_TRANSFER_LEG_LOCKED))
+        val day = runCatching { app.masroufy.core.formatIsoDate(app.masroufy.core.parseIsoDate(date)) }.getOrNull()
+        if (day == null || day != date) throw IllegalStateException(uiText(app.masroufy.core.R06Key.OP_EDIT_DATE_INVALID))
+        if (day > app.masroufy.core.shiftDays(deps.clock.nowIso().take(10), 1)) throw IllegalStateException(uiText(app.masroufy.core.R06Key.ADD_DATE_FUTURE))
+        if (transaction.occurredAt == day) return
+        deps.txns.saveMany(listOf(transaction.copy(occurredAt = day, datePrecision = "day", sourceTime = null, updatedAt = deps.clock.nowIso())))
+    }
+
+    /** r06-links: حساب العملية — حساب موجود بنفس العملة، ومش الحساب التاني في نفس التحويل. */
+    suspend fun setWallet(transactionId: Id, walletId: Id) {
+        val transaction = find(transactionId)
+        if (deps.spaceLegs?.isLeg(transactionId) == true) throw IllegalStateException(uiText(TextKey.SPACE_TRANSFER_LEG_LOCKED))
+        val wallet = deps.wallets?.listAll()?.firstOrNull { it.id == walletId } ?: throw IllegalStateException(uiText(app.masroufy.core.UiKey.ADD_NO_WALLET))
+        if (wallet.currency != transaction.currency) throw IllegalStateException(uiText(app.masroufy.core.R06Key.OP_EDIT_WALLET_CURRENCY))
+        if (transaction.transferToWalletId == walletId) throw IllegalStateException(uiText(app.masroufy.core.R06Key.OP_EDIT_WALLET_SAME))
+        if (transaction.walletId == walletId) return
+        deps.txns.update(transactionId, TransactionPatch(walletId = walletId, updatedAt = deps.clock.nowIso()))
     }
 
     /** بيكتب ملاحظة أو بيشيلها — الفاضية بتتشال بدل ما نص فاضي يتحفظ. */

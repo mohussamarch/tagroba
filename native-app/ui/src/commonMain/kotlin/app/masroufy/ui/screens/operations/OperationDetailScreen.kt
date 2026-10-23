@@ -164,6 +164,7 @@ fun OperationDetailScreen(transactionId: Id, openPerson: Boolean = false) {
                         }
                     }, onTagsChanged = { reload++ }, onKind = if (deps.bulk != null && kindEditable(v.transaction, s.locked, person.status?.link != null)) ({ kindTx = v.transaction }) else null)
                 }
+                if (!s.locked && !v.unrecorded) item(key = "core-edit") { OperationCoreEdit(v.transaction) { reload++ } } // r06-links
                 // §6.5-14 «عمليات تابعة»: على المصروف (اختار الفلوس اللي دخلت) وعلى الداخلة التابعة (علامة بترجّع للمصروف)
                 item(key = "linked") {
                     LinkedInflowsCard(linkedView, unlinks, onConfirmUnlink = { linkStep { l, show -> confirm(l, show) } }, onChanged = { reload++ })

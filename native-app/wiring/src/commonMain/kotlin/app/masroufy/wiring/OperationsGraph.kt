@@ -53,7 +53,7 @@ class OperationsGraph(private val c: AreaContext) : OperationsDeps {
         EditTransactionDeps(
             r.transactions, r.categories, r.tags, r.transactionTags, r.uow, ids, clock,
             allocations = r.allocations, settlements = r.settlements, spaceLegs = legs,
-            onCategoryConfirmed = share?.onCategoryConfirmed,
+            onCategoryConfirmed = share?.onCategoryConfirmed, wallets = r.wallets,
         ),
     )
     override val kinds = SetEconomicKind(SetEconomicKindDeps(r.transactions, r.categories, r.uow, clock, legs, personLinks = r.personLinks))
