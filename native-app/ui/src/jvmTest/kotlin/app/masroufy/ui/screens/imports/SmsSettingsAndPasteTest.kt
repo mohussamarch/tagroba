@@ -51,8 +51,10 @@ class SmsSettingsAndPasteTest {
         assertTrue(lost.permissionLost)
         val off = smsSettingsUi(SmsOverview(Fx.inbox(enabled = false, permission = false), emptyList(), emptyList(), emptyMap()), wallets)
         assertFalse(off.permissionLost, "متوقفة بإيده ⇒ مش «سُحب الإذن»")
-        val ten = smsSettingsUi(SmsOverview(Fx.inbox(senders = (1..10).map { "B$it" }), emptyList(), emptyList(), emptyMap()), wallets)
-        assertTrue(ten.full, "أقصى ١٠ مرسلين")
+        // OVERRIDES §112-7: الحد بقى 25 لكل بلد (`MAX_SMS_SENDERS`) — 10 مش مليانة
+        assertFalse(smsSettingsUi(SmsOverview(Fx.inbox(senders = (1..10).map { "B$it" }), emptyList(), emptyList(), emptyMap()), wallets).full)
+        val max = smsSettingsUi(SmsOverview(Fx.inbox(senders = (1..app.masroufy.core.MAX_SMS_SENDERS).map { "B$it" }), emptyList(), emptyList(), emptyMap()), wallets)
+        assertTrue(max.full, "أقصى عدد مرسلين")
     }
 
     @Test fun addingAndRemovingSendersIgnoresLetterCase() {

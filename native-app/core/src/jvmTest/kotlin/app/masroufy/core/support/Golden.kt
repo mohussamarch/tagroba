@@ -31,13 +31,15 @@ object Golden {
     }
 
     /** بيشغّل كل حالات الدالة، وبيرجّع عددها عشان الاختبار يتأكد إنه ما عداش فاضي. */
-    fun check(module: String, function: String, run: (input: JsonElement) -> JsonElement): Int {
+    fun check(module: String, function: String, superseded: (JsonElement) -> Boolean = { false }, run: (input: JsonElement) -> JsonElement): Int {
         val list = cases(module, function)
         assertTrue(list.isNotEmpty(), "$module.$function فاضية")
         for (case in list) {
+            // حالة القديم اتلغت بقرار مالك مكتوب (مثلًا OVERRIDES §112-7) — الاختبار نفسه بيتأكد من السلوك الجديد
+            if (superseded(case["in"] ?: JsonNull)) continue
             val input = case["in"] ?: JsonNull
             // النص المتوقع من التطبيق الحالي بعد تبسيط الكلمات الثقيلة المعتمد بس (جلسة 18 — `PlainWords.kt`)
-            val expectedError = case["error"]?.jsonPrimitive?.content?.let(::plainEgyptian)
+            val expectedError = case["error"]?.jsonPrimitive?.content?.let(::plainEgyptian)?.let(::senderLimit112)
             val result = runCatching { run(input) }
             if (expectedError != null) {
                 val error = result.exceptionOrNull() ?: fail("$function($input): كان المفروض خطأ «$expectedError» وطلع ${result.getOrNull()}")
@@ -133,3 +135,6 @@ fun json(value: Any?): JsonElement = when (value) {
     is List<*> -> JsonArray(value.map(::json))
     else -> error("نوع مش مدعوم في المقارنة: ${value::class}")
 }
+
+/** OVERRIDES §112-7 (قرار المالك 2026-10-23): حد مرسلين رسايل البنك بقى 25 لكل بلد بدل 10 — نص الخطأ القديم بعد التعديل المعتمد. */
+internal fun senderLimit112(text: String): String = text.replace("(حتى 10 أسماء)", "(حتى 25 لكل بلد)").replace("(حتى 10)", "(حتى 25 لكل بلد)")
