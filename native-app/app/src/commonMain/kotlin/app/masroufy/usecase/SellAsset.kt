@@ -81,14 +81,15 @@ class SellAsset(private val deps: SellAssetDeps) {
     }
 
     /** «اربطه بالتحويل اللي وصل (لو وصل)»: داخل على المحفظة دي، قريب من يوم البيع ومن الصافي، ومش مربوط بشراء أو بيع تاني. */
-    suspend fun matchingCredits(walletId: Id, soldAt: IsoDate, netMinor: Halalas?): List<Transaction> {
+    suspend fun matchingCredits(walletId: Id, soldAt: IsoDate, grossMinor: Halalas?, feeMinor: Halalas? = null): List<Transaction> {
         if (!isValidIsoDate(soldAt)) return emptyList()
+        val netMinor = grossMinor?.let { g -> (g - (feeMinor ?: 0)).takeIf { it > 0 } }
         val wallet = deps.wallets.findById(walletId) ?: return emptyList()
         if (kindOf(wallet) != SellWalletKind.BANK) return emptyList()
         val day = toDayNumber(parseIsoDate(soldAt))
         val used = usedTransactionIds()
         return deps.txns.listByDateRange(dayNumberToIso(day - MATCH_DAYS), dayNumberToIso(day + MATCH_DAYS))
-            .filter { isCandidate(it, wallet, used) && (netMinor == null || netMinor <= 0 || near(it.amountMinor, netMinor)) }
+            .filter { isCandidate(it, wallet, used) && (netMinor == null || near(it.amountMinor, netMinor)) }
             .sortedWith(
                 compareBy<Transaction> { if (netMinor == null) 0L else kotlin.math.abs(it.amountMinor - netMinor) }
                     .thenBy { kotlin.math.abs(toDayNumber(parseIsoDate(it.occurredAt.take(10))) - day) },

@@ -104,9 +104,7 @@ fun AssetDetailScreen(assetId: Id) {
             }
         }
         item(key = "hero") { DetailHero(a, onPrice = { openTrade(TradeMode.PRICE) }, onArea = { nav.push(AssetProjectionRoute(a.assetId)) }) }
-        item(key = "stats") { DetailStats(a) }
-        if (!a.archived) item(key = "purpose") { app.masroufy.ui.screens.investment.holdings.HoldingPurposeRow(a.assetId) }
-        if (a.realEstate) item(key = "full") { FullPictureLink { nav.push(AssetProjectionRoute(a.assetId)) } }
+        // §112-4 (فحص الربط: البيع كان مدفون نص الصفحة) ⇒ «شراء · بيع» على طول تحت البطل
         item(key = "trade") {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -116,6 +114,9 @@ fun AssetDetailScreen(assetId: Id) {
                 BasicText(t(UiKey.ASSET_DETAIL_RECORD_ONLY), Modifier.fillMaxWidth(), style = Type.caption().copy(color = Ink.muted, textAlign = TextAlign.Center))
             }
         }
+        item(key = "stats") { DetailStats(a) }
+        if (!a.archived) item(key = "purpose") { app.masroufy.ui.screens.investment.holdings.HoldingPurposeRow(a.assetId) }
+        if (a.realEstate) item(key = "full") { FullPictureLink { nav.push(AssetProjectionRoute(a.assetId)) } }
         item(key = "log") { TradeLog(a) }
         item(key = "source") { SourceCard(a, onManual = { openTrade(TradeMode.PRICE) }, onLink = { picking = true }) { act { deps.assets.linkToFeed(a.assetId, null); t(UiKey.ASSET_DETAIL_UNLINKED) } } }
         if (!a.archived) item(key = "archive") {

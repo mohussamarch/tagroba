@@ -34,6 +34,8 @@ data class TradeForm(
     val fee: String = "",
     val day: IsoDate = "",
     val linkId: Id? = null,
+    /** §112-4: «الفلوس راحت فين؟» — إجباري في البيع. */
+    val toWalletId: Id? = null,
     val price: String = "",
     val name: String = "",
     val kind: String = "gold",
@@ -43,7 +45,7 @@ data class TradeForm(
 sealed interface TradeRequest {
     data class Add(val input: NewAsset) : TradeRequest
     data class Buy(val input: PurchaseInput) : TradeRequest
-    data class Sell(val input: SaleInput) : TradeRequest
+    data class Sell(val input: app.masroufy.usecase.SellAssetInput) : TradeRequest
     data class Price(val minor: Halalas) : TradeRequest
     data class Invalid(val message: String) : TradeRequest
 }
@@ -71,7 +73,8 @@ fun tradeRequest(mode: TradeMode, assetId: Id?, currency: Currency, form: TradeF
                     val fee = form.fee.trim().takeIf { it.isNotEmpty() }?.let { parseMoney(it, currency) }
                     val id = assetId ?: ""
                     if (buy) TradeRequest.Buy(PurchaseInput(id, form.day, q, v, fee, form.linkId))
-                    else TradeRequest.Sell(SaleInput(id, form.day, q, v, fee, form.linkId))
+                    else if (form.toWalletId == null) TradeRequest.Invalid(uiText(app.masroufy.core.R06Key.SELL_ERR_WALLET))
+                    else TradeRequest.Sell(app.masroufy.usecase.SellAssetInput(SaleInput(id, form.day, q, v, fee), form.toWalletId, form.linkId))
                 }
             }
         }
@@ -98,6 +101,12 @@ fun linkableOps(data: TransactionsScreenData?, outgoing: Boolean, currency: Curr
         .sortedWith(compareByDescending<Transaction> { it.occurredAt }.thenByDescending { it.sourceOrder })
         .take(limit)
         .map { LinkableOp(it.id, opTitle(it, data), it.occurredAt, it.amountMinor, outgoing) }
+}
+
+/** §112-4: التحويلات القريبة من `SellAsset.matchingCredits` ⇒ صفوف «اربطه بالتحويل اللي وصل». */
+fun creditOps(credits: List<Transaction>): List<LinkableOp> = credits.map {
+    val title = it.rawMerchantName?.takeIf { n -> n.isNotBlank() } ?: app.masroufy.core.displayTitleOrNull(it) ?: it.note?.takeIf { n -> n.isNotBlank() }
+    LinkableOp(it.id, title ?: uiText(TextKey.NOT_AVAILABLE), it.occurredAt.take(10), it.amountMinor, outgoing = false)
 }
 
 /** اسم العملية للعرض: التاجر · الوصف · الملاحظة · التصنيف. */
