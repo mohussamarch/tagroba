@@ -144,6 +144,15 @@ internal fun SellLinkList(ops: List<LinkableOp>, linkId: Id?, onPick: (LinkableO
 /** كارت كبير: «مكسب +X» أخضر بسهم طالع أو «خسارة −X» أحمر بسهم نازل، وتحته حصة التكلفة. */
 @Composable
 internal fun SellGainCard(outcome: SaleOutcome, currency: Currency) {
+    if (!outcome.costKnown) {
+        // قاعدة 10: التكلفة مش متسجلة ⇒ ولا رقم مكسب ولا حصة تكلفة
+        BasicText(
+            t(R06Key.SELL_GAIN_NA),
+            Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Ink.muted.copy(alpha = 0.10f)).padding(horizontal = 16.dp, vertical = 14.dp),
+            style = Type.of(14, FontWeight.Bold).copy(color = Ink.muted),
+        )
+        return
+    }
     val loss = outcome.gainMinor < 0
     val ink = if (loss) Ink.expense else Ink.income
     val bg = if (loss) Ink.expense.copy(alpha = 0.10f) else Ink.selected
