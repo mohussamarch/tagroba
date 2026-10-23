@@ -28,10 +28,8 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import app.masroufy.core.Space
 import app.masroufy.core.TextKey
 import app.masroufy.core.currencyName
@@ -74,7 +72,7 @@ fun countryLabel(space: Space): String = when (space.countryCode.uppercase()) {
 fun countryMark(name: String): String = name.trim().removePrefix("ال").take(1)
 
 /**
- * شارة البلد + لوحة التبديل (`SpaceSwitcher` — §41 · §64 · OVERRIDES §76): في الرئيسية تحت الاسم قبل التاريخ **حرفين لاتيني بس**
+ * شارة البلد + لوحة التبديل (`SpaceSwitcher` — §41 · §64 · OVERRIDES §76): في الرئيسية تحت الاسم قبل التاريخ **علم البلد واسمها بالعربي** (r06-debts — كانت حرفين لاتيني)
  * (`SA ⌄` · ارتفاع 22 · مساحة اللمس 44). اللوحة: كل بلد باسمها وعملتها و«معك الآن» بعملتها، والحالية عليها «الحالية»،
  * والتبديل على الجهاز ده بس ومن غير كتابة على البيانات. «إدارة البلدان» ⇒ `Spaces`. بعد التبديل رسالة صغيرة («انتقلت إلى حساب مصر»).
  */
@@ -100,9 +98,10 @@ fun SpaceSwitcher(modifier: Modifier = Modifier) {
             .tap(press, label = t(UiKey.SPACE_TRIGGER, countryLabel(active)), onClick = { open = true }),
         contentAlignment = Alignment.Center,
     ) {
-        Row(chip.height(22.dp).padding(start = 8.dp, end = 5.dp), horizontalArrangement = Arrangement.spacedBy(2.dp), verticalAlignment = Alignment.CenterVertically) {
-            // الحرفين لاتيني بخط النظام (زي النموذج: system-ui)
-            BasicText(active.countryCode.uppercase(), style = Type.of(11, FontWeight.Bold).copy(fontFamily = FontFamily.SansSerif, letterSpacing = 0.5.sp))
+        Row(chip.height(22.dp).padding(start = 4.dp, end = 5.dp), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+            // r06-debts: كانت «SA»/«EG» حروف لاتيني (HANDOVER §5) ⇒ علم البلد المعتمد (`CountryMark` — r06-countries) واسمها بالعربي
+            app.masroufy.ui.app.CountryMark(active.countryCode)
+            BasicText(countryLabel(active), style = Type.of(11, FontWeight.Bold))
             LucideIcon(Lucide.CHEVRON_DOWN, size = 14.dp, tint = Ink.muted)
         }
     }

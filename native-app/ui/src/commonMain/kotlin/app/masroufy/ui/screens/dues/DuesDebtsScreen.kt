@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.dues
 
+import app.masroufy.core.R06Key
 import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -93,7 +94,16 @@ fun DuesDebtsScreen(initialSide: DebtSide) {
             load.reload()
         }
     }
-    DuesScaffold(t(UiKey.DEBTS_TITLE), t(UiKey.DEBTS_SUB)) {
+    // r06-debts (OVERRIDES §112-2): «ضيف دين» في الرأس · «حصّل»/«سدّد» على كل صف بيفتح لوحة التسوية مفتوحة على طول (من غير ضغطة زيادة)
+    var adding by rememberSaveable { mutableStateOf(false) }
+    var settling by remember { mutableStateOf<SettleTarget?>(null) }
+    var lastSettle by remember { mutableStateOf<SettleTarget?>(null) }
+    val onSettle: (DebtRowUi) -> Unit = { row ->
+        SettleTarget(row.obligationId, row.personId, row.name, row.forYou, row.amountMinor, row.currency).also { settling = it; lastSettle = it }
+    }
+    val addAction: (@Composable androidx.compose.foundation.layout.RowScope.() -> Unit)? =
+        if (deps.addDebt == null) null else { { PrimaryButton(t(R06Key.AD_TITLE), { adding = true }, height = 40.dp, leading = Lucide.PLUS) } }
+    DuesScaffold(t(UiKey.DEBTS_TITLE), t(UiKey.DEBTS_SUB), actions = addAction) {
         erased?.let { e -> item(key = "erase-undo") { app.masroufy.ui.screens.operations.UndoStrip(e.text) { undoErase(e) } } }
         when (val s = load.value) {
             Load.Loading -> item { LoadingBlocks() }
@@ -125,7 +135,7 @@ fun DuesDebtsScreen(initialSide: DebtSide) {
                         trailing = { if (query.isNotEmpty()) ClearButton { query = "" } },
                     )
                 }
-                for (g in ui.groups) item(key = "g-${g.key}") { Group(g, ui.currency, quick, onDelete) { nav.push(DebtDetailRoute(it)) } }
+                for (g in ui.groups) item(key = "g-${g.key}") { Group(g, ui.currency, quick, onDelete, onSettle) { nav.push(DebtDetailRoute(it)) } }
                 if (ui.noHitsTitle != null) item(key = "nohits") {
                     EmptyState(ui.noHitsTitle, ui.noHitsBody, action = {
                         TonalButton(t(UiKey.DUES_SHOW_ALL), { query = ""; side = DebtSide.ALL }, height = 44.dp)
@@ -136,6 +146,10 @@ fun DuesDebtsScreen(initialSide: DebtSide) {
         }
     }
     QuickMenuHost(quick)
+    AddDebtSheet(adding, side, onDismiss = { adding = false }) { adding = false; load.reload() }
+    app.masroufy.ui.overlay.Sheet(
+        visible = settling != null, onDismiss = { settling = null }, title = t(UiKey.SETTLE_SHEET_TITLE_GENERIC), closeLabel = t(UiKey.SHELL_CLOSE),
+    ) { lastSettle?.let { SettleForm(it) { settling = null; load.reload() } } }
     DebtEraseSheet(erasing, deps.deleteDebt, onDismiss = { erasing = null }) { e ->
         erasing = null
         erased = e
@@ -163,7 +177,7 @@ private fun SideFilter(modifier: Modifier, sd: DebtSideUi, on: Boolean, currency
 }
 
 @Composable
-private fun Group(g: DebtGroupUi, currency: Currency, quick: QuickMenu, onDelete: ((DebtRowUi) -> Unit)?, onOpen: (String) -> Unit) {
+private fun Group(g: DebtGroupUi, currency: Currency, quick: QuickMenu, onDelete: ((DebtRowUi) -> Unit)?, onSettle: (DebtRowUi) -> Unit, onOpen: (String) -> Unit) {
     val nav = LocalNavigator.current
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
@@ -175,7 +189,11 @@ private fun Group(g: DebtGroupUi, currency: Currency, quick: QuickMenu, onDelete
             g.rows.forEachIndexed { i, row ->
                 if (i > 0) Divider()
                 QuickTarget(quick, row.name, { debtQuickItems(row, nav, onDelete) }, subtitle = row.reason) { long ->
-                    DebtRow(row, onLongClick = long, onClick = quick.guardTap { onOpen(row.obligationId) })
+                    DebtRow(
+                        row, onLongClick = long,
+                        trailing = { TonalButton(t(if (row.forYou) R06Key.DD_COLLECT else R06Key.DD_PAY), quick.guardTap { onSettle(row) }, height = 36.dp) },
+                        onClick = quick.guardTap { onOpen(row.obligationId) },
+                    )
                 }
             }
         }

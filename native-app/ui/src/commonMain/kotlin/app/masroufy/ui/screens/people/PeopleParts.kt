@@ -37,9 +37,9 @@ import app.masroufy.ui.theme.Type
 @Composable
 internal fun Boxes(ui: PeopleTabUi, nav: app.masroufy.ui.nav.Navigator, modifier: Modifier, enabled: Boolean) {
     Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        SideBox(t(UiKey.PEOPLE_OWED_BOX), ui.owed, app.masroufy.ui.components.AmountTone.INCOME, t(UiKey.PEOPLE_OWED_COUNT, countOf(ui.owedPeople, Noun.PEOPLE)), enabled, Modifier.weight(1f)) { nav.push(OwedToYouRoute) }
+        SideBox(t(UiKey.PEOPLE_OWED_BOX), ui.owed, app.masroufy.ui.components.AmountTone.INCOME, t(UiKey.PEOPLE_OWED_COUNT, countOf(ui.owedPeople, Noun.PEOPLE)), enabled, Modifier.weight(1f)) { nav.push(app.masroufy.ui.screens.dues.DuesDebtsRoute(app.masroufy.ui.screens.dues.DebtSide.FOR_YOU)) }
         val oweCount = if (ui.owePeople == 2) t(UiKey.PEOPLE_OWE_TWO) else t(UiKey.PEOPLE_OWE_COUNT, countOf(ui.owePeople, Noun.PEOPLE))
-        SideBox(t(UiKey.PEOPLE_OWE_BOX), ui.owe, app.masroufy.ui.components.AmountTone.EXPENSE, oweCount, enabled, Modifier.weight(1f)) { nav.push(YouOweRoute) }
+        SideBox(t(UiKey.PEOPLE_OWE_BOX), ui.owe, app.masroufy.ui.components.AmountTone.EXPENSE, oweCount, enabled, Modifier.weight(1f)) { nav.push(app.masroufy.ui.screens.dues.DuesDebtsRoute(app.masroufy.ui.screens.dues.DebtSide.ON_YOU)) }
     }
 }
 

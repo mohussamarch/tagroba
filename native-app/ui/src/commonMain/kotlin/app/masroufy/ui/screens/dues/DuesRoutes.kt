@@ -66,6 +66,9 @@ interface DuesDeps {
 
     /** r051 — قسم «مشتريات بالتقسيط» في «الأقساط» (`load`). `null` ⇒ القسم ما بيظهرش والخطط في القايمة العادية. */
     val bnplPlans: app.masroufy.usecase.LoadBnplPlans? get() = null
+
+    /** r06-debts (OVERRIDES §112-2) — «ضيف دين» في رأس «الديون» (`candidates` · `cashWallet` · `add`). `null` ⇒ الزرار مش ظاهر. */
+    val addDebt: app.masroufy.usecase.AddDebt? get() = null
 }
 
 /** «لك» أو «عليك» أو الاتنين — فلتر شاشة الديون (الكارت المضغوط بيصفّي، والضغط تاني يرجّع الكل). */

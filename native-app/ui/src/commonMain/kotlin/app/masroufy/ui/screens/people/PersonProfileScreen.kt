@@ -155,6 +155,8 @@ private fun androidx.compose.foundation.lazy.LazyListScope.personBody(
         }
     }
     val section = Modifier.offset(y = (-66).dp).padding(horizontal = Space.gutter)
+    // r06-debts (OVERRIDES §112-2): القايمة الأساسية للديون في «المستحقات» — الصفحة بتوصّلها بس
+    item(key = "debts-link") { app.masroufy.ui.screens.dues.DuesDebtsLink(section) }
     if (ledger == null) item(key = "history") { History(ui, section) }
     else {
         // r05: السجل كله · الديون (المفتوحة والمقفولة) · الحسابات المربوطة · اربط عمليات · أضف عملية
