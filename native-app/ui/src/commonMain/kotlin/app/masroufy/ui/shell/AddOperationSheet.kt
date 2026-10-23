@@ -112,6 +112,14 @@ fun AddOperationSheet(visible: Boolean, onClose: () -> Unit, onVoice: () -> Unit
     val ready = missing == null
     var explain by remember { mutableStateOf(false) }
     LaunchedEffect(visible) { explain = false }
+    // بيانات الاستخدام (PLAN-0.6 §16 «الاحتكاك»): «+» اتفتحت واتقفلت من غير حفظ
+    var opened by remember { mutableStateOf(false) }
+    var didSave by remember { mutableStateOf(false) }
+    LaunchedEffect(visible) {
+        if (visible) didSave = false
+        else if (opened && !didSave) app.masroufy.problems.Usage.log(app.masroufy.core.UsageEvents.plusDismissed())
+        opened = visible
+    }
     Sheet(visible, onClose, title = t(UiKey.ADD_TITLE), veil = Veil.MENU, closeLabel = t(UiKey.SHELL_CLOSE)) {
         Row(Modifier.fillMaxWidth().padding(bottom = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             BasicText(t(UiKey.ADD_TITLE), style = Type.section())
@@ -185,6 +193,7 @@ fun AddOperationSheet(visible: Boolean, onClose: () -> Unit, onVoice: () -> Unit
                             val mainName = firstMain?.let { id -> o?.wallets?.firstOrNull { it.id == id }?.name }
                             toaster.show(if (mainName != null) t(UiKey.ADD_SAVED_MAIN, saved, mainName) else saved)
                             changes.changed()
+                            didSave = true
                             onClose()
                         }
                     }

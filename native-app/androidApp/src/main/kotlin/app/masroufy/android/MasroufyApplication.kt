@@ -21,6 +21,8 @@ class MasroufyApplication : Application() {
         val crash = AndroidCrashReports(this).also { it.apply() }
         val problems = ProblemLogSetup(this, crash).also { it.install() }
         crash.installCrashHandler()
+        // بيانات الاستخدام (OVERRIDES §114): نسخ المالك بس — المحاكي والاختبارات من غير (`Usage.port` = null)
+        app.masroufy.problems.Usage.port = FirebaseUsage.create(this)
         // قياس السرعة في نسخ المحاكي بس (سطور MPERF في logcat — HANDOVER §7)؛ نسخة المالك ما بتكتبش حاجة
         if (BuildConfig.FIREBASE_EMULATOR_PROJECT.isNotEmpty()) {
             PerfTrace.thread = { Thread.currentThread().name }

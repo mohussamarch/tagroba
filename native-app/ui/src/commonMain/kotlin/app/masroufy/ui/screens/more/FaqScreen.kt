@@ -47,6 +47,13 @@ fun FaqScreen() {
     var asking by rememberSaveable { mutableStateOf(false) }
     val searching = query.isNotBlank()
     val shown = faqSearch(items, query).filter { section < 0 || it.section.ordinal == section }
+    // بيانات الاستخدام (PLAN-0.6 §16 «الاحتكاك»): بحث من غير نتيجة بعد ما الكتابة تهدى — **العدد بس**، النص عمره ما بيتبعت
+    val noResult = searching && shown.isEmpty()
+    androidx.compose.runtime.LaunchedEffect(query, noResult) {
+        if (!noResult) return@LaunchedEffect
+        kotlinx.coroutines.delay(FAQ_SEARCH_SETTLE_MS)
+        app.masroufy.problems.Usage.log(app.masroufy.core.UsageEvents.faqNoResult())
+    }
     InnerScaffold(chrome.title) {
         item(key = "tip") { BasicText(chrome.tip, style = Type.caption().copy(color = Ink.muted)) }
         item(key = "search") { TextInput(query, { query = it }, placeholder = chrome.searchHint, draft = false) }
@@ -60,11 +67,17 @@ fun FaqScreen() {
             BasicText(chrome.empty, Modifier.fillMaxWidth(), style = Type.of(14).copy(color = Ink.muted, textAlign = TextAlign.Center))
         }
         item(key = "ask") {
-            if (!asking) TonalButton(chrome.ask, { asking = true }, Modifier.fillMaxWidth(), height = 52.dp)
+            if (!asking) TonalButton(chrome.ask, {
+                asking = true
+                app.masroufy.problems.Usage.log(app.masroufy.core.UsageEvents.faqNotAnswered())
+            }, Modifier.fillMaxWidth(), height = 52.dp)
             else SupportForm(egypt, prefill = query)
         }
     }
 }
+
+/** البحث من غير نتيجة بيتعد بعد ما الكتابة تقف المدة دي (مش كل حرف). */
+private const val FAQ_SEARCH_SETTLE_MS = 1500L
 
 @Composable
 private fun SectionChips(chrome: FaqChrome, sections: List<FaqSection>, selected: Int, egypt: Boolean, onPick: (Int) -> Unit) {

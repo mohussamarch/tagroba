@@ -103,6 +103,16 @@ fun OnboardingScreen() {
     }
     // r041b P2: كل تغيير في الإجابات أو الكارت بيتكتب على الجهاز (الفتح الجاي بيكمّل من هنا)
     LaunchedEffect(s, draftRead) { if (draftRead) runCatching { onb.draft?.write(encodeDraft(s)) } }
+    // بيانات الاستخدام (PLAN-0.6 §16 «البداية»): كل كارت وصله · واللي قبله اتكمّل لما الكارت يتقدّم لقدّام
+    var lastStep by remember { mutableStateOf<OnbStep?>(null) }
+    LaunchedEffect(s.step) {
+        val before = lastStep
+        if (before != null && s.step.ordinal > before.ordinal) {
+            app.masroufy.problems.Usage.log(app.masroufy.core.UsageEvents.onboardingStep(before, app.masroufy.core.UsagePhase.COMPLETED))
+        }
+        if (before != s.step) app.masroufy.problems.Usage.log(app.masroufy.core.UsageEvents.onboardingStep(s.step, app.masroufy.core.UsagePhase.REACHED))
+        lastStep = s.step
+    }
     // r041b P2: رجوع الجهاز = الكارت اللي قبله (والحفظ شغال ⇒ ولا حاجة) · أول كارت ⇒ التطبيق يتقفل — عمره ما يفتح رئيسية نص مبنية
     HoldBack(OnboardingRoute) {
         if (saving != null) true else systemBack(s)?.let { s = it; true } ?: false
@@ -136,6 +146,7 @@ fun OnboardingScreen() {
                     // r041b P2: الرحلة خلصت ⇒ المسودة تتمسح (والشاشة بتتشال قبل ما تكتبها تاني)
                     draftRead = false
                     runCatching { onb.draft?.write(null) }
+                    app.masroufy.problems.Usage.log(app.masroufy.core.UsageEvents.onboardingStep(OnbStep.READY, app.masroufy.core.UsagePhase.COMPLETED))
                     nav.pop()
                     // «رسائل البنك» ⇒ الرئيسية (أو «حسابك») والشرح ثم إذن النظام فوقها (`SmsHandoff`) — مش شاشة «رسائل البنك» من غير إذن
                     if (s.answers.source == OnbSource.SMS && bankSmsReadable()) SmsHandoff.start()

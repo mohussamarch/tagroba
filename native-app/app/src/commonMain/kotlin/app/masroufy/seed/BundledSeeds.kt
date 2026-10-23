@@ -31,6 +31,15 @@ object BundledSeeds : SpaceSeedSourceLoader {
     /** معرّفات شجرة تصنيفات البلد (نفس المعرّف في كل الحسابات) — قاعدة التجار المشتركة بتقبل التصنيفات دي بس. */
     fun categoryIds(pack: CountryPack): Set<String> = buildCountryCategoryTree(tree, pack).categories.map { it.id }.toSet()
 
+    /**
+     * معرّف القاعدة الجاهزة (`rule-0001`… — نفس ترقيم `loadReferences`) اللي كلمتها في [name]، أو null. لبيانات الاستخدام بس
+     * («لكل قاعدة جاهزة: كام مرة اتغيرت» — PLAN-0.6 §16): المعرّف بيطلع، الاسم لأ.
+     */
+    fun builtInRuleFor(name: String): String? {
+        val i = rules.indexOfFirst { r -> r.word?.let { w -> app.masroufy.core.matchesText(w, app.masroufy.core.RuleMatchMode.CONTAINS, name) } == true }
+        return if (i < 0) null else "rule-${(i + 1).toString().padStart(4, '0')}"
+    }
+
     override suspend fun load(pack: CountryPack): SeedSource {
         val built = buildCountryCategoryTree(tree, pack)
         return SeedSource(built.categories, loadReferences(rules, emptyList(), built.categories, built).rules, emptyList())

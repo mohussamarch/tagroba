@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- تطبيق مصروفي الجديد (كوتلن) — إذن النت لفايربيز وملفات الأسعار. أذونات الرسايل والإشعارات جاية من `:device` (الطلب نفسه بنافذة الجهاز). -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- مكتبة التحليلات بتضيف إذن معرّف الإعلانات لوحدها — مقفول (OVERRIDES §114) -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove" />
     <!-- حالة النت عشان الأزرار اللي محتاجاه تتقفل من غيره (رد المالك L4) — إذن عادي من غير نافذة. -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
@@ -22,6 +25,15 @@
         android:theme="@style/Theme.Masroufy">
         <!-- تقارير الأعطال (OVERRIDES §90): مقفولة لحد ما التطبيق يقرر بنفسه (نوع البناء + مفتاح «ابعت تقارير الأعطال» — CrashReports.kt) -->
         <meta-data android:name="firebase_crashlytics_collection_enabled" android:value="false" />
+        <!-- بيانات الاستخدام (OVERRIDES §114): مقفولة لحد ما التطبيق يفتحها في نسخ المالك بس (FirebaseUsage.kt) · نسخ المحاكي بتفضل مقفولة.
+             معرّف الإعلانات · الإعلانات المخصصة · تخزين الإعلانات · بيانات المستخدم للإعلانات: مقفولين دايمًا. الشاشات بنبعتها بنفسنا (اسم ثابت). -->
+        <meta-data android:name="firebase_analytics_collection_enabled" android:value="false" />
+        <meta-data android:name="google_analytics_adid_collection_enabled" android:value="false" />
+        <meta-data android:name="google_analytics_ssaid_collection_enabled" android:value="false" />
+        <meta-data android:name="google_analytics_default_allow_ad_personalization_signals" android:value="false" />
+        <meta-data android:name="google_analytics_default_allow_ad_storage" android:value="false" />
+        <meta-data android:name="google_analytics_default_allow_ad_user_data" android:value="false" />
+        <meta-data android:name="google_analytics_automatic_screen_reporting_enabled" android:value="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

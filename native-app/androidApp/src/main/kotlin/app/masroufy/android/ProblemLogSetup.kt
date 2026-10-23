@@ -37,6 +37,10 @@ class ProblemLogSetup(context: Context, private val crash: AndroidCrashReports) 
         Problems.sink = { code, error, details ->
             record.record(code, errorKindOf(error), details)
             crash.problem(code, error)
+            // PLAN-0.6 §16 «الصحة»: مرات «القراية في الخلفية استسلمت» (عدد بس)
+            if (code == app.masroufy.core.ProblemCode.BACKGROUND_GAVE_UP) {
+                app.masroufy.problems.Usage.log(app.masroufy.core.UsageEvents.backgroundGaveUp())
+            }
         }
     }
 

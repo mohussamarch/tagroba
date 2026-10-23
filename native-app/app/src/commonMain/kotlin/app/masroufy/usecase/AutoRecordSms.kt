@@ -104,6 +104,8 @@ class AutoRecordSms(private val deps: AutoRecordSmsDeps) {
     suspend fun run(progress: ((SmsRunProgress) -> Unit)? = null, memo: SmsRunMemo? = null): AutoRecordResult = withContext(deps.work) {
         val walked = record(progress, memo) ?: return@withContext AutoRecordResult(AutoRecordStatus.OFF)
         val state = locked { routes.waiting() }
+        // بيانات الاستخدام (PLAN-0.6 §16 «الرسايل»): نسبة القراية و«شكل جديد مستني» لكل بنك — رقم المرسل العام بس
+        usageOfSmsRun(state)
         val w = state.waiting
         walked.copy(waiting = w.messageIds, unmappedSenders = state.unmapped, unknownShape = w.unknownShape, newShape = w.newShape)
     }
