@@ -1345,6 +1345,14 @@
       "y": 33500,
       "w": 390,
       "h": 844
+    },
+    "IncomeHub.dc.html": {
+      "is_interactive": true,
+      "title": "مصادر الدخل بعد الدمج · IncomeHub (أنواع ⇐ دلوقتي + اللي فات)",
+      "x": 8240,
+      "y": 33500,
+      "w": 390,
+      "h": 844
     }
   },
   "createdOnFiles": {
@@ -1670,7 +1678,8 @@
     "TipStrip.dc.html",
     "Support.dc.html",
     "SupportForm.dc.html",
-    "AddDebtSheet.dc.html"
+    "AddDebtSheet.dc.html",
+    "IncomeHub.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"
