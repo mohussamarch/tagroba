@@ -75,7 +75,7 @@ internal fun PersonInitial(initial: String, forYou: Boolean, size: Int = 40) {
 
 /** صف دين في «الديون»: دايرة · الاسم والسبب والإشارة · المبلغ والموعد · سهم. */
 @Composable
-internal fun DebtRow(row: DebtRowUi, onLongClick: (() -> Unit)? = null, onClick: () -> Unit) {
+internal fun DebtRow(row: DebtRowUi, onLongClick: (() -> Unit)? = null, trailing: (@Composable () -> Unit)? = null, onClick: () -> Unit) {
     val press = rememberPress()
     Row(
         Modifier.fillMaxWidth().defaultMinSize(minHeight = 64.dp).pressScale(press).tap(press, onLongClick = onLongClick, onClick = onClick).padding(vertical = 10.dp)
@@ -94,5 +94,7 @@ internal fun DebtRow(row: DebtRowUi, onLongClick: (() -> Unit)? = null, onClick:
             BasicText(row.dueText, style = Type.of(11).copy(color = Ink.muted), maxLines = 1)
         }
         LucideIcon(Lucide.CHEVRON_LEFT, size = 18.dp, tint = Ink.muted, modifier = Modifier.mirrorInLtr())
+        // r06-debts (§112-2): «حصّل»/«سدّد» بعد السهم — بيفتح لوحة التسوية على طول
+        trailing?.invoke()
     }
 }

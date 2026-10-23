@@ -67,6 +67,9 @@ class DuesGraph(private val c: AreaContext) : DuesDeps {
         app.masroufy.usecase.DeleteDebtDeps(r.obligations, r.settlements, r.allocations, r.uow, terms = r.debtTerms, links = r.personLinks, txns = r.transactions, clock = env.clock, zakatFacts = r.zakatFacts),
     )
 
+    /** r06-debts (OVERRIDES §112-2) — «ضيف دين»: نفس `people` و`installments` اللي فوق + ربط العمليات بالأشخاص بنفس اعتمادات صفحة الشخص (`personLinksOf`). */
+    override val addDebt = app.masroufy.usecase.AddDebt(people, personLinksOf(r, env.ids, env.clock, SpaceLegsOf(c.space.id, r.spaceTransfers)), installments, r.obligations)
+
     /** يوم الراتب من الملف (`ManageProfile.load` — 28 لو مش متسجل) ⇒ الفترة اللي فيها [today]. */
     override suspend fun period(today: IsoDate): Period = periodForDate(today, c.shell.profile.load().payday)
 }

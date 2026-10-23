@@ -8,7 +8,7 @@ import app.masroufy.ui.nav.SheetRoute
 import app.masroufy.ui.nav.Tab
 
 /**
- * منطقة «الأشخاص» (`SCREENS.md` §2.5): People · PersonProfile · AddPersonSheet · OwedToYou · YouOwe · ProfileDebtSheet · OccasionSheet ·
+ * منطقة «الأشخاص» (`SCREENS.md` §2.5): People · PersonProfile · AddPersonSheet · ProfileDebtSheet · OccasionSheet ·
  * Events · EventDetail · EventAddSheet · EventEditSheet · EventPrep · EventSpendLinkSheet · NuqootSheet · Projects · ProjectDetail.
  * الملف ده بتاع المنطقة بس. اسم المسار = اسم اللوحة في النموذج (KOTLIN-MAP §1).
  * - **لوحات بتتفتح من مناطق تانية** (`SheetRoute`): «إضافة شخص» (زرار «+») · «الديون القديمة» (سؤال الملف) · «مناسبة» (ملفك) · «حدث جديد» (التقويم).
@@ -22,14 +22,6 @@ object EventsRoute : Route {
 /** «المشاريع» — مدخلها من «المزيد» (§76: «المشاريع» في «بياناتك»). */
 object ProjectsRoute : Route {
     override val name = "Projects"
-}
-
-object OwedToYouRoute : Route {
-    override val name = "OwedToYou"
-}
-
-object YouOweRoute : Route {
-    override val name = "YouOwe"
 }
 
 data class PersonProfileRoute(val personId: Id) : Route {
@@ -74,8 +66,6 @@ data class EventAddSheetRoute(val defaultDate: IsoDate? = null) : SheetRoute {
 fun RouteRegistry.registerPeople() {
     tabRoot(Tab.PEOPLE) { PeopleScreen() }
     screen<PersonProfileRoute> { r -> PersonProfileScreen(r.personId) }
-    screen<OwedToYouRoute> { OwedScreen(OwedSide.OWED_TO_YOU) }
-    screen<YouOweRoute> { OwedScreen(OwedSide.YOU_OWE) }
     screen<EventsRoute> { EventsScreen() }
     screen<EventDetailRoute> { r -> EventDetailScreen(r.eventId) }
     screen<EventPrepRoute> { r -> EventPrepScreen(r.eventId) }

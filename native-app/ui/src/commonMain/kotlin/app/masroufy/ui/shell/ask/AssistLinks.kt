@@ -51,11 +51,9 @@ import app.masroufy.ui.screens.people.AddPersonSheetRoute
 import app.masroufy.ui.screens.people.EventDetailRoute
 import app.masroufy.ui.screens.people.EventPrepRoute
 import app.masroufy.ui.screens.people.EventsRoute
-import app.masroufy.ui.screens.people.OwedToYouRoute
 import app.masroufy.ui.screens.people.PersonProfileRoute
 import app.masroufy.ui.screens.people.ProjectDetailRoute
 import app.masroufy.ui.screens.people.ProjectsRoute
-import app.masroufy.ui.screens.people.YouOweRoute
 
 /** وين زرار الشاشة في رد المساعد بيودّي: شاشة داخلية · لوحة · تبويب · لوحة «+». */
 sealed interface AssistTarget {
@@ -95,8 +93,8 @@ fun targetOf(link: ScreenLink): AssistTarget {
         AssistScreen.ADD_OPERATION -> AssistTarget.AddOperation
         AssistScreen.CATEGORY_BUDGET -> a["categoryId"]?.let { push(CategoryBudgetRoute(it)) } ?: tab(Tab.OPERATIONS)
         AssistScreen.DEBTS, AssistScreen.DEBT_DETAIL -> push(DuesDebtsRoute())
-        AssistScreen.OWED_TO_YOU -> push(OwedToYouRoute)
-        AssistScreen.YOU_OWE -> push(YouOweRoute)
+        AssistScreen.OWED_TO_YOU -> push(DuesDebtsRoute(app.masroufy.ui.screens.dues.DebtSide.FOR_YOU))
+        AssistScreen.YOU_OWE -> push(DuesDebtsRoute(app.masroufy.ui.screens.dues.DebtSide.ON_YOU))
         AssistScreen.ROSCAS -> push(RoscasRoute)
         AssistScreen.ROSCA_DETAIL -> push(a["roscaId"]?.let(::RoscaDetailRoute) ?: RoscasRoute)
         AssistScreen.INSTALLMENTS -> push(InstallmentsRoute)
