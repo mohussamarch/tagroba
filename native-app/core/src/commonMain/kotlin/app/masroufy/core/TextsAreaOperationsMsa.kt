@@ -53,7 +53,7 @@ internal val MSA_OPERATIONS_LIST_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.OPERATION_DETAIL_IN to "دائن",
     UiKey.OPERATION_DETAIL_OUT to "مدين",
     UiKey.OPERATION_DETAIL_MERCHANT to "صفحة التاجر",
-    UiKey.OPERATION_DETAIL_LOCK to "التاريخ والاتجاه من المصدر ولا يُعدَّلان",
+    UiKey.OPERATION_DETAIL_LOCK to "اتجاه العملية من المصدر ولا يُعدَّل",
     UiKey.OPERATION_DETAIL_LOCK_CASH to "المبلغ من فرق العدّ",
     UiKey.OPERATION_DETAIL_CASH_TITLE to "هذه ليست عملية مسجّلة",
     UiKey.OPERATION_DETAIL_CASH_BODY to "هذا فرق عدّ الكاش. يدخل في صرف الشهر بنقطة حمراء حتى تحدد فيمَ صُرف.",

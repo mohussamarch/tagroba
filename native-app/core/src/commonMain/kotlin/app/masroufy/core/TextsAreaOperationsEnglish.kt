@@ -50,7 +50,7 @@ internal val ENGLISH_OPERATIONS_LIST_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.OPERATION_DETAIL_IN to "money in",
     UiKey.OPERATION_DETAIL_OUT to "money out",
     UiKey.OPERATION_DETAIL_MERCHANT to "Merchant page",
-    UiKey.OPERATION_DETAIL_LOCK to "Date and direction come from the source and can't be edited",
+    UiKey.OPERATION_DETAIL_LOCK to "The direction comes from the source and can't be edited",
     UiKey.OPERATION_DETAIL_LOCK_CASH to "The amount is the cash-count difference",
     UiKey.OPERATION_DETAIL_CASH_TITLE to "This isn't a recorded operation",
     UiKey.OPERATION_DETAIL_CASH_BODY to "This is the cash-count difference. It counts in this month's spending with a red dot until you say what it was for.",

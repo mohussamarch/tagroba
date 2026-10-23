@@ -44,7 +44,19 @@ fun employerPeriod(s: IncomeSource): String =
     s.endedAt?.let { t(UiKey.EMPLOYER_PERIOD_RANGE, sentenceDigits(s.startedAt), sentenceDigits(it)) } ?: t(UiKey.EMPLOYER_PERIOD_SINCE, sentenceDigits(s.startedAt))
 
 /** المكتوب في الخانات زي ما هو (من غير مسافات)، و«إلى» الفاضية = لسه شغال هناك. التحقق في `ManageEmployers.save`. */
-fun employerInput(name: String, from: String, to: String): EmployerInput = EmployerInput(name.trim(), from.trim(), to.trim().ifEmpty { null })
+fun employerInput(name: String, from: String, to: String): EmployerInput =
+    EmployerInput(name.trim(), dateFromHint(from), dateFromHint(to).ifEmpty { null })
+
+/**
+ * fix053 (فحص 0.5.3 ج): المثال في الخانة مكتوب يوم-شهر-سنة («31-08-2026») والحفظ كان بيقبل سنة-شهر-يوم بس ⇒ الاتنين مقبولين (و«/» كمان).
+ * أي حاجة تانية بترجع زي ما هي والتحقق بيقول عليها.
+ */
+fun dateFromHint(text: String): String {
+    val s = text.trim()
+    val m = Regex("""^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$""").matchEntire(s) ?: return s
+    val (d, mo, y) = m.destructured
+    return y + "-" + mo.padStart(2, '0') + "-" + d.padStart(2, '0')
+}
 
 /** خانات الجهة: الاسم · من تاريخ · إلى تاريخ (فاضي = لسه شغال). */
 @Composable
