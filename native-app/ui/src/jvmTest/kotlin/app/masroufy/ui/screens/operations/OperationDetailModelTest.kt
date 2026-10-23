@@ -76,6 +76,13 @@ class OperationDetailModelTest {
         val employer = detailView(tx, listOf(Fx.food, Fx.shop), listOf(Fx.bank, Fx.cash), emptyList(), emptySet(), Fx.TODAY, employerPayer = true)
         assertNull(employer.askParty, "حساب جهة الشغل ما بيتسألش «من هذا؟»")
         assertEquals(LinkFlow.TRANSFER_IN, employer.flow)
+        // smoke 0.5.4: الصادر لشخص بيسأل كمان (الكارت بـoutgoing ⇒ «سلفة»)
+        val outSms = "حوالة محلية صادرة\nمصرف:ANB\nمن:0000\nمبلغ:SAR 300\nالى:QA PERSON Q\nالى:7788\n26-09-18 09:10"
+        val out = Fx.tx("out", direction = Direction.OUT, kind = EconomicKind.UNCLASSIFIED, confirmedKind = false, category = null, merchant = "", description = outSms)
+        val outView = detail(out)
+        assertEquals(LinkFlow.TRANSFER_OUT, outView.flow)
+        assertEquals("QA PERSON Q", outView.askParty?.label)
+        assertEquals("QA PERSON Q", app.masroufy.ui.screens.people.opTitle(out), "اسم المحل الفاضي ما يغطيش على الطرف")
         val move = detail(Fx.tx("mv", kind = EconomicKind.INTERNAL_TRANSFER, category = null, toWallet = Fx.cash.id))
         assertEquals(LinkFlow.NONE, move.flow, "بين محافظك ما بتتربطش")
         assertNull(move.category, "التحويل الداخلي مالوش تصنيف")
