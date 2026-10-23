@@ -29,7 +29,7 @@
       <span style="width: 44px; flex-shrink: 0; font-size: 12px; color: #DCEBD6; text-align: left">{{circleLine}}</span>
     </div>
 
-    <sc-if value="{{isOpen}}" hint-placeholder-val="{{ false }}"><div class="ph-in" style="position: absolute; top: 72px; left: 0; right: 0; display: flex; flex-direction: column; gap: 10px">
+    <sc-if value="{{showCards}}" hint-placeholder-val="{{ false }}"><div class="ph-in" style="position: absolute; top: 72px; left: 0; right: 0; display: flex; flex-direction: column; gap: 10px">
       <div class="ph-cards" style="display: flex; gap: 10px; overflow-x: auto; padding: 0 20px">
         <sc-for list="{{cards}}" as="c" hint-placeholder-count="3"><div style="{{c.style}}">
           <span style="width: 48px; height: 48px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: #FFFFFF; background: rgba(255,255,255,0.18)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="{{c.icon}}"></path></svg></span>
@@ -38,11 +38,15 @@
           <span style="align-self: flex-start; margin-top: auto; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 12px; color: #08634F; background: #DCEBD6">{{c.left}}</span>
         </div></sc-for>
       </div>
-      <div style="display: flex; justify-content: center; gap: 8px; padding: 0 20px">
-        <sc-for list="{{swatches}}" as="w" hint-placeholder-count="5"><button type="button" class="ph-press" onClick="{{w.pick}}" aria-label="{{w.aria}}" style="{{w.style}}"></button></sc-for>
-        <span aria-hidden="true" style="width: 1px; height: 24px; margin: 4px 4px; background: rgba(255,255,255,0.3)"></span>
-        <sc-for list="{{emojis}}" as="e" hint-placeholder-count="4"><button type="button" class="ph-press" onClick="{{e.pick}}" aria-label="{{e.aria}}" style="{{e.style}}">{{e.ch}}</button></sc-for>
-      </div>
+      <button type="button" class="ph-press" onClick="{{startEdit}}" style="align-self: center; height: 36px; padding: 0 14px; border: 0; border-radius: 18px; display: flex; align-items: center; gap: 6px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; color: #FFFFFF; background: rgba(255,255,255,0.16); box-shadow: inset 0 1px 0 rgba(255,255,255,0.3)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"></path></svg>{{editLabel}}</button>
+    </div></sc-if>
+
+    <sc-if value="{{isEdit}}" hint-placeholder-val="{{ false }}"><div class="ph-in" style="position: absolute; top: 72px; left: 16px; right: 16px; border-radius: 24px; padding: 14px; display: flex; flex-direction: column; gap: 12px; color: #193D33; background: rgba(255,255,255,0.94); box-shadow: 0 14px 30px rgba(0,30,25,0.25)">
+      <span style="display: flex; align-items: center; gap: 8px"><span style="flex: 1 1 auto; font-size: 16px; font-weight: 700">{{editTitle}}</span><button type="button" class="ph-press" onClick="{{endEdit}}" style="height: 36px; padding: 0 16px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)">{{doneLabel}}</button></span>
+      <span style="font-size: 13px; font-weight: 700; color: #637570">{{colorLabel}}</span>
+      <div style="display: flex; gap: 10px"><sc-for list="{{swatches}}" as="w" hint-placeholder-count="5"><button type="button" class="ph-press" onClick="{{w.pick}}" aria-label="{{w.aria}}" style="{{w.style}}"></button></sc-for></div>
+      <span style="font-size: 13px; font-weight: 700; color: #637570">{{emojiLabel}}</span>
+      <div style="display: flex; gap: 4px; justify-content: space-between"><sc-for list="{{emojis}}" as="e" hint-placeholder-count="8"><button type="button" class="ph-press" onClick="{{e.pick}}" aria-label="{{e.aria}}" style="{{e.style}}">{{e.ch}}</button></sc-for></div>
     </div></sc-if>
 
     <button type="button" onClick="{{toggle}}" aria-label="{{handleLabel}}" style="position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); width: 56px; height: 24px; border: 0; padding: 0; cursor: pointer; background: transparent; display: flex; align-items: center; justify-content: center"><span style="width: 36px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.45)"></span></button>
@@ -65,17 +69,18 @@
   </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"مصر","section":"الحالة"},"open":{"editor":"boolean","default":false,"section":"الحالة"},"onMenu":{"editor":null},"onLink":{"editor":null},"$preview":{"width":390,"height":420}}'>
+<script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"مصر","section":"الحالة"},"open":{"editor":"boolean","default":false,"section":"الحالة"},"edit":{"editor":"boolean","default":false,"section":"الحالة"},"onMenu":{"editor":null},"onLink":{"editor":null},"$preview":{"width":390,"height":420}}'>
 // رأس صفحة الشخص (طلب المالك 2026-10-23 برسمة):
 // • المناسبات اللي بتتكرر كل سنة = أيقونات صغيرة فوق في الخلفية الخضرا من غير كلام (كل ما يتضاف حاجة سنوية بتتحط هنا)
 // • الصورة كبيرة · اسحب لتحت ⇐ الأخضر ينزل زي الستارة لحد ما الدايرة تبقى تحت، وتظهر المناسبات كروت كبيرة تتنقل بينها، ولون الخلفية وإيموجي صغير على الصورة
 // • شمال الصورة: علامة الاتصال = زرار «طلب اتصال» (اتشال من القايمة السريعة — طلب المالك 2026-10-23)
+// • التخصيص (اللون والرمز) في مود لوحده: زرار «خصّص» تحت الكروت ⇐ لوحة مكان الكروت ⇐ «تمام» (تعديل المالك 2026-10-23: «محتاج خطوة كمان أو زرار عشان أخش مود التعديل»)
 // • يمين الصورة (أول عنصر في RTL): زرار «القايمة السريعة» (نفس قايمة العمليات بالضغطة الطويلة) · شمالها: متصلين ولا لأ (مستقبلي — لما كل شخص يبقى ليه حساب)
 const CLOSED = 196, OPEN = 470;
 const ICON = { birthday: 'M4 21h16v-8H4zM4 16c2 0 2-1.5 4-1.5s2 1.5 4 1.5 2-1.5 4-1.5 2 1.5 4 1.5M12 13V9M12 6.5a1.5 1.5 0 0 0 1.5-1.5c0-1-1.5-3-1.5-3s-1.5 2-1.5 3A1.5 1.5 0 0 0 12 6.5z', friends: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8', gift: 'M20 12v9H4v-9M2 7h20v5H2zM12 21V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z', grad: 'M22 10 12 5 2 10l10 5 10-5zM6 12v5c3 2 9 2 12 0v-5' };
 const COLORS = [['#064B40', '#08705A'], ['#1F3D6B', '#2469BA'], ['#5A2340', '#A55060'], ['#5C3B0A', '#956000'], ['#2B2F3A', '#4B5566']];
 class Component extends DCLogic {
-  constructor(props) { super(props); this.state = { pull: props.open ? OPEN - CLOSED : 0, drag: false, color: 0, emoji: '' }; }
+  constructor(props) { super(props); this.state = { pull: props.open ? OPEN - CLOSED : 0, drag: false, color: 0, emoji: '', edit: !!props.edit }; }
   renderVals() {
     const eg = (this.props.space ?? 'مصر') === 'مصر', T = (sa, e) => (eg ? e : sa), s = this.state;
     const h = CLOSED + s.pull, open = s.pull > (OPEN - CLOSED) / 2, c = COLORS[s.color];
@@ -95,12 +100,14 @@ class Component extends DCLogic {
       yearlyLabel: T('مناسبات سنوية', 'مناسبات كل سنة'),
       yearly: Y.map(([k, t, d]) => ({ icon: ICON[k], aria: t + '، ' + d, open: () => setOpen(true) })),
       circleLine: T('الأصدقاء', 'الصحاب'),
-      isOpen: open,
+      isOpen: open, showCards: open && !s.edit, isEdit: open && s.edit,
+      startEdit: () => this.setState({ edit: true }), endEdit: () => this.setState({ edit: false }),
+      editLabel: T('خصّص', 'خصّص'), editTitle: T('خصّص صفحة خالد', 'خصّص صفحة خالد'), doneLabel: T('تم', 'تمام'), colorLabel: T('لون الخلفية', 'لون الخلفية'), emojiLabel: T('رمز على الصورة', 'رمز على الصورة'),
       cards: Y.concat(ONCE).map(([k, title, date, left]) => ({ icon: ICON[k], title, date, left, style: card })),
       swatches: COLORS.map((cc, i) => ({ aria: T('لون ', 'لون ') + (i + 1), pick: () => this.setState({ color: i }),
-        style: 'width: 28px; height: 28px; border: 0; border-radius: 14px; cursor: pointer; background: linear-gradient(135deg, ' + cc[0] + ', ' + cc[1] + '); box-shadow: 0 0 0 ' + (s.color === i ? '3px #FFFFFF' : '1.5px rgba(255,255,255,0.5)') })),
-      emojis: ['⭐', '❤️', '⚽', '☕'].map((ch) => ({ ch, aria: T('ضع ', 'حط ') + ch, pick: () => this.setState({ emoji: s.emoji === ch ? '' : ch }),
-        style: 'width: 32px; height: 32px; border: 0; border-radius: 16px; cursor: pointer; font-size: 16px; background: ' + (s.emoji === ch ? '#FFFFFF' : 'rgba(255,255,255,0.18)') })),
+        style: 'width: 44px; height: 44px; border: 0; border-radius: 22px; cursor: pointer; background: linear-gradient(135deg, ' + cc[0] + ', ' + cc[1] + '); box-shadow: 0 0 0 ' + (s.color === i ? '3px #FFFFFF, 0 0 0 5px ' + cc[1] : '0 transparent') })),
+      emojis: ['⭐', '❤️', '⚽', '☕', '🎮', '📚', '🌙', '🚗'].map((ch) => ({ ch, aria: T('ضع ', 'حط ') + ch, pick: () => this.setState({ emoji: s.emoji === ch ? '' : ch }),
+        style: 'width: 36px; height: 36px; border: 0; border-radius: 12px; cursor: pointer; font-size: 18px; background: ' + (s.emoji === ch ? 'rgba(8,99,79,0.14); box-shadow: inset 0 0 0 2px #08634F' : '#EFF3ED') })),
       hasEmoji: !!s.emoji, emoji: s.emoji,
       linkLabel: T('غير متصل', 'مش متصل'), linkAria: T('اطلب الاتصال بخالد', 'اطلب اتصال بخالد'), link: () => { if (this.props.onLink) this.props.onLink(); },
       photoLabel: T('أضف صورة', 'ضيف صورة'),
