@@ -3,7 +3,7 @@
 > **ما تتعدلش باليد.** بتتولّد بـ`node scripts/codemap.mjs` بعد كل دمج. سطر لكل ملف: المسار (عدد السطور) — أهم الأسماء · أول تعليق.
 > اقرا الخريطة الأول، وافتح الملفات اللي هتشتغل عليها بس.
 
-الملفات: 1287 (من غير الاختبارات)
+الملفات: 1290 (من غير الاختبارات)
 
 ## androidApp (13)
 
@@ -21,7 +21,7 @@
 - `main/kotlin/app/masroufy/android/ProblemLogSetup.kt` (49) — ProblemLogSetup · «سجل المشاكل» على الجوال (OVERRIDES §90) — **أول حاجة في بداية العملية** (قبل التجميع) عشان أي وقعة بعدها تتسجل:
 - `main/kotlin/app/masroufy/android/SpaceAdminSetup.kt` (31) — — · إدارة البلاد على فايربيز (§41 · §64 · رد المالك §88-8) للحساب الداخل [st]:
 
-## app (269)
+## app (270)
 
 - `commonMain/kotlin/app/masroufy/memory/MemoryAccountAdapters.kt` (65) — MemoryProfileRepository, MemoryAccount, MemoryReferenceSeed · الحساب في الذاكرة — نقل `memoryProfileRepository.ts` و`memoryAccount.ts` و`referenceSeed.ts`.
 - `commonMain/kotlin/app/masroufy/memory/MemoryAlerts.kt` (67) — MemoryAlertSettings, MemoryAlertInteractions, MemoryUsualHours, MemoryAlertReceipts, MemoryAlertInbox · مخازن محرك التنبيهات في الذاكرة (§61) — للاختبار. التشغيل: فايربيز للمتزامن (`FirestoreAlerts.kt`) والجهاز للتعلّم.
@@ -90,6 +90,7 @@
 - `commonMain/kotlin/app/masroufy/seed/BundledSeedJson.kt` (328) — — · مولَّد — ما يتعدّلش باليد. المصدر: `src/infrastructure/import/categoryTree.json` (شجرة التطبيق) و
 - `commonMain/kotlin/app/masroufy/seed/BundledSeeds.kt` (66) — BundledSeeds · المراجع الأولية لحساب أو بلد جديدة **من جوه التطبيق** (من غير نت ولا ملفات على الجهاز): شجرة التصنيفات + فروق البلد
 - `commonMain/kotlin/app/masroufy/usecase/AcrossSpaces.kt` (76) — SpaceAlertSource, GatherAllSpaceAlerts, PersonSpaceDebt, PersonSpaceBook, PersonAcrossSpaces · اللي بيبص على **كل البلاد** مع بعض (OVERRIDES §64) — من غير ما يجمع أي رقم بين بلدين.
+- `commonMain/kotlin/app/masroufy/usecase/AddDebt.kt` (174) — DebtSideIn, DebtWho, DebtMoney, DebtDueChoice, NewDebt, AddedDebt, AddDebtError, AddDebt · «ضيف دين» (OVERRIDES §112-2 — الديون الأساسية في «المستحقات»، التصميم `AddDebtSheet.dc.html` من `8575ee4b`). حالة استخدام بتجمع
 - `commonMain/kotlin/app/masroufy/usecase/AddHolding.kt` (119) — MetalFactsWriter, AddHoldingDeps, storedKindFor, AddHolding · وقائع الزكاة للمعادن (للبس/ادخار · العيار · النقاوة) — التشغيل بيوصّلها بـ`ManageZakat.setAssetFacts` (مصدر واحد مع الزكاة).
 - `commonMain/kotlin/app/masroufy/usecase/AddTransaction.kt` (129) — NewTransactionInput, AddTransactionDeps, AddTransaction · AddTransaction — نقل `addTransaction.ts`: إضافة عملية يدويًا (القهوة بالكاش ما بتوصلش من أي كشف).
 - `commonMain/kotlin/app/masroufy/usecase/AdvisorMoreSignals.kt` (154) — — · الأفكار الثمانية التانية للمساعد (OVERRIDES §68): unusual · beforePayday · payFirst · billJump · dupSubs · bigOne · goalNear · weekly.
@@ -293,7 +294,7 @@
 - `commonMain/kotlin/app/masroufy/usecase/VerifiedBackup.kt` (27) — VerifiedBackup, saveVerifiedBackup · نسخة قبل أي كتابة صيانة (إصلاح، تنظيف، تراجع) — نقل `verifiedBackup.ts` (HANDOVER §36).
 - `commonMain/kotlin/app/masroufy/usecase/ZakatHoldings.kt` (117) — — · اللي بتملكه يوم الحساب + المحافظ والعمليات (للحول).
 
-## core (407)
+## core (408)
 
 - `commonMain/kotlin/app/masroufy/core/ActualSaving.kt` (63) — monthSavingMinor, monthIncomeMinor, averageSavingMinor, SavingVerdict, SavingComparison, compareWithActual · «اللي بتحوّشه فعلًا» — المقارنة في حاسبة الادخار (قرار المالك §69: «يقارن باللي بتحوّشه فعلًا — آخر 3 شهور»).
 - `commonMain/kotlin/app/masroufy/core/AdvisorMoreRules.kt` (225) — unusualSpendCandidate, beforePaydayCandidate, payFirstCandidate, billJumpCandidate, SubscriptionPlace, dupSubsCandidates, bigOneCandidate, goalNearCandidate +4 · «المساعد المالي» — الأفكار الثمانية التانية (المالك شغّلها كلها 2026-10-05، OVERRIDES §68): unusual · beforePayday · payFirst ·
@@ -389,7 +390,7 @@
 - `commonMain/kotlin/app/masroufy/core/EmployerIdentity.kt` (31) — employerIdentity, EmployerCountryPay, LinkedEmployer, linkedEmployers · جهة الشغل في البلدين = **جهة واحدة بمبلغين** (قرار المالك — OVERRIDES §111-2 · ARCHITECTURE «جهة الشغل في البلدين»).
 - `commonMain/kotlin/app/masroufy/core/Employers.kt` (182) — PayerAccount, last4OfPartyKey, payerAccountsOf, IncomingSender, incomingSenders, isEmployer, employerOf, employerByPayer +11 · «جهات الشغل» (قايمة المالك 2026-10-15، البندين 6 و7 — HANDOVER §6.5): جهة الشغل = **مصدر دخل بمرتب** ([SALARIED_KINDS]) من نفس
 - `commonMain/kotlin/app/masroufy/core/EndOfService.kt` (85) — EosEnd, EosShare, ServiceLength, EndOfServiceResult, EndOfServiceError, serviceLength, saudiEndOfService · مكافأة نهاية الخدمة (حاسبة التقاعد — قرار المالك §69: «مكافأة نهاية الخدمة تتحسب»). أعداد صحيحة بس.
-- `commonMain/kotlin/app/masroufy/core/Entities.kt` (201) — Id, ReviewState, Transaction, Meal, ExclusionScope, isExcludedFrom, AllocationKind, PersonAllocation +3 · الكيانات — نقل `src/domain/entities/types.ts` بنفس الحقول ونفس أسماء التخزين في فايربيز.
+- `commonMain/kotlin/app/masroufy/core/Entities.kt` (203) — Id, ReviewState, Transaction, Meal, ExclusionScope, isExcludedFrom, AllocationKind, PersonAllocation +3 · الكيانات — نقل `src/domain/entities/types.ts` بنفس الحقول ونفس أسماء التخزين في فايربيز.
 - `commonMain/kotlin/app/masroufy/core/EstimatePolicy.kt` (25) — EstimatePolicy · سياسة الحساب وقت العرض — مين بيتحسب دخل، وفي أنهي شهر. **مفيش حاجة بتتكتب** في التخزين بسببها (التاريخ والنوع زي ما هم).
 - `commonMain/kotlin/app/masroufy/core/EstimatedKinds.kt` (96) — EstimatedView, SALARY_CATEGORY_NAMES, isSalaryCategory, withEstimatedKinds · «تقريبي» — نقل `src/domain/estimatedKinds.ts` (OVERRIDES §18: الأرقام دايمًا ظاهرة).
 - `commonMain/kotlin/app/masroufy/core/EventPrep.kt` (122) — PrepItem, PrepError, prepAllowed, eventNeedsPrep, prepSuggestionKeys, prepSuggestions, checkPrepName, checkPrepPlanned +5 · تجهيزات الحدث الجاي (OVERRIDES §65): **كل حدث جاي ما عدا العزا** بيتفتح له تجهيزات — بيفضل **حدث** (§64) بس بيتجهز زي المشروع:
@@ -471,7 +472,7 @@
 - `commonMain/kotlin/app/masroufy/core/PublicOccasions.kt` (51) — PublicOccasionKind, PublicOccasion, PUBLIC_OCCASION_COUNTRIES, publicOccasionSourceNote, publicOccasions · المناسبات العامة في التقويم (OVERRIDES §65) — **بداية رمضان · عيد الفطر · عيد الأضحى** من تقويم أم القرى (`Hijri.kt` — نفس
 - `commonMain/kotlin/app/masroufy/core/QnbPdf.kt` (122) — QnbPdfOutcome, parseQnbPdf · كشف QNB مصر PDF (OVERRIDES §40.3، اتعمل 2026-10-01 على كشف المالك — على جهازه بس).
 - `commonMain/kotlin/app/masroufy/core/Quantity.kt` (166) — Quantity, QuantityError, assertQuantity, parseQuantity, formatQuantity, addQuantity, subtractQuantity, valueOfQuantity +3 · الكميات — نقل `src/domain/quantity.ts` (spec/02: تمثيل عشري دقيق للكميات).
-- `commonMain/kotlin/app/masroufy/core/R06Keys.kt` (57) — R06Key · r06 (PLAN-0.6) — مفاتيح الجولة (القيم في `TextsR06.kt`). نوع لوحده تحت [TextRef] لأن [UiKey] وصل حد الـJVM («Method too large» في بداية الـe
+- `commonMain/kotlin/app/masroufy/core/R06Keys.kt` (63) — R06Key · r06 (PLAN-0.6) — مفاتيح الجولة (القيم في `TextsR06.kt`). نوع لوحده تحت [TextRef] لأن [UiKey] وصل حد الـJVM («Method too large» في بداية الـe
 - `commonMain/kotlin/app/masroufy/core/Reconcile.kt` (76) — LedgerMovement, BalanceMismatch, ReconcileResult, reconcileBalance · مطابقة الرصيد الجاري — نقل `src/domain/reconcile.ts` (spec/02 و OVERRIDES §7-ب).
 - `commonMain/kotlin/app/masroufy/core/Recurring.kt` (115) — RecurringItem, RecurringCandidate, shiftMonths, recurringKey, detectRecurring, RecurringSummary, recurringSummary, RecurringError +1 · الاشتراكات والفواتير الدورية — نقل `src/domain/recurring.ts` + الكيانات.
 - `commonMain/kotlin/app/masroufy/core/Reservations.kt` (72) — Reservation, ReservationError, reservationId, reservationIdOf, countedAmount, applyReservations, ReservationState, reservationState +1 · «محسوب في الميزانية» = **مبلغ محجوز لكل سطر** في التقويم (اختيار المالك §65 — مش المقترح) — وتوضيح المالك: يعني «احسب الميعاد
@@ -666,6 +667,7 @@
 - `commonMain/kotlin/app/masroufy/core/TextsR06.kt` (363) — — · r06 — نصوص [R06Key]: الفصحى (السعودية والافتراضي) · المصري · الإنجليزي. الأرقام 0-9 بس (`WesternDigitsTest`).
 - `commonMain/kotlin/app/masroufy/core/TextsR06Away.kt` (42) — — · r06-1a3 — كارت «فيه رسايل فاتته» (مفاتيح AWAY_ في [R06Key]). ملف لوحده عشان `TextsR06.kt` عدّى حد الـ300 سطر.
 - `commonMain/kotlin/app/masroufy/core/TextsR06Country.kt` (48) — — · r06-countries — منطق البلدين (OVERRIDES §111): السداد بعملة البلد التانية (CTY_FX_) · دين البلد التانية في صفحة الشخص · تحذير الأرشفة ·
+- `commonMain/kotlin/app/masroufy/core/TextsR06Debts.kt` (123) — — · r06-debts (OVERRIDES §112-2) — «ضيف دين» (`AddDebtSheet.dc.html` — مفاتيح AD_) · «حصّل»/«سدّد» على كل صف في «الديون» (DD_) ·
 - `commonMain/kotlin/app/masroufy/core/TextsR06Night.kt` (36) — — · المظهر الليلي (فاتح · غامق · زي الجوال) وزرار إخفاء الأرقام — مفاتيح NP_ في [R06Key]. ملف لوحده عشان `TextsR06.kt` عدّى الـ300 سطر.
 - `commonMain/kotlin/app/masroufy/core/TextsR06Notify.kt` (25) — — · PLAN-0.6 §13 (ج) — إشعارات حالة القراية في الخلفية (مفاتيح NOTIFY_SMS_ في [R06Key]). النصوص من التصميم بالحرف (`SmsAway.dc.html` — فرع
 - `commonMain/kotlin/app/masroufy/core/TextsR06Split.kt` (90) — — · r06-1b4 — خصم تابي/تمارا المجمّع و«الدفعة دي رقم كام؟» (مفاتيح BS_ في [R06Key]). ملف لوحده عشان `TextsR06.kt` قرّب من حد الـ300 سطر.
@@ -715,7 +717,7 @@
 - `commonMain/kotlin/app/masroufy/data/EventCodecs.kt` (73) — EventCodecs · الأحداث وروابطها ومناسبات الشخص (OVERRIDES §64) — مجموعات جديدة في كوتلن بس، على نفس قواعد الباقي (أسماء حقول زي
 - `commonMain/kotlin/app/masroufy/data/IncomeCodecs.kt` (45) — IncomeCodecs · مصادر الدخل (OVERRIDES §48 · §64) — مجموعة جديدة في كوتلن بس، على نفس قواعد الباقي (أسماء حقول زي الكيان · الأعداد صحيحة ·
 - `commonMain/kotlin/app/masroufy/data/InheritanceCodecs.kt` (89) — InheritanceCodecs · حسابات الورث المحفوظة (§69.4) — مجموعة جديدة **على مستوى الحساب**، في كوتلن بس (التطبيق الحالي ما يعرفهاش).
-- `commonMain/kotlin/app/masroufy/data/LedgerCodecs.kt` (213) — LedgerCodecs · العمليات والديون والاستيراد — الحقول بنفس أسماء التطبيق الحالي (`src/domain/entities/types.ts`).
+- `commonMain/kotlin/app/masroufy/data/LedgerCodecs.kt` (215) — LedgerCodecs · العمليات والديون والاستيراد — الحقول بنفس أسماء التطبيق الحالي (`src/domain/entities/types.ts`).
 - `commonMain/kotlin/app/masroufy/data/PersonCircleCodecs.kt` (32) — PersonCircleCodecs · دواير الأشخاص والصلات بينهم (جلسة 16) — مجموعتين جداد على مستوى الحساب، في كوتلن بس. **مستند الشخص (`people`) ما اتلمسش**:
 - `commonMain/kotlin/app/masroufy/data/ReferenceCodecs.kt` (173) — ReferenceCodecs · المحافظ والتصنيفات والتجار والقواعد والأشخاص والوسوم والميزانيات والاشتراكات والتنبيهات.
 - `commonMain/kotlin/app/masroufy/data/SavingsGoalCodecs.kt` (46) — SavingsGoalCodecs · خطط الادخار وإيداعاتها (المساعد المالي §68) — مجموعتين جداد على مستوى الحساب، في كوتلن بس (التطبيق الحالي ما يعرفهمش).
@@ -805,7 +807,7 @@
 - `jvmMain/kotlin/app/masroufy/firestore/AuthCodes.jvm.kt` (5) — — · على الكمبيوتر الدخول ما بيتجربش (GitLive هناك ما بيوصلش للمحاكي — زي Firestore) ⇒ من نوع الخطأ بس.
 - `jvmMain/kotlin/app/masroufy/firestore/RawDocs.jvm.kt` (16) — rawData · على الكمبيوتر (الاختبارات): GitLive فوق firebase-java-sdk — نفس واجهة أندرويد (`getData()`).
 
-## ui (479)
+## ui (480)
 
 - `androidMain/kotlin/app/masroufy/ui/components/BankLogo.android.kt` (12) — — · أندرويد: الصورة من drawable-nodpi (WebP — OVERRIDES §76 · §81) عن طريق الخريطة المتولّدة [BANK_LOGO_IMAGES].
 - `androidMain/kotlin/app/masroufy/ui/components/BankLogos.android.kt` (93) — — · ⚠️ ملف متولّد — ما يتعدلش باليد: node scripts/bank-catalog.mjs (من scripts/bank-logos.json).
@@ -908,6 +910,7 @@
 - `commonMain/kotlin/app/masroufy/ui/screens/common/PullRefresh.kt` (152) — PullRefreshState, rememberPullRefresh, pullRefresh, PullRefreshIndicator · «اسحب لتحت عشان تحدّث» من غير مكتبة: `nestedScroll` على القايمة. السحب لتحت وإنت فوق خالص بينزّل الصفحة (بنص المسافة — [PULL_RESISTANCE])
 - `commonMain/kotlin/app/masroufy/ui/screens/common/QuickActions.kt` (120) — QuickAct, quickItems, debtQuickActs, installmentQuickActs, openOnlyQuickActs, goalQuickActs, assetQuickActs, eventQuickActs +5 · أفعال القايمة السريعة (الضغطة الطويلة — قايمة المالك §6.5-13). **كل فعل هنا بينادي حاجة موجودة** (شاشة · لوحة · حالة استخدام)
 - `commonMain/kotlin/app/masroufy/ui/screens/common/Scaffolds.kt` (142) — TabScaffold, TabHeader, GearButton, InnerScaffold, ScreenHeader, PendingScreen · هياكل الشاشات — **كل شاشة بتبدأ بواحد منهم** عشان المسافات والرأس يبقوا واحد (KOTLIN-MAP §3 «رأس الأقسام الأربعة لازم يبقى متطابق»):
+- `commonMain/kotlin/app/masroufy/ui/screens/dues/AddDebtSheet.kt` (211) — — · «الفلوس اتحركت إزاي؟» — عملية متسجلة · كاش · دين قديم.
 - `commonMain/kotlin/app/masroufy/ui/screens/dues/BnplHost.kt` (187) — BnplHost · r051 — لوحة «ادفع بعدين» **بتطلع لوحدها** لما خصم من تابي أو تمارا أو زيهم يتسجل (رسالة بنك في الخلفية أو في «رسائل البنك» أو «+»
 - `commonMain/kotlin/app/masroufy/ui/screens/dues/BnplMultiSheet.kt` (146) — BnplMultiSheet · سطر «اتوزّع»: الاسم والمبلغ.
 - `commonMain/kotlin/app/masroufy/ui/screens/dues/BnplParts.kt` (188) — — · r051 — قطع لوحة «ادفع بعدين» وقسم «مشتريات بالتقسيط» (التصميم المعتمد `BnplSheet.dc.html` · `Installments.dc.html`): شارة المزوّد ·
@@ -918,8 +921,9 @@
 - `commonMain/kotlin/app/masroufy/ui/screens/dues/DebtDetailModel.kt` (182) — TermOption, DebtDetailUi, debtDetailUi, settledFully, SettleInput, settleInput, settledToast, errorText +2 · «تفاصيل الدين» (`DebtDetail`): الالتزام من `listWithBalances` (المتبقي جاهز من حالة الاستخدام) + ميعاده من `LoadDues`.
 - `commonMain/kotlin/app/masroufy/ui/screens/dues/DebtDetailScreen.kt` (233) — DebtDetailScreen · «تفاصيل الدين» (`DebtDetail`): البطاقة البترولية بالمتبقي · أصل الدين · الموعد (حدّد · غيّر · إزالة — `setDebtTerms`/`clearDebtTerms`) ·
 - `commonMain/kotlin/app/masroufy/ui/screens/dues/DebtSheets.kt` (234) — SettleTarget · اللي لوحة التسوية محتاجاه عن الالتزام (من «تفاصيل الدين» أو من القايمة لو اتفتحت من ملف الشخص).
-- `commonMain/kotlin/app/masroufy/ui/screens/dues/DebtsModel.kt` (167) — DebtRowUi, DebtGroupUi, DebtSideUi, DuesDebtsUi, duesDebtsUi · شاشة «الديون» (`DuesDebts`) و«تفاصيل الدين»: من `ManagePeople.listWithBalances` (المتبقي لكل التزام) + `LoadDues` (المجاميع
-- `commonMain/kotlin/app/masroufy/ui/screens/dues/DuesDebtsScreen.kt` (194) — DuesDebtsScreen · اللي الشاشة بتحمّله مرة واحدة — والفلتر والبحث بيتطبقوا عليه من غير ما يحمّل تاني.
+- `commonMain/kotlin/app/masroufy/ui/screens/dues/DebtsModel.kt` (169) — DebtRowUi, DebtGroupUi, DebtSideUi, DuesDebtsUi, duesDebtsUi · شاشة «الديون» (`DuesDebts`) و«تفاصيل الدين»: من `ManagePeople.listWithBalances` (المتبقي لكل التزام) + `LoadDues` (المجاميع
+- `commonMain/kotlin/app/masroufy/ui/screens/dues/DuesDebtsLink.kt` (49) — — · «ديونه كلها في المستحقات ›» (`PersonProfile.dc.html` — فرع التصميم `8575ee4b` · OVERRIDES §112-2): صفحة الشخص ما بتكررش قايمة الديون،
+- `commonMain/kotlin/app/masroufy/ui/screens/dues/DuesDebtsScreen.kt` (212) — DuesDebtsScreen
 - `commonMain/kotlin/app/masroufy/ui/screens/dues/DuesErase.kt` (74) — — · الدين اللي اتمسح من القايمة السريعة — [text] للشريط و[removal] لـ«تراجع» (`DeleteDebt.restore` بنفس المعرّفات).
 - `commonMain/kotlin/app/masroufy/ui/screens/dues/DuesFormat.kt` (86) — Chip · عرض التواريخ والعدّ في شاشات المستحقات — **كلام بس، من غير أي حساب فلوس** (CLAUDE.md #4). الأرقام جوه الجمل بالعربي الشرقي
 - `commonMain/kotlin/app/masroufy/ui/screens/dues/DuesIcons.kt` (26) — — · أيقونات منطقة «المستحقات» اللي مش في المشتركة — المسارات من `<svg>` لوحة `Dues` في النموذج (lucide-static v0.400.0):
@@ -928,8 +932,8 @@
 - `commonMain/kotlin/app/masroufy/ui/screens/dues/DuesPanel.kt` (159) — DuesPanel · صفوف «حسب الموعد» الظاهرة قبل «اعرض الكل» (النموذج بيعرض 5).
 - `commonMain/kotlin/app/masroufy/ui/screens/dues/DuesPickers.kt` (112) — — · اختيار يوم من شهر (سؤال «أول دفعة» في الجمعية · «الموعد القادم» في الاشتراك · «أول موعد» في الخطة): رأس الشهر بسهمين + أيام الشهر
 - `commonMain/kotlin/app/masroufy/ui/screens/dues/DuesQuick.kt` (58) — — · القايمة السريعة في «المستحقات» (قايمة المالك §6.5-13): بنود كل نوع من أفعاله الموجودة — الدين: تفاصيله · لوحة التسوية (`SettleSheetRoute`)
-- `commonMain/kotlin/app/masroufy/ui/screens/dues/DuesRoutes.kt` (156) — DuesDeps, DebtSide, DuesDebtsRoute, DebtDetailRoute, SettleSheetRoute, OpeningDebtSheetRoute, InstallmentsRoute, InstallmentDetailRoute +8 · منطقة «المستحقات» (`SCREENS.md` §2.6 + تفاصيل الدين والتسوية والدين القديم): خانة «المستحقات» جوه مبدّل «العمليات» ([Slots.DUES]) ·
-- `commonMain/kotlin/app/masroufy/ui/screens/dues/DuesRows.kt` (99) — — · لون ورمز نوع الميعاد (النموذج: الدين أزرق · الاشتراك وردي · القسط رمادي أزرق · الجمعية أخضر).
+- `commonMain/kotlin/app/masroufy/ui/screens/dues/DuesRoutes.kt` (159) — DuesDeps, DebtSide, DuesDebtsRoute, DebtDetailRoute, SettleSheetRoute, OpeningDebtSheetRoute, InstallmentsRoute, InstallmentDetailRoute +8 · منطقة «المستحقات» (`SCREENS.md` §2.6 + تفاصيل الدين والتسوية والدين القديم): خانة «المستحقات» جوه مبدّل «العمليات» ([Slots.DUES]) ·
+- `commonMain/kotlin/app/masroufy/ui/screens/dues/DuesRows.kt` (101) — — · لون ورمز نوع الميعاد (النموذج: الدين أزرق · الاشتراك وردي · القسط رمادي أزرق · الجمعية أخضر).
 - `commonMain/kotlin/app/masroufy/ui/screens/dues/DuesScaffold.kt` (66) — — · هيكل شاشات المستحقات الداخلية: نفس `InnerScaffold` (الحواف 20 · المسافة 14 · من غير الشريطين) بس الرأس فيه سطر تحت العنوان
 - `commonMain/kotlin/app/masroufy/ui/screens/dues/InstallmentDetailScreen.kt` (204) — InstallmentDetailScreen · «تفاصيل الخطة» (`InstallmentDetail`): البطاقة البترولية (المتبقي · القسط والإجمالي · دفعت N من M · القادم) · الجدول (اتدفع · متأخر ·
 - `commonMain/kotlin/app/masroufy/ui/screens/dues/InstallmentEditModel.kt` (120) — PlanForm, of, PlanField, PlanFormCheck, PLAN_CYCLES, checkPlanForm, previewInputs, payLaterShown +2 · «خطة جديدة / تعديل الخطة» (`InstallmentEdit`): الخانات كنص زي ما المستخدم كتبها، والفحص هنا **قراية ومقارنة بس** (فاضي · مش رقم · صفر)
@@ -1213,7 +1217,6 @@
 - `commonMain/kotlin/app/masroufy/ui/screens/people/NuqootSheet.kt` (172) — — · «سجّل النقوط» (لوحة `NuqootSheet` جوه تفاصيل الحدث): **نقوط كاش** = المحفظة + (الاسم والمبلغ) لكل سطر ⇒ عملية لكل اسم
 - `commonMain/kotlin/app/masroufy/ui/screens/people/OccasionDraft.kt` (114) — — · لوحة «مناسبة» (`OccasionSheet`) من غير رسم: الخانات · سطر «المرة القادمة» لايف · التذكير · الفحص قبل الحفظ.
 - `commonMain/kotlin/app/masroufy/ui/screens/people/OccasionSheet.kt` (198) — — · مناسبات الشخص في ملفه (لوحة `OccasionSheet`): كارت لكل مناسبة جاية بـ«تعديل» + زرار «+ أضف مناسبة لـ…» ⇒ اللوحة.
-- `commonMain/kotlin/app/masroufy/ui/screens/people/OwedScreen.kt` (135) — — · «لك» و«عليك» بالكامل (لوحتي `OwedToYou` و`YouOwe`): المجموع فوق (لكل عملة لوحدها، من غير مقاصة مع الطرف التاني) والناس تحت
 - `commonMain/kotlin/app/masroufy/ui/screens/people/PeopleDeps.kt` (111) — PeopleDeps, PeopleMoney · منطقة «الأشخاص» (`SCREENS.md` §2.5 — الأشخاص والأحداث والمشاريع): **حالات استخدام بس** (CLAUDE.md #4 — ممنوع مستودع هنا).
 - `commonMain/kotlin/app/masroufy/ui/screens/people/PeopleFormat.kt` (57) — — · كتابة الكلام في شاشات المنطقة (عرض بس — من غير أي حساب فلوس): العدّ بالمفرد والمثنى والجمع، «بعد/قبل كام يوم»، اسم العملية، التاريخ بالسنة.
 - `commonMain/kotlin/app/masroufy/ui/screens/people/PeopleIcons.kt` (18) — — · أيقونات منطقة «الأشخاص» (لوسيد بسُمك 1.5 — المسارات من لوحات النموذج نفسها: `PersonProfile` · `Projects` · `OccasionSheet`).
@@ -1223,7 +1226,7 @@
 - `commonMain/kotlin/app/masroufy/ui/screens/people/PeopleParts.kt` (89) — — · قطع تبويب «الأشخاص» حوالين المسرح: «لك» و«عليك» · هيكل التحميل · «لسه مفيش حد» · كارت الخطأ (من `PeopleScreen` — حد الـ300 سطر).
 - `commonMain/kotlin/app/masroufy/ui/screens/people/PeoplePresenter.kt` (188) — — · من نتايج حالات الاستخدام لحالة شاشة «الأشخاص» و«لك» و«عليك» — **ترتيب وكلام بس، من غير أي حساب فلوس** (الأرقام جاية جاهزة:
 - `commonMain/kotlin/app/masroufy/ui/screens/people/PeopleQuick.kt` (36) — — · القايمة السريعة في «الناس» (قايمة المالك §6.5-13): الحدث: تفاصيله · تجهيزاته (`EventPrepRoute`) — الشخص: ملفه · مناسبة جديدة له
-- `commonMain/kotlin/app/masroufy/ui/screens/people/PeopleRoutes.kt` (89) — EventsRoute, ProjectsRoute, OwedToYouRoute, YouOweRoute, PersonProfileRoute, EventDetailRoute, EventPrepRoute, ProjectDetailRoute +6 · منطقة «الأشخاص» (`SCREENS.md` §2.5): People · PersonProfile · AddPersonSheet · OwedToYou · YouOwe · ProfileDebtSheet · OccasionSheet ·
+- `commonMain/kotlin/app/masroufy/ui/screens/people/PeopleRoutes.kt` (79) — EventsRoute, ProjectsRoute, PersonProfileRoute, EventDetailRoute, EventPrepRoute, ProjectDetailRoute, AddPersonSheetRoute, DebtMode +4 · منطقة «الأشخاص» (`SCREENS.md` §2.5): People · PersonProfile · AddPersonSheet · ProfileDebtSheet · OccasionSheet ·
 - `commonMain/kotlin/app/masroufy/ui/screens/people/PeopleRowEdit.kt` (225) — — · مدة شريط «أُزيل «فلان» من الصف — تراجع» (النموذج: 4 ثواني).
 - `commonMain/kotlin/app/masroufy/ui/screens/people/PeopleScreen.kt` (271) — —
 - `commonMain/kotlin/app/masroufy/ui/screens/people/PeopleStage.kt` (239) — — · المسرح البترولي في «الأشخاص» (لوحة `People`): أقرب 5 فوق «أنت» بخيوط ملتوية من راسك لكل واحد (بتترسم أول ما الشاشة تفتح)،
@@ -1234,7 +1237,7 @@
 - `commonMain/kotlin/app/masroufy/ui/screens/people/PersonLedgerUi.kt` (88) — — · «السجل بينا» في صفحة الشخص (جولة r05) من `ManagePersonLinks.page.load` — كلام وترتيب بس، المبالغ والصافي جايين جاهزين من `personLedger`.
 - `commonMain/kotlin/app/masroufy/ui/screens/people/PersonLinkOps.kt` (162) — — · اسم العملية في السطر: التاجر · الطرف زي ما جه · أول الوصف.
 - `commonMain/kotlin/app/masroufy/ui/screens/people/PersonPresenter.kt` (100) — — · ملف الشخص (لوحة `PersonProfile`) من نتايج حالات الاستخدام: `ManagePeople.listWithBalances` (الالتزامات المفتوحة بالمتبقي) ·
-- `commonMain/kotlin/app/masroufy/ui/screens/people/PersonProfileScreen.kt` (237) — —
+- `commonMain/kotlin/app/masroufy/ui/screens/people/PersonProfileScreen.kt` (239) — —
 - `commonMain/kotlin/app/masroufy/ui/screens/people/PersonTogether.kt` (126) — — · «معًا» في ملف الشخص: دعوة لجمعية · مشروع مشترك · طلب اتصال · تقسيم فاتورة — كل واحد بلوحة صغيرة.
 - `commonMain/kotlin/app/masroufy/ui/screens/people/PrepPresenter.kt` (100) — — · «التجهيزات» (لوحة `EventPrep`) من `ManageEventPrep.summary`/`suggestions` و`ManageEvents.detail` (لمصروف الحدث اللي مش على بند).
 - `commonMain/kotlin/app/masroufy/ui/screens/people/ProfileDebtSheet.kt` (135) — — · «أضف الديون القديمة» (لوحة `ProfileDebtSheet` — من سؤال الديون في «كمّل ملفك»): لكل شخص (موجود أو اسم جديد) مبلغ،
@@ -1251,11 +1254,11 @@
 - `commonMain/kotlin/app/masroufy/ui/shell/MainWallet.kt` (19) — initialFromWallet, fromLabelKey · **المحفظة الأساسية لكل بلد** (قرار المالك 2026-10-09 — OVERRIDES §78 ٢): أول مصروف بيسأل «بتصرف عادةً منين؟» (لوحة «+» مفتوحة **من غير محفظة
 - `commonMain/kotlin/app/masroufy/ui/shell/MeAvatar.kt` (82) — MeAvatar · دايرة صاحب الحساب (`MeAvatar` — KOTLIN-MAP §3 · OVERRIDES §76): زجاج على الفاتح وجواها الكاركتر، و**شريط الاكتمال برّه الدايرة**
 - `commonMain/kotlin/app/masroufy/ui/shell/QuickAddStrip.kt` (146) — QuickAddItem, WalletChoice, QuickAddStrip · حاجة بتتدفع كل شهر وما اتسجلتش الشهر ده («دفعت الإيجار؟»). [question] و[name] من حالة الاستخدام (أو المستخدم)، و[usualMinor] المبلغ المعتاد.
-- `commonMain/kotlin/app/masroufy/ui/shell/SpaceSwitcher.kt` (168) — countryLabel, countryMark, SpaceSwitcher
+- `commonMain/kotlin/app/masroufy/ui/shell/SpaceSwitcher.kt` (167) — countryLabel, countryMark, SpaceSwitcher
 - `commonMain/kotlin/app/masroufy/ui/shell/Toaster.kt` (72) — Toaster, LocalToaster, ToastHost · الرسايل الصغيرة («سُجّلت: …» · «انتقلت إلى حساب مصر») — مستوى 1 من «مستويات الإحساس». واحدة بس في المرة، وبتختفي بعد 2.6 ثانية زي النموذج.
 - `commonMain/kotlin/app/masroufy/ui/shell/UpcomingStrip.kt` (152) — UpcomingIcon, UpcomingStatus, UpcomingCard, daysLeftText, UpcomingStrip · رمز نوع الميعاد ولونه (النموذج: اشتراك كهرماني · مناسبة وفرح وردي · قسط رمادي أزرق · يوم الراتب أخضر).
 - `commonMain/kotlin/app/masroufy/ui/shell/ask/AskState.kt` (223) — AskState, AskUndo, AskPresenter · اللي مكتوب في خانة المساعد ولسه ما اتبعتش — بيفضل لو الشات اتقفل أو البلد اتبدّلت (بيعيش في `ShellState`). المحادثة نفسها على الحساب.
-- `commonMain/kotlin/app/masroufy/ui/shell/ask/AssistLinks.kt` (144) — AssistTarget, assistTabOf, targetOf · وين زرار الشاشة في رد المساعد بيودّي: شاشة داخلية · لوحة · تبويب · لوحة «+».
+- `commonMain/kotlin/app/masroufy/ui/shell/ask/AssistLinks.kt` (142) — AssistTarget, assistTabOf, targetOf · وين زرار الشاشة في رد المساعد بيودّي: شاشة داخلية · لوحة · تبويب · لوحة «+».
 - `commonMain/kotlin/app/masroufy/ui/shell/ask/AssistantCards.kt` (202) — MessageActions · الضغطات على رسالة — كلها بتروح للمحرك ([AskPresenter]) أو للتنقل.
 - `commonMain/kotlin/app/masroufy/ui/shell/ask/AssistantChat.kt` (280) — AssistantChat
 - `commonMain/kotlin/app/masroufy/ui/shell/ask/AssistantHistory.kt` (232) — —
@@ -1294,7 +1297,7 @@
 - `commonMain/kotlin/app/masroufy/wiring/BackgroundWiring.kt` (101) — importDeps, smsImportDeps, backgroundCycle, smsHistory · نفس اعتمادات استيراد الكشف في البلد (ومعاها قرارات «زون التحويلات» ومصادر الدخل — §60 · §64) — رسايل البنك والكشف بخط واحد.
 - `commonMain/kotlin/app/masroufy/wiring/BudgetsGraph.kt` (73) — BudgetsGraph · منطقة «الميزانيات والخطط والتصنيفات والقواعد» (منطقة تاسعة — ARCHITECTURE §31.32) — **الملف ده بتاع المنطقة بس**.
 - `commonMain/kotlin/app/masroufy/wiring/CalculatorsGraph.kt` (71) — CalculatorsGraph · الحاسبات (جزء من «الاستثمار» — `ui/screens/investment/calc/`): كل حالة استخدام بنفس اعتماداتها في اختبارات `:app`، من [AreaContext].
-- `commonMain/kotlin/app/masroufy/wiring/DuesGraph.kt` (73) — DuesGraph · «المستحقات» — `loadDues(c.repos)` · `ManagePeople` · `ManageRoscas` + `RoscaSetup` · `ManageInstallments` · `ManageRecurring`،
+- `commonMain/kotlin/app/masroufy/wiring/DuesGraph.kt` (76) — DuesGraph · «المستحقات» — `loadDues(c.repos)` · `ManagePeople` · `ManageRoscas` + `RoscaSetup` · `ManageInstallments` · `ManageRecurring`،
 - `commonMain/kotlin/app/masroufy/wiring/EmployersWiring.kt` (44) — — · «جهات الشغل» وردود الداخل الجديدة (قايمة المالك 2026-10-15، البندين 6 و7) لبلد — نفس الاعتمادات في «العمليات» و«المزيد». النسخة قبل
 - `commonMain/kotlin/app/masroufy/wiring/Env.kt` (149) — DeviceEnv, SessionLinks, SeenAlerts, MemorySeenAlerts, SystemClock, isoOfMillis, RandomIdGenerator · اللي بييجي من **الجهاز** (مش من بيانات الحساب): الوقت · المعرّفات · تعلّم التنبيهات (على الجوال — §61) · المقروء في الجرس · النت · نسخة المل
 - `commonMain/kotlin/app/masroufy/wiring/HomeCardsGraph.kt` (37) — HomeCardsGraph · كروت الرئيسية (اختيار المالك 2026-10-15) — جزء من «الرئيسية» ([HomeGraph.cards]). نفس اعتمادات اختبارات `:app`:
