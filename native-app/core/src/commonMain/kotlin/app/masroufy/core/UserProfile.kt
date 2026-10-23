@@ -56,6 +56,13 @@ data class UserProfile(
      * المرتب بيفضل «ما اتجاوبش» وبيتطلب يتكتب بالظبط. بيتمسح أول ما يكتب المبلغ أو يختار «أفضّل ما أقولش».
      */
     val salaryRangeLegacy: String? = null,
+    /**
+     * المرتب المكتوب على الملف **لكل بلد بعملتها** (cty-4 · OVERRIDES §111): كتابة مرتب مصر ما بتمسحش مرتب السعودية.
+     * المفتاح المتخزن `salaries` = {"SAR": هللات}. القديم ([salaryMinor] + [salaryCurrency]) بيتنقل هنا وقت القراية ([withSalaryMigrated]).
+     */
+    val salaries: Map<Currency, Halalas> = emptyMap(),
+    /** «أفضّل ما أقولش» **لكل بلد** (عملتها). المفتاح `salaryDeclinedIn`. القديم [salaryDeclined] بيتنقل للسعودية (البلد الأصلية). */
+    val salaryDeclinedIn: Set<Currency> = emptySet(),
 )
 
 /** عدد الأشكال (المؤقتة لحد ما الكاركتر النهائي يتصمم — §73). */
@@ -98,7 +105,24 @@ fun parseStoredProfile(raw: Map<String, Any?>?): UserProfile {
         salaryCurrency = (data["salaryCurrency"] as? String)?.let { c -> Currency.entries.firstOrNull { it.name == c } },
         salaryDeclined = bool("salaryDeclined")?.takeIf { it },
         salaryRangeLegacy = data["salaryRange"]?.let { it as? String ?: it.toString() }?.takeIf { it.isNotEmpty() },
-    )
+        salaries = (data["salaries"] as? Map<*, *>).orEmpty().mapNotNull { (k, v) ->
+            val c = Currency.entries.firstOrNull { it.name == k } ?: return@mapNotNull null
+            safeInteger(v)?.takeIf { it > 0 }?.let { c to it }
+        }.toMap(),
+        salaryDeclinedIn = (data["salaryDeclinedIn"] as? List<*>).orEmpty().mapNotNull { c -> Currency.entries.firstOrNull { it.name == c } }.toSet(),
+    ).withSalaryMigrated()
+}
+
+/**
+ * نقل المرتب القديم (خانة واحدة للبلدين) لخانة بلده — cty-4: المبلغ لعملته ([UserProfile.salaryCurrency])، ومن غير عملة ⇒ **السعودية**
+ * (البلد الأصلية)؛ و«أفضّل ما أقولش» القديم ⇒ السعودية. الخانات القديمة بتتمسح، فالحفظ الجاي بيكتب الجديد بس. الموجود في الجديد ما بيتغطاش.
+ */
+fun UserProfile.withSalaryMigrated(): UserProfile {
+    if (salaryMinor == null && salaryCurrency == null && salaryDeclined == null) return this
+    val home = salaryCurrency ?: SAUDI_PACK.currency
+    val moved = if (salaryMinor != null && salaryMinor > 0 && home !in salaries) salaries + (home to salaryMinor) else salaries
+    val declined = if (salaryDeclined == true && SAUDI_PACK.currency !in moved) salaryDeclinedIn + SAUDI_PACK.currency else salaryDeclinedIn
+    return copy(salaryMinor = null, salaryCurrency = null, salaryDeclined = null, salaries = moved, salaryDeclinedIn = declined)
 }
 
 sealed interface ProfileCheck {
@@ -110,7 +134,7 @@ sealed interface ProfileCheck {
 fun checkProfile(input: UserProfile): ProfileCheck {
     val name = input.displayName?.let(JsText::trim)
     if (name != null && name.length > MAX_NAME_LENGTH) return ProfileCheck.Invalid("displayName", uiText(TextKey.PROFILE_NAME_TOO_LONG, MAX_NAME_LENGTH.toString()))
-    if (input.salaryMinor != null && (input.salaryMinor > MAX_SAFE_HALALAS || input.salaryMinor < 0)) {
+    if ((listOfNotNull(input.salaryMinor) + input.salaries.values).any { it > MAX_SAFE_HALALAS || it < 0 }) {
         return ProfileCheck.Invalid("salaryMinor", uiText(TextKey.PROFILE_SALARY_INVALID))
     }
     if (input.payday < 1 || input.payday > 31) return ProfileCheck.Invalid("payday", uiText(TextKey.PROFILE_PAYDAY_RANGE))
