@@ -97,6 +97,12 @@ fun newSpaceFor(countryCode: String, existing: List<Space>, nowIso: String): Spa
 }
 
 /** كل المساحات للعرض: السعودية الأول، وبعدها السجل بترتيب الإنشاء. */
+/**
+ * cty-9 — **المصدر الوحيد** لـ«البلدين شغالين»: أكتر من بلد مفتوحة (المؤرشفة ما بتتحسبش). علامة البلد ([CountryMark] في الواجهة) والكلام
+ * «في البلدين» بيقروا من هنا بس.
+ */
+fun bothCountriesActive(spaces: List<Space>): Boolean = spaces.filter { !it.archived }.map { it.countryCode.uppercase() }.distinct().size > 1
+
 fun allSpaces(registry: List<Space>): List<Space> = listOf(defaultSpace()) + registry.filter { it.id != DEFAULT_SPACE_ID }.sortedBy { it.createdAt }
 
 /** المساحة الشغالة: المتخزنة على الجهاز لو موجودة ومش مؤرشفة، وإلا السعودية. */

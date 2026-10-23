@@ -97,6 +97,9 @@ interface ShellDeps {
     /** البلاد للتبديل (`SpaceSwitcher`) — `ManageSpaces.list` + «معك الآن» لكل بلد. */
     suspend fun spaces(): List<SpaceChoice>
 
+    /** البلاد المفتوحة في الجلسة من غير أي قراية (cty-9 — مصدر «البلدين شغالين» مع `bothCountriesActive`). الافتراضي = البلد دي بس. */
+    fun openSpaces(): List<Space> = emptyList()
+
     /** التبديل على الجهاز ده بس — من غير أي كتابة على البيانات (`AccountSession.switchSpace`). */
     suspend fun switchSpace(spaceId: String): Boolean
 

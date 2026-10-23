@@ -196,4 +196,5 @@ data class Obligation(
     val custodyHeld: Boolean = false,
 )
 
-data class Settlement(val id: Id, val transactionId: Id, val obligationId: Id, val amountMinor: Halalas)
+/** [fx] = اتسدد بعملة البلد التانية (§111-4): المدفوع بعملته والسعر — [amountMinor] دايمًا بعملة الدين بعد التحويل. */
+data class Settlement(val id: Id, val transactionId: Id, val obligationId: Id, val amountMinor: Halalas, val fx: SettlementFx? = null)

@@ -63,6 +63,9 @@ class ManagePeople(private val deps: ManagePeopleDeps) {
     /** §82-19 «دفعت أكتر من اللي عليك» — بنفس الاعتمادات (`SettleOverpay.kt`). */
     val overpay: SettleOverpay by lazy { SettleOverpay(deps, this) }
 
+    /** §111-4 السداد بعملة البلد التانية بسعر صرف (`SettleOtherCurrency.kt`). */
+    val otherCurrency: SettleOtherCurrency by lazy { SettleOtherCurrency(deps, this) }
+
     /** كل الأشخاص بأرصدتهم — القراية محدودة بعدد الأشخاص مش بالعمليات. */
     suspend fun listWithBalances(): List<PersonRow> {
         val rows = deps.people.listAll().map { person ->
@@ -173,6 +176,7 @@ class ManagePeople(private val deps: ManagePeopleDeps) {
         amountMinor: Halalas,
         transactionId: Id? = null,
         requestId: String? = null,
+        fx: app.masroufy.core.SettlementFx? = null,
     ): Settlement {
         if (requestId != null && !REQUEST_ID.matches(requestId)) throw IllegalStateException(uiText(TextKey.SETTLEMENT_REQUEST_ID_INVALID))
         if (transactionId != null && deps.spaceLegs?.isLeg(transactionId) == true) throw IllegalStateException(app.masroufy.core.uiText(app.masroufy.core.TextKey.SPACE_TRANSFER_LEG_LOCKED))
@@ -182,6 +186,7 @@ class ManagePeople(private val deps: ManagePeopleDeps) {
                 transactionId = transactionId ?: "",
                 obligationId = obligationId,
                 amountMinor = amountMinor,
+                fx = fx,
             ),
             personId,
         )

@@ -116,6 +116,7 @@ fun AppShell(shell: ShellState, registry: RouteRegistry, deps: SpaceDeps) {
         LocalOverlayHost provides shell.overlays,
         LocalBackdrop provides backdrop,
         LocalSpace provides deps,
+        LocalCountries provides remember(deps) { CountriesInfo.of(deps.space, runCatching { deps.shell.openSpaces() }.getOrDefault(emptyList())) },
         LocalToaster provides shell.toaster,
         LocalBell provides BellHolder(shownBell) { bellTick++ },
         LocalDataChanges provides shell.changes,

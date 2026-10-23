@@ -107,6 +107,10 @@ class DocCodecsTest {
         assertEquals(500, LedgerCodecs.settlements.decode(base + ("amountMinor" to 500.0)).amountMinor)
         assertFailsWith<DocumentError> { LedgerCodecs.settlements.decode(base + ("amountMinor" to 500.5)) }
         assertFailsWith<DocumentError> { LedgerCodecs.settlements.decode(base + ("amountMinor" to "500")) }
+        // §111-4: السداد بعملة تانية — المدفوع والسعر بيتخزنوا على التسوية، والقديمة من غيرهم هي هي
+        val fx = app.masroufy.core.Settlement("s-2", "", "o-1", 10_000, app.masroufy.core.SettlementFx(132_500, Currency.EGP, 132_500))
+        assertEquals(fx, LedgerCodecs.settlements.decode(LedgerCodecs.settlements.encode(fx)))
+        assertEquals(null, LedgerCodecs.settlements.decode(base).fx)
         val obligation = LedgerCodecs.obligations.encode(app.masroufy.core.Obligation("o-1", "p-1", null, app.masroufy.core.ObligationKind.RECEIVABLE, 1, Currency.SAR))
         val unknown = assertFailsWith<DocumentError> { LedgerCodecs.obligations.decode(obligation + ("kind" to "gift_card")) }
         assertTrue("gift_card" in unknown.message!!)

@@ -65,6 +65,8 @@ class ShellGraph(
         SpaceChoice(s, total, s.currency, s.id == space.id)
     }
 
+    override fun openSpaces(): List<Space> = session.spaces().map { it.first }.filter { !it.archived }.ifEmpty { listOf(space) }
+
     override suspend fun switchSpace(spaceId: String): Boolean = session.switchSpace(spaceId)
 
     override suspend fun bell(): BellState {
