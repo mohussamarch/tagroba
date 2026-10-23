@@ -79,6 +79,8 @@ data class ManageAssetsDeps(
     val prices: AssetPriceRepository,
     val ids: IdGenerator,
     val clock: Clock,
+    /** cty-8: «النهارده» بتوقيت البلد دي (مش تاريخ جرينتش). */
+    val countryCode: String? = null,
 )
 
 private const val MAX_ASSET_NAME = 80
@@ -111,7 +113,7 @@ class ManageAssets(private val deps: ManageAssetsDeps) {
         val allLots = deps.lots.listAll()
         val allSales = deps.sales.listAll()
         val priceOf = deps.prices.listAll().associateBy { it.assetId }
-        val asOf = today ?: deps.clock.nowIso().take(10)
+        val asOf = today ?: app.masroufy.core.todayInCountry(deps.countryCode, deps.clock.nowIso())
 
         val rows = assets.map { asset ->
             val lots = allLots.filter { it.assetId == asset.id }

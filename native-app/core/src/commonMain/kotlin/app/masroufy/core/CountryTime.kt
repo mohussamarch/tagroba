@@ -43,6 +43,12 @@ fun localMillisIn(timeZone: String, utcMillis: Long): Long = when (timeZone) {
 /** يوم اللحظة [utcMillis] في [timeZone]. */
 fun dayAt(timeZone: String, utcMillis: Long): IsoDate = dayNumberToIso(localMillisIn(timeZone, utcMillis).floorDiv(DAY_MS).toInt())
 
+/**
+ * cty-8 — **«النهارده» الوحيد** للبلد: يوم اللحظة [nowIso] بتوقيت حزمة البلد [countryCode] (القاهرة أو الرياض) — مش تاريخ ساعة الجوال
+ * ولا تاريخ جرينتش. الرئيسية والشهر والاستثمار (`DeviceEnv.today` للبلد) وحساب الأصول بيقروا منه.
+ */
+fun todayInCountry(countryCode: String?, nowIso: String): IsoDate = dayIn(countryPack(countryCode).timeZone, nowIso) ?: nowIso.take(10)
+
 /** يوم الوقت [iso] (بأي منطقة مكتوبة فيه) في [timeZone]. تاريخ بس («2026-10-09») ⇒ زي ما هو · مش مقروء ⇒ null. */
 fun dayIn(timeZone: String, iso: String): IsoDate? {
     if (iso.length == 10) return iso.takeIf(::isValidIsoDate)

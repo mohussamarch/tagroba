@@ -67,13 +67,15 @@ data class ManageAssetGrowthDeps(
     val sales: AssetSaleRepository,
     val prices: AssetPriceRepository,
     val clock: Clock,
+    /** cty-8: «النهارده» بتوقيت البلد دي (مش تاريخ جرينتش). */
+    val countryCode: String? = null,
 )
 
 class ManageAssetGrowth(private val deps: ManageAssetGrowthDeps) {
     private suspend fun findAsset(id: Id): Asset =
         deps.assets.listAll().find { it.id == id } ?: throw AssetError(uiText(TextKey.ASSET_NOT_FOUND))
 
-    private fun today(): IsoDate = deps.clock.nowIso().take(10)
+    private fun today(): IsoDate = app.masroufy.core.todayInCountry(deps.countryCode, deps.clock.nowIso())
 
     suspend fun setProfile(assetId: Id, input: AssetGrowthInput): Asset {
         val asset = findAsset(assetId)

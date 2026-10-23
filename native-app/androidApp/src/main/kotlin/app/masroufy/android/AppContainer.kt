@@ -168,7 +168,8 @@ class AppContainer(private val context: Context, private val problems: ProblemLo
      * كلمات صفحات الـPDF. الخلفية (من غير [space]) بتاخد الصندوق لوحدها.
      */
     private fun envFor(uid: String, space: Space? = null) = DeviceEnv(
-        clock = clock, ids = ids, today = { MasroufyBackground.localNow().date }, hourNow = { MasroufyBackground.localNow().hour },
+        // cty-8: «النهارده» للبلد بتوقيت حزمتها (القاهرة/الرياض) — مش تاريخ الجوال؛ الخلفية من غير بلد زي ما كانت
+        clock = clock, ids = ids, today = { space?.let { app.masroufy.core.todayInCountry(it.countryCode, clock.nowIso()) } ?: MasroufyBackground.localNow().date }, hourNow = { MasroufyBackground.localNow().hour },
         nowMillis = nowMillis, interactions = AndroidAlertInteractionStore(context, uid), usualHours = AndroidUsualHoursStore(context, uid),
         seenAlerts = AndroidSeenAlerts(context, uid), http = PlatformHttpText(), feedCache = AndroidFeedCache(context),
         smsInbox = space?.let { AndroidSmsInbox(context, uid) },
