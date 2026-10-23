@@ -19,6 +19,9 @@ a{color:#08634F}a:hover{color:#064B40}
 .m-veil{animation:m-fade 220ms cubic-bezier(.2,.7,.3,1) both}
 .m-sheet{animation:m-up 450ms cubic-bezier(.2,.7,.3,1) both}
 .m-pop{animation:m-pop 420ms cubic-bezier(.18,.9,.28,1.08) both}
+.m-fan{animation:m-fan 420ms cubic-bezier(.18,.9,.28,1.12) both}
+@keyframes m-fan{from{opacity:0;transform:translate(var(--fx),var(--fy)) scale(.3)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.m-fan{animation:m-fade 150ms both}}
 @keyframes m-pop{from{opacity:0;transform:translateY(-8px) scale(.94)}to{opacity:1;transform:none}}
 @keyframes m-fade{from{opacity:0}to{opacity:1}}
 @keyframes m-up{from{transform:translateY(100%)}to{transform:none}}
@@ -73,9 +76,8 @@ a{color:#08634F}a:hover{color:#064B40}
 
   <sc-if value="{{menuOpen}}" hint-placeholder-val="{{ false }}"><div style="position: absolute; inset: 0; z-index: 7">
     <button type="button" class="m-veil" onClick="{{closeMenu}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.16); backdrop-filter: blur(8px) saturate(0.88); -webkit-backdrop-filter: blur(8px) saturate(0.88)"></button>
-    <div role="menu" aria-label="{{menuTitle}}" class="m-pop" style="position: absolute; top: 268px; right: 20px; width: 240px; border-radius: 24px; padding: 8px; display: flex; flex-direction: column; gap: 2px; background: rgba(255,255,255,0.86); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); box-shadow: inset 0 1px 0 #FFFFFF, 0 18px 40px rgba(16,45,53,0.22)">
-      <sc-for list="{{menuItems}}" as="mi" hint-placeholder-count="5"><button type="button" role="menuitem" class="m-press" onClick="{{mi.go}}" style="height: 48px; border: 0; border-radius: 16px; padding: 0 10px; display: flex; align-items: center; gap: 10px; font: inherit; font-size: 15px; text-align: right; cursor: pointer; color: #193D33; background: transparent"><span style="width: 32px; height: 32px; border-radius: 10px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #08634F; background: rgba(8,99,79,0.10)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="{{mi.icon}}"></path></svg></span>{{mi.label}}</button></sc-for>
-    </div>
+    <button type="button" class="m-press" onClick="{{closeMenu}}" aria-label="إغلاق" style="position: absolute; top: 163px; right: 44px; width: 44px; height: 44px; border: 0; border-radius: 22px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #FFFFFF; background: #08634F; box-shadow: 0 8px 18px rgba(8,99,79,0.35)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+    <div role="menu" aria-label="{{menuTitle}}"><sc-for list="{{menuItems}}" as="mi" hint-placeholder-count="4"><button type="button" role="menuitem" class="m-fan" onClick="{{mi.go}}" style="{{mi.style}}"><span style="width: 52px; height: 52px; border-radius: 26px; display: flex; align-items: center; justify-content: center; color: #08634F; background: #FFFFFF; box-shadow: inset 0 1px 0 #FFFFFF, 0 10px 22px rgba(16,45,53,0.20)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="{{mi.icon}}"></path></svg></span><span style="font-size: 12px; font-weight: 700; white-space: nowrap; padding: 2px 8px; border-radius: 10px; color: #193D33; background: rgba(255,255,255,0.9)">{{mi.label}}</span></button></sc-for></div>
   </div></sc-if>
 
   <sc-if value="{{calOpen}}" hint-placeholder-val="{{ false }}"><div style="position: absolute; inset: 0; z-index: 8">
@@ -151,7 +153,12 @@ class Component extends DCLogic {
         ['M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1zM8 8h8M8 12h8', T('قسّم فاتورة', 'قسّم فاتورة'), open('split')],
         ['M12 3a9 9 0 1 0 9 9M12 7v5l3 2', eg ? 'جمعية' : 'دعوة لجمعية', open('rosca')],
         ['M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16M3 8h18v12H3z', 'مشروع مشترك', open('project')]
-      ].map(([icon, label, go]) => ({ icon, label, go })),
+      ].map(([icon, label, go], i, all) => {
+        // أيقونات بتتفرد على ربع دايرة حوالين زرار «معاه» (طلب المالك 2026-10-23: «مش عايز قايمة، عايزها أيقونات بتتفرد»)
+        const R = 165, ang = (165 + (i * 92) / (all.length - 1)) * Math.PI / 180, cx = 390 - 66, cy = 185;
+        const x = cx + R * Math.cos(ang), y = cy - R * Math.sin(ang);
+        return { icon, label, go, style: 'position: absolute; left: ' + Math.round(x - 40) + 'px; top: ' + Math.round(y - 26) + 'px; width: 80px; border: 0; padding: 0; background: transparent; cursor: pointer; font: inherit; display: flex; flex-direction: column; align-items: center; gap: 4px; animation-delay: ' + i * 45 + 'ms; --fx: ' + Math.round(cx - x) + 'px; --fy: ' + Math.round(cy - y) + 'px' };
+      }),
       noNet: T('بلا مقاصة', 'من غير خصم'),
       hasNotice: true, noticeTitle: T('زفاف خالد بعد 11 يومًا', 'فرح خالد بعد 11 يوم'), noticeSub: T('18 أكتوبر · ذكّرني قبلها بأسبوع', '18 أكتوبر · هفكّرك قبلها بأسبوع'),
       onceTitle: T('مناسبات مرة واحدة', 'مناسبات مرة واحدة'), once, onceAll: once, calLabel: T('التقويم', 'التقويم'),
