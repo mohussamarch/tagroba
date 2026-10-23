@@ -3,11 +3,12 @@
 > **ما تتعدلش باليد.** بتتولّد بـ`node scripts/codemap.mjs` بعد كل دمج. سطر لكل ملف: المسار (عدد السطور) — أهم الأسماء · أول تعليق.
 > اقرا الخريطة الأول، وافتح الملفات اللي هتشتغل عليها بس.
 
-الملفات: 1318 (من غير الاختبارات)
+الملفات: 1328 (من غير الاختبارات)
 
-## androidApp (14)
+## androidApp (15)
 
 - `main/kotlin/app/masroufy/android/AndroidPermissions.kt` (59) — AndroidPermissions · أذونات الجهاز بنافذة النظام نفسها (الشرح قبلها شغل الشاشة — `SmsPermission` في «الاستيراد»/«أول تشغيل»):
+- `main/kotlin/app/masroufy/android/AndroidPersonPhotos.kt` (70) — AndroidPersonPhotos · صورة الشخص (r06-person — OVERRIDES §116-ب): نافذة اختيار الصور بتاعة أندرويد (`PickVisualMedia` — **من غير إذن تخزين**) ⇒ الصورة بتتصغّر
 - `main/kotlin/app/masroufy/android/AndroidSpeech.kt` (48) — AndroidSpeech · ميكروفون المساعد = **نافذة التعرّف على الكلام بتاعة الجوال العادية** (رد المالك §79.2-8: «مقبول يروح لجوجل»): `RecognizerIntent` من غير
 - `main/kotlin/app/masroufy/android/AppContainer.kt` (231) — AppContainer
 - `main/kotlin/app/masroufy/android/CrashReports.kt` (99) — AndroidCrashReports · تقارير الأعطال (Firebase Crashlytics — OVERRIDES §90 · حدود §80):
@@ -16,7 +17,7 @@
 - `main/kotlin/app/masroufy/android/FirebaseUsage.kt` (60) — FirebaseUsage · بيانات الاستخدام (Google Analytics for Firebase — OVERRIDES §114 · ARCHITECTURE «بيانات الاستخدام» · حدود §80):
 - `main/kotlin/app/masroufy/android/FirestoreRepositories.kt` (71) — toRepositories · مستودعات فايربيز لبلد (`FirestoreContainer` — بذاكرتها `LocalMirror`) ⇒ واجهات بس للتجميع. سطر بسطر بنفس الأسماء.
 - `main/kotlin/app/masroufy/android/GoogleIdTokens.kt` (44) — AndroidGoogleIdTokens · دخول جوجل بنافذة النظام (Credential Manager — ARCHITECTURE §31.31): «اختار حسابك» من الحسابات اللي على الجوال ⇒ رمز هوية ⇒ فايربيز
-- `main/kotlin/app/masroufy/android/MainActivity.kt` (127) — MainActivity · الشاشة الوحيدة (كل التنقل جوه Compose — من غير مكتبة تنقل). `FragmentActivity` عشان نافذة البصمة (`AndroidDeviceLock`).
+- `main/kotlin/app/masroufy/android/MainActivity.kt` (129) — MainActivity · الشاشة الوحيدة (كل التنقل جوه Compose — من غير مكتبة تنقل). `FragmentActivity` عشان نافذة البصمة (`AndroidDeviceLock`).
 - `main/kotlin/app/masroufy/android/MasroufyApplication.kt` (37) — MasroufyApplication · بداية العملية (الشاشة أو عامل الخلفية): التجميع مرة واحدة + الجلسة + **تسجيل دورة الخلفية** (`MasroufyBackground.install` — ARCHITECTURE §31
 - `main/kotlin/app/masroufy/android/NetworkStatus.kt` (35) — — · فيه نت ولا لأ — من النظام (`ConnectivityManager`) وبتتحدث لوحدها مع كل تغيير. الأزرار اللي محتاجة نت بتتقفل من غيره
 - `main/kotlin/app/masroufy/android/ProblemLogSetup.kt` (53) — ProblemLogSetup · «سجل المشاكل» على الجوال (OVERRIDES §90) — **أول حاجة في بداية العملية** (قبل التجميع) عشان أي وقعة بعدها تتسجل:
@@ -194,7 +195,7 @@
 - `commonMain/kotlin/app/masroufy/usecase/ManageOccasions.kt` (132) — ManageOccasionsDeps, OccasionInput, UpcomingOccasion, ManageOccasions · مناسبات الشخص (OVERRIDES §44.1 و§64) — ميلادي بس. عيد ميلاد · عيد جواز · فرح · غيره، سنوية أو مرة واحدة،
 - `commonMain/kotlin/app/masroufy/usecase/ManagePeople.kt` (231) — PersonObligationRow, PersonRow, ManagePeopleDeps, LinkResult, ManagePeople · ManagePeople — نقل `managePeople.ts`: الأشخاص والديون والأمانات.
 - `commonMain/kotlin/app/masroufy/usecase/ManagePeopleRow.kt` (60) — ManagePeopleRowDeps, ManagePeopleRow
-- `commonMain/kotlin/app/masroufy/usecase/ManagePersonCircles.kt` (76) — ManagePersonCirclesDeps, ManagePersonCircles · دايرة الشخص وصلته بيك، والصلات بين الأشخاص (جلسة 16). **مستند الشخص ما بيتكتبش** — الدايرة والصلة في مجموعاتهم.
+- `commonMain/kotlin/app/masroufy/usecase/ManagePersonCircles.kt` (98) — ManagePersonCirclesDeps, ManagePersonCircles · دايرة الشخص وصلته بيك، والصلات بين الأشخاص (جلسة 16). **مستند الشخص ما بيتكتبش** — الدايرة والصلة في مجموعاتهم.
 - `commonMain/kotlin/app/masroufy/usecase/ManagePersonLinks.kt` (206) — PersonLinksDeps, PersonLinkError, LinkOutcome, TxnPersonStatus, NeedsPersonRow, ManagePersonLinks · ربط عملية بشخص (جولة r05 — شكوى المالك 2026-10-16: «علّمت كتير على كذا عملية بيني وبين شخص إنه دين… ولما دخلت على الشخص الصفحة فاضية»).
 - `commonMain/kotlin/app/masroufy/usecase/ManageProfile.kt` (70) — ManageProfileDeps, ProfileSaved, ManageProfile · ManageProfile — نقل `manageProfile.ts`: قسم «الحساب» وأسئلة البداية (OVERRIDES §26).
 - `commonMain/kotlin/app/masroufy/usecase/ManageProjects.kt` (236) — ProjectsDeps, ProjectRow, ProjectLists, ProjectTransaction, ProjectDetail, ProjectMembership, AddedProjectRule, ManageProjects · ManageProjects — نقل `manageProjects.ts` (OVERRIDES §34). الحسابات في `core/Projects.kt`؛ هنا قراية وكتابة بس.
@@ -303,7 +304,7 @@
 - `commonMain/kotlin/app/masroufy/usecase/VerifiedBackup.kt` (27) — VerifiedBackup, saveVerifiedBackup · نسخة قبل أي كتابة صيانة (إصلاح، تنظيف، تراجع) — نقل `verifiedBackup.ts` (HANDOVER §36).
 - `commonMain/kotlin/app/masroufy/usecase/ZakatHoldings.kt` (117) — — · اللي بتملكه يوم الحساب + المحافظ والعمليات (للحول).
 
-## core (415)
+## core (416)
 
 - `commonMain/kotlin/app/masroufy/core/ActualSaving.kt` (63) — monthSavingMinor, monthIncomeMinor, averageSavingMinor, SavingVerdict, SavingComparison, compareWithActual · «اللي بتحوّشه فعلًا» — المقارنة في حاسبة الادخار (قرار المالك §69: «يقارن باللي بتحوّشه فعلًا — آخر 3 شهور»).
 - `commonMain/kotlin/app/masroufy/core/AdvisorMoreRules.kt` (225) — unusualSpendCandidate, beforePaydayCandidate, payFirstCandidate, billJumpCandidate, SubscriptionPlace, dupSubsCandidates, bigOneCandidate, goalNearCandidate +4 · «المساعد المالي» — الأفكار الثمانية التانية (المالك شغّلها كلها 2026-10-05، OVERRIDES §68): unusual · beforePayday · payFirst ·
@@ -474,7 +475,7 @@
 - `commonMain/kotlin/app/masroufy/core/PeopleOverview.kt` (174) — PersonSpaceBalance, BalanceDirection, PersonBalanceLine, PersonOutlineState, PersonNextOccasion, SpaceGiftBadge, PersonOverviewRow, PeopleSection +9 · ملخص شاشة الأشخاص (دالة نقية — الشاشة ما بتحسبش رقم): لكل شخص دايرته وصلته بيك، وأرصدته **سطر لكل (بلد · عملة · اتجاه)**
 - `commonMain/kotlin/app/masroufy/core/PeopleRow.kt` (64) — PeopleRowCandidate, PeopleRow, rankForPeopleRow, defaultPeopleRow, peopleRow, rowMove, rowRemove, rowRestore +1 · صف «أهم 5» فوق شخصيتك في تبويب «الأشخاص» (OVERRIDES §84 — طلب المالك 2026-10-10، والتفاصيل في KOTLIN-MAP «وضع تعديل صف «أهم 5»»):
 - `commonMain/kotlin/app/masroufy/core/Period.kt` (149) — IsoDate, Period, DateParts, PeriodError, isLeapYear, daysInMonth, parseIsoDate, isValidIsoDate +12 · الشهر المالي — نقل `src/domain/period.ts` (spec/02).
-- `commonMain/kotlin/app/masroufy/core/PersonCircles.kt` (95) — PEOPLE_BACKUP_GROUPS, PersonCircle, PersonProfile, circleOf, PersonCircleError, cleanRelationLabel, PersonRelation, personRelationId +3 · شاشة الأشخاص — الدواير والعلاقات (قرار المالك 2026-10-05: «دواير متداخلة فوق — إنت في النص، والحلقات عيلة · صحاب · شغل —
+- `commonMain/kotlin/app/masroufy/core/PersonCircles.kt` (114) — PEOPLE_BACKUP_GROUPS, PersonCircle, PersonProfile, PERSON_BADGES, circleOf, PersonCircleError, cleanRelationLabel, PersonRelation +4 · شاشة الأشخاص — الدواير والعلاقات (قرار المالك 2026-10-05: «دواير متداخلة فوق — إنت في النص، والحلقات عيلة · صحاب · شغل —
 - `commonMain/kotlin/app/masroufy/core/PersonLedger.kt` (221) — PersonEntryType, PersonEntry, PersonDebtLine, PersonTotals, PersonLedger, personLedger, mergePersonLedgers, SuggestWhy +4 · صفحة الشخص (جولة r05 — المالك 2026-10-16: «ليه لما أدخل على أي شخص مش بيظهر السجل بينا؟»): «السجل بينا» من **كل** اللي بيربط عملية
 - `commonMain/kotlin/app/masroufy/core/PersonLinks.kt` (191) — PersonMeaning, meaningsFor, isPurchaseShaped, kindForMeaning, PersonLink, operationKindFor, obligationKindFor, personCategoryIds +12 · ربط عملية بشخص (جولة r05 — شكوى المالك 2026-10-16: «علّمت كتير على كذا عملية بيني وبين شخص إنه دين مستحق… ولما دخلت على الشخص الصفحة
 - `commonMain/kotlin/app/masroufy/core/ProblemLog.kt` (149) — ProblemLevel, ProblemArea, ProblemCode, ErrorKind, ProblemDetail, ProblemEntry, errorKindOf, ProblemLogFormat · «سجل المشاكل» (OVERRIDES §90 — اختيار المالك «الاتنين»): سطر لكل مشكلة حصلت **من غير ما البرنامج يقع** (أو وقعة، قبل تقرير الأعطال).
@@ -482,7 +483,7 @@
 - `commonMain/kotlin/app/masroufy/core/PublicOccasions.kt` (51) — PublicOccasionKind, PublicOccasion, PUBLIC_OCCASION_COUNTRIES, publicOccasionSourceNote, publicOccasions · المناسبات العامة في التقويم (OVERRIDES §65) — **بداية رمضان · عيد الفطر · عيد الأضحى** من تقويم أم القرى (`Hijri.kt` — نفس
 - `commonMain/kotlin/app/masroufy/core/QnbPdf.kt` (122) — QnbPdfOutcome, parseQnbPdf · كشف QNB مصر PDF (OVERRIDES §40.3، اتعمل 2026-10-01 على كشف المالك — على جهازه بس).
 - `commonMain/kotlin/app/masroufy/core/Quantity.kt` (166) — Quantity, QuantityError, assertQuantity, parseQuantity, formatQuantity, addQuantity, subtractQuantity, valueOfQuantity +3 · الكميات — نقل `src/domain/quantity.ts` (spec/02: تمثيل عشري دقيق للكميات).
-- `commonMain/kotlin/app/masroufy/core/R06Keys.kt` (80) — R06Key · r06 (PLAN-0.6) — مفاتيح الجولة (القيم في `TextsR06.kt`). نوع لوحده تحت [TextRef] لأن [UiKey] وصل حد الـJVM («Method too large» في بداية الـe
+- `commonMain/kotlin/app/masroufy/core/R06Keys.kt` (84) — R06Key · r06 (PLAN-0.6) — مفاتيح الجولة (القيم في `TextsR06.kt`). نوع لوحده تحت [TextRef] لأن [UiKey] وصل حد الـJVM («Method too large» في بداية الـe
 - `commonMain/kotlin/app/masroufy/core/Reconcile.kt` (76) — LedgerMovement, BalanceMismatch, ReconcileResult, reconcileBalance · مطابقة الرصيد الجاري — نقل `src/domain/reconcile.ts` (spec/02 و OVERRIDES §7-ب).
 - `commonMain/kotlin/app/masroufy/core/Recurring.kt` (115) — RecurringItem, RecurringCandidate, shiftMonths, recurringKey, detectRecurring, RecurringSummary, recurringSummary, RecurringError +1 · الاشتراكات والفواتير الدورية — نقل `src/domain/recurring.ts` + الكيانات.
 - `commonMain/kotlin/app/masroufy/core/Reservations.kt` (72) — Reservation, ReservationError, reservationId, reservationIdOf, countedAmount, applyReservations, ReservationState, reservationState +1 · «محسوب في الميزانية» = **مبلغ محجوز لكل سطر** في التقويم (اختيار المالك §65 — مش المقترح) — وتوضيح المالك: يعني «احسب الميعاد
@@ -684,6 +685,7 @@
 - `commonMain/kotlin/app/masroufy/core/TextsR06More.kt` (61) — — · r06-more (OVERRIDES §116) — «المزيد» الجديدة: 3 مجموعات (فلوسك · بياناتك · الإعدادات) · علم البلد جنب كارت الملف و«القايمة السريعة» ·
 - `commonMain/kotlin/app/masroufy/core/TextsR06Night.kt` (36) — — · المظهر الليلي (فاتح · غامق · زي الجوال) وزرار إخفاء الأرقام — مفاتيح NP_ في [R06Key]. ملف لوحده عشان `TextsR06.kt` عدّى الـ300 سطر.
 - `commonMain/kotlin/app/masroufy/core/TextsR06Notify.kt` (25) — — · PLAN-0.6 §13 (ج) — إشعارات حالة القراية في الخلفية (مفاتيح NOTIFY_SMS_ في [R06Key]). النصوص من التصميم بالحرف (`SmsAway.dc.html` — فرع
+- `commonMain/kotlin/app/masroufy/core/TextsR06Person.kt` (96) — — · r06-person (OVERRIDES §116-ب) — صفحة الشخص الجديدة: الرأس (`PersonHero.dc.html` — المناسبات السنوية · الصورة · الستارة · «خصّص» · «معاه» · «
 - `commonMain/kotlin/app/masroufy/core/TextsR06Sell.kt` (63) — — · r06-sell (OVERRIDES §112-4) — «بيع أصل»: «الفلوس راحت فين؟» إجباري · الربط بالتحويل اللي وصل · كارت المكسب أو الخسارة (مفاتيح SELL_
 - `commonMain/kotlin/app/masroufy/core/TextsR06Split.kt` (90) — — · r06-1b4 — خصم تابي/تمارا المجمّع و«الدفعة دي رقم كام؟» (مفاتيح BS_ في [R06Key]). ملف لوحده عشان `TextsR06.kt` قرّب من حد الـ300 سطر.
 - `commonMain/kotlin/app/masroufy/core/TextsRetirement.kt` (66) — — · نصوص حاسبة التقاعد بعد ردود المالك (OVERRIDES §69.3 · §69.5 · §69.8 اللائحة التنفيذية): الأساسي والسكن لوحدهم في السعودية · معاش مصر (قانون 
@@ -734,7 +736,7 @@
 - `commonMain/kotlin/app/masroufy/data/IncomeCodecs.kt` (45) — IncomeCodecs · مصادر الدخل (OVERRIDES §48 · §64) — مجموعة جديدة في كوتلن بس، على نفس قواعد الباقي (أسماء حقول زي الكيان · الأعداد صحيحة ·
 - `commonMain/kotlin/app/masroufy/data/InheritanceCodecs.kt` (89) — InheritanceCodecs · حسابات الورث المحفوظة (§69.4) — مجموعة جديدة **على مستوى الحساب**، في كوتلن بس (التطبيق الحالي ما يعرفهاش).
 - `commonMain/kotlin/app/masroufy/data/LedgerCodecs.kt` (217) — LedgerCodecs · العمليات والديون والاستيراد — الحقول بنفس أسماء التطبيق الحالي (`src/domain/entities/types.ts`).
-- `commonMain/kotlin/app/masroufy/data/PersonCircleCodecs.kt` (32) — PersonCircleCodecs · دواير الأشخاص والصلات بينهم (جلسة 16) — مجموعتين جداد على مستوى الحساب، في كوتلن بس. **مستند الشخص (`people`) ما اتلمسش**:
+- `commonMain/kotlin/app/masroufy/data/PersonCircleCodecs.kt` (33) — PersonCircleCodecs · دواير الأشخاص والصلات بينهم (جلسة 16) — مجموعتين جداد على مستوى الحساب، في كوتلن بس. **مستند الشخص (`people`) ما اتلمسش**:
 - `commonMain/kotlin/app/masroufy/data/ReferenceCodecs.kt` (176) — ReferenceCodecs · المحافظ والتصنيفات والتجار والقواعد والأشخاص والوسوم والميزانيات والاشتراكات والتنبيهات.
 - `commonMain/kotlin/app/masroufy/data/SavingsGoalCodecs.kt` (46) — SavingsGoalCodecs · خطط الادخار وإيداعاتها (المساعد المالي §68) — مجموعتين جداد على مستوى الحساب، في كوتلن بس (التطبيق الحالي ما يعرفهمش).
 - `commonMain/kotlin/app/masroufy/data/SpaceCodecs.kt` (55) — SpaceCodecs · «حساب لكل بلد» (OVERRIDES §41 · §64) — مجموعات جديدة في كوتلن بس، على نفس قواعد الباقي.
@@ -824,7 +826,7 @@
 - `jvmMain/kotlin/app/masroufy/firestore/AuthCodes.jvm.kt` (5) — — · على الكمبيوتر الدخول ما بيتجربش (GitLive هناك ما بيوصلش للمحاكي — زي Firestore) ⇒ من نوع الخطأ بس.
 - `jvmMain/kotlin/app/masroufy/firestore/RawDocs.jvm.kt` (16) — rawData · على الكمبيوتر (الاختبارات): GitLive فوق firebase-java-sdk — نفس واجهة أندرويد (`getData()`).
 
-## ui (491)
+## ui (499)
 
 - `androidMain/kotlin/app/masroufy/ui/components/BankLogo.android.kt` (12) — — · أندرويد: الصورة من drawable-nodpi (WebP — OVERRIDES §76 · §81) عن طريق الخريطة المتولّدة [BANK_LOGO_IMAGES].
 - `androidMain/kotlin/app/masroufy/ui/components/BankLogos.android.kt` (93) — — · ⚠️ ملف متولّد — ما يتعدلش باليد: node scripts/bank-catalog.mjs (من scripts/bank-logos.json).
@@ -836,7 +838,7 @@
 - `androidMain/kotlin/app/masroufy/ui/screens/onboarding/OnboardingPlatform.android.kt` (5) — bankSmsReadable · أندرويد: صندوق الرسايل متاح بإذن (الإذن نفسه بيتطلب من شاشة «رسائل البنك» — منطقة الاستيراد).
 - `androidMain/kotlin/app/masroufy/ui/text/RiyalFont.android.kt` (12) — rememberRiyalFont · خط العلامة بس (`res/font/riyal_sign.otf`، 1.3 ك.ب): حرف واحد U+20C1 من ملف ساما الرسمي — المصدر في `RiyalText.kt`.
 - `androidMain/kotlin/app/masroufy/ui/theme/Fonts.android.kt` (29) — rememberMasroufyFont · Noto Sans Arabic من خدمة خطوط جوجل على الجهاز (Google Play Services) — بيتنزل مرة ويتحفظ عند النظام، **من غير ملف خط في المستودع**.
-- `commonMain/kotlin/app/masroufy/ui/app/AppShell.kt` (219) — ShellState, BellHolder, LocalBell, AppShell · حالة الهيكل اللي بتعيش طول ما التطبيق مفتوح (حتى لو البلد اتبدّلت): التنقل · طبقة اللوحات · الرسايل. زرار الرجوع بتاع الجهاز ⇒ [handleBack].
+- `commonMain/kotlin/app/masroufy/ui/app/AppShell.kt` (226) — ShellState, BellHolder, LocalBell, LocalStartAsk, AppShell · حالة الهيكل اللي بتعيش طول ما التطبيق مفتوح (حتى لو البلد اتبدّلت): التنقل · طبقة اللوحات · الرسايل. زرار الرجوع بتاع الجهاز ⇒ [handleBack].
 - `commonMain/kotlin/app/masroufy/ui/app/Countries.kt` (95) — CountriesInfo, LocalCountries, CountryMark, WithCountryMark, WithActiveCountryMark · cty-9 — «البلدين شغالين» **من مكان واحد** (`bothCountriesActive` على `ShellDeps.openSpaces`)، متقدّم مرة في `AppShell`.
 - `commonMain/kotlin/app/masroufy/ui/app/DataChanges.kt` (38) — DataChanges, LocalDataChanges, ResumeRefresh · «البيانات اتغيرت»: عدّاد بيزيد بعد كل كتابة ناجحة من حاجة مفتوحة **فوق** شاشة لسه ظاهرة (لوحة «+» فوق الرئيسية · تأكيد في المراجعة).
 - `commonMain/kotlin/app/masroufy/ui/app/Deps.kt` (129) — SpaceDeps, AskDeps, LocalSpace, MeInfo, SpaceChoice, BellItem, BellTone, BellState +1 · اللي الشاشات بتاخده للبلد الشغالة (CLAUDE.md #4 · #6): **حالات استخدام بس** (من غير مستودعات ولا فايربيز)، متقسمة **واجهة صغيرة لكل منطقة**
@@ -1247,7 +1249,7 @@
 - `commonMain/kotlin/app/masroufy/ui/screens/people/OccasionSheet.kt` (198) — — · مناسبات الشخص في ملفه (لوحة `OccasionSheet`): كارت لكل مناسبة جاية بـ«تعديل» + زرار «+ أضف مناسبة لـ…» ⇒ اللوحة.
 - `commonMain/kotlin/app/masroufy/ui/screens/people/PeopleDeps.kt` (111) — PeopleDeps, PeopleMoney · منطقة «الأشخاص» (`SCREENS.md` §2.5 — الأشخاص والأحداث والمشاريع): **حالات استخدام بس** (CLAUDE.md #4 — ممنوع مستودع هنا).
 - `commonMain/kotlin/app/masroufy/ui/screens/people/PeopleFormat.kt` (57) — — · كتابة الكلام في شاشات المنطقة (عرض بس — من غير أي حساب فلوس): العدّ بالمفرد والمثنى والجمع، «بعد/قبل كام يوم»، اسم العملية، التاريخ بالسنة.
-- `commonMain/kotlin/app/masroufy/ui/screens/people/PeopleIcons.kt` (18) — — · أيقونات منطقة «الأشخاص» (لوسيد بسُمك 1.5 — المسارات من لوحات النموذج نفسها: `PersonProfile` · `Projects` · `OccasionSheet`).
+- `commonMain/kotlin/app/masroufy/ui/screens/people/PeopleIcons.kt` (29) — — · أيقونات منطقة «الأشخاص» (لوسيد بسُمك 1.5 — المسارات من لوحات النموذج نفسها: `PersonProfile` · `Projects` · `OccasionSheet`).
 - `commonMain/kotlin/app/masroufy/ui/screens/people/PeopleKit.kt` (262) — — · قطع مشتركة بين شاشات المنطقة (بقيم النموذج نفسها — كلها مشتقة من رموز `Ink`): الشريحة 44 · المفتاح 44×26 · دايرة الحرف ·
 - `commonMain/kotlin/app/masroufy/ui/screens/people/PeopleMePress.kt` (42) — — · مدة الضغطة الطويلة على مكان «شخصيتك» في كارت «الأشخاص» (النموذج `PeopleOrbit` — 480ms).
 - `commonMain/kotlin/app/masroufy/ui/screens/people/PeopleOrbit.kt` (296) — —
@@ -1259,14 +1261,21 @@
 - `commonMain/kotlin/app/masroufy/ui/screens/people/PeopleScreen.kt` (271) — —
 - `commonMain/kotlin/app/masroufy/ui/screens/people/PeopleStage.kt` (239) — — · المسرح البترولي في «الأشخاص» (لوحة `People`): أقرب 5 فوق «أنت» بخيوط ملتوية من راسك لكل واحد (بتترسم أول ما الشاشة تفتح)،
 - `commonMain/kotlin/app/masroufy/ui/screens/people/PersonAccountsSection.kt` (124) — — · «الحسابات المربوطة» في صفحة الشخص (المالك 2026-10-16: «عايز أشوف إيه الحساب اللي مربوط بالشخص وأتحكم فيه»): كل حساب باسمه زي ما جه وآخر 4 ·
+- `commonMain/kotlin/app/masroufy/ui/screens/people/PersonActs.kt` (84) — — · اللي مفتوح فوق صفحة الشخص (r06-person): أيقونات «معاه» ([fan] = مكان الزرار) · لوحة المشروع أو طلب الاتصال · تقويم المناسبات · «ضيف دين».
 - `commonMain/kotlin/app/masroufy/ui/screens/people/PersonAddOperation.kt` (112) — — · المعاني اللي تنفع لعملية جديدة (لازم اتجاه — «مع الشخص ده بس» مش هنا).
+- `commonMain/kotlin/app/masroufy/ui/screens/people/PersonFan.kt` (112) — — · نص قطر القوس (`PersonProfile.dc.html` — R = 165) وزوايا الأيقونات: من 165° لـ257° (من جنب الزرار لتحته).
 - `commonMain/kotlin/app/masroufy/ui/screens/people/PersonForms.kt` (124) — — · «شخص جديد» (`AddPersonSheet`) و«الديون القديمة» (`ProfileDebtSheet`) من غير رسم: الخانات والفحص **قبل أي كتابة**، وبعدين الكتابة
-- `commonMain/kotlin/app/masroufy/ui/screens/people/PersonLedgerSection.kt` (103) — — · صفحة الشخص (جولة r05): الأرصدة (ليك · عليك · الصافي لكل عملة) · «السجل بينا» كله الأحدث الأول (السطر بيفتح العملية أو الدين) · الديون المفتو
+- `commonMain/kotlin/app/masroufy/ui/screens/people/PersonHero.kt` (213) — — · المقاسات من `PersonHero.dc.html`: الأخضر 196 مقفول و470 مفتوح (+ شريط الحالة) · الصف (الصورة وزرارينها) يبدأ قبل آخر الأخضر بـ76.
+- `commonMain/kotlin/app/masroufy/ui/screens/people/PersonHeroModel.kt` (112) — — · صفحة الشخص الجديدة (r06-person — OVERRIDES §116-ب · `PersonHero.dc.html` و`PersonProfile.dc.html`، فرع التصميم 59eac9b8) من غير رسم:
+- `commonMain/kotlin/app/masroufy/ui/screens/people/PersonHeroParts.kt` (140) — — · دايرة الشخص (`PersonHero.dc.html`): صورته المحفوظة على الجهاز ([LocalPersonPhotos]) أو **رمز شخص** على أخضر فاتح — مش أول حرف (§115-2) ·
+- `commonMain/kotlin/app/masroufy/ui/screens/people/PersonLedgerSection.kt` (95) — — · صفحة الشخص (جولة r05): الأرصدة (ليك · عليك · الصافي لكل عملة) · «السجل بينا» كله الأحدث الأول (السطر بيفتح العملية أو الدين) · الديون المفتو
 - `commonMain/kotlin/app/masroufy/ui/screens/people/PersonLedgerUi.kt` (88) — — · «السجل بينا» في صفحة الشخص (جولة r05) من `ManagePersonLinks.page.load` — كلام وترتيب بس، المبالغ والصافي جايين جاهزين من `personLedger`.
 - `commonMain/kotlin/app/masroufy/ui/screens/people/PersonLinkOps.kt` (162) — — · اسم العملية في السطر: التاجر · الطرف زي ما جه · أول الوصف.
-- `commonMain/kotlin/app/masroufy/ui/screens/people/PersonPresenter.kt` (100) — — · ملف الشخص (لوحة `PersonProfile`) من نتايج حالات الاستخدام: `ManagePeople.listWithBalances` (الالتزامات المفتوحة بالمتبقي) ·
-- `commonMain/kotlin/app/masroufy/ui/screens/people/PersonProfileScreen.kt` (240) — —
-- `commonMain/kotlin/app/masroufy/ui/screens/people/PersonTogether.kt` (126) — — · «معًا» في ملف الشخص: دعوة لجمعية · مشروع مشترك · طلب اتصال · تقسيم فاتورة — كل واحد بلوحة صغيرة.
+- `commonMain/kotlin/app/masroufy/ui/screens/people/PersonOnce.kt` (136) — —
+- `commonMain/kotlin/app/masroufy/ui/screens/people/PersonPhotos.kt` (43) — PersonPhotos, LocalPersonPhotos · صورة الشخص (r06-person — OVERRIDES §116-ب): **على الجهاز بس** — عمرها ما بتترفع على فايربيز (بيانات شخصية · قرار مسجّل في OVERRIDES).
+- `commonMain/kotlin/app/masroufy/ui/screens/people/PersonPresenter.kt` (103) — — · ملف الشخص (لوحة `PersonProfile`) من نتايج حالات الاستخدام: `ManagePeople.listWithBalances` (الالتزامات المفتوحة بالمتبقي) ·
+- `commonMain/kotlin/app/masroufy/ui/screens/people/PersonProfileScreen.kt` (243) — —
+- `commonMain/kotlin/app/masroufy/ui/screens/people/PersonTogether.kt` (79) — — · لوحتين صغيرين من صفحة الشخص (r06-person — شبكة «اعملوا سوا» اتشالت، OVERRIDES §116-ب):
 - `commonMain/kotlin/app/masroufy/ui/screens/people/PrepPresenter.kt` (100) — — · «التجهيزات» (لوحة `EventPrep`) من `ManageEventPrep.summary`/`suggestions` و`ManageEvents.detail` (لمصروف الحدث اللي مش على بند).
 - `commonMain/kotlin/app/masroufy/ui/screens/people/ProfileDebtSheet.kt` (135) — — · «أضف الديون القديمة» (لوحة `ProfileDebtSheet` — من سؤال الديون في «كمّل ملفك»): لكل شخص (موجود أو اسم جديد) مبلغ،
 - `commonMain/kotlin/app/masroufy/ui/screens/people/ProjectDetailScreen.kt` (188) — — · تفاصيل المشروع (لوحة `ProjectDetail`): الملخص (السؤال والرقم · صرفت (نصيبك) · جاءك · المعادلة · «تقريبي») · خانتين العمليات والقواعد ·
@@ -1297,6 +1306,7 @@
 - `commonMain/kotlin/app/masroufy/ui/text/T.kt` (32) — t, failureText, money, amount, trueMinus · **كل نص في الشاشات من هنا** — خرائط النصوص في `core` (`TextRef` + الفصحى · المصري · الإنجليزي — OVERRIDES §40 · §66).
 - `commonMain/kotlin/app/masroufy/ui/theme/Appearance.kt` (97) — ThemeMode, PrefStore, Appearance · المظهر المختار: فاتح · غامق · زي الجوال. **الافتراضي فاتح مؤقتًا** لحد ما الشاشات اللي فيها ألوان ثابتة تتنقل للألوان الموحدة (PLAN-0.6 §13 
 - `commonMain/kotlin/app/masroufy/ui/theme/Motion.kt` (54) — Springs, LocalReduceMotion, MotionMs, motion · الحركة (DESIGN-SYSTEM v0.4 «3 نوابض بأسماء»): **استعمل الاسم، مش رقم جديد**. ممنوع حركة خطية وممنوع نابض رابع من غير قرار.
+- `commonMain/kotlin/app/masroufy/ui/theme/PersonInk.kt` (39) — PersonInk · ألوان صفحة الشخص (r06-person — `PersonHero.dc.html` · `PersonProfile.dc.html`، فرع التصميم 59eac9b8).
 - `commonMain/kotlin/app/masroufy/ui/theme/Theme.kt` (76) — rememberMasroufyFont, LocalFont, Type, MasroufyTheme · مدة انتقال المظهر فاتح/غامق (قرار المالك 2026-10-22: 300ms).
 - `commonMain/kotlin/app/masroufy/ui/theme/Tokens.kt` (140) — Ink, CategoryInk, Radius, Space, TextSize · رموز نظام التصميم v0.4 (`design-source/design-system-v0.4/tokens.json` على فرع التصميم) — فاتح + غامق (قرار المالك 2026-10-22 «المظهر الليلي
 - `iosMain/kotlin/app/masroufy/ui/components/BankLogo.ios.kt` (8) — — · الآيفون: الصور لسه ما اتضافتش لحزمته ⇒ الحرف في دايرة (الخطوة الجاية: نفس ملفات WebP في موارد الآيفون).
