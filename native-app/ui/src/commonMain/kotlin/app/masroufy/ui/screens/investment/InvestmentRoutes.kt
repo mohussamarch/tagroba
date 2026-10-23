@@ -33,6 +33,9 @@ interface InvestmentDeps {
      */
     val feeds: LoadOnlineFeeds
 
+    /** §111-6: إضافة أصل في بلد تانية (الفورم بيسأل عن البلد لما البلدين شغالين) وأصول البلدين. null = مش متوصل (بلد واحدة). */
+    val acrossCountries: app.masroufy.usecase.AssetsAcrossCountries? get() = null
+
     /** يحط أسعار الملف على الأصول المربوطة: `syncPrices.sync(feed)` بعد `feeds.prices()`. */
     val syncPrices: SyncAssetPrices
 

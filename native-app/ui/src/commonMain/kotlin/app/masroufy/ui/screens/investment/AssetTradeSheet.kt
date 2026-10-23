@@ -69,6 +69,10 @@ internal fun AssetTradeSheet(visible: Boolean, mode: TradeMode, asset: AssetDeta
     var error by remember(visible, mode) { mutableStateOf<String?>(null) }
     var saving by remember { mutableStateOf(false) }
     var ops by remember(visible, mode) { mutableStateOf<List<LinkableOp>>(emptyList()) }
+    // §111-6: البلدين شغالين ⇒ «إضافة أصل» بتسأل عن بلده (الافتراضي البلد الشغالة)
+    val countries = app.masroufy.ui.app.LocalCountries.current
+    var countryId by remember(visible, mode) { mutableStateOf(space.space.id) }
+    val elsewhere = deps.acrossCountries?.takeIf { countries.both && countryId != space.space.id }
     LaunchedEffect(visible, mode) {
         if (visible && (mode == TradeMode.BUY || mode == TradeMode.SELL)) {
             ops = linkableOps(runCatching { deps.recentOperations() }.getOrNull(), outgoing = mode == TradeMode.BUY, currency)
@@ -88,7 +92,11 @@ internal fun AssetTradeSheet(visible: Boolean, mode: TradeMode, asset: AssetDeta
         scope.launch {
             try {
                 val id = when (request) {
-                    is TradeRequest.Add -> deps.assets.addAsset(request.input).also { toaster.show(t(UiKey.ASSET_TRADE_DONE_ADD, it.name)) }.id
+                    is TradeRequest.Add -> if (elsewhere != null) {
+                        elsewhere.add(countryId, request.input).also { toaster.show(t(UiKey.ASSET_TRADE_DONE_ADD, it.asset.name)) }
+                        onDismiss()
+                        return@launch
+                    } else deps.assets.addAsset(request.input).also { toaster.show(t(UiKey.ASSET_TRADE_DONE_ADD, it.name)) }.id
                     is TradeRequest.Buy -> deps.assets.recordPurchase(request.input).also { toaster.show(t(UiKey.ASSET_TRADE_DONE_BUY, qtyUnit(it.quantity, asset!!.unit))) }.assetId
                     is TradeRequest.Sell -> deps.assets.recordSale(request.input).also { toaster.show(t(UiKey.ASSET_TRADE_DONE_SELL, qtyUnit(it.sale.quantity, asset!!.unit))) }.sale.assetId
                     is TradeRequest.Price -> deps.assets.setPrice(asset!!.assetId, request.minor).also { toaster.show(t(UiKey.ASSET_TRADE_DONE_PRICE, moneyText(it.pricePerUnitMinor, currency))) }.assetId
@@ -107,6 +115,14 @@ internal fun AssetTradeSheet(visible: Boolean, mode: TradeMode, asset: AssetDeta
     }
     Sheet(visible, onDismiss, title, closeLabel = t(UiKey.SHELL_CLOSE), spacing = 10.dp) {
         BasicText(title, style = Type.of(17, FontWeight.Bold))
+        if (mode == TradeMode.ADD && countries.both && deps.acrossCountries != null) {
+            BasicText(t(app.masroufy.core.R06Key.CTY_ADD_COUNTRY), style = Type.caption())
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                countries.open.forEach { s ->
+                    SelectChip(app.masroufy.core.countryLabel(s.countryCode), countryId == s.id, { countryId = s.id }, Modifier.weight(1f), height = 40.dp)
+                }
+            }
+        }
         if (asset != null && mode != TradeMode.ADD) {
             BasicText(t(UiKey.ASSET_TRADE_SUB, asset.qtyText, moneyText(asset.costMinor, currency)), style = Type.of(13).copy(color = Ink.muted))
         }
