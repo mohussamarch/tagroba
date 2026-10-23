@@ -77,7 +77,7 @@ val BACKUP_RELATIONS: Map<String, Map<String, String>> = mapOf(
     "transactionTags" to linkedMapOf("tagId" to "tags", "transactionId" to "transactions"),
     "categoryBudgets" to linkedMapOf("budgetId" to "budgets", "categoryId" to "categories"),
     "assetLots" to linkedMapOf("assetId" to "assets", "transactionId" to "transactions"),
-    "assetSales" to linkedMapOf("assetId" to "assets", "transactionId" to "transactions"),
+    "assetSales" to linkedMapOf("assetId" to "assets", "transactionId" to "transactions", "toWalletId" to "wallets"),
     "assetPrices" to mapOf("assetId" to "assets"),
     "projectLinks" to linkedMapOf("projectId" to "projects", "transactionId" to "transactions"),
     "projectRules" to mapOf("projectId" to "projects"),

@@ -74,10 +74,12 @@ internal fun AssetTradeSheet(visible: Boolean, mode: TradeMode, asset: AssetDeta
     var countryId by remember(visible, mode) { mutableStateOf(space.space.id) }
     val elsewhere = deps.acrossCountries?.takeIf { countries.both && countryId != space.space.id }
     LaunchedEffect(visible, mode) {
-        if (visible && (mode == TradeMode.BUY || mode == TradeMode.SELL)) {
-            ops = linkableOps(runCatching { deps.recentOperations() }.getOrNull(), outgoing = mode == TradeMode.BUY, currency)
+        if (visible && mode == TradeMode.BUY) {
+            ops = linkableOps(runCatching { deps.recentOperations() }.getOrNull(), outgoing = true, currency)
         }
     }
+    // §112-4 البيع: المحافظ · المعاينة (المكسب أو الخسارة) · التحويلات القريبة — كله من `SellAsset`
+    val sell = rememberSellState(visible && mode == TradeMode.SELL, asset?.assetId, currency, form)
     val name = asset?.name.orEmpty()
     val title = when (mode) {
         TradeMode.ADD -> t(UiKey.ASSET_TRADE_ADD_TITLE)
@@ -98,7 +100,7 @@ internal fun AssetTradeSheet(visible: Boolean, mode: TradeMode, asset: AssetDeta
                         return@launch
                     } else deps.assets.addAsset(request.input).also { toaster.show(t(UiKey.ASSET_TRADE_DONE_ADD, it.name)) }.id
                     is TradeRequest.Buy -> deps.assets.recordPurchase(request.input).also { toaster.show(t(UiKey.ASSET_TRADE_DONE_BUY, qtyUnit(it.quantity, asset!!.unit))) }.assetId
-                    is TradeRequest.Sell -> deps.assets.recordSale(request.input).also { toaster.show(t(UiKey.ASSET_TRADE_DONE_SELL, qtyUnit(it.sale.quantity, asset!!.unit))) }.sale.assetId
+                    is TradeRequest.Sell -> deps.sell.sell(request.input).also { toaster.show(t(UiKey.ASSET_TRADE_DONE_SELL, qtyUnit(it.sale.quantity, asset!!.unit))) }.sale.assetId
                     is TradeRequest.Price -> deps.assets.setPrice(asset!!.assetId, request.minor).also { toaster.show(t(UiKey.ASSET_TRADE_DONE_PRICE, moneyText(it.pricePerUnitMinor, currency))) }.assetId
                     is TradeRequest.Invalid -> return@launch
                 }
@@ -135,16 +137,32 @@ internal fun AssetTradeSheet(visible: Boolean, mode: TradeMode, asset: AssetDeta
                 }
                 TextInput(form.unit, { form = form.copy(unit = it) }, label = t(UiKey.ASSET_TRADE_UNIT), placeholder = ASSET_UNIT_DEFAULTS[form.kind])
             }
-            TradeMode.BUY, TradeMode.SELL -> TradeFields(form, ops, asset, mode == TradeMode.BUY, { form = it; error = null })
+            TradeMode.BUY -> TradeFields(form, ops, asset, true, { form = it; error = null })
+            TradeMode.SELL -> {
+                TradeFields(form, sell.credits, asset, false, { form = it; error = null })
+                SellDestinations(sell.destinations, form.toWalletId) { id ->
+                    val bank = sell.destinations.firstOrNull { it.wallet.id == id }?.kind == app.masroufy.usecase.SellWalletKind.BANK
+                    form = form.copy(toWalletId = id, linkId = if (bank) form.linkId else null); error = null
+                }
+                if (sell.bankPicked) {
+                    SellLinkList(sell.credits, form.linkId) { op ->
+                        form = if (op == null) form.copy(linkId = null)
+                        else form.copy(linkId = op.id, day = op.date, amount = form.amount.ifBlank { app.masroufy.ui.text.amount(op.amountMinor, currency) })
+                        error = null
+                    }
+                }
+                sell.problem?.let { BasicText(it, style = Type.of(13, FontWeight.Bold).copy(color = Ink.expense)) }
+                sell.outcome?.let { SellGainCard(it, currency) }
+            }
             TradeMode.PRICE -> TextInput(
                 form.price, { form = form.copy(price = it); error = null }, label = t(UiKey.ASSET_TRADE_PRICE_LABEL, asset?.unit.orEmpty()),
                 placeholder = "0", ltr = true, keyboard = KeyboardType.Decimal, height = 56.dp, textSize = 22,
                 unit = app.masroufy.core.currencySymbol(currency),
             )
         }
-        val note = when (mode) {
+        val note: app.masroufy.core.TextRef? = when (mode) {
             TradeMode.BUY -> UiKey.ASSET_TRADE_NOTE_BUY
-            TradeMode.SELL -> UiKey.ASSET_TRADE_NOTE_SELL
+            TradeMode.SELL -> app.masroufy.core.R06Key.SELL_NOTE
             TradeMode.PRICE -> UiKey.ASSET_TRADE_NOTE_PRICE
             TradeMode.ADD -> null
         }
@@ -183,7 +201,8 @@ private fun TradeFields(form: TradeForm, ops: List<LinkableOp>, asset: AssetDeta
         TextInput(form.fee, { onChange(form.copy(fee = it)) }, Modifier.weight(1f), label = t(UiKey.ASSET_TRADE_FEES),
             placeholder = "0", ltr = true, keyboard = KeyboardType.Decimal, unit = app.masroufy.core.currencySymbol(currency))
     }
-    BasicText(t(if (buy) UiKey.ASSET_TRADE_LINK_BUY else UiKey.ASSET_TRADE_LINK_SELL), style = Type.of(13, FontWeight.Bold))
+    if (!buy) return // البيع: الربط تحت «الفلوس راحت فين؟» (بنك بس — `SellLinkList`)
+    BasicText(t(UiKey.ASSET_TRADE_LINK_BUY), style = Type.of(13, FontWeight.Bold))
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         OpChoice(t(UiKey.ASSET_TRADE_NO_LINK), null, form.linkId == null) { onChange(form.copy(linkId = null)) }
         for (op in ops) {

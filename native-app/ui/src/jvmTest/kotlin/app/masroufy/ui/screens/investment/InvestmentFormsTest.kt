@@ -37,9 +37,16 @@ class InvestmentFormsTest {
         assertEquals("t-9", input.transactionId)
         assertEquals("2026-10-09", input.purchasedAt)
 
-        val sell = assertIs<TradeRequest.Sell>(tradeRequest(TradeMode.SELL, "a-1", Currency.SAR, TradeForm(qty = "0.5", amount = "200", day = "2026-10-08")))
-        assertEquals(g / 2, sell.input.quantity)
-        assertNull(sell.input.feeMinor, "الرسوم فاضية ⇒ مش صفر مخترع (حالة الاستخدام بتعتبرها صفر)")
+        // §112-4: «الفلوس راحت فين؟» إجباري
+        assertEquals(
+            TradeRequest.Invalid("اختر أين ذهب المال."),
+            tradeRequest(TradeMode.SELL, "a-1", Currency.SAR, TradeForm(qty = "0.5", amount = "200", day = "2026-10-08")),
+        )
+        val sell = assertIs<TradeRequest.Sell>(tradeRequest(TradeMode.SELL, "a-1", Currency.SAR, TradeForm(qty = "0.5", amount = "200", day = "2026-10-08", toWalletId = "w-1", linkId = "t-2")))
+        assertEquals(g / 2, sell.input.sale.quantity)
+        assertNull(sell.input.sale.feeMinor, "الرسوم فاضية ⇒ مش صفر مخترع (حالة الاستخدام بتعتبرها صفر)")
+        assertEquals("w-1", sell.input.toWalletId)
+        assertEquals("t-2", sell.input.linkTransactionId)
 
         assertEquals(TradeRequest.Invalid("اكتب الكمية."), tradeRequest(TradeMode.BUY, "a-1", Currency.SAR, TradeForm(amount = "10")))
         assertEquals(TradeRequest.Invalid("اكتب المبلغ المدفوع."), tradeRequest(TradeMode.BUY, "a-1", Currency.SAR, TradeForm(qty = "1")))
