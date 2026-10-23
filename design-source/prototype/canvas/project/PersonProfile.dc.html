@@ -35,10 +35,19 @@ a{color:#08634F}a:hover{color:#064B40}
     </div>
 
     <div style="margin-top: -66px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 0 20px">
-      <div aria-hidden="true" style="width: 104px; height: 104px; border-radius: 52px; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: 700; color: #08634F; background: #FFFDF9; box-shadow: 0 0 0 4px #FAF9F3, 0 12px 28px rgba(0,30,25,0.22)">خ</div>
+      <div style="display: flex; align-items: flex-end; justify-content: center; gap: 14px">
+        <sc-for list="{{occR}}" as="o" hint-placeholder-count="1"><button type="button" class="m-press" onClick="{{o.open}}" aria-label="{{o.aria}}" style="{{o.style}}"><span style="{{o.dot}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="{{o.icon}}"></path></svg></span><span style="font-size: 11px; font-weight: 700; color: #637570; white-space: nowrap">{{o.when}}</span></button></sc-for>
+        <div style="position: relative; width: 104px; height: 104px; flex-shrink: 0">
+          <div aria-hidden="true" style="width: 104px; height: 104px; border-radius: 52px; overflow: hidden; display: flex; align-items: flex-end; justify-content: center; background: linear-gradient(170deg, #E6F2EA 0%, #CFE6D8 100%); box-shadow: 0 0 0 4px #FAF9F3, 0 12px 28px rgba(0,30,25,0.22)"><svg width="84" height="84" viewBox="0 0 24 24" fill="#8DB8A3"><circle cx="12" cy="8.2" r="4.2"></circle><path d="M3.5 24c0-5 3.8-8.6 8.5-8.6s8.5 3.6 8.5 8.6z"></path></svg></div>
+          <button type="button" class="m-press" aria-label="{{photoLabel}}" style="position: absolute; bottom: 2px; left: 2px; width: 32px; height: 32px; border: 0; border-radius: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #FFFFFF; background: #08634F; box-shadow: 0 0 0 3px #FAF9F3"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg></button>
+        </div>
+        <sc-for list="{{occL}}" as="o" hint-placeholder-count="2"><button type="button" class="m-press" onClick="{{o.open}}" aria-label="{{o.aria}}" style="{{o.style}}"><span style="{{o.dot}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="{{o.icon}}"></path></svg></span><span style="font-size: 11px; font-weight: 700; color: #637570; white-space: nowrap">{{o.when}}</span></button></sc-for>
+      </div>
       <h1 style="margin: 6px 0 0; font-size: 22px; font-weight: 700">خالد</h1>
       <span style="font-size: 13px; color: #637570">{{relLine}}</span>
-      <span style="margin-top: 8px; align-self: stretch; display: flex; flex-direction: column; gap: 8px"><dc-import name="OccasionSheet" space="{{spaceName}}" person="خالد" kind="wedding" month="10" day="18" year="2026" yearly="{{false}}" hint-size="350px,80px"></dc-import><dc-import name="OccasionSheet" space="{{spaceName}}" person="خالد" hint-size="350px,48px"></dc-import></span>
+      <sc-if value="{{occWedding}}" hint-placeholder-val="{{ false }}"><span style="margin-top: 8px; align-self: stretch"><dc-import name="OccasionSheet" space="{{spaceName}}" person="خالد" kind="wedding" month="10" day="18" year="2026" yearly="{{false}}" hint-size="350px,80px"></dc-import></span></sc-if>
+      <sc-if value="{{occBirthday}}" hint-placeholder-val="{{ false }}"><span style="margin-top: 8px; align-self: stretch"><dc-import name="OccasionSheet" space="{{spaceName}}" person="خالد" kind="birthday" month="3" day="2" yearly="{{true}}" hint-size="350px,80px"></dc-import></span></sc-if>
+      <sc-if value="{{occAdd}}" hint-placeholder-val="{{ false }}"><span style="margin-top: 8px; align-self: stretch"><dc-import name="OccasionSheet" space="{{spaceName}}" person="خالد" hint-size="350px,48px"></dc-import></span></sc-if>
     </div>
 
     <div style="display: flex; gap: 10px; padding: 0 20px">
@@ -134,7 +143,7 @@ a{color:#08634F}a:hover{color:#064B40}
 <script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
 const withCur = (v, c) => (c === '\u20C1' ? '\u2066\u20C1\u00A0' + v + '\u2069' : v + ' ' + c); // رمز الريال الرسمي على شمال الرقم بمسافة (البنك المركزي السعودي) — الجنيه بعد الرقم زي ما هو
 class Component extends DCLogic {
-  constructor(props) { super(props); this.state = { sheet: null, amount: '' }; }
+  constructor(props) { super(props); this.state = { sheet: null, amount: '', occ: null }; }
   toMinor(text) {
     const t = String(text || '').replace(/[٠-٩۰-۹]/g, (d) => '٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10).replace(/٫/g, '.').replace(/[^0-9.]/g, '');
     if (!t) return null;
@@ -142,6 +151,20 @@ class Component extends DCLogic {
     return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10);
   }
   fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  // المناسبات علامات صغيرة جنب الصورة (توجيه المالك 2026-10-23 عن طريق جلسة كوتلن: «في الهيدر الأخضر جنب الدايرة، بأخف شكل، علامات صغيرة»)
+  // الدوسة بتفتح كارت المناسبة تحت الاسم، ودوسة تانية بتقفله. «+» بتضيف مناسبة. مخترعة
+  occ(eg) {
+    const o = this.state.occ, pick = (k) => () => this.setState({ occ: o === k ? null : k });
+    const badge = (k, icon, when, aria, c, bg) => ({ icon, when, aria, open: pick(k),
+      style: 'border: 0; padding: 0; background: transparent; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; font: inherit',
+      dot: 'width: 40px; height: 40px; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: ' + c + '; background: ' + bg + '; box-shadow: ' + (o === k ? '0 0 0 2px ' + c : 'inset 0 1px 0 rgba(255,255,255,0.7), 0 6px 14px rgba(29,54,53,0.10)') });
+    return {
+      occR: [badge('wedding', 'M20 12v9H4v-9M2 7h20v5H2zM12 21V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z', eg ? 'بعد 11 يوم' : 'بعد 11 يومًا', eg ? 'فرح خالد، بعد 11 يوم' : 'زفاف خالد، بعد 11 يومًا', '#A55060', '#FBE9EE')],
+      occL: [badge('birthday', 'M4 21h16v-8H4zM4 16c2 0 2-1.5 4-1.5s2 1.5 4 1.5 2-1.5 4-1.5 2 1.5 4 1.5M12 13V9M12 6.5a1.5 1.5 0 0 0 1.5-1.5c0-1-1.5-3-1.5-3s-1.5 2-1.5 3A1.5 1.5 0 0 0 12 6.5z', '2 مارس', eg ? 'عيد ميلاد خالد، 2 مارس' : 'يوم ميلاد خالد، 2 مارس', '#956000', '#FBF0DD'),
+        badge('add', 'M12 5v14M5 12h14', eg ? 'مناسبة' : 'مناسبة', eg ? 'ضيف مناسبة' : 'أضف مناسبة', '#08634F', 'rgba(8,99,79,0.10)')],
+      occWedding: o === 'wedding', occBirthday: o === 'birthday', occAdd: o === 'add'
+    };
+  }
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const cur = eg ? 'ج.م' : '\u20C1';
@@ -171,6 +194,8 @@ class Component extends DCLogic {
       amountStyle: 'font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (dir === 'out' ? '#BE3D48' : '#13764D')
     });
     return {
+      ...this.occ(eg),
+      photoLabel: eg ? 'ضيف صورة' : 'أضف صورة',
       circleLine: eg ? 'الصحاب' : 'الأصدقاء',
       relLine: eg ? 'صاحبك من الجامعة · بتتعاملوا كتير' : 'صديقك من الجامعة · تعامل متكرر',
       spaceName: eg ? 'مصر' : 'السعودية',
