@@ -79,11 +79,27 @@ class ManagePeople(private val deps: ManagePeopleDeps) {
                     // المسدَّد بالكامل ما بيتعرضش في القايمة النشطة
                     .filter { it.remainingMinor > 0 },
             )
-        }
+        }.let { markOldCashDebts(it) }
 
         // الأكتر رصيدًا الأول، والمؤرشف آخر واحد
         fun total(r: PersonRow) = r.balance.receivableMinor + r.balance.payableLoanMinor + r.balance.payableCustodyMinor
         return rows.sortedWith(compareBy<PersonRow> { it.person.archived }.thenByDescending { total(it) })
+    }
+
+    /**
+     * r06-polish: ديون «كاش» اتعملت قبل r06-fix054 ما عليهاش علامة [Obligation.cashOrigin] ⇒ كانت بتبان «دين لك من عملية». العلامة بتتحط
+     * **في القراية بس** (مفيش كتابة) لما العملية المربوطة متسجلة كاش (محفظة الكاش) أو مش موجودة (اتمسحت). الدين القديم من غير عملية
+     * (originTransactionId = null — §27) بيفضل «دين قديم» زي ما هو.
+     */
+    private suspend fun markOldCashDebts(rows: List<PersonRow>): List<PersonRow> {
+        val ids = rows.flatMap { r -> r.obligations.mapNotNull { o -> o.obligation.originTransactionId?.takeIf { !o.obligation.cashOrigin } } }.distinct()
+        if (ids.isEmpty()) return rows
+        val found = deps.txns.findByIds(ids).associateBy { it.id }
+        val cash = ids.filter { id -> found[id]?.isCashTagged ?: true }.toSet()
+        if (cash.isEmpty()) return rows
+        return rows.map { r ->
+            r.copy(obligations = r.obligations.map { o -> if (o.obligation.originTransactionId in cash) o.copy(obligation = o.obligation.copy(cashOrigin = true)) else o })
+        }
     }
 
     suspend fun addPerson(name: String): Person {
