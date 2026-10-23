@@ -50,6 +50,11 @@ body{margin:0}
             </div>
           </sc-for>
           </div>
+          <sc-if value="{{isSell}}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 8px">
+            <span style="font-size: 13px; font-weight: 700">{{toLabel}}</span>
+            <div role="radiogroup" aria-label="{{toLabel}}" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px"><sc-for list="{{tos}}" as="w" hint-placeholder-count="3"><button type="button" role="radio" aria-checked="{{w.on}}" class="k-press" onClick="{{w.pick}}" style="{{w.style}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="{{w.icon}}"></path></svg><span style="font-size: 13px; font-weight: 700">{{w.label}}</span><span style="font-size: 11px; opacity: 0.8">{{w.hint}}</span></button></sc-for></div>
+          </div></sc-if>
+          <sc-if value="{{showOps}}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 6px">
           <span style="font-size: 13px; font-weight: 700">{{opLabel}}</span>
           <div role="radiogroup" aria-label="{{opLabel}}" style="display: flex; flex-direction: column; gap: 6px">
             <sc-for list="{{ops}}" as="o" hint-placeholder-count="2">
@@ -59,6 +64,8 @@ body{margin:0}
               </button>
             </sc-for>
           </div>
+          </div></sc-if>
+          <sc-if value="{{hasGain}}" hint-placeholder-val="{{ false }}"><div style="{{gainBox}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="{{gainIcon}}"></path></svg><span style="flex: 1 1 auto; font-size: 14px; font-weight: 700">{{gainLabel}}</span><span dir="ltr" style="font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums">{{gainAmount}}</span></div></sc-if>
         </div>
       </sc-if>
 
@@ -83,13 +90,13 @@ body{margin:0}
   </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","options":["شراء","بيع","سعر يدوي"],"default":"شراء","section":"الحالة"},"asset":{"editor":"enum","options":["ذهب","عقار"],"default":"ذهب","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","options":["شراء","بيع","سعر يدوي"],"default":"شراء","section":"الحالة"},"asset":{"editor":"enum","options":["ذهب","عقار"],"default":"ذهب","section":"الحالة"},"demo":{"editor":"enum","options":["","مكسب","خسارة"],"default":"","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
 const withCur = (v, c) => (c === '\u20C1' ? '\u2066\u20C1\u00A0' + v + '\u2069' : v + ' ' + c); // رمز الريال الرسمي على شمال الرقم بمسافة (البنك المركزي السعودي) — الجنيه بعد الرقم زي ما هو
 class Component extends DCLogic {
   constructor(props) {
     super(props);
     // الكمية بالألف من الوحدة (نموذج) — كوتلن بيخزنها بـ10^8 (§11). المبالغ بالوحدة الصغرى
-    this.state = { day: 'today', q: '', v: '', f: '', op: 'none', price: '', err: '', done: '' };
+    this.state = { day: 'today', q: props.demo ? '10' : '', v: props.demo ? (props.demo === 'خسارة' ? '30000' : '52500') : '', f: '', op: 'none', to: '', price: '', err: '', done: '' };
   }
   digits(t) { return String(t == null ? '' : t).replace(/[٠-٩۰-۹]/g, (d) => String(('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10))).replace(/٫/g, '.').replace(/[,٬\s]/g, ''); }
   parse(t, places) {
@@ -135,6 +142,11 @@ class Component extends DCLogic {
         pick: () => { const o = OPS.find((x) => x.id === id); this.setState(o ? { op: id, v: s.v || this.fmt(o.amt).replace(/,/g, ''), day: o.day, err: '' } : { op: 'none', err: '' }); } };
     };
     const ops = [opRow('none', eg ? 'من غير ربط' : 'بلا ربط', '', false)].concat(OPS.map((o) => opRow(o.id, o.label, (o.out ? '−' : '+') + this.fmt(o.amt), o.out)));
+    // بيع: الفلوس راحت فين؟ إجباري (قرار المالك 2026-10-23، §112) — بنك (ويتربط بالتحويل لو وصل) · كاش · محفظة تانية. والمكسب أو الخسارة بيتسجلوا ويبانوا كبير
+    const TO = [['bank', eg ? 'البنك' : 'البنك', eg ? 'حساب المرتب' : 'حساب الراتب', 'M3 10h18M5 10v8M9 10v8M15 10v8M19 10v8M3 20h18M12 3 3 8h18z'], ['cash', eg ? 'الكاش' : 'النقد', eg ? 'محفظة الكاش' : 'محفظة النقد', 'M3 7h18v10H3zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6M6 10v.01M18 14v.01'], ['other', eg ? 'محفظة تانية' : 'محفظة أخرى', eg ? 'محفظة الجوال' : 'محفظة الجوال', 'M7 2h10a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zM11 18h2']];
+    const tos = TO.map(([id, label, hint, icon]) => ({ label, hint, icon, on: s.to === id ? 'true' : 'false', pick: () => this.setState({ to: id, op: id === 'bank' ? s.op : 'none', err: '' }),
+      style: 'min-height: 84px; border: 0; border-radius: 16px; padding: 8px 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font: inherit; cursor: pointer; ' + (s.to === id ? 'color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'color: #193D33; background: rgba(25,61,51,0.06)') }));
+    let gain = null;
     // معاينة حية — نفس طريقة المتوسط المرجّح: رسوم الشراء في التكلفة، ورسوم البيع من الحصيلة (§11)
     let preview = '', good = true;
     if (M === 'buy' && q > 0 && v > 0) {
@@ -142,7 +154,7 @@ class Component extends DCLogic {
       preview = (eg ? 'سعر ال' : 'سعر ال') + unit + ' ≈ ' + this.fmt(this.md(v, 1000, q)) + ' · ' + (eg ? 'التكلفة بعدها ' : 'التكلفة بعده ') + this.fmt(nc) + ' · ' + (eg ? 'المتوسط ' : 'المتوسط ') + this.fmt(this.md(nc, 1000, nh));
     } else if (M === 'sell' && q > 0) {
       if (q > held) { preview = (eg ? 'معاك ' : 'تملك ') + this.qt(held) + ' ' + unit + (eg ? ' بس' : ' فقط'); good = false; }
-      else { const share = this.md(cost, q, held), gain = (v || 0) - fee - share; preview = (eg ? 'حصة التكلفة ' : 'حصة التكلفة ') + this.fmt(share) + (v ? ' · ' + (eg ? 'المكسب ' : 'المكسب المحقق ') + '\u2066' + (gain < 0 ? '−' : '+') + this.fmt(gain) + '\u2069' : ''); good = gain >= 0 || !v; }
+      else { const share = this.md(cost, q, held); gain = v ? v - fee - share : null; preview = (eg ? 'حصة التكلفة ' : 'حصة التكلفة ') + this.fmt(share); good = true; }
     } else if (M === 'price' && p > 0) {
       preview = (eg ? 'قيمته بالسعر ده ' : 'قيمته بهذا السعر ') + withCur(this.fmt(this.md(held, p, 1000)), cur);
     }
@@ -162,10 +174,11 @@ class Component extends DCLogic {
       if (q === -1) { this.setState({ err: eg ? 'في الكمية أكتر من 3 أرقام بعد العلامة. التطبيق مش هيقرّبها من غير ما تعرف — اختصرها إنت.' : 'في الكمية أكثر من 3 أرقام عشرية. لن يقرّبها التطبيق دون علمك — اختصرها بنفسك.' }); return; }
       if (q == null || q <= 0) { this.setState({ err: M === 'buy' ? (eg ? 'كمية الشراء لازم تبقى أكبر من صفر' : 'يجب أن تكون كمية الشراء أكبر من صفر') : (eg ? 'كمية البيع لازم تبقى أكبر من صفر' : 'يجب أن تكون كمية البيع أكبر من صفر') }); return; }
       if (M === 'sell' && q > held) { this.setState({ err: (eg ? 'بيع ' : 'بيع ') + this.qt(q) + (eg ? ' والمملوك وقتها ' : ' والمملوك حينها ') + this.qt(held) + (eg ? ' بس. مفيش رصيد سالب صامت.' : ' فقط. لا رصيد سالب دون تنبيه.') }); return; }
+      if (M === 'sell' && !s.to) { this.setState({ err: eg ? 'اختار الفلوس راحت فين.' : 'اختر أين ذهب المال.' }); return; }
       if (v == null || v <= 0 || v === -1) { this.setState({ err: M === 'buy' ? (eg ? 'اكتب دفعت كام.' : 'اكتب المبلغ المدفوع.') : (eg ? 'اكتب قبضت كام.' : 'اكتب الحصيلة.') }); return; }
       if (fee === -1) { this.setState({ err: eg ? 'الرسوم فيها أكتر من رقمين بعد العلامة.' : 'في الرسوم أكثر من رقمين عشريين.' }); return; }
       const o = OPS.find((x) => x.id === s.op);
-      finish({ type: M, q, v, f: fee, date: DAYNAME[s.day] || DAYNAME.today, op: o ? o.label.split(' · ')[0] : '' }, eg ? 'اتسجّل (في النموذج)' : 'سُجّل (في النموذج)');
+      finish({ type: M, q, v, f: fee, date: DAYNAME[s.day] || DAYNAME.today, op: o ? o.label.split(' · ')[0] : '', to: s.to, gain }, eg ? 'اتسجّل (في النموذج)' : 'سُجّل (في النموذج)');
     };
     const notes = {
       buy: flat ? (eg ? 'السعر ده بيدخل التكلفة ومعاه الرسوم (السعي والتسجيل).' : 'يدخل المبلغ في التكلفة ومعه الرسوم (السعي والتسجيل).')
@@ -179,7 +192,11 @@ class Component extends DCLogic {
       sub: (eg ? 'معاك ' : 'تملك ') + this.qt(held) + ' ' + unit + ' · ' + (eg ? 'التكلفة ' : 'التكلفة ') + withCur(this.fmt(cost), cur) + (eg ? ' — تسجيل بس، مفيش تداول' : ' — تسجيل فقط، لا تداول'),
       isTrade: M !== 'price', isPrice: M === 'price',
       dateLabel: eg ? 'إمتى؟' : 'متى؟', days, fields,
-      opLabel: M === 'buy' ? (eg ? 'اربطه بعملية دفعت بيها (اختياري)' : 'اربطه بعملية الدفع (اختياري)') : (eg ? 'اربطه بالفلوس اللي دخلت (اختياري)' : 'اربطه بالمبلغ الوارد (اختياري)'), ops,
+      isSell: M === 'sell', toLabel: eg ? 'الفلوس راحت فين؟' : 'أين ذهب المال؟', tos, showOps: M !== 'sell' || s.to === 'bank',
+      hasGain: M === 'sell' && gain != null, gainLabel: gain != null && gain < 0 ? (eg ? 'خسارة' : 'خسارة') : (eg ? 'مكسب' : 'ربح'), gainAmount: gain == null ? '' : (gain < 0 ? '−' : '+') + withCur(this.fmt(gain), cur),
+      gainIcon: gain != null && gain < 0 ? 'M3 7l6 6 4-4 8 8M15 17h6v-6' : 'M3 17l6-6 4 4 8-8M15 7h6v6',
+      gainBox: 'display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-radius: 18px; ' + (gain != null && gain < 0 ? 'color: #BE3D48; background: rgba(190,61,72,0.10)' : 'color: #13764D; background: #DCEBD6'),
+      opLabel: M === 'buy' ? (eg ? 'اربطه بعملية دفعت بيها (اختياري)' : 'اربطه بعملية الدفع (اختياري)') : (eg ? 'اربطه بالتحويل اللي وصل (لو وصل)' : 'اربطه بالتحويل الوارد (إن وصل)'), ops,
       priceLabel: (eg ? 'سعر ال' : 'سعر ال') + unit + (eg ? ' النهارده' : ' اليوم'), priceText: s.price, currency: cur,
       typePrice: (e) => this.setState({ price: e.target.value, err: '', done: '' }),
       preview, previewStyle: 'font-size: 13px; font-weight: 700; min-height: 20px; color: ' + (good ? '#08634F' : '#BE3D48'),
