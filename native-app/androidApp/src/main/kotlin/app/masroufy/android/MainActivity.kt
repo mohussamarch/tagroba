@@ -56,6 +56,8 @@ class MainActivity : FragmentActivity() {
         // المظهر (فاتح · غامق · زي الجوال) وإخفاء الأرقام: المحفوظ على الجهاز بيتقرا قبل أول رسم عشان ما يبقاش فيه وميض
         val nightNow = (resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
         app.masroufy.ui.theme.Appearance.attach(AndroidPrefStore(this), nightNow)
+        // «تخطّي» / «بعدين» على لوحة تابي وتمارا: بيتفتكروا لكل بلد بعد قفل البرنامج (r06-polish)
+        app.masroufy.ui.screens.dues.BnplLater.attach(AndroidPrefStore(this))
         setContent {
             // 0.5.2: أيقونات شريط الحالة والتنقل بتتبع مظهر البرنامج (فاتحة على الغامق) وقت الاختيار — مش مظهر الجوال
             val dark = app.masroufy.ui.theme.Appearance.isDark
