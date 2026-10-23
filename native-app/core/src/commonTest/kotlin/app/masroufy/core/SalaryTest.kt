@@ -45,7 +45,7 @@ class SalaryTest {
         assertTrue(s.declined)
         assertTrue(s.answered)
         assertNull(s.amountMinor)
-        val reparsed = parseStoredProfile(mapOf("salaryDeclined" to true, "salaryCurrency" to "EGP", "salaryMinor" to 100L))
+        val reparsed = parseStoredProfile(mapOf("salaryDeclined" to true, "salaryCurrency" to "EGP", "salaryMinor" to 100L)).withSalaryMigrated()
         assertEquals(mapOf(Currency.EGP to 100L), reparsed.salaries, "cty-4: المبلغ القديم بيتنقل لبلد عملته")
         assertEquals(setOf(Currency.SAR), reparsed.salaryDeclinedIn, "«أفضّل ما أقولش» القديم ⇒ السعودية")
         assertNull(reparsed.salaryDeclined)
@@ -107,7 +107,7 @@ class SalaryTest {
     }
 
     @Test fun theOldSingleSlotMovesToItsCountryOnRead() {
-        val old = parseStoredProfile(mapOf("payday" to 28L, "salaryMinor" to 1_250_000L))
+        val old = parseStoredProfile(mapOf("payday" to 28L, "salaryMinor" to 1_250_000L)).withSalaryMigrated()
         assertEquals(mapOf(Currency.SAR to 1_250_000L), old.salaries, "من غير عملة ⇒ السعودية (البلد الأصلية)")
         assertNull(old.salaryMinor)
         val fresh = parseStoredProfile(mapOf("payday" to 28L, "salaries" to mapOf("SAR" to 900_000L, "EGP" to 3_000_000L), "salaryDeclinedIn" to listOf("EGP")))

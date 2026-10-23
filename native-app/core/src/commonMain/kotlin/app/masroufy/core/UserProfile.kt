@@ -58,7 +58,7 @@ data class UserProfile(
     val salaryRangeLegacy: String? = null,
     /**
      * المرتب المكتوب على الملف **لكل بلد بعملتها** (cty-4 · OVERRIDES §111): كتابة مرتب مصر ما بتمسحش مرتب السعودية.
-     * المفتاح المتخزن `salaries` = {"SAR": هللات}. القديم ([salaryMinor] + [salaryCurrency]) بيتنقل هنا وقت القراية ([withSalaryMigrated]).
+     * المفتاح المتخزن `salaries` = {"SAR": هللات}. القديم ([salaryMinor] + [salaryCurrency]) بيتقري منه لبلده ([withSalaryMigrated]).
      */
     val salaries: Map<Currency, Halalas> = emptyMap(),
     /** «أفضّل ما أقولش» **لكل بلد** (عملتها). المفتاح `salaryDeclinedIn`. القديم [salaryDeclined] بيتنقل للسعودية (البلد الأصلية). */
@@ -116,12 +116,12 @@ fun parseStoredProfile(raw: Map<String, Any?>?): UserProfile {
             val day = safeInteger(v)?.takeIf { it in 1..31 }?.toInt() ?: return@mapNotNull null
             (k as? String)?.takeIf(::isSpaceId)?.let { it to day }
         }.toMap(),
-    ).withSalaryMigrated()
+    ) // الخانة القديمة بتتقري زي ما هي (golden المستند القديم)، والنقل لخانة البلد وقت الاستعمال والكتابة ([withSalaryMigrated])
 }
 
 /**
  * نقل المرتب القديم (خانة واحدة للبلدين) لخانة بلده — cty-4: المبلغ لعملته ([UserProfile.salaryCurrency])، ومن غير عملة ⇒ **السعودية**
- * (البلد الأصلية)؛ و«أفضّل ما أقولش» القديم ⇒ السعودية. الخانات القديمة بتتمسح، فالحفظ الجاي بيكتب الجديد بس. الموجود في الجديد ما بيتغطاش.
+ * (البلد الأصلية)؛ و«أفضّل ما أقولش» القديم ⇒ السعودية. الخانات القديمة بتتمسح أول ما المرتب يتكتب/يترفض (`profileAfterSalary`/`profileAfterDecline`)، فالحفظ ده بيكتب الجديد بس. الموجود في الجديد ما بيتغطاش.
  */
 fun UserProfile.withSalaryMigrated(): UserProfile {
     if (salaryMinor == null && salaryCurrency == null && salaryDeclined == null) return this

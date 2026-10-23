@@ -47,11 +47,13 @@ data class LoadCategorySpendDeps(
     val txns: TransactionRepository,
     val categories: CategoryRepository,
     val allocations: AllocationRepository,
+    /** cty-10: عملة البلد — أي عملية بعملة تانية (سجل قديم غلط) ما بتتجمعش مع الباقي. null = من غير فلتر (زي الأول). */
+    val currency: app.masroufy.core.Currency? = null,
 )
 
 class LoadCategorySpend(private val deps: LoadCategorySpendDeps) {
     private suspend fun rows(from: IsoDate, to: IsoDate): Triple<List<Transaction>, Int, List<app.masroufy.core.PersonAllocation>> {
-        val raw = deps.txns.listByDateRange(from, to)
+        val raw = deps.txns.listByDateRange(from, to).filter { t -> deps.currency == null || t.currency == deps.currency }
         val names = deps.categories.listAll().associate { it.id to it.name }
         val estimated = withEstimatedKinds(raw, names)
         return Triple(estimated.transactions, estimated.needsReviewCount, deps.allocations.listByTransactionIds(raw.map { it.id }))
