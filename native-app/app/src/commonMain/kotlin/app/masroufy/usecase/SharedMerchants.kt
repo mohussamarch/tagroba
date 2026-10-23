@@ -10,7 +10,9 @@ import app.masroufy.core.baselineCatalog
 import app.masroufy.core.contributionFor
 import app.masroufy.core.effectiveEntry
 import app.masroufy.core.latestUpdate
+import app.masroufy.core.AccountMerchantSyncPlan
 import app.masroufy.core.planAccountMerchantSync
+import app.masroufy.core.planSharedSuggestions
 import app.masroufy.core.shareableName
 import app.masroufy.core.sharedMerchantKey
 import app.masroufy.core.toDayNumber
@@ -27,7 +29,8 @@ import app.masroufy.port.TransferPartyRepository
  * `contribute`: لما المستخدم يأكد تصنيف شراء، اسم المحل وتصنيفه بيتبعتوا **مش مؤكدين** — وأبدًا مش اسم شخص أو طرف تحويل (§80).
  */
 
-data class SharedSyncResult(val changes: Int, val added: Int, val filled: Int)
+/** [suggested] = تجار جداد أو موجودين وصلهم اقتراح مش مؤكد ([planSharedSuggestions]). */
+data class SharedSyncResult(val changes: Int, val added: Int, val filled: Int, val suggested: Int = 0)
 
 enum class ContributionResult(val wire: String) { SHARED("shared"), SKIPPED("skipped") }
 
@@ -46,6 +49,13 @@ data class SharedMerchantsDeps(
     val people: PersonRepository,
     /** §80: أطراف التحويل (بأي قرار) — نفس الحماية: اسم طرف تحويل عمره ما يترفع. */
     val transferParties: TransferPartyRepository,
+    /**
+     * رد المالك 2026-10-22: المساهمة الجديدة توصل الباقيين **«علطول كاقتراح»** في المكان اللي الحساب مالوش فيه اختيار.
+     * false = سلوك النقل الأصلي (المؤكد بس) — ملف المرجع الذهبي بيتفحص بيه.
+     */
+    val suggestUnconfirmed: Boolean = true,
+    /** وقت آخر مزامنة نجحت (على الجهاز) — كارت «قاعدة التجار المشتركة» بيعرضه. null = ما بيتسجلش. */
+    val lastSync: SyncCursorPort? = null,
 )
 
 /** كل المؤكدين بيتقروا مرة في اليوم على الأكتر (حد القراية المجانية 50 ألف في اليوم). */
@@ -85,20 +95,29 @@ class SharedMerchants(private val deps: SharedMerchantsDeps) {
         val remote = byKey.values.toList()
         var added = 0
         var filled = 0
+        var suggested = 0
         if (remote.isNotEmpty()) {
             val effective = remote.map { effectiveEntry(baseline[sharedMerchantKey(it.normalizedName)], it)!! }
-            val plan = planAccountMerchantSync(effective, deps.merchants.listAll(), deps.treeCategoryIds)
-            val writes = plan.add + plan.fill
+            val account = deps.merchants.listAll()
+            val plan = planAccountMerchantSync(effective, account, deps.treeCategoryIds)
+            // المؤكد والمش مؤكد مفاتيحهم مختلفة (كل اسم ليه مستند واحد) ⇒ الخطتين ما بيلمسوش نفس التاجر
+            val hints = if (deps.suggestUnconfirmed) planSharedSuggestions(effective, account, deps.treeCategoryIds) else AccountMerchantSyncPlan(emptyList(), emptyList())
+            val writes = plan.add + plan.fill + hints.add + hints.fill
             if (writes.isNotEmpty()) deps.merchants.saveMany(writes)
             added = plan.add.size
             filled = plan.fill.size
+            suggested = hints.add.size + hints.fill.size
         }
         // المؤشرات بتتقدم بعد الكتابة بس — انقطاع في النص بيعيد نفس التغييرات (المعرّفات ثابتة فمفيش تكرار)
         val latest = latestUpdate(changed, since)
         if (latest != null && latest != since) deps.cursor.write(latest)
         if (since == null || refresh) deps.confirmedCursor.write(now)
-        return SharedSyncResult(remote.size, added, filled)
+        deps.lastSync?.write(now)
+        return SharedSyncResult(remote.size, added, filled, suggested)
     }
+
+    /** وقت آخر مزامنة نجحت على الجهاز ده (ISO) — null = لسه. */
+    suspend fun lastSyncAt(): String? = deps.lastSync?.read()
 
     suspend fun contribute(economicKind: EconomicKind, observedDirection: Direction, rawMerchantName: String?, categoryId: Id): ContributionResult {
         // الفحص الرخيص الأول: مفيش قراية من السيرفر لعملية مش هتتبعت أصلًا

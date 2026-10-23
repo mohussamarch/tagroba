@@ -125,6 +125,36 @@ fun planAccountMerchantSync(entries: List<SharedMerchantEntry>, account: List<Me
     return AccountMerchantSyncPlan(add, fill)
 }
 
+/**
+ * **المساهمات اللي لسه مش مؤكدة** (رد المالك 2026-10-22: «علطول كاقتراح»): بتوصل الحساب **اقتراح** ([Merchant.sharedCategoryId]) بس في
+ * المكان اللي الحساب مالوش فيه اختيار — تاجر عنده تصنيف مؤكد في الحساب عمره ما بيتلمس. المؤكد بيمشي في [planAccountMerchantSync] زي ما هو.
+ */
+fun planSharedSuggestions(entries: List<SharedMerchantEntry>, account: List<Merchant>, treeCategoryIds: Set<Id>): AccountMerchantSyncPlan {
+    val index = merchantIndex(account)
+    val add = mutableListOf<Merchant>()
+    val fill = mutableListOf<Merchant>()
+    val seen = mutableSetOf<String>()
+    for (entry in entries) {
+        val normalized = normalizeText(entry.normalizedName)
+        val category = entry.categoryId
+        if (entry.confirmed || category.isNullOrEmpty() || category !in treeCategoryIds) continue
+        if (normalized.isEmpty() || !seen.add(normalized)) continue
+        val existing = index[normalized]
+        if (existing != null) {
+            if (existing.verifiedCategoryId.isNullOrEmpty() && existing.sharedCategoryId != category) fill += existing.copy(sharedCategoryId = category)
+            continue
+        }
+        add += Merchant(
+            id = "merch-shared-${sharedMerchantKey(normalized)}",
+            displayName = entry.displayName.ifEmpty { normalized },
+            normalizedName = normalized,
+            aliases = entry.aliases.takeIf { it.isNotEmpty() }?.take(MAX_SHARED_ALIASES),
+            sharedCategoryId = category,
+        )
+    }
+    return AccountMerchantSyncPlan(add, fill)
+}
+
 /** أحدث وقت تعديل — منه المزامنة الجاية بتبدأ. */
 fun latestUpdate(entries: List<SharedMerchantEntry>, previous: String?): String? {
     var latest = previous

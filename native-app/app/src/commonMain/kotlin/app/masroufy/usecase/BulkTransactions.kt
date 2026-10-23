@@ -58,6 +58,8 @@ data class BulkTransactionsDeps(
     val erase: DeleteTransaction? = null,
     /** R4/N4: المربوطة بشخص نوعها جزء من الربط ⇒ «غيّر النوع» بيسيبها (بتتعدّ «اتساب»). null ⇒ مفيش فحص. */
     val personLinks: app.masroufy.port.PersonLinkRepository? = null,
+    /** نفس [EditTransactionDeps.onCategoryConfirmed] (قاعدة التجار المشتركة) — مرة لكل اسم محل في الدفعة. فشله ما بيفشّلش الحفظ. */
+    val onCategoryConfirmed: (suspend (Transaction, Id) -> Unit)? = null,
 )
 
 /** اللي بيظهر وإنت بتحدد: العدد · المجموع لكل عملة · كام واحدة منهم ينفع تتمسح. */
@@ -109,6 +111,10 @@ class BulkTransactions(private val deps: BulkTransactionsDeps) {
             )
         }
         if (changed.isNotEmpty()) deps.uow.run { deps.txns.saveMany(changed) }
+        val share = deps.onCategoryConfirmed
+        if (categoryId != null && share != null) {
+            for (t in found.distinctBy { app.masroufy.core.normalizeText(app.masroufy.core.rememberableMerchantName(it) ?: it.id) }) runCatching { share(t, categoryId) }
+        }
         return result(ids, changed.size, BulkUndo(BulkAction.CATEGORY, before = found))
     }
 

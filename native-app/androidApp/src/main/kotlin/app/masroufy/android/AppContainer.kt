@@ -143,6 +143,8 @@ class AppContainer(private val context: Context, private val problems: ProblemLo
         // «سجل المشاكل» وتقارير الأعطال (§90): رقم فايربيز بس + البلد الشغالة
         problems.session(st.user.uid, st.active.space.countryCode)
         val graph = SpaceGraph(st.active.space, st.repos.toRepositories(), envFor(st.user.uid, st.active.space), links(st), feeds)
+        // r06-shared (رد المالك 2026-10-22): قاعدة التجار المشتركة — التغييرات من آخر مؤشر لما البرنامج يتفتح (برّه خيط الواجهة؛ الفشل بيتسجل)
+        scope.launch { app.masroufy.wiring.syncSharedMerchantsOf(spacesOf(st), envFor(st.user.uid))?.run() }
         return AppSession.Ready(st.user.uid, graph)
     }
 
@@ -178,6 +180,12 @@ class AppContainer(private val context: Context, private val problems: ProblemLo
         onboardingDraft = AndroidOnboardingDraft(context, uid),
         characterDraft = AndroidCharacterDraft(context, uid),
         backgroundRead = app.masroufy.device.AndroidBackgroundRead(context),
+        // r06-shared: مؤشرات قاعدة التجار المشتركة لكل حساب (على الجهاز — مش بيانات مالية)
+        sharedCursors = app.masroufy.usecase.SharedMerchantCursors(
+            app.masroufy.device.AndroidSyncCursor(context, uid),
+            app.masroufy.device.AndroidSyncCursor(context, uid, "shared-merchants-confirmed"),
+            app.masroufy.device.AndroidSyncCursor(context, uid, "shared-merchants-last"),
+        ),
     )
 
     /**

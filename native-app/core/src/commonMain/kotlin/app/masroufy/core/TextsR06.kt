@@ -109,6 +109,16 @@ internal val MSA_R06_TEXTS: Map<R06Key, String> = mapOf(
     R06Key.DUP_ASK_KEEP to "لا، الاثنتان صحيحتان",
     R06Key.DUP_ASK_REMOVED to "حُذفت العملية المكررة",
     R06Key.DUP_ASK_KEPT to "تم — العمليتان باقيتان",
+    R06Key.CATEGORIZED_SHARED_MERCHANT to "المتجر «{0}» تصنيفه مقترح من قاعدة التجار المشتركة — أكّده أو غيّره",
+    R06Key.IMPORT_SRC_SHARED to "اقتراح من القاعدة المشتركة",
+    R06Key.PLOG_C_SHARED_SYNC to "تعذّر تحديث قاعدة التجار المشتركة",
+    R06Key.PLOG_C_SHARED_CONTRIBUTE to "تعذّر إرسال اسم متجر لقاعدة التجار المشتركة",
+    R06Key.RULES_SYNC_LAST to "آخر تحديث: {0}",
+    R06Key.RULES_SYNC_NEVER to "لم تُحدَّث بعد على هذا الجوال",
+    R06Key.RULES_SYNC_RUNNING to "جارٍ التحديث…",
+    R06Key.RULES_SYNC_DONE to "تم التحديث — {0} متجر جديد أو معدّل",
+    R06Key.RULES_SYNC_NOTHING to "لا جديد",
+    R06Key.RULES_SYNC_FAILED to "تعذّر التحديث — حاول لاحقًا",
 )
 
 internal val EGYPTIAN_R06_TEXTS: Map<R06Key, String> = mapOf(
@@ -219,6 +229,16 @@ internal val EGYPTIAN_R06_TEXTS: Map<R06Key, String> = mapOf(
     R06Key.DUP_ASK_KEEP to "لأ، الاتنين صح",
     R06Key.DUP_ASK_REMOVED to "اتشال المكرر",
     R06Key.DUP_ASK_KEPT to "تمام — الاتنين فضلوا",
+    R06Key.CATEGORIZED_SHARED_MERCHANT to "المحل «{0}» تصنيفه مقترح من قاعدة التجار المشتركة — أكّده أو غيّره",
+    R06Key.IMPORT_SRC_SHARED to "اقتراح من القاعدة المشتركة",
+    R06Key.PLOG_C_SHARED_SYNC to "تحديث قاعدة التجار المشتركة ما نجحش",
+    R06Key.PLOG_C_SHARED_CONTRIBUTE to "اسم محل ما اتبعتش لقاعدة التجار المشتركة",
+    R06Key.RULES_SYNC_LAST to "آخر تحديث: {0}",
+    R06Key.RULES_SYNC_NEVER to "لسه ما اتحدثتش على الجوال ده",
+    R06Key.RULES_SYNC_RUNNING to "بيتحدث…",
+    R06Key.RULES_SYNC_DONE to "اتحدثت — {0} محل جديد أو متعدّل",
+    R06Key.RULES_SYNC_NOTHING to "مفيش جديد",
+    R06Key.RULES_SYNC_FAILED to "التحديث ما نجحش — جرّب بعدين",
 )
 
 internal val ENGLISH_R06_TEXTS: Map<R06Key, String> = mapOf(
@@ -329,4 +349,14 @@ internal val ENGLISH_R06_TEXTS: Map<R06Key, String> = mapOf(
     R06Key.DUP_ASK_KEEP to "No, both are right",
     R06Key.DUP_ASK_REMOVED to "Duplicate removed",
     R06Key.DUP_ASK_KEPT to "Done — both kept",
+    R06Key.CATEGORIZED_SHARED_MERCHANT to "“{0}” has a suggested category from the shared merchant list — confirm or change it",
+    R06Key.IMPORT_SRC_SHARED to "Suggested by the shared list",
+    R06Key.PLOG_C_SHARED_SYNC to "Shared merchant list update failed",
+    R06Key.PLOG_C_SHARED_CONTRIBUTE to "Could not send a shop name to the shared merchant list",
+    R06Key.RULES_SYNC_LAST to "Last updated: {0}",
+    R06Key.RULES_SYNC_NEVER to "Not updated on this phone yet",
+    R06Key.RULES_SYNC_RUNNING to "Updating…",
+    R06Key.RULES_SYNC_DONE to "Updated — {0} new or changed shops",
+    R06Key.RULES_SYNC_NOTHING to "Nothing new",
+    R06Key.RULES_SYNC_FAILED to "Update failed — try later",
 )

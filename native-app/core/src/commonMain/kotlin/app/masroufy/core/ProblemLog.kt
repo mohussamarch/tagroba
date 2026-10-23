@@ -33,6 +33,9 @@ enum class ProblemCode(val area: ProblemArea, val level: ProblemLevel, val label
     BACKUP_DEVICE_COPY_FAILED(ProblemArea.BACKUP, ProblemLevel.ERROR, UiKey.PLOG_C_BACKUP_DEVICE),
     CRASH_MAIN(ProblemArea.UI, ProblemLevel.ERROR, UiKey.PLOG_C_CRASH_MAIN),
     CRASH_BACKGROUND(ProblemArea.OTHER, ProblemLevel.ERROR, UiKey.PLOG_C_CRASH_BACKGROUND),
+    /** r06-shared: قاعدة التجار المشتركة — المزامنة (فتح البرنامج · الخلفية · الزرار) والرفع لما المالك يأكد تصنيف شراء. */
+    SHARED_MERCHANTS_SYNC_FAILED(ProblemArea.SYNC, ProblemLevel.WARN, R06Key.PLOG_C_SHARED_SYNC),
+    SHARED_MERCHANTS_CONTRIBUTE_FAILED(ProblemArea.SYNC, ProblemLevel.WARN, R06Key.PLOG_C_SHARED_CONTRIBUTE),
 }
 
 /** نوع الخطأ — من **اسم نوعه** بس ([errorKindOf])، عمر رسالته ما بتتقري. */

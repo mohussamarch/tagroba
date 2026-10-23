@@ -126,4 +126,6 @@ data class SpaceRepositories(
     val spacesBackup: SpacesBackupPort? = null,
     /** علامة تجهيز المراجع للبلد دي (حساب جديد خالص بياخد تصنيفاته في أسئلة البداية). null = من غير تجهيز (اختبار من غيرها). */
     val referenceSeed: ReferenceSeedPort? = null,
+    /** قاعدة التجار المشتركة sharedMerchants (OVERRIDES §25 — برّه مساحة المستخدم). null = مش متوصلة (الاختبار) ⇒ ولا رفع ولا مزامنة. */
+    val sharedMerchants: app.masroufy.port.SharedMerchantCatalogPort? = null,
 )

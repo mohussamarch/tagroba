@@ -67,7 +67,11 @@ class ImportsGraph(private val c: AreaContext) : ImportsDeps {
     override val staged = ResumeStagedBatch(ResumeStagedBatchDeps(r.transactions, r.sourceRecords, r.importBatches))
 
     override val transactions = EditTransaction(
-        EditTransactionDeps(r.transactions, r.categories, r.tags, r.transactionTags, r.uow, env.ids, env.clock, allocations = r.allocations, settlements = r.settlements),
+        EditTransactionDeps(
+            r.transactions, r.categories, r.tags, r.transactionTags, r.uow, env.ids, env.clock, allocations = r.allocations, settlements = r.settlements,
+            // تأكيد تصنيف من شاشة رسايل البنك ⇒ قاعدة التجار المشتركة (رد المالك 2026-10-22)
+            onCategoryConfirmed = shareMerchantOf(c)?.onCategoryConfirmed,
+        ),
     )
 
     override val categories = ManageCategories(ManageCategoriesDeps(r.categories, env.ids))

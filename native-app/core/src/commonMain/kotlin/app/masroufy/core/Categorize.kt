@@ -20,6 +20,11 @@ data class Merchant(
      * قبل أي حفظ).
      */
     val suggestedCategoryId: Id? = null,
+    /**
+     * **اقتراح من قاعدة التجار المشتركة** (رد المالك 2026-10-22 — PLAN-0.6 «القاعدة المشتركة للمحلات»): تصنيف **مش مؤكد** ساهم بيه
+     * مستخدم تاني. المزامنة بتكتبه بس **عمره ما بيغلب اختيار الحساب**: التصنيف المؤكد وقواعد الحساب قبله، وصاحب الحساب يغيّره.
+     */
+    val sharedCategoryId: Id? = null,
 )
 
 enum class RuleMatchMode(val wire: String) {
@@ -45,6 +50,9 @@ enum class CategorizationSource(val wire: String) {
 
     /** تصنيف التاجر في بلدك التانية — اقتراح بس (رد المالك §64-٢). */
     OTHER_COUNTRY_MERCHANT("other_country_merchant"),
+
+    /** اقتراح مش مؤكد من قاعدة التجار المشتركة (§25 · رد المالك 2026-10-22). */
+    SHARED_MERCHANT("shared_merchant"),
 }
 
 data class CategorizationInput(
@@ -101,16 +109,16 @@ fun categorize(input: CategorizationInput, deps: CategorizeDeps): Categorization
     if (input.currentConfirmed && input.currentCategoryId != null) {
         return CategorizationResult(input.currentCategoryId, CategorizationSource.USER_CONFIRMED, ReviewState.CONFIRMED, uiText(TextKey.CATEGORIZED_USER_CONFIRMED))
     }
-    if (!input.merchantName.isNullOrEmpty()) {
-        val merchant = deps.merchantsByNormalizedName[normalizeText(input.merchantName)]
-        if (merchant?.verifiedCategoryId != null) {
+    val merchant = input.merchantName?.takeIf { it.isNotEmpty() }?.let { deps.merchantsByNormalizedName[normalizeText(it)] }
+    if (merchant != null) {
+        if (merchant.verifiedCategoryId != null) {
             return CategorizationResult(
                 merchant.verifiedCategoryId, CategorizationSource.VERIFIED_MERCHANT, ReviewState.CONFIRMED,
                 uiText(TextKey.CATEGORIZED_MERCHANT, merchant.displayName), merchant.displayName,
             )
         }
         // تصنيفه في بلدك التانية: **مقترح** والمستخدم يأكد (رد المالك §64-٢). قبل القواعد — معرفتك بالتاجر نفسه أدق من قاعدة عامة
-        if (merchant?.suggestedCategoryId != null) {
+        if (merchant.suggestedCategoryId != null) {
             return CategorizationResult(
                 merchant.suggestedCategoryId, CategorizationSource.OTHER_COUNTRY_MERCHANT, ReviewState.SUGGESTED,
                 uiText(TextKey.CATEGORIZED_MERCHANT_OTHER_COUNTRY, merchant.displayName), merchant.displayName,
@@ -125,6 +133,13 @@ fun categorize(input: CategorizationInput, deps: CategorizeDeps): Categorization
                 return CategorizationResult(rule.categoryId, CategorizationSource.RULE, ReviewState.SUGGESTED, uiText(TextKey.CATEGORIZED_RULE, rule.matchText), rule.matchText)
             }
         }
+    }
+    // قاعدة التجار المشتركة: اقتراح بس، **بعد** قواعد الحساب (اختيار الحساب نفسه أولى — رد المالك 2026-10-22)
+    if (merchant?.sharedCategoryId != null) {
+        return CategorizationResult(
+            merchant.sharedCategoryId, CategorizationSource.SHARED_MERCHANT, ReviewState.SUGGESTED,
+            uiText(R06Key.CATEGORIZED_SHARED_MERCHANT, merchant.displayName), merchant.displayName,
+        )
     }
     if (!input.sourceCategory.isNullOrEmpty()) {
         val id = deps.categoryIdByName[normalizeText(input.sourceCategory)]

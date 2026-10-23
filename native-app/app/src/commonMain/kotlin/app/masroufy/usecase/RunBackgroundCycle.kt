@@ -54,6 +54,8 @@ data class BackgroundCycleDeps(
      * فشلها ما بيوقفش حاجة. null = مش متوصلة.
      */
     val smsNotices: SmsStateNotices? = null,
+    /** r06-shared: قاعدة التجار المشتركة — التغييرات من آخر مؤشر كل دورة (والمؤكدين مرة في اليوم). فشلها بيتسجل وما بيوقفش حاجة. */
+    val sharedMerchants: SyncSharedMerchants? = null,
     /** مراجعة 0.3 بند 7: الدورة كلها (الصندوق واللحاق والمحرك) برّه خيط الواجهة — التطبيق ممكن يشغّلها وهو مفتوح. */
     val work: CoroutineContext = Dispatchers.Default,
 )
@@ -97,6 +99,7 @@ class RunBackgroundCycle(private val deps: BackgroundCycleDeps) {
         for (repair in deps.openingDebtRepairs) runCatchingNotCancel { repair.run() }
         for (repair in deps.categoryRepairs) runCatchingNotCancel { repair.run() }
         for (repair in deps.ruleRepairs) runCatchingNotCancel { repair.run() }
+        deps.sharedMerchants?.let { shared -> runCatchingNotCancel { shared.run() } }
         for (scan in deps.duplicateScans) runCatchingNotCancel { scan.scanRecent() }
         var subscriptionsFailed = false
         for (match in deps.subscriptions) if (runCatchingNotCancel { match.catchUp(now.date) } == null) subscriptionsFailed = true
