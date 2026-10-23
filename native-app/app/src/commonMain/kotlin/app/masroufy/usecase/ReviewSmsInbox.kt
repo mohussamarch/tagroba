@@ -122,6 +122,9 @@ class ReviewSmsInbox internal constructor(private val deps: ReviewSmsInboxDeps) 
     /** r051: صفحة صريحة اتقرت خلاص (`SmsInboxPort.window`) بقارئ البلد دي. */
     internal fun inboxView(state: app.masroufy.port.SmsInboxState, ids: Set<String>?): InboxView = deps.inbox.view(state, ids)
 
+    /** fix053: مرسل اتعرف إنه من بلد تانية (بعد ما صفحة اتفهمت هنا) — §112-5. */
+    internal fun otherCountrySender(sender: String): Boolean = deps.inbox.isOtherCountrySender(sender)
+
     suspend fun enable(senders: List<String>, target: SmsReviewTarget): SmsReview = build(deps.inbox.enable(senders), target)
 
     suspend fun disable(target: SmsReviewTarget): SmsReview = build(deps.inbox.disable(), target)

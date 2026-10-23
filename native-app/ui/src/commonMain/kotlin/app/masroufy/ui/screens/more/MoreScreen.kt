@@ -19,6 +19,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import app.masroufy.core.TextKey
@@ -92,7 +95,9 @@ private fun HeaderTiles(onFaq: () -> Unit, onSupport: () -> Unit) {
 @Composable
 private fun HeaderTile(icon: Lucide, label: String, onClick: () -> Unit) {
     val press = app.masroufy.ui.components.rememberPress()
-    app.masroufy.ui.components.IconTile(Ink.primary, Modifier.tap(press, label = label, onClick = onClick)) {
+    // fix053: اسم للقارئ الصوتي («الأسئلة الشائعة» · «الدعم») — الأيقونة لوحدها مالهاش نص
+    val described = Modifier.semantics { contentDescription = label; role = androidx.compose.ui.semantics.Role.Button }
+    app.masroufy.ui.components.IconTile(Ink.primary, described.tap(press, label = label, onClick = onClick)) {
         LucideIcon(icon, size = 18.dp, tint = Ink.primary)
     }
 }
@@ -158,6 +163,8 @@ fun moreGroups(view: MoreView): List<MoreGroup> = listOf(
             MoreItem(Lucide.LOCK, UiKey.MORE_ITEM_LOCK, null, AppSettingsRoute),
             MoreItem(Lucide.LANGUAGES, UiKey.MORE_ITEM_LANGUAGE, null, AppSettingsRoute),
             MoreItem(Lucide.MOON, UiKey.MORE_ITEM_ISLAMIC, null, AppSettingsRoute),
+            // fix053 (فحص 0.5.3 ز): «سجل المشاكل» كان آخر «القفل واللغة» بس ومحدش لاقيه من «المزيد»
+            MoreItem(Lucide.FILE_TEXT, UiKey.PLOG_TITLE, t(UiKey.PLOG_OPEN_HINT), ProblemLogRoute),
         ),
     ),
 )

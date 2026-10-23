@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.dues
 
+import app.masroufy.ui.overlay.SheetScroll
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -67,7 +68,7 @@ private const val NEW_PERSON = "+new"
 @Composable
 internal fun AddDebtSheet(visible: Boolean, initialSide: DebtSide, onDismiss: () -> Unit, onSaved: (AddedDebt) -> Unit) {
     Sheet(visible = visible, onDismiss = onDismiss, title = t(R06Key.AD_TITLE), closeLabel = t(UiKey.SHELL_CLOSE), spacing = 12.dp) {
-        if (visible) AddDebtForm(if (initialSide == DebtSide.ON_YOU) DebtSideIn.ON_YOU else DebtSideIn.FOR_YOU, onSaved)
+        if (visible) SheetScroll { AddDebtForm(if (initialSide == DebtSide.ON_YOU) DebtSideIn.ON_YOU else DebtSideIn.FOR_YOU, onSaved) }
     }
 }
 

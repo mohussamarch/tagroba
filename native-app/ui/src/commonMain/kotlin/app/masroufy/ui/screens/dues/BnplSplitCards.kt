@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -94,7 +95,7 @@ internal fun SplitPlanCard(row: SplitPlanRow, currency: Currency, onToggle: () -
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         Row(
-            Modifier.fillMaxWidth().height(44.dp).pressScale(press).tap(press, onClick = onToggle).semantics { role = Role.Checkbox; selected = row.on },
+            Modifier.fillMaxWidth().heightIn(min = 44.dp).padding(vertical = 4.dp).pressScale(press).tap(press, onClick = onToggle).semantics { role = Role.Checkbox; selected = row.on },
             horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically,
         ) {
             Tick(row.on)
@@ -102,7 +103,7 @@ internal fun SplitPlanCard(row: SplitPlanRow, currency: Currency, onToggle: () -
                 BasicText(o.name, style = Type.of(15, FontWeight.Bold), maxLines = 1)
                 val next = o.nextDueAt?.let { dayMonth(it) } ?: t(BnplKey.BNPL2_FINISHED)
                 val sub = t(R06Key.BS_PLAN_SUB, sentenceNumber(o.leftCount), sentenceNumber(o.count), amountLabel(o.installmentMinor, currency), next)
-                BasicText(sub, style = Type.of(12).copy(color = Ink.muted), maxLines = 1)
+                BasicText(sub, style = Type.of(12).copy(color = Ink.muted)) // fix053: بيلف لسطرين بدل ما يتقص
             }
         }
         if (row.on) AmountRow(t(R06Key.BS_INST), row.amount, onAmount)

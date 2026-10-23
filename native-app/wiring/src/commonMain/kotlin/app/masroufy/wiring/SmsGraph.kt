@@ -121,7 +121,11 @@ internal class SmsGraph(
             reviews += SenderReview(sender, wallet.id, one.load(targetOf(wallet, wallets))) to one
         }
         last = reviews
-        SmsOverview(view, unmapped, reviews.map { it.first }, senderWallets, result?.recordedTransactionIds.orEmpty())
+        // fix053 (فحص 0.5.3 ب): رسالة اتسجلت («اقرأها الآن») ولسه في الصندوق بتطلع «مكررة» في المعاينة — بتتشال هنا على طول (زي ما التسجيل
+        // بيشيل المكرر) بدل ما تفضل في العدّ («بانتظار تأكيدك» 619) لحد قفل البرنامج وفتحه
+        val recordedAlready = reviews.flatMap { (shown, _) -> shown.review.duplicates.map { it.messageId } }.distinct()
+        val shownView = if (recordedAlready.isEmpty()) view else runCatching { manage.dismiss(recordedAlready) }.getOrDefault(view)
+        SmsOverview(shownView, unmapped, reviews.map { it.first }, senderWallets, result?.recordedTransactionIds.orEmpty())
     }
 
     override suspend fun recordNew(): List<Id> = work { auto().runNew(memo).recordedTransactionIds.also { readMark(it.isNotEmpty()) } }
@@ -232,12 +236,27 @@ internal class SmsGraph(
     }
 
     override suspend fun historyStart(senders: List<String>, from: IsoDate?, progress: (SmsRunProgress) -> Unit) =
-        work { history()?.start(space.id, senders, from, progress, memo).also { readMark() } }
+        work { history()?.start(space.id, senders, from, progress, memo)?.let { mine(it) }.also { readMark() } }
 
-    override suspend fun historyReport() = work { history()?.report() }
+    override suspend fun historyReport() = work { history()?.report()?.let { mine(it) } }
 
     override suspend fun confirmShapes(messageIds: List<String>, progress: (SmsRunProgress) -> Unit) =
-        work { history()?.confirmShapes(messageIds, progress, memo).also { readMark() } }
+        work { history()?.confirmShapes(messageIds, progress, memo)?.let { mine(it) }.also { readMark() } }
+
+    /**
+     * fix053 (بلاغ المالك — §112-5): التقرير بيلف على كل البلاد — هنا بلد الشاشة بس: أشكالها، والمستني والصندوق = رسايلها بس
+     * ([ManageSmsInbox.refresh] بيشيل رسايل البلد التانية). المستني = مستني الكل ناقص رسايل البلاد التانية اللي في الصندوق.
+     */
+    private suspend fun mine(r: app.masroufy.usecase.SmsHistoryReport): app.masroufy.usecase.SmsHistoryReport {
+        val view = manage.refresh()
+        val others = (r.queued - view.count).coerceAtLeast(0)
+        return r.copy(
+            shapes = r.shapes.filter { it.spaceId == space.id },
+            waiting = (r.waiting - others).coerceIn(0, view.count),
+            queued = view.count,
+            unread = (view.count - view.messages.size).coerceAtLeast(0),
+        )
+    }
 
     override suspend fun recordByHand(messageId: String, sender: String, amountText: String): AddOperationResult = work {
         val walletId = runCatching { auto().walletOf(space.id, sender) }.getOrNull()

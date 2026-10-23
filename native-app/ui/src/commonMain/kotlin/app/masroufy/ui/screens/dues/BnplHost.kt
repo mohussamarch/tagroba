@@ -94,7 +94,9 @@ fun BnplHost() {
     }
     val ask = asks.firstOrNull { it.transaction.id !in later }
     val chips = remember(categories) { bnplCategoryChips(categories) }
-    val state = remember(ask?.transaction?.id, chips) { ask?.let { BnplSheetState(it, chips) } }
+    // fix053 (فحص 0.5.3 د): المفتاح السؤال كله مش معرّف العملية بس — خطة اتعملت للخصم اللي قبله بتجيب سؤال جديد لنفس الخصم (خطط أكتر)،
+    // واللوحة كانت بتفضل بالخطط القديمة لحد قفل البرنامج
+    val state = remember(ask, chips) { ask?.let { BnplSheetState(it, chips) } }
     var picking by remember { mutableStateOf(false) }
     var multi by remember { mutableStateOf<String?>(null) }
     val density = LocalDensity.current

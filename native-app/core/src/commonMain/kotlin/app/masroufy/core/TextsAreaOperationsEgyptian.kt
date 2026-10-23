@@ -53,7 +53,7 @@ internal val EGYPTIAN_OPERATIONS_LIST_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.OPERATION_DETAIL_IN to "دخل",
     UiKey.OPERATION_DETAIL_OUT to "صرف",
     UiKey.OPERATION_DETAIL_MERCHANT to "صفحة التاجر",
-    UiKey.OPERATION_DETAIL_LOCK to "التاريخ والاتجاه جايين من المصدر، ما بيتعدلوش",
+    UiKey.OPERATION_DETAIL_LOCK to "اتجاه العملية جاي من المصدر، ما بيتعدلش",
     UiKey.OPERATION_DETAIL_LOCK_CASH to "المبلغ من فرق العدّ",
     UiKey.OPERATION_DETAIL_CASH_TITLE to "دي مش عملية اتسجلت",
     UiKey.OPERATION_DETAIL_CASH_BODY to "ده فرق عدّ الكاش. داخل في صرف الشهر بنقطة حمرا لحد ما تقول اتصرف في إيه.",

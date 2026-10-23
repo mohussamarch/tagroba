@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.more
 
+import app.masroufy.ui.overlay.SheetScroll
 import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -104,7 +105,7 @@ fun JobChangeSheet(mode: JobSheetMode?, current: List<IncomeSource>, monthStart:
         JobSheetMode.Add -> t(UiKey.INCSRC_ADD)
         is JobSheetMode.Close -> t(UiKey.JOB_CLOSE_TITLE, m.source.name)
     }
-    Sheet(mode != null, onClose, title = title, closeLabel = t(UiKey.SHELL_CLOSE), corner = 28.dp, spacing = 10.dp) {
+    Sheet(mode != null, onClose, title = title, closeLabel = t(UiKey.SHELL_CLOSE), corner = 28.dp, spacing = 10.dp) { SheetScroll(10.dp) {
         BasicText(title, style = Type.of(17, FontWeight.Bold))
         BasicText(
             t(
@@ -185,7 +186,7 @@ fun JobChangeSheet(mode: JobSheetMode?, current: List<IncomeSource>, monthStart:
             }
         }
         error?.let { FieldError(it) }
-    }
+    } }
 }
 
 private fun payDone(freq: app.masroufy.core.PayFrequency, day: Int): String =
