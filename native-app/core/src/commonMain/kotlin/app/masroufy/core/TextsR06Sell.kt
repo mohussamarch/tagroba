@@ -16,7 +16,7 @@ internal val MSA_R06_SELL_TEXTS: Map<R06Key, String> = mapOf(
     R06Key.SELL_GAIN to "ربح",
     R06Key.SELL_LOSS to "خسارة",
     R06Key.SELL_COST_SHARE to "حصة التكلفة {0}",
-    R06Key.SELL_NOTE to "الحصيلة ليست دخلًا — تدخل محفظتك كبيع أصل، ويظهر المكسب وحده.",
+    R06Key.SELL_NOTE to "مبلغ البيع ليس دخلًا — يدخل محفظتك كبيع أصل، ويظهر المكسب وحده.",
     R06Key.SELL_ERR_WALLET to "اختر أين ذهب المال.",
     R06Key.SELL_ERR_CURRENCY to "عملة المحفظة غير عملة الأصل.",
     R06Key.SELL_ERR_LINK to "هذا التحويل لا يناسب البيع أو مربوط بشيء آخر.",
