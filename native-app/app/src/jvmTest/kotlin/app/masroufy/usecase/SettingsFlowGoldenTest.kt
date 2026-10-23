@@ -77,6 +77,8 @@ class SettingsFlowGoldenTest {
                     treeCategoryIds = input.field("tree").jsonArray.map { it.str }.toSet(),
                     cursor = cursor, confirmedCursor = confirmedCursor, clock = FixedClock("2026-09-22T10:00:00.000Z"),
                     people = MemoryPersonRepository(), transferParties = MemoryTransferPartyRepository(),
+                    // المرجع الذهبي = نقل التطبيق القديم (المؤكد بس) — الاقتراح من المش مؤكد (رد المالك 2026-10-22) في SharedMerchantsTwoAccountsTest
+                    suggestUnconfirmed = false,
                 ),
             )
             runBlocking {
