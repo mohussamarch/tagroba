@@ -37,8 +37,16 @@ class KnownBankSendersTest {
     @Test fun addingKnownSendersKeepsTheOldOnesAndTheLimit() {
         val known = listOf(KnownSender("AlRajhiBank", "w1"), KnownSender("NEWBANK", null))
         assertEquals(listOf("alrajhibank", "NEWBANK"), sendersWithKnown(listOf("alrajhibank"), known), "بدون تكرار بحالة الحروف")
-        val full = (1..10).map { "B$it" }
+        val full = (1..app.masroufy.core.MAX_SMS_SENDERS).map { "B$it" }
         assertEquals(full, sendersWithKnown(full, known), "الصندوق مليان ⇒ ما بيتشالش حد")
         assertEquals(listOf("AlRajhiBank", "NEWBANK"), sendersWithKnown(emptyList(), known))
+    }
+
+    /** OVERRIDES §112-7: حد المرسلين 25 لكل بلد في مكان واحد — كان 10 للجهاز كله. */
+    @Test fun theLimitIsTwentyFivePerCountry() {
+        assertEquals(25, app.masroufy.core.MAX_SMS_SENDERS_PER_COUNTRY)
+        assertEquals(50, app.masroufy.core.MAX_SMS_SENDERS, "بلدين ليهم قارئ رسايل")
+        val many = (1..29).map { "S$it" }
+        assertEquals(30, sendersWithKnown(many, listOf(KnownSender("S30", null))).size, "أكتر من 10 بقى مسموح")
     }
 }

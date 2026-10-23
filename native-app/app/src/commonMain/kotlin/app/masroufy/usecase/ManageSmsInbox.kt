@@ -70,7 +70,7 @@ class ManageSmsInbox(
 
     suspend fun enable(senders: List<String>): InboxView {
         val clean = senders.map(::jsTrim).filter { it.isNotEmpty() }.distinct()
-        if (clean.isEmpty() || clean.size > 10 || clean.any { it.length > 50 }) {
+        if (clean.isEmpty() || clean.size > app.masroufy.core.MAX_SMS_SENDERS || clean.any { it.length > 50 }) {
             throw IllegalArgumentException(uiText(TextKey.SMS_SENDER_REQUIRED_MANY))
         }
         port.enable(clean)

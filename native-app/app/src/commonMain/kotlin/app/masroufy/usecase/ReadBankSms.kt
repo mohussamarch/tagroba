@@ -46,7 +46,7 @@ class ReadBankSms(private val port: BankSmsPort, private val parse: BankSmsParse
     suspend fun read(from: String, to: String, senders: List<String>): SmsBatch {
         if (!isValidIsoDate(from) || !isValidIsoDate(to) || from > to) throw IllegalArgumentException(uiText(TextKey.SMS_PERIOD_INVALID))
         if (daysBetween(from, to) > 366) throw IllegalArgumentException(uiText(TextKey.SMS_PERIOD_TOO_LONG))
-        if (senders.isEmpty() || senders.size > 10 || senders.any { jsTrim(it).isEmpty() || it.length > 50 }) {
+        if (senders.isEmpty() || senders.size > app.masroufy.core.MAX_SMS_SENDERS || senders.any { jsTrim(it).isEmpty() || it.length > 50 }) {
             throw IllegalArgumentException(uiText(TextKey.SMS_SENDER_REQUIRED))
         }
         val result = port.read(from, to, senders)

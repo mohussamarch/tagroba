@@ -24,10 +24,10 @@ fun knownBankSenders(wallets: List<Wallet>, country: String?): List<KnownSender>
 }
 
 /**
- * المرسلين اللي بيتبعتوا لـ`ManageSmsInbox.enable`: الموجودين + المعروفين الجداد (بدون تكرار بحالة الحروف)، لحد [max] (حد الصندوق 10).
+ * المرسلين اللي بيتبعتوا لـ`ManageSmsInbox.enable`: الموجودين + المعروفين الجداد (بدون تكرار بحالة الحروف)، لحد [max] (حد الصندوق — `MAX_SMS_SENDERS` §112-7).
  * الموجود ما بيتشالش عشان يدّي مكان لجديد.
  */
-fun sendersWithKnown(current: List<String>, known: List<KnownSender>, max: Int = 10): List<String> {
+fun sendersWithKnown(current: List<String>, known: List<KnownSender>, max: Int = app.masroufy.core.MAX_SMS_SENDERS): List<String> {
     val out = current.toMutableList()
     for (k in known) {
         if (out.size >= max) break
