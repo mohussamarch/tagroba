@@ -136,6 +136,7 @@ fun WalletDetailScreen(walletId: Id) {
             PrimaryButton(t(if (row.isCash) UiKey.BAL_UPDATE_CASH else UiKey.BAL_UPDATE_BALANCE), onClick = { updating = true }, modifier = Modifier.fillMaxWidth(), height = 48.dp)
         }
         item(key = "opening") { TonalButton(t(UiKey.WADD_EDIT_OPEN), onClick = { editing = true }, modifier = Modifier.fillMaxWidth(), height = 48.dp) }
+        w?.wallet?.let { wallet -> item(key = "account") { WalletAccountCard(wallet) { tick++ } } } // r06-links: آخر 4 · إخفاء (§112-1)
         // 2026-10-16: «صلّح رصيدي» — الأدوات بالترتيب على شاشة واحدة (محفظة البنك بس)
         if (more.fixBalance != null && w?.wallet?.kind == "bank") item(key = "fix") {
             PrimaryButton(t(UiKey.FIX_BAL_ENTRY), onClick = { nav.push(FixMyBalanceRoute(walletId)) }, modifier = Modifier.fillMaxWidth(), height = 52.dp)

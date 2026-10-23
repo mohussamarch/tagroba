@@ -70,6 +70,9 @@ interface WalletEditor {
     /** sms-fix: آخر 4 أرقام حساب المحفظة (اختياري — فاضي يشيلها). بيرجّع رسالة الغلط أو null. الافتراضي للبدائل في الاختبار. */
     suspend fun setLast4(walletId: Id, last4: String?): String? = null
 
+    /** OVERRIDES §112-1: إخفاء الحساب من الرئيسية ومن «معك الآن» أو إظهاره. بيرجّع رسالة الغلط أو null. */
+    suspend fun setHidden(walletId: Id, hidden: Boolean): String? = null
+
     /** «النهارده» اللي التأكد بيقارن بيه (يوم البلد — `ManageWallets.today`) — اللوحة بتبدأ بيه. null ⇒ يوم الجوال. */
     fun today(): IsoDate? = null
 }

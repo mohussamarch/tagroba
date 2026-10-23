@@ -29,6 +29,8 @@ object ReferenceCodecs {
                 opt("notMineLast4", w.notMineLast4.takeIf { it.isNotEmpty() })
                 // r041b P4: رصيد بداية مش معروف — بيتكتب لو true بس ⇒ المحفظة القديمة هي هي بالحرف
                 opt("openingUnknown", true.takeIf { w.openingUnknown })
+                // §112-1: مخفي من الرئيسية — لو true بس
+                opt("hiddenOnHome", true.takeIf { w.hiddenOnHome })
             }
         },
         { r ->
@@ -38,6 +40,7 @@ object ReferenceCodecs {
                 r.maps("balanceCheckpoints").map(::checkpointOf),
                 r.strings("notMineLast4").orEmpty(),
                 openingUnknown = r.boolOrNull("openingUnknown") == true,
+                hiddenOnHome = r.boolOrNull("hiddenOnHome") == true,
             )
         },
     )
