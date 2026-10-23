@@ -37,7 +37,7 @@ object RealSeeds {
         )
     }
 
-    val rules: List<RawRule> by lazy { read("design-source/masroofi-claude-code/fixtures/rule-reference.json").jsonArray.map { RawRule(it.opt("word"), it.opt("cat")) } }
+    val rules: List<RawRule> by lazy { read("design-source/masroofi-claude-code/fixtures/rule-reference.json").jsonArray.map { RawRule(it.opt("word"), it.opt("cat"), it.opt("mode")) } }
 
     val merchants: List<RawMerchant> by lazy {
         read("design-source/masroofi-claude-code/fixtures/merchant-reference.json").jsonArray.map { RawMerchant(it.opt("name"), it.opt("cat"), it.opt("confidence")) }

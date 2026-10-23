@@ -90,7 +90,7 @@
 - `commonMain/kotlin/app/masroufy/port/ZakatPorts.kt` (38) — ZakatFactRepository, ZakatYearRepository, ZakatPaymentRepository · الزكاة (OVERRIDES §62) — مجموعات جديدة في كوتلن بس، مربوطة بالمساحة زي الباقي (§41: كل بلد قواعدها).
 - `commonMain/kotlin/app/masroufy/problems/Problems.kt` (28) — Problems · نقطة الإبلاغ عن مشكلة من أي طبقة (المزامنة · رسايل البنك · الاستيراد · النسخة — OVERRIDES §90) — زي [app.masroufy.perf.PerfTrace]:
 - `commonMain/kotlin/app/masroufy/problems/Usage.kt` (35) — Usage · نقطة بيانات الاستخدام من أي طبقة (زي [Problems]): **مقفولة افتراضيًا** ([port] = null ⇒ ولا حاجة — الاختبارات · الآيفون · المحاكي).
-- `commonMain/kotlin/app/masroufy/seed/BundledSeedJson.kt` (328) — — · مولَّد — ما يتعدّلش باليد. المصدر: `src/infrastructure/import/categoryTree.json` (شجرة التطبيق) و
+- `commonMain/kotlin/app/masroufy/seed/BundledSeedJson.kt` (356) — — · مولَّد — ما يتعدّلش باليد. المصدر: `src/infrastructure/import/categoryTree.json` (شجرة التطبيق) و
 - `commonMain/kotlin/app/masroufy/seed/BundledSeeds.kt` (75) — BundledSeeds · المراجع الأولية لحساب أو بلد جديدة **من جوه التطبيق** (من غير نت ولا ملفات على الجهاز): شجرة التصنيفات + فروق البلد
 - `commonMain/kotlin/app/masroufy/usecase/AcrossSpaces.kt` (76) — SpaceAlertSource, GatherAllSpaceAlerts, PersonSpaceDebt, PersonSpaceBook, PersonAcrossSpaces · اللي بيبص على **كل البلاد** مع بعض (OVERRIDES §64) — من غير ما يجمع أي رقم بين بلدين.
 - `commonMain/kotlin/app/masroufy/usecase/AddDebt.kt` (175) — DebtSideIn, DebtWho, DebtMoney, DebtDueChoice, NewDebt, AddedDebt, AddDebtError, AddDebt · «ضيف دين» (OVERRIDES §112-2 — الديون الأساسية في «المستحقات»، التصميم `AddDebtSheet.dc.html` من `8575ee4b`). حالة استخدام بتجمع
@@ -239,7 +239,7 @@
 - `commonMain/kotlin/app/masroufy/usecase/RememberChosenCategoryEffect.kt` (20) — RememberChosenCategoryEffect · §75-16 وقت التسجيل: التصنيف اللي المالك **اختاره بإيده** لسطر في «سجّل الكل» (رسايل البنك) أو في مراجعة الكشف
 - `commonMain/kotlin/app/masroufy/usecase/RemoveDues.kt` (34) — DuesRemovalRefused, RemoveDues · الشيل مرفوض والسبب بلغة المالك (مثلًا الخطة عليها دفعات مربوطة بعمليات).
 - `commonMain/kotlin/app/masroufy/usecase/RenameSeedCategories.kt` (38) — CategoryRenameResult, RenameSeedCategories · نتيجة التنفيذ: اللي اتغير اسمه، واللي اتساب لأن اسمه اتغير من بعد ما الخطة اتعملت (أو اتمسح).
-- `commonMain/kotlin/app/masroufy/usecase/RepairDarahimRules.kt` (62) — RepairDarahimRules, missingDarahimRules · أول قاعدة من قايمة محلات دراهم في `rule-reference.json` (§109-6 — اتضافت بعد 228 بند قديم ⇒ معرّفها من `rule-0229`).
+- `commonMain/kotlin/app/masroufy/usecase/RepairDarahimRules.kt` (72) — RepairDarahimRules, missingDarahimRules · أول قاعدة من قايمة محلات دراهم في `rule-reference.json` (§109-6 — اتضافت بعد 228 بند قديم ⇒ معرّفها من `rule-0229`).
 - `commonMain/kotlin/app/masroufy/usecase/RepairMissingDefaultSubs.kt` (40) — RepairMissingDefaultSubs, missingDefaultSubs · r06-darahim (PLAN-0.6 §12): الفرعيات الافتراضية الجديدة («مغسلة وكوي» · «هوايات» · «عصير») بتوصل للحسابات **القديمة** كمان —
 - `commonMain/kotlin/app/masroufy/usecase/RepairOldSms.kt` (215) — SmsRepairLine, SmsRepairUndo, SmsRepairResult, RepairOldSms · سطر في «صلّح رسايل البنك القديمة»: قبل ⇒ بعد، بتاريخه ومبلغه (الشاشة بتعرض بس — مفيش حساب فيها).
 - `commonMain/kotlin/app/masroufy/usecase/RepairOpeningDebtCurrency.kt` (26) — RepairOpeningDebtCurrency · مراجعة r06 people-1 — تصليح مرة واحدة (آمن التكرار): `ManagePeople.addOpeningDebt` كان بيحفظ **الدين القديم** (من غير عملية —
@@ -1322,7 +1322,7 @@
 
 - `commonMain/kotlin/app/masroufy/wiring/AreaContext.kt` (23) — AreaContext · كل اللي أي منطقة ممكن تحتاجه عشان تبني حالات استخدامها — **نفس الشكل لكل `<Area>Graph(c: AreaContext)`**، فـ[SpaceGraph] ما بيتغيرش
 - `commonMain/kotlin/app/masroufy/wiring/AssistantGraph.kt` (90) — AssistantGraph · المساعد «مصروفي» للبلد الشغالة (ARCHITECTURE §31.36): `AssistantDeps` من **نفس حالات الاستخدام اللي الشاشات بتستعملها** (من [areas] —
-- `commonMain/kotlin/app/masroufy/wiring/BackgroundWiring.kt` (116) — importDeps, smsImportDeps, backgroundCycle, smsHistory · نفس اعتمادات استيراد الكشف في البلد (ومعاها قرارات «زون التحويلات» ومصادر الدخل — §60 · §64) — رسايل البنك والكشف بخط واحد.
+- `commonMain/kotlin/app/masroufy/wiring/BackgroundWiring.kt` (123) — importDeps, smsImportDeps, backgroundCycle, smsHistory · نفس اعتمادات استيراد الكشف في البلد (ومعاها قرارات «زون التحويلات» ومصادر الدخل — §60 · §64) — رسايل البنك والكشف بخط واحد.
 - `commonMain/kotlin/app/masroufy/wiring/BudgetsGraph.kt` (73) — BudgetsGraph · منطقة «الميزانيات والخطط والتصنيفات والقواعد» (منطقة تاسعة — ARCHITECTURE §31.32) — **الملف ده بتاع المنطقة بس**.
 - `commonMain/kotlin/app/masroufy/wiring/CalculatorsGraph.kt` (71) — CalculatorsGraph · الحاسبات (جزء من «الاستثمار» — `ui/screens/investment/calc/`): كل حالة استخدام بنفس اعتماداتها في اختبارات `:app`، من [AreaContext].
 - `commonMain/kotlin/app/masroufy/wiring/DuesGraph.kt` (77) — DuesGraph · «المستحقات» — `loadDues(c.repos)` · `ManagePeople` · `ManageRoscas` + `RoscaSetup` · `ManageInstallments` · `ManageRecurring`،

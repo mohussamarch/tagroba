@@ -15,6 +15,8 @@ import type { Category, ClassificationRule, Merchant } from '../../domain/entiti
 export interface RawRule {
   word: string
   cat: string
+  /** اختياري (OVERRIDES §109): `exact` للكلمات القصيرة؛ من غيره `contains`. */
+  mode?: "exact"
 }
 
 export interface RawMerchant {
@@ -70,7 +72,7 @@ export function loadReferences(
       id: `rule-${String(index + 1).padStart(4, '0')}`,
       priority: index + 1,
       matchText: word,
-      matchMode: 'contains',
+      matchMode: raw.mode === 'exact' ? 'exact' : 'contains',
       categoryId,
       enabled: true,
     })

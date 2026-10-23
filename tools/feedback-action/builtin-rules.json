@@ -2521,6 +2521,230 @@
                 "eg": "cat-المنزل--كهرباء",
                 "sa": "cat-المنزل--كهرباء"
             }
+        },
+        {
+            "id": "rule-0318",
+            "word": "elage",
+            "category": {
+                "eg": "cat-ترفيه",
+                "sa": "cat-ترفيه"
+            }
+        },
+        {
+            "id": "rule-0319",
+            "word": "digimax for informatio",
+            "category": {
+                "eg": "cat-ترفيه",
+                "sa": "cat-ترفيه"
+            }
+        },
+        {
+            "id": "rule-0320",
+            "word": "alsammar company",
+            "category": {
+                "eg": "cat-ترفيه",
+                "sa": "cat-ترفيه"
+            }
+        },
+        {
+            "id": "rule-0321",
+            "word": "star zon est",
+            "category": {
+                "eg": "cat-ترفيه",
+                "sa": "cat-ترفيه"
+            }
+        },
+        {
+            "id": "rule-0322",
+            "word": "arsan operation co",
+            "category": {
+                "eg": "cat-ترفيه",
+                "sa": "cat-ترفيه"
+            }
+        },
+        {
+            "id": "rule-0323",
+            "word": "fadaa alibdaa",
+            "category": {
+                "eg": "cat-ترفيه",
+                "sa": "cat-ترفيه"
+            }
+        },
+        {
+            "id": "rule-0324",
+            "word": "najmeh alhasb llnskh",
+            "category": {
+                "eg": "cat-سفر",
+                "sa": "cat-سفر"
+            }
+        },
+        {
+            "id": "rule-0325",
+            "word": "ccavf worldwide",
+            "category": {
+                "eg": "cat-سفر",
+                "sa": "cat-سفر"
+            }
+        },
+        {
+            "id": "rule-0326",
+            "word": "سداد",
+            "category": {
+                "eg": "cat-المنزل",
+                "sa": "cat-المنزل"
+            }
+        },
+        {
+            "id": "rule-0327",
+            "word": "alharamain national",
+            "category": {
+                "eg": "cat-صحه-وصيدليات",
+                "sa": "cat-صحه-وصيدليات"
+            }
+        },
+        {
+            "id": "rule-0328",
+            "word": "shrkh hb alabdaa llhla",
+            "category": {
+                "eg": "cat-العنايه-الشخصيه--حلاقه",
+                "sa": "cat-العنايه-الشخصيه--حلاقه"
+            }
+        },
+        {
+            "id": "rule-0329",
+            "word": "nmc",
+            "category": {
+                "eg": "cat-صحه-وصيدليات--صيدليه",
+                "sa": "cat-صحه-وصيدليات--صيدليه"
+            }
+        },
+        {
+            "id": "rule-0330",
+            "word": "سلام",
+            "category": {
+                "eg": "cat-صحه-وصيدليات--صيدليه",
+                "sa": "cat-صحه-وصيدليات--صيدليه"
+            }
+        },
+        {
+            "id": "rule-0331",
+            "word": "wryd alshyt company",
+            "category": {
+                "eg": "cat-صحه-وصيدليات--مستشفي-وعياده",
+                "sa": "cat-صحه-وصيدليات--مستشفي-وعياده"
+            }
+        },
+        {
+            "id": "rule-0332",
+            "word": "dar alkhalig alarabi",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0333",
+            "word": "restaurants",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0334",
+            "word": "promising future",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0335",
+            "word": "huna",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0336",
+            "word": "هنا",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0337",
+            "word": "samulji",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0338",
+            "word": "wahmi",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0339",
+            "word": "kampa",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--مطاعم",
+                "sa": "cat-مطاعم-وقهوه--مطاعم"
+            }
+        },
+        {
+            "id": "rule-0340",
+            "word": "etoile company",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--حلويات-ومخبوزات",
+                "sa": "cat-مطاعم-وقهوه--حلويات-ومخبوزات"
+            }
+        },
+        {
+            "id": "rule-0341",
+            "word": "mahal saad hamdan",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--قهوه-ومشروبات",
+                "sa": "cat-مطاعم-وقهوه--قهوه-ومشروبات"
+            }
+        },
+        {
+            "id": "rule-0342",
+            "word": "samsm basta",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--قهوه-ومشروبات",
+                "sa": "cat-مطاعم-وقهوه--قهوه-ومشروبات"
+            }
+        },
+        {
+            "id": "rule-0343",
+            "word": "nas talqimah",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--قهوه-ومشروبات",
+                "sa": "cat-مطاعم-وقهوه--قهوه-ومشروبات"
+            }
+        },
+        {
+            "id": "rule-0344",
+            "word": "al joud advanced",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--قهوه-ومشروبات",
+                "sa": "cat-مطاعم-وقهوه--قهوه-ومشروبات"
+            }
+        },
+        {
+            "id": "rule-0345",
+            "word": "elabd cafee",
+            "category": {
+                "eg": "cat-مطاعم-وقهوه--قهوه-ومشروبات",
+                "sa": "cat-مطاعم-وقهوه--قهوه-ومشروبات"
+            }
         }
     ],
     "categoryNames": {

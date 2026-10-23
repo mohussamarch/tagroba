@@ -85,7 +85,7 @@ fun buildCategoryTree(raw: RawCategoryTree): BuiltCategoryTree {
     return BuiltCategoryTree(categories, aliases, wordOverrides)
 }
 
-data class RawRule(val word: String?, val cat: String?)
+data class RawRule(val word: String?, val cat: String?, val mode: String? = null)
 data class RawMerchant(val name: String?, val cat: String?, val confidence: String?)
 
 data class LoadedReferences(
@@ -111,7 +111,7 @@ fun loadReferences(rawRules: List<RawRule>, rawMerchants: List<RawMerchant>, cat
             unknown += cat
             return@forEachIndexed
         }
-        rules += ClassificationRule("rule-${(index + 1).toString().padStart(4, '0')}", index + 1, word, RuleMatchMode.CONTAINS, categoryId, true)
+        rules += ClassificationRule("rule-${(index + 1).toString().padStart(4, '0')}", index + 1, word, if (raw.mode == "exact") RuleMatchMode.EXACT else RuleMatchMode.CONTAINS, categoryId, true)
     }
     val merchants = mutableListOf<Merchant>()
     var unverified = 0

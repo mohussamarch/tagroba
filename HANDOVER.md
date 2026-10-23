@@ -140,6 +140,13 @@ export ANDROID_HOME="C:/Users/atgs0/Documents/Codex/android-build-tools/sdk"
 
 ## 7. آخر خطوة (حدّثها بعد كل خطوة)
 
+**2026-10-23 — دفعة محلات دراهم التانية (Claude Opus 5.5 · فرع `r06-darahim2` من `85a8329a` · ما اترفعش · ما اتدمجش · ما اتجربش على محاكي):**
+- **اتعمل:** 28 بند جديد في آخر `rule-reference.json` (من 29 — «alkandei» موجود) ؛ حقل اختياري `"mode":"exact"` (سلام · هنا · huna · nmc) في `RawRule`/`loadReferences`/`BundledSeeds` وفي `referenceLoader.ts`؛ `RepairDarahimRules` بقت بتاخد (علامة · من · لحد) وبتتوصّل مرتين في `BackgroundWiring` (`darahimRules` من 229 لحد 317 · `darahimRules2` من 318)؛ `seeds.json` و`tools/feedback-action/builtin-rules.json` اتولّدوا تاني؛ `RepairDarahimRules2Test` (3 اختبارات). تفاصيل: OVERRIDES §109 بند 8.
+- **اتفحص إزاي:** أمر §2 كامل بـ`--max-workers=2` (الأعداد من `TEST-*.xml` تحت). `npm run golden` — اتسابت تغييرات `categories.json` و`ledger.json` (انحراف قديم مش من الشغل ده، متراجعة).
+- **ما اتجربش:** حساب حقيقي قديم على جوال (التصليح التاني على بيانات المالك).
+- **الخطوة الجاية:** دمج الفرع.
+- **أسئلة مستنية المالك:** مفيش جديد.
+
 **2026-10-23 — «المزيد» الجديدة + سطر الدخل في «ملفك» §116 (Claude Opus 5.5 · فرع `r06-more` من `38a07f1a` · ما اترفعش · ما اتدمجش · ما اتجربش على محاكي ولا جوال):**
 - **اللي مش موجود / مش متأكد منه:**
   - **مفيش سطر «دخل الشهر» في الرئيسية** في كوتلن ⇒ اللي بقى بيفتح «مصادر الدخل» هو سطر «الراتب بعد N» في البطاقة البطلة (OVERRIDES §116-أ-5).
