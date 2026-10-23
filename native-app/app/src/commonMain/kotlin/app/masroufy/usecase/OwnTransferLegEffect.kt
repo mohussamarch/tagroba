@@ -43,11 +43,15 @@ class OwnTransferLegEffect(private val wallets: WalletRepository, private val tx
         val repo = txns ?: return
         val walletId = ctx.request.walletId ?: return
         val taken = mutableSetOf<Id>()
-        for (line in ctx.lines) {
+        val incoming = ctx.lines.filter { l -> l.sms != null && l.transaction.observedDirection == Direction.IN && l.transaction.walletId == walletId }
+        if (incoming.isEmpty()) return
+        // fix053: استعلام **واحد** للدفعة كلها (كان استعلام فايربيز لكل رسالة واردة ⇒ 1,000 استعلام في «اقرأ اللي فات» على 3,000 رسالة)
+        val autoLegs = rangeOf(repo, incoming.map { it.transaction.occurredAt.take(10) }).filter { it.id.endsWith(OWN_LEG_SUFFIX) }
+        if (autoLegs.isEmpty()) return
+        for (line in incoming) {
             val t = line.transaction
-            if (line.sms == null || t.observedDirection != Direction.IN || t.walletId != walletId) continue
             val day = t.occurredAt.take(10)
-            val auto = repo.listByDateRange(shiftDays(day, -1), shiftDays(day, 1)).firstOrNull { o ->
+            val auto = autoLegs.firstOrNull { o ->
                 o.id.endsWith(OWN_LEG_SUFFIX) && o.id !in taken && o.walletId == walletId && o.observedDirection == Direction.IN &&
                     o.amountMinor == t.amountMinor && o.currency == t.currency && withinADay(o.occurredAt, day)
             } ?: continue
@@ -67,6 +71,8 @@ class OwnTransferLegEffect(private val wallets: WalletRepository, private val tx
         }
         if (outs.isEmpty()) return
         val all = wallets.listAll()
+        // fix053: العمليات حوالين أيام الدفعة مرة واحدة (مش استعلام لكل تحويل)
+        var around: List<Transaction>? = null
         for (line in outs) {
             val t = line.transaction
             val sms = line.sms ?: continue
@@ -76,7 +82,8 @@ class OwnTransferLegEffect(private val wallets: WalletRepository, private val tx
             } - setOfNotNull(sms.ownLast4)
             val target = all.filter { w -> w.id != t.walletId && w.currency == t.currency && walletLast4(w.accountLast4) in digits }.singleOrNull() ?: continue
             val day = t.occurredAt.take(10)
-            val near = txns?.listByDateRange(shiftDays(day, -1), shiftDays(day, 1)).orEmpty() + ctx.lines.map { it.transaction } + ctx.extra.map { it.first }
+            val read = around ?: txns?.let { rangeOf(it, outs.map { l -> l.transaction.occurredAt.take(10) }) }.orEmpty().also { around = it }
+            val near = read.filter { withinADay(it.occurredAt, day) } + ctx.lines.map { it.transaction } + ctx.extra.map { it.first }
             if (ownLegAlreadyThere(near, t, target.id)) continue
             val leg = ownInLegOf(t, target, ctx.nowIso)
             ctx.extra += leg to SourceRecord(
@@ -119,3 +126,7 @@ internal fun ownLegAlreadyThere(all: List<Transaction>, t: Transaction, targetId
 }
 
 private fun withinADay(at: String, day: String): Boolean = abs(daysBetween(day, at.take(10))) <= 1
+
+/** fix053: العمليات من يوم قبل أول يوم في [days] لحد يوم بعد آخر يوم — قراية واحدة للدفعة. */
+private suspend fun rangeOf(repo: TransactionRepository, days: List<String>): List<Transaction> =
+    repo.listByDateRange(shiftDays(days.min(), -1), shiftDays(days.max(), 1))
