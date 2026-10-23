@@ -62,6 +62,7 @@ import app.masroufy.usecase.LoadHomeScreenRequest
 fun HomeScreen() {
     val deps = LocalSpace.current
     val shell = deps.shell
+    val nav = LocalNavigator.current
     val changes = LocalDataChanges.current
     var me by remember(deps) { mutableStateOf<MeInfo?>(null) }
     var load by remember(deps) { mutableStateOf<HomeLoad>(HomeLoad.Loading) }
@@ -103,7 +104,7 @@ fun HomeScreen() {
                 if (isBrandNew(s.now, s.month)) {
                     item(key = "empty") { EmptyState(t(UiKey.HOME_EMPTY_TITLE), t(emptyBody)) }
                 } else {
-                    item(key = "hero") { WithYouHero(s.now, s.month, shell.today(), onCash = { cashOpen = true }) }
+                    item(key = "hero") { WithYouHero(s.now, s.month, shell.today(), onCash = { cashOpen = true }, onIncome = { nav.push(app.masroufy.ui.screens.more.IncomeHubRoute) }) }
                     if (isQuietMonth(s.now, s.month)) item(key = "quiet") { QuietMonthCard(emptyBody) }
                     else s.inbox?.let { advisorCardOf(it, gone) }?.let { card -> item(key = "advisor") { AdvisorCardView(card) } }
                     if (s.profileCard) item(key = "profile") { ProfileCardView() }

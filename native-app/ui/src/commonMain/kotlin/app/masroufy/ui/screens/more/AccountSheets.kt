@@ -99,6 +99,7 @@ private fun sheetTitle(e: AccountEdit, currency: Currency): String = when (e) {
         AccountField.GENDER -> t(UiKey.ACC_GENDER)
         AccountField.DEPENDENTS -> t(UiKey.ACC_DEP_TITLE)
         AccountField.SALARY -> t(UiKey.ACC_SALARY_TITLE, currencySymbol(currency))
+        AccountField.INCOME_SOURCES -> t(UiKey.MORE_ITEM_INCOME)
         AccountField.PAYDAY -> t(UiKey.ACC_PAYDAY_TITLE)
         AccountField.CAR -> t(UiKey.ACC_CAR)
         AccountField.RENTER -> t(UiKey.ACC_RENTER)

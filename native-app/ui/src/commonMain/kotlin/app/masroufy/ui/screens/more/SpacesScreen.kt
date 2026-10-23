@@ -183,7 +183,7 @@ private fun MenuRowCard(label: String, onClick: () -> Unit) {
 }
 
 @Composable
-private fun SpacesSheet(
+internal fun SpacesSheet(
     sheet: SpaceSheet?,
     canAdmin: Boolean,
     busy: Boolean,

@@ -45,7 +45,7 @@ import app.masroufy.usecase.WithYouNow
  * غير متاح ⇒ «غير متاح» + سبب + الكاش وحده · «يشمل X كاش ‹» ⇒ لوحة الكاش · خط رفيع وتحته «صرفت هذا الشهر» يمين و«الراتب بعد N» شمال.
  */
 @Composable
-internal fun WithYouHero(now: WithYouNow, month: HomeMonth?, today: IsoDate, onCash: () -> Unit) {
+internal fun WithYouHero(now: WithYouNow, month: HomeMonth?, today: IsoDate, onCash: () -> Unit, onIncome: () -> Unit = {}) {
     HeroCard(Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
@@ -68,7 +68,11 @@ internal fun WithYouHero(now: WithYouNow, month: HomeMonth?, today: IsoDate, onC
             HeroDivider()
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 BasicText(spentLine(month, now.currency), Modifier.weight(1f), style = Type.caption().copy(color = Ink.onHeroMuted))
-                salaryLine(month?.nextPayday, today)?.let { BasicText(it, style = Type.caption().copy(color = Ink.onHeroMuted)) }
+                // r06-more (OVERRIDES §116-1): سطر الدخل في البطلة ⇒ «مصادر الدخل» (مفيش سطر «دخل الشهر» في الرئيسية — ده سطر الراتب)
+                salaryLine(month?.nextPayday, today)?.let { line ->
+                    val press = rememberPress()
+                    BasicText(line, Modifier.tap(press, label = line, onClick = onIncome), style = Type.caption().copy(color = Ink.onHeroMuted))
+                }
             }
         }
     }
