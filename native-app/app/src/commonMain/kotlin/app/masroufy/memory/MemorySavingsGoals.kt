@@ -16,6 +16,10 @@ class MemorySavingsGoalRepository(seed: List<SavingsGoal> = emptyList()) : Savin
         items[goal.id] = goal
     }
 
+    override suspend fun delete(id: Id) {
+        items.remove(id)
+    }
+
     override suspend fun saveMany(goals: List<SavingsGoal>) {
         goals.forEach { items[it.id] = it }
     }

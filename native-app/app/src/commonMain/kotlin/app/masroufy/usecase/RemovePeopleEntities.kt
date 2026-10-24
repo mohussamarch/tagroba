@@ -16,6 +16,11 @@ class Removals(d: RemovalDeps) {
     val merchant: EntityRemover = RemoveMerchant(d)
     val incomeSource: EntityRemover = RemoveIncomeSource(d)
     val category: EntityRemover = RemoveCategory(d)
+
+    // r06-links2 (§118-ج): السداد الغلط · خطة الادخار · القاعدة
+    val settlement: EntityRemover = RemoveSettlement(d)
+    val goal: EntityRemover = RemoveSavingsGoal(d)
+    val rule: EntityRemover = RemoveRule(d)
 }
 
 /**

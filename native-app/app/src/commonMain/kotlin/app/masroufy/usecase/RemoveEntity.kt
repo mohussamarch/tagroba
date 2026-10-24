@@ -94,6 +94,9 @@ data class RemovalDeps(
     val spaceId: String = "",
     /** نسخة قبل مسح العمليات — null = الجهاز ما يقدرش يحفظ (التراجع في الذاكرة بس). */
     val backup: RepairBackupPort? = null,
+    /** r06-links2: خطط الادخار وإيداعاتها (مسح الخطة). null ⇒ اللوحة بتقول «مش موجودة». */
+    val goals: app.masroufy.port.SavingsGoalRepository? = null,
+    val goalContributions: app.masroufy.port.GoalContributionRepository? = null,
 )
 
 /** العمليات اللي اتمسحت وكل اللي كان بيشاور عليها — للتراجع بالظبط. */

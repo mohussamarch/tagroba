@@ -154,7 +154,7 @@ class MoreGraph(private val c: AreaContext) : MoreDeps {
 
     /** «أضف محفظة» و«رصيد البداية» (`ManageWallets` — الغلط رسالة بترجع للوحة بدل ما توقع). */
     override val walletEditor: WalletEditor = object : WalletEditor {
-        private val manage = ManageWallets(r.wallets, c.env.ids, c.env.clock, c.space.currency, countryPack(c.space.countryCode).timeZone)
+        private val manage = ManageWallets(r.wallets, c.env.ids, c.env.clock, c.space.currency, countryPack(c.space.countryCode).timeZone, txns = r.transactions)
 
         /** يوم البلد (مش يوم الجوال ولا جرينتش) — نفس اللي `ManageWallets` بيتأكد بيه. */
         override fun today(): IsoDate = manage.today()
@@ -170,6 +170,10 @@ class MoreGraph(private val c: AreaContext) : MoreDeps {
         override suspend fun setLast4(walletId: Id, last4: String?): String? = attempt { manage.setLast4(walletId, last4) }
 
         override suspend fun setHidden(walletId: Id, hidden: Boolean): String? = attempt { manage.setHidden(walletId, hidden) }
+
+        override suspend fun rename(walletId: Id, name: String): String? = attempt { manage.rename(walletId, name) }
+
+        override suspend fun setKind(walletId: Id, kind: String): String? = attempt { manage.setKind(walletId, kind) }
 
         private suspend fun attempt(block: suspend () -> Unit): String? = try {
             block()

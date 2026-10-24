@@ -48,7 +48,40 @@ class ManageWallets(
     private val clock: Clock,
     private val currency: Currency,
     private val timeZone: String = SAUDI_TIME_ZONE,
+    /** r06-links2: للتأكد إن تغيير النوع آمن (الحساب عليه عمليات؟). null ⇒ بنعتبر إن عليه (الأحوط). */
+    private val txns: app.masroufy.port.TransactionRepository? = null,
 ) {
+    /** r06-links2 (فجوة ٥): اسم الحساب بعد الإضافة — نفس قواعد الإضافة (مش فاضي · مش طويل · مش مكرر). */
+    suspend fun rename(walletId: Id, name: String): Wallet {
+        val wallet = wallets.findById(walletId) ?: throw WalletError(uiText(TextKey.NOT_AVAILABLE))
+        val clean = jsTrim(name).replace(Regex("\\s+"), " ")
+        if (clean.isEmpty()) throw WalletError(uiText(UiKey.WADD_ERR_NAME))
+        if (clean.length > MAX_WALLET_NAME) throw WalletError(uiText(TextKey.PROFILE_NAME_TOO_LONG, MAX_WALLET_NAME.toString()))
+        if (wallets.listAll().any { it.id != walletId && normalizeText(it.name) == normalizeText(clean) }) throw WalletError(uiText(UiKey.WADD_ERR_DUP))
+        val updated = wallet.copy(name = clean)
+        if (updated != wallet) wallets.save(updated)
+        return updated
+    }
+
+    /**
+     * r06-links2 (فجوة ٥): نوع الحساب بعد الإضافة. البنك ⇄ المحفظة الرقمية آمن دايمًا (نفس حساب الرصيد). **الكاش** بيتحسب بطريقة تانية
+     * (ملخص الكاش · وسم «كاش» على العمليات · من غير آخر 4 أرقام) ⇒ التحويل منه أو ليه مرفوض بسبب لو الحساب عليه عمليات، أو لو فيه كاش تاني.
+     * حساب برا البلد (`own_abroad`) مربوط بالتحويل بين البلاد ⇒ نوعه ما بيتغيرش.
+     */
+    suspend fun setKind(walletId: Id, kind: String): Wallet {
+        val wallet = wallets.findById(walletId) ?: throw WalletError(uiText(TextKey.NOT_AVAILABLE))
+        if (kind == wallet.kind) return wallet
+        if (kind !in EDITABLE_KINDS || wallet.kind !in EDITABLE_KINDS) throw WalletError(uiText(app.masroufy.core.R06Key.L2_WK_BLOCK_ABROAD))
+        if (kind == "cash" || wallet.kind == "cash") {
+            val hasOps = txns?.let { r -> r.listByDateRange("0000-01-01", "9999-12-31T23:59:59Z").any { it.walletId == walletId || it.transferToWalletId == walletId } } ?: true
+            if (hasOps) throw WalletError(uiText(app.masroufy.core.R06Key.L2_WK_BLOCK_CASH_OPS))
+            if (kind == "cash" && wallets.listAll().any { it.id != walletId && it.kind == "cash" }) throw WalletError(uiText(app.masroufy.core.R06Key.L2_WK_BLOCK_TWO_CASH))
+        }
+        val updated = if (kind == "cash") wallet.copy(kind = kind, accountLast4 = null, bankId = null) else wallet.copy(kind = kind)
+        wallets.save(updated)
+        return updated
+    }
+
     /** النهارده في البلد — اللوحة بتبدأ بيه والتأكد بيقارن بيه. */
     fun today(): IsoDate = clock.nowIso().let { dayIn(timeZone, it) ?: it.take(10) }
 
@@ -121,3 +154,6 @@ private const val MAX_WALLET_NAME = 80
 
 /** الأنواع اللي «أضف محفظة» بيعرضها (البنك · محفظة رقمية · الكاش) + حساب برا البلد (`own_abroad`) زي المخزن. */
 private val WALLET_KINDS = setOf("bank", "digital_wallet", "cash", "own_abroad")
+
+/** r06-links2: الأنواع اللي بتتغير من صفحة الحساب. */
+val EDITABLE_KINDS = listOf("bank", "digital_wallet", "cash")
