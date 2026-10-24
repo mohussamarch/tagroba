@@ -24,3 +24,19 @@ fun saleOutcome(lots: List<AssetLot>, priorSales: List<AssetSale>, sale: AssetSa
     val gain = subtractMoney(subtractMoney(sale.grossProceedsMinor, sale.feeMinor), share)
     return SaleOutcome(share, gain, before.heldQuantity)
 }
+
+/**
+ * §117-2 (قرار المالك 2026-10-24): مجموع «المكسب المحقق» للاستثمار كله **من غير** بيعات الأصول اللي تكلفتها مش متسجلة ([unknownCost] =
+ * معرّفات الأصول دي) — مكسبها «غير متاح» مش «الحصيلة كلها». عددهم في [PortfolioTotals.realizedSkippedSales] (للسطر الصغير تحت المجموع).
+ * الباقي (التكلفة · القيمة · غير المحقق) زي [computePortfolioTotals] بالظبط.
+ */
+fun totalsCountingKnownCost(positions: List<AssetPosition>, unknownCost: Set<Id>, salesCount: Map<Id, Int>): PortfolioTotals {
+    val base = computePortfolioTotals(positions)
+    if (unknownCost.isEmpty()) return base
+    var realized = 0L
+    var skipped = 0
+    for (p in positions) {
+        if (p.assetId in unknownCost) skipped += salesCount[p.assetId] ?: 0 else realized = addMoney(realized, p.realizedGainMinor)
+    }
+    return base.copy(realizedGainMinor = realized, realizedSkippedSales = skipped)
+}

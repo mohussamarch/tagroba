@@ -12,7 +12,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import app.masroufy.ui.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
@@ -102,6 +110,9 @@ fun TextInput(
     val shape = RoundedCornerShape(14.dp)
     // الكتابة بتعلّم على اللوحة اللي فيها الخانة ⇒ الضغط برّه اللوحة ما يضيّعش الكلام (`FormGuard` — HANDOVER §6.5 بند 11)
     val guard = LocalFormGuard.current.takeIf { draft }
+    val focus = LocalFocusManager.current
+    val softKeyboard = LocalSoftwareKeyboardController.current
+    val closeKeyboard = { softKeyboard?.hide(); focus.clearFocus() }
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         if (label != null) FieldLabel(label)
         Row(
@@ -127,8 +138,14 @@ fun TextInput(
                         textStyle = style,
                         cursorBrush = SolidColor(Ink.primary),
                         keyboardOptions = KeyboardOptions(keyboardType = keyboard, imeAction = imeAction, autoCorrectEnabled = !ltr),
+                        // fix055: «تم» وزرار Esc بيقفلوا الكيبورد ويشيلوا التركيز (كيبورد الأرقام كان بيغطي زرار الحفظ)
+                        keyboardActions = KeyboardActions(onDone = { closeKeyboard() }),
                         visualTransformation = if (password) PasswordVisualTransformation() else VisualTransformation.None,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().onPreviewKeyEvent { e ->
+                            if (e.key != Key.Escape) return@onPreviewKeyEvent false
+                            if (e.type == KeyEventType.KeyDown) closeKeyboard()
+                            true
+                        },
                     )
                 } }
                 // الريال: العلامة ثم مسافة ثم الرقم، من الشمال لليمين

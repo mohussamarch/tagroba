@@ -10,6 +10,7 @@ import app.masroufy.core.PriceState
 import app.masroufy.core.RealEstateValuation
 import app.masroufy.core.TextKey
 import app.masroufy.core.displayKind
+import app.masroufy.core.gainSkippedKey
 import app.masroufy.core.isRealEstate
 import app.masroufy.core.parseIsoDate
 import app.masroufy.core.sentenceNumber
@@ -35,6 +36,8 @@ data class InvestmentUi(
     val unrealizedMinor: Halalas?,
     /** المكسب المحقق من كل البيع (`PortfolioTotals`) — null لو مفيش بيع خالص ⇒ السطر مش بيظهر (مش صفر). */
     val realizedMinor: Halalas?,
+    /** §117-2: «بيعة واحدة مش محسوبة (التكلفة مش متسجلة)» أو «N بيعات…» — null لو كل البيع محسوب. */
+    val realizedSkipped: String? = null,
     val estates: List<EstateCard>,
     val others: List<AssetLine>,
 )
@@ -82,7 +85,11 @@ fun investmentUi(view: PortfolioView, projections: Map<Id, AssetProjectionView>,
         totalNa = totalNa,
         costMinor = view.owned.costBasisMinor,
         unrealizedMinor = view.owned.unrealizedGainMinor,
-        realizedMinor = view.owned.realizedGainMinor.takeIf { view.rows.any { !it.asset.archived && it.sales.isNotEmpty() } },
+        // §117-2: البيعات اللي تكلفة أصلها مش متسجلة برّه المجموع — لو كل البيع كده ⇒ مفيش مجموع (مش صفر مؤكد) والسطر الصغير بس
+        realizedMinor = view.owned.realizedGainMinor.takeIf {
+            view.rows.any { !it.asset.archived && it.asset.costKnown != false && it.sales.isNotEmpty() }
+        },
+        realizedSkipped = view.owned.realizedSkippedSales.takeIf { it > 0 }?.let { uiText(gainSkippedKey(it), sentenceNumber(it)) },
         estates = estates,
         others = others,
     )

@@ -77,7 +77,7 @@ internal class SmsGraph(
 
     // decisions-77 (مراجعة S1): الشاشة لازم تيجي من `SmsLane.screen` — نفس التعلّم والآثار والمحافظ بتوع الخلفية.
     private fun review(m: ManageSmsInbox): ReviewSmsInbox =
-        SmsLane.of(space.id, smsImportDeps(space.id, c.repos, c.env, inbox, share), m, c.repos.wallets, countryPack(space.countryCode).timeZone).screen(share?.hook)
+        SmsLane.of(space.id, smsImportDeps(space.id, c.repos, c.env, inbox, share, space.countryCode), m, c.repos.wallets, countryPack(space.countryCode).timeZone).screen(share?.hook)
 
     /** تأكيد تصنيف رسالة بنك ⇒ قاعدة التجار المشتركة (رد المالك 2026-10-22). */
     private val share = shareMerchantOf(c)

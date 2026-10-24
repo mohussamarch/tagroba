@@ -77,7 +77,7 @@ class TextsTest {
             // r051 — لوحة «ادفع بعدين» (`TextsBnplSheet.kt` — نوع [BnplKey] لوحده بعد دمج 0.6)
             EGYPTIAN_BNPL_SHEET_TEXTS.keys +
             // r06 (`TextsR06.kt` — نوع R06Key لوحده)
-            EGYPTIAN_R06_TEXTS.keys + EGYPTIAN_R06_SPLIT_TEXTS.keys + EGYPTIAN_R06_AWAY_TEXTS.keys + EGYPTIAN_R06_NIGHT_TEXTS.keys + EGYPTIAN_R06_NOTIFY_TEXTS.keys + EGYPTIAN_R06_COUNTRY_TEXTS.keys + EGYPTIAN_R06_DEBTS_TEXTS.keys + EGYPTIAN_R06_INCOME_TEXTS.keys + EGYPTIAN_R06_SELL_TEXTS.keys + EGYPTIAN_R06_MORE_TEXTS.keys + EGYPTIAN_R06_PERSON_TEXTS.keys +
+            EGYPTIAN_R06_TEXTS.keys + EGYPTIAN_R06_SPLIT_TEXTS.keys + EGYPTIAN_R06_AWAY_TEXTS.keys + EGYPTIAN_R06_NIGHT_TEXTS.keys + EGYPTIAN_R06_NOTIFY_TEXTS.keys + EGYPTIAN_R06_COUNTRY_TEXTS.keys + EGYPTIAN_R06_DEBTS_TEXTS.keys + EGYPTIAN_R06_INCOME_TEXTS.keys + EGYPTIAN_R06_SELL_TEXTS.keys + EGYPTIAN_R06_MORE_TEXTS.keys + EGYPTIAN_R06_PERSON_TEXTS.keys + EGYPTIAN_R06_FIX055_TEXTS.keys +
             // مراجعة 0.3: «حساب البلد في الأرشيف» (`TextsSpaces.kt`)
             setOf(TextKey.SPACE_COUNTRY_ARCHIVED).filter { it in EGYPTIAN_SPACE_TEXTS } +
             // «ر.س» للنص الطالع برا التطبيق بس (علامة الريال الرسمية — قرار المالك 2026-10-15)

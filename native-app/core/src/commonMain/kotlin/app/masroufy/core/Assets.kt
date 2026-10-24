@@ -182,6 +182,8 @@ data class PortfolioTotals(
     val marketValueMinor: Halalas?,
     val unrealizedGainMinor: Halalas?,
     val assetsWithoutPrice: Int,
+    /** §117-2: بيعات أصول تكلفتها مش متسجلة — برّه [realizedGainMinor] (`totalsCountingKnownCost`). */
+    val realizedSkippedSales: Int = 0,
 )
 
 fun computePortfolioTotals(positions: List<AssetPosition>): PortfolioTotals {

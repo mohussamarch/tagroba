@@ -264,7 +264,8 @@ private fun PartySheet(
     val title = when {
         duesOnly -> t(UiKey.TRANSFER_PARTY_DUES_TITLE, partyAccount(party))
         step == 0 -> t(UiKey.TRANSFER_PARTY_WHO_TITLE, partyAccount(party))
-        else -> t(UiKey.TRANSFER_PARTY_KIND_TITLE, chosenName)
+        // fix055: الخارج «إلى X» (فلوس راحت) — الداخل «من X»
+        else -> t(app.masroufy.core.partyKindTitleKey(outgoing), chosenName)
     }
     Sheet(visible, onDismiss, title = title, closeLabel = t(UiKey.SHELL_CLOSE), spacing = 12.dp) {
         BasicText(title, style = Type.of(17, FontWeight.Bold))

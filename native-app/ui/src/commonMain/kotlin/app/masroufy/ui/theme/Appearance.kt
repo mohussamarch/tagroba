@@ -8,7 +8,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import app.masroufy.core.MoneyPrivacy
 
-/** المظهر المختار: فاتح · غامق · زي الجوال. **الافتراضي فاتح مؤقتًا** لحد ما الشاشات اللي فيها ألوان ثابتة تتنقل للألوان الموحدة (PLAN-0.6 §13 — كتير منها لسه فاتح). الكود اللي بيتحفظ على الجهاز ثابت — ما يتغيرش. */
+/**
+ * المظهر المختار: فاتح · غامق · زي الجوال. الكود اللي بيتحفظ على الجهاز ثابت — ما يتغيرش.
+ *
+ * **الافتراضي [LIGHT] = قرار المالك (OVERRIDES §117-1، 2026-10-24): «فاتح دايمًا».** البرنامج بيبدأ فاتح مهما كان الجوال غامق، والداكن
+ * بيشتغل بس لو المالك اختاره من «المظهر» في الإعدادات. ([SYSTEM] لسه اختيار موجود — بس عمره ما بيبقى الافتراضي.) قبل كده كان اختيار
+ * مطوّر مؤقت (`a7de9cf6` — «theme default is light for now») — ما تغيّروش من غير قرار جديد من المالك.
+ */
 enum class ThemeMode(val code: String) {
     LIGHT("light"), DARK("dark"), SYSTEM("system");
 
@@ -35,6 +41,7 @@ object Appearance {
     private const val KEY_HIDE_ON_START = "hide_numbers_on_start"
 
     private var store: PrefStore? = null
+    // §117-1: فاتح أول مرة (قرار المالك) — مش زي الجوال
     var mode: ThemeMode by mutableStateOf(ThemeMode.LIGHT)
         private set
     var hideOnStart: Boolean by mutableStateOf(false)

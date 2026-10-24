@@ -105,8 +105,8 @@ fun linkableOps(data: TransactionsScreenData?, outgoing: Boolean, currency: Curr
 
 /** §112-4: التحويلات القريبة من `SellAsset.matchingCredits` ⇒ صفوف «اربطه بالتحويل اللي وصل». */
 fun creditOps(credits: List<Transaction>): List<LinkableOp> = credits.map {
-    val title = it.rawMerchantName?.takeIf { n -> n.isNotBlank() } ?: app.masroufy.core.displayTitleOrNull(it) ?: it.note?.takeIf { n -> n.isNotBlank() }
-    LinkableOp(it.id, title ?: uiText(TextKey.NOT_AVAILABLE), it.occurredAt.take(10), it.amountMinor, outgoing = false)
+    // fix055: الطرف أو التاجر (مش نص الرسالة كله) — المبلغ والتاريخ جنبه في الصف
+    LinkableOp(it.id, app.masroufy.core.linkTitleOf(it), it.occurredAt.take(10), it.amountMinor, outgoing = false)
 }
 
 /** اسم العملية للعرض: التاجر · الوصف · الملاحظة · التصنيف. */
