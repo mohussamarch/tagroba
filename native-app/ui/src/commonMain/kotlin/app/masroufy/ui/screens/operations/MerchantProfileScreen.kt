@@ -148,6 +148,8 @@ fun MerchantProfileScreen(merchantName: String) {
                 }
             }
         }
+        // r06-delete (§118-1): التاجر المحفوظ بس — العمليات بتفضل بأساميها
+        v.merchantId?.let { mid -> item(key = "delete") { app.masroufy.ui.screens.dues.DeleteWithChoices(space.shell.removals?.merchant, mid) } }
     }
     CategoryPicker(
         visible = sheet == "category",
