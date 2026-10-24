@@ -100,6 +100,7 @@ fun IncomeSourceDetailScreen(sourceId: Id) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (s.endedAt == null) SecondaryButton(t(UiKey.INCSRC_CLOSE), onClick = { closing = JobSheetMode.Close(s) }, modifier = Modifier.fillMaxWidth())
                 TonalButton(t(UiKey.INCSRC_EDIT), onClick = { editing = true }, modifier = Modifier.fillMaxWidth(), height = 44.dp)
+                app.masroufy.ui.screens.dues.DeleteWithChoices(deps.shell.removals?.incomeSource, s.id, onChanged = { tick++ }) // r06-delete (§118-1)
             }
         }
     }
