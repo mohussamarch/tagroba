@@ -40,6 +40,8 @@ import kotlinx.coroutines.launch
  * [remover] null (مش متوصل) ⇒ مفيش زرار.
  * [leaveOnDelete] (صفحة الحاجة نفسها — المحفظة والأصل ومصدر الدخل، r06-fix055b): بعد المسح (مش الأرشفة) رجوع فوري للقايمة و«تراجع»
  * في شريط الشل ([app.masroufy.ui.shell.Toaster.showUndo]) — عشان الصفحة بتتحول لـ«لم تعد موجودة» والشريط اللي جواها كان بيختفي.
+ * [onLeave] (fix055c — سطر السداد · لوحة التصنيف): نفس الكلام بس بدل الرجوع بينادي [onLeave] (السطر بيختفي فورًا · اللوحة بتتقفل)،
+ * و«تراجع» بيشتغل في نطاق الشل (مش نطاق السطر اللي اختفى) وبعده [onChanged].
  */
 @Composable
 internal fun DeleteWithChoices(
@@ -49,6 +51,7 @@ internal fun DeleteWithChoices(
     afterDone: ((String) -> Unit)? = null,
     leaveOnDelete: Boolean = false,
     onChanged: () -> Unit = {},
+    onLeave: (() -> Unit)? = null,
 ) {
     if (remover == null) return
     val toaster = LocalToaster.current
@@ -88,14 +91,16 @@ internal fun DeleteWithChoices(
         if (a != null) scope.launch {
             try {
                 val done = remover.remove(id, choice, moveTo)
-                if (leaveOnDelete && choice != RemoveChoice.ARCHIVE) {
+                if ((leaveOnDelete || onLeave != null) && choice != RemoveChoice.ARCHIVE) {
                     // r06-fix055b: الصفحة نفسها اتمسحت ⇒ رجوع للقايمة و«تراجع» في شريط الشل (بيعيش بعد قفل الصفحة)
-                    nav.pop()
+                    val changed = onChanged
+                    if (onLeave != null) onLeave() else nav.pop()
                     changes.changed()
                     val undone = t(UiKey.OPS_BULK_UNDONE)
                     toaster.showUndo(doneText(done), t(UiKey.OPS_BULK_UNDO)) {
                         val failed = runCatching { done.undo() }.exceptionOrNull()?.message
                         changes.changed()
+                        changed()
                         failed ?: undone
                     }
                 } else {

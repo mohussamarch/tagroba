@@ -105,8 +105,11 @@ private fun SettlementLine(r: SettlementRow, personId: String, wallets: List<Wal
                     }
                 }
             }, modifier = Modifier.fillMaxWidth(), height = 44.dp)
-            // الشريط بيفضل لحد ما «تراجع» يخلص، وبعدها القايمة بتتقري تاني
-            DeleteWithChoices(space.shell.removals?.settlement, settlementKey(r.obligationId, r.settlementId), afterDone = { onChanged() })
+            // fix055c: السطر بيختفي لحظة المسح (القايمة بتتقري تاني) و«تراجع» في شريط الشل — بيعيش بعد ما السطر يختفي، وبعده القايمة بتتقري
+            DeleteWithChoices(
+                space.shell.removals?.settlement, settlementKey(r.obligationId, r.settlementId),
+                onChanged = { DuesChanges.bump() }, onLeave = { open = false; onChanged() },
+            )
         }
     }
 }
