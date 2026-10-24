@@ -27,6 +27,7 @@ internal val MSA_R06_DELETE_TEXTS: Map<R06Key, String> = mapOf(
     R06Key.DEL_UNARCHIVED to "استُعيد «{0}»",
     R06Key.BACKUP_RELATION_BROKEN to "تعذّر إنشاء النسخة: «{0}» مرتبطة بعنصر محذوف من «{1}»",
     R06Key.BACKUP_RELATION_SOME to "بيانات",
+    R06Key.LANG_EN_SOON to "قريب",
 )
 
 internal val EGYPTIAN_R06_DELETE_TEXTS: Map<R06Key, String> = mapOf(
@@ -52,6 +53,7 @@ internal val EGYPTIAN_R06_DELETE_TEXTS: Map<R06Key, String> = mapOf(
     R06Key.DEL_UNARCHIVED to "«{0}» رجع",
     R06Key.BACKUP_RELATION_BROKEN to "ما قدرناش نعمل النسخة: «{0}» مربوطة بحاجة اتمسحت من «{1}»",
     R06Key.BACKUP_RELATION_SOME to "بيانات",
+    R06Key.LANG_EN_SOON to "قريب",
 )
 
 internal val ENGLISH_R06_DELETE_TEXTS: Map<R06Key, String> = mapOf(
@@ -77,4 +79,5 @@ internal val ENGLISH_R06_DELETE_TEXTS: Map<R06Key, String> = mapOf(
     R06Key.DEL_UNARCHIVED to "“{0}” restored",
     R06Key.BACKUP_RELATION_BROKEN to "Couldn’t create the backup: “{0}” points to a deleted item in “{1}”",
     R06Key.BACKUP_RELATION_SOME to "data",
+    R06Key.LANG_EN_SOON to "Soon",
 )
