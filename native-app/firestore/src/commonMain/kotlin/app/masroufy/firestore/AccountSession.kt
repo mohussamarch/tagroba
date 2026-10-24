@@ -34,7 +34,8 @@ import kotlin.time.TimeSource
  */
 class AccountSession(
     private val auth: AuthPort,
-    private val db: FirebaseFirestore,
+    /** النسخة الحالية من Firestore — بتتغير بعد تسجيل الخروج (AUTH-4: terminate + clearPersistence ⇒ نسخة جديدة للدخول الجاي). */
+    private val dbOf: () -> FirebaseFirestore,
     private val scope: CoroutineScope,
     /**
      * الجهاز ده خلّص تنزيل أول **كامل** للحساب قبل كده؟ (`AndroidFirstSyncMarks` في التشغيل). أيوه ⇒ الفتح الجاي ما بيستناش السيرفر أكتر من
@@ -45,6 +46,15 @@ class AccountSession(
     /** المساحة الشغالة على الجهاز لكل حساب (`AndroidActiveSpaceStore` / `IosActiveSpaceStore` في التشغيل). */
     private val activeStore: (uid: String) -> ActiveSpaceStore = { MemoryActiveSpaceStore() },
 ) {
+    /** نسخة Firestore ثابتة (الاختبارات). */
+    constructor(
+        auth: AuthPort,
+        db: FirebaseFirestore,
+        scope: CoroutineScope,
+        firstSync: FirstSyncMarks = FirstSyncMarks.NEVER,
+        activeStore: (uid: String) -> ActiveSpaceStore = { MemoryActiveSpaceStore() },
+    ) : this(auth, { db }, scope, firstSync, activeStore)
+
     /** بلد واحدة في الجلسة: مستودعاتها ومزامنتها. */
     class SpaceSession(val space: Space, val repos: FirestoreContainer, val sync: FirestoreSync)
 
@@ -195,7 +205,7 @@ class AccountSession(
     private var openingJob: Job? = null
 
     private fun spaceOf(uid: String, spaceId: String?): FirestoreSpace =
-        if (spaceId == null) FirestoreSpace.forAccount(db, uid) else FirestoreSpace.forSpace(db, uid, spaceId)
+        if (spaceId == null) FirestoreSpace.forAccount(dbOf(), uid) else FirestoreSpace.forSpace(dbOf(), uid, spaceId)
 
     private fun openSpace(uid: String, space: Space, account: FirestoreSpace, trustDevice: Boolean = false): SpaceSession {
         val root = spaceOf(uid, space.id)

@@ -68,6 +68,29 @@ class SignInTest {
         assertEquals(user.uid, signIn.withEmail("me@example.com", "secret1").uid)
     }
 
+    /** AUTH-4: الجهاز بيتنضّف للحساب اللي خارج (وهو لسه داخل) ⇒ الخروج ⇒ نسخة فايربيز؛ فشل التنضيف ما بيمنعش الخروج. */
+    @Test fun signOutWipesTheDeviceForThatAccountFirst() = runBlocking<Unit> {
+        val auth = MemoryAuth()
+        val steps = mutableListOf<String>()
+        val cleanup = object : app.masroufy.port.SignOutCleanup {
+            override suspend fun beforeSignOut(uid: String) {
+                steps += "before:" + (auth.currentUser()?.uid == uid)
+                error("disk full")
+            }
+
+            override suspend fun afterSignOut() {
+                steps += "after:" + (auth.currentUser() == null)
+            }
+        }
+        val signIn = SignIn(auth, null, cleanup)
+        signIn.register("me@example.com", "secret1")
+        signIn.signOut()
+        assertNull(signIn.currentUser())
+        assertEquals(listOf("before:true", "after:true"), steps)
+        signIn.signOut() // مفيش حد داخل ⇒ مفيش تنضيف لحساب
+        assertEquals(listOf("before:true", "after:true", "after:true"), steps)
+    }
+
     @Test fun googleWithoutADeviceSourceSaysWhy() = runBlocking<Unit> {
         val signIn = SignIn(MemoryAuth(), null)
         assertEquals(uiText(TextKey.AUTH_GOOGLE_PENDING), signIn.googleUnavailableReason)

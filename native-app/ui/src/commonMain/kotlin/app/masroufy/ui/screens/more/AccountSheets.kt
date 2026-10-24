@@ -83,6 +83,8 @@ fun AccountSheet(
             }
             AccountEdit.SignOut -> {
                 BasicText(t(UiKey.ACC_SIGN_OUT_BODY), style = Type.of(13).copy(color = Ink.muted))
+                // AUTH-4: إيه اللي بيتمسح من الجوال مع الخروج — سطر واحد
+                BasicText(t(app.masroufy.core.R06Key.SEC_SIGN_OUT_WIPE), style = Type.of(13).copy(color = Ink.muted))
                 val app = LocalApp.current
                 val scope = rememberCoroutineScope()
                 TwoActions(t(UiKey.ACC_SIGN_OUT_GO), danger = true, onFirst = { scope.launch { runCatching { app.signIn.signOut() } } }, second = t(UiKey.MORE_CANCEL), onSecond = onClose)

@@ -81,10 +81,10 @@ class AppContainer(private val context: Context, private val problems: ProblemLo
     val emulator: Boolean = firebase?.emulator == true
     private val auth: FirebaseAuthAdapter? = firebase?.let { FirebaseAuthAdapter(it.auth, scope, googleReady = it.webClientId != null) }
     private val session: AccountSession? = firebase?.let { f ->
-        AccountSession(auth!!, f.firestore, scope, AndroidFirstSyncMarks(context)) { uid -> AndroidActiveSpaceStore(context, uid) }
+        AccountSession(auth!!, { f.firestore }, scope, AndroidFirstSyncMarks(context)) { uid -> AndroidActiveSpaceStore(context, uid) }
     }
     private val google = firebase?.webClientId?.let { AndroidGoogleIdTokens({ activity }, it) }
-    val signIn = SignIn(auth ?: NoFirebaseAuth, google)
+    val signIn = SignIn(auth ?: NoFirebaseAuth, google, AndroidSignOutCleanup(context, firebase))
     val appLock = AppLock(AndroidDeviceLock(context) { activity }, AndroidAppLockSettings(context), nowMillis)
 
     /** ملفات الأسعار (نسخة واحدة على الجهاز لكل البلاد). */
@@ -111,7 +111,7 @@ class AppContainer(private val context: Context, private val problems: ProblemLo
     // «ابعتلنا» (OVERRIDES §114): نسخة على الجهاز + `inbox/{id}` على فايربيز (نسخ المحاكي ⇒ محاكي فايربيز) — الخلفية بتعيد المستنية
     private val support = app.masroufy.usecase.SendSupportMessage(
         app.masroufy.device.FileSupportOutbox(java.io.File(context.filesDir, "support/outbox.log")),
-        firebase?.let { app.masroufy.firestore.FirestoreFeedbackInbox(it.firestore) }, ids, BuildConfig.VERSION_NAME,
+        firebase?.let { f -> app.masroufy.firestore.FirestoreFeedbackInbox({ f.firestore }) }, ids, BuildConfig.VERSION_NAME,
     )
 
     fun appDeps(permissions: Permissions): AppDeps = object : AppDeps {

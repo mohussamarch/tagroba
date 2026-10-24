@@ -82,4 +82,6 @@ enum class R06Key : TextRef {
     PH_FAN_ROSCA, PH_FAN_PROJECT, PH_SPLIT_PROMPT, PH_ONCE_TITLE, PH_ONCE_EMPTY, PH_CAL, PH_CAL_TITLE, PH_ADD_OCCASION, PH_NO_PHOTO_PICKER,
     /** fix055 (فحص 0.5.4 · OVERRIDES §117-2) — «مَن هذا؟» للخارج · البيعات اللي مش محسوبة في «المكسب المحقق» — نصوصها في `TextsR06Fix055.kt`. */
     FX55_PARTY_KIND_TITLE_OUT, FX55_GAIN_SKIPPED_ONE, FX55_GAIN_SKIPPED_TWO, FX55_GAIN_SKIPPED_FEW, FX55_GAIN_SKIPPED_MANY,
+    /** r06-security (AUTH-4) — سطر لوحة تسجيل الخروج: إيه اللي بيتمسح من الجوال — نصوصه في `TextsR06Security.kt`. */
+    SEC_SIGN_OUT_WIPE,
 }

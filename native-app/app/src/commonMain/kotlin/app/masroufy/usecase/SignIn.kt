@@ -7,6 +7,7 @@ import app.masroufy.port.AuthPort
 import app.masroufy.port.AuthUser
 import app.masroufy.port.GoogleIdToken
 import app.masroufy.port.GoogleIdTokenSource
+import app.masroufy.port.SignOutCleanup
 import app.masroufy.port.hidesAccountOnReset
 
 /**
@@ -22,7 +23,9 @@ sealed interface GoogleSignIn {
     data class Unavailable(val reason: String) : GoogleSignIn
 }
 
-class SignIn(private val auth: AuthPort, private val google: GoogleIdTokenSource?) {
+class SignIn(private val auth: AuthPort, private val google: GoogleIdTokenSource?, private val cleanup: SignOutCleanup) {
+    constructor(auth: AuthPort, google: GoogleIdTokenSource?) : this(auth, google, SignOutCleanup.NONE)
+
     /** null = دخول جوجل متاح. غير كده الجملة اللي بتتعرض بدل الزرار. */
     val googleUnavailableReason: String?
         get() = if (google == null) uiText(TextKey.AUTH_GOOGLE_PENDING) else auth.googleUnavailableReason
@@ -55,5 +58,13 @@ class SignIn(private val auth: AuthPort, private val google: GoogleIdTokenSource
         }
     }
 
-    suspend fun signOut() = auth.signOut()
+    /**
+     * تسجيل الخروج (AUTH-4): مسح اللي على الجهاز للحساب ده ⇒ الخروج ⇒ مسح نسخة فايربيز على الجهاز. التنضيف لو فشل ما بيوقفش الخروج،
+     * والخروج لو فشل بيرمي زي الأول (والحساب بيفضل داخل).
+     */
+    suspend fun signOut() {
+        auth.currentUser()?.uid?.let { uid -> runCatching { cleanup.beforeSignOut(uid) } }
+        auth.signOut()
+        runCatching { cleanup.afterSignOut() }
+    }
 }
