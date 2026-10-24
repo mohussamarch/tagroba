@@ -15,7 +15,9 @@ import java.io.FileOutputStream
 
 /**
  * حفظ نسخة «قبل الإصلاح» **من غير نافذة نظام** — نقل `LocalFilesPlugin.writeAppFile` + `appFileSize`:
- * مجلد التطبيق على التخزين (`Android/data/<التطبيق>/files/backups` — بيتشاف من الكمبيوتر بكابل)، وإلا الداخلي.
+ * المجلد **الداخلي الخاص** (`noBackupFilesDir/backups` — PRIVACY-4): مش بيتشاف من الكمبيوتر ولا من تطبيق تاني، ومش بيدخل
+ * نسخ أندرويد التلقائية. النسخة اللي المستخدم ياخدها معاه بتطلع بنافذة «احفظ في» (CreateDocument) بس.
+ * المجلد الخارجي القديم (`Android/data/<التطبيق>/files/backups`) بيتمسح مرة واحدة أول حفظ بعد التحديث.
  * الحجم **بيتقرا من القرص بعد الكتابة** (مش طول النص) — عشان الكتابة الناقصة تتكشف (`saveVerifiedBackup`).
  * بيتمسح مع إلغاء تثبيت التطبيق.
  */
@@ -44,13 +46,34 @@ class AndroidRepairBackup(private val context: Context) : RepairBackupPort {
     }
 
     private fun backupDir(): File {
-        val base = context.getExternalFilesDir(null) ?: context.filesDir
-        return File(base, "backups").apply { if (!isDirectory) mkdirs() }
+        wipeLegacyExternal(context)
+        return File(context.noBackupFilesDir, DIR).apply { if (!isDirectory) mkdirs() }
     }
 
-    private companion object {
+    companion object {
+        private const val DIR = "backups"
+        private const val LEGACY_WIPED = "legacyExternalWiped.v1"
+
         /** اسم ملف بسيط بس — لا مسارات ولا «..». */
-        val SAFE_NAME = Regex("^[A-Za-z0-9._-]{1,120}$")
+        private val SAFE_NAME = Regex("^[A-Za-z0-9._-]{1,120}$")
+
+        /** مسح النسخ القديمة اللي كانت على التخزين الخارجي — مرة واحدة (علامة في الإعدادات). الفشل ما بيوقفش الحفظ. */
+        fun wipeLegacyExternal(context: Context) {
+            runCatching {
+                val prefs = context.getSharedPreferences("repair-backup", Context.MODE_PRIVATE)
+                if (prefs.getBoolean(LEGACY_WIPED, false)) return
+                context.getExternalFilesDir(null)?.let { File(it, DIR) }?.takeIf { it.isDirectory }?.let { deleteFilesIn(it) }
+                prefs.edit().putBoolean(LEGACY_WIPED, true).apply()
+            }
+        }
+
+        /** تسجيل الخروج (AUTH-4): كل نسخ «قبل الإصلاح» على الجهاز (الداخلي والخارجي القديم). بيرجّع كام ملف اتمسح. */
+        fun wipeAll(context: Context): Int = runCatching {
+            deleteFilesIn(File(context.noBackupFilesDir, DIR)) +
+                (context.getExternalFilesDir(null)?.let { deleteFilesIn(File(it, DIR)) } ?: 0)
+        }.getOrDefault(0)
+
+        private fun deleteFilesIn(dir: File): Int = dir.listFiles { f -> f.isFile }.orEmpty().count { it.delete() }
     }
 }
 

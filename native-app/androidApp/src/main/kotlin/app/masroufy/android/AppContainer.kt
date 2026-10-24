@@ -102,6 +102,8 @@ class AppContainer(private val context: Context, private val problems: ProblemLo
     }.stateIn(scope, SharingStarted.Eagerly, AppSession.Starting)
 
     fun start() {
+        // PRIVACY-4: نسخ «قبل الإصلاح» القديمة على التخزين الخارجي بتتمسح مرة واحدة بعد التحديث
+        scope.launch(Dispatchers.IO) { app.masroufy.device.AndroidRepairBackup.wipeLegacyExternal(context) }
         session?.start()
     }
 
