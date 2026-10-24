@@ -87,6 +87,8 @@ enum class R06Key : TextRef {
     DEL_MOVE_PICK, DEL_DONE, DEL_ARCHIVED, DEL_MOVED, DEL_KEEP_BLOCKED_DEBTS, DEL_REFUSED_CHILDREN, DEL_SOURCE_REMOVED,
     /** r06-archive (§118-ب-1) — سطر «المؤرشف (N)» تحت القايمة و«رجّعه». */
     DEL_ARCHIVED_ROW, DEL_UNARCHIVE, DEL_UNARCHIVED,
+    /** r06-fix055b — رسالة النسخة الشاملة لما رابط بيشاور على حاجة ممسوحة (كانت «merchants.verifiedCategoryId» بحروف لاتيني). */
+    BACKUP_RELATION_BROKEN, BACKUP_RELATION_SOME,
     /** r06-security (AUTH-4) — سطر لوحة تسجيل الخروج: إيه اللي بيتمسح من الجوال — نصوصه في `TextsR06Security.kt`. */
     SEC_SIGN_OUT_WIPE,
     /** r06-links2 — فجوات الربط والمسح الناقص (OVERRIDES §118-ج) — نصوصها في `TextsR06Links2.kt`. */

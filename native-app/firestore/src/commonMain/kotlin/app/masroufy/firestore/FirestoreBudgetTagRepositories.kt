@@ -62,6 +62,9 @@ class FirestoreBudgetRepository(private val space: FirestoreSpace) : BudgetRepos
     override suspend fun saveCategoryBudget(line: CategoryBudget) = space.saveAll(lines, listOf(line))
 
     override suspend fun removeCategoryBudget(id: Id) = space.deleteAll(lines.group, listOf(id))
+
+    override suspend fun listCategoryBudgetsByCategory(categoryId: Id): List<CategoryBudget> =
+        space.select(lines, DocQuery(listOf(Cond.Eq("categoryId", categoryId))))
 }
 
 class FirestoreRecurringRepository(private val space: FirestoreSpace) : RecurringRepository {

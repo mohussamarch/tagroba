@@ -61,7 +61,7 @@ class ShellGraph(
             ),
             repos.allocations, repos.obligations, repos.settlements, repos.wallets, repos.assets, repos.roscas, repos.recurring, repos.people,
             repos.merchants, repos.incomeSources, repos.categories, repos.rules, repos.debtTerms, env.smsInbox, space.id, env.repairBackup,
-            goals = repos.savingsGoals, goalContributions = repos.goalContributions,
+            goals = repos.savingsGoals, goalContributions = repos.goalContributions, budgets = repos.budgets,
         ),
     )
 

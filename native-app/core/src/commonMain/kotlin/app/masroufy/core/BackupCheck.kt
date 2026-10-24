@@ -145,8 +145,15 @@ fun checkFullBackupData(data: Any?, groups: List<String> = BACKUP_GROUPS, extern
     val ids = rowsByGroup.mapValues { (g, rows) -> rows.map { backupRowId(g, it) }.toSet() }
     for (group in groups) for (row in rowsByGroup.getValue(group)) for ((field, target) in BACKUP_RELATIONS[group].orEmpty()) {
         val v = row[field]
-        if (v != null && jsString(v) !in (ids[target] ?: external[target].orEmpty())) throw BackupError(uiText(TextKey.BACKUP_RELATION_MISSING, group, field))
+        if (v != null && jsString(v) !in (ids[target] ?: external[target].orEmpty())) throw BackupError(relationBroken(group, target))
     }
+}
+
+/** r06-fix055b: «علاقة ناقصة» بالعربي — المجموعة اللي فيها الرابط والمجموعة اللي الحاجة اتمسحت منها (من غير أسامي حقول لاتيني). */
+internal fun relationBroken(group: String, target: String): String {
+    val labels = BACKUP_LABELS
+    val some = uiText(R06Key.BACKUP_RELATION_SOME)
+    return uiText(R06Key.BACKUP_RELATION_BROKEN, labels[group] ?: some, labels[target] ?: some)
 }
 
 private fun validateFields(row: Map<String, Any?>, group: String) {

@@ -165,6 +165,9 @@ class MemoryBudgetRepository(seed: List<Budget> = emptyList(), lines: List<Categ
         categoryLines.remove(id)
     }
 
+    override suspend fun listCategoryBudgetsByCategory(categoryId: Id): List<CategoryBudget> =
+        categoryLines.values.filter { it.categoryId == categoryId }
+
     fun allBudgets(): List<Budget> = budgets.values.toList()
 
     fun allLines(): List<CategoryBudget> = categoryLines.values.toList()
