@@ -104,9 +104,10 @@ describe('sharedMerchants: قايمة التجار المشتركة (§25.1 · �
     await assertFails(setDoc(doc(alice(), 'sharedMerchants/TEST SHOP'), merchant('TEST SHOP')))
   })
 
-  test('الأحجام: الاسم 1-80 · الاسم المعروض لحد 80 · لحد 10 أسامي كل واحد 1-80 نص · التصنيف لحد 120', async () => {
+  test('الأحجام: الاسم 1-80 · الاسم المعروض لحد 80 · لحد 10 أسامي كل واحد 1-80 نص · التصنيف cat- وبعدها لحد 60 (RULES-4)', async () => {
     // الحد بالظبط مقبول — عشان الرفض اللي تحت يبقى بسبب الطول نفسه مش حاجة تانية.
-    await assertSucceeds(write(alice(), 'Y'.repeat(80), merchant('Y'.repeat(80), { displayName: 'D'.repeat(80), aliases: ['A'.repeat(80)], categoryId: 'c'.repeat(120) })))
+    await assertSucceeds(write(alice(), 'Y'.repeat(80), merchant('Y'.repeat(80), { displayName: 'D'.repeat(80), aliases: ['A'.repeat(80)], categoryId: 'cat-' + 'c'.repeat(60) })))
+    await assertFails(write(alice(), 'LONG CATEGORY ID', merchant('LONG CATEGORY ID', { categoryId: 'cat-' + 'c'.repeat(61) })))
     // اسم فاضي: المفتاح الفاضي مش مسموح أصلًا، وأي مفتاح تاني ما يساويش الاسم ⇒ مرفوض.
     await assertFails(setDoc(doc(alice(), 'sharedMerchants/EMPTY'), merchant('')))
     await assertFails(write(alice(), 'X'.repeat(81), merchant('X'.repeat(81))))
