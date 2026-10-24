@@ -46,6 +46,9 @@ class RepairDarahimRules(
     private val fromPriority: Int = DARAHIM_RULES_FROM_PRIORITY,
     private val untilPriority: Int = DARAHIM_RULES2_FROM_PRIORITY,
 ) {
+    /** علامة «خلص» موجودة للبلد دي (`EnsureDarahimRules`). */
+    suspend fun isDone(): Boolean = settings.listAll().any { it.key == repairDoneKey(repair, spaceId) }
+
     /** عدد القواعد اللي اتضافت، أو null لو اتعمل قبل كده (أو الحساب مش متزرع). */
     suspend fun run(): Int? {
         val key = repairDoneKey(repair, spaceId)

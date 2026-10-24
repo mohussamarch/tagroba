@@ -31,6 +31,10 @@ import app.masroufy.core.uiText
  */
 
 internal suspend fun buildCategorizeDeps(deps: ImportStatementDeps): CategorizeDeps {
+    // fix055: قواعد دراهم الناقصة الأول (الحساب القديم) — فشلها ما يوقفش التسجيل؛ الدورة الجاية بتعيدها
+    deps.ensureRules?.let { ensure ->
+        try { ensure.run() } catch (e: kotlin.coroutines.cancellation.CancellationException) { throw e } catch (_: Exception) { }
+    }
     val merchants = deps.merchants.listAll()
     val categories = deps.categories.listAll()
     val rules = deps.rules.listAll()

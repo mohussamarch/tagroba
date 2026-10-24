@@ -102,6 +102,8 @@ data class ImportStatementDeps(
     val effects: List<RecordEffect> = emptyList(),
     /** عقد C0 (§75-10 — الشريحة S4): الكشف والرسالة نفس العملية لو الفرق بالأيام دي أو أقل. null = من غير دمج (ملفات المرجع). */
     val crossSourceWindowDays: Int? = null,
+    /** fix055: قواعد دراهم للحساب القديم قبل التصنيف (`EnsureDarahimRules`). null = من غيرها (الملفات · الاختبارات القديمة). */
+    val ensureRules: EnsureDarahimRules? = null,
 )
 
 data class ImportRequest(

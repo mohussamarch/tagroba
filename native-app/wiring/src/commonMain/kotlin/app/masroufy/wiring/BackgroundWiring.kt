@@ -35,7 +35,12 @@ fun importDeps(r: SpaceRepositories, env: DeviceEnv) = ImportStatementDeps(
  * بيرفض من غير آثار S1. التصنيف اللي المالك اختاره بيتحفظ للمحل (`MerchantMemory` من غير رفع للقايمة المشتركة)، وخصم الاشتراك بيحرّك
  * ميعاده. ⚠️ «اللي رجع» من غير روابط الدين (`ReturnsWiring` محتاج روابط الأشخاص والمستحقات) ⇒ `SmsLane.of` بيضيفها بتسأل بس — HANDOVER.
  */
-fun smsImportDeps(spaceId: String, r: SpaceRepositories, env: DeviceEnv, inbox: SmsInboxPort, share: app.masroufy.usecase.ShareMerchantCategory? = null) = importDeps(r, env).copy(
+fun smsImportDeps(
+    spaceId: String, r: SpaceRepositories, env: DeviceEnv, inbox: SmsInboxPort, share: app.masroufy.usecase.ShareMerchantCategory? = null,
+    countryCode: String? = null,
+) = importDeps(r, env).copy(
+    // fix055: قواعد دراهم الناقصة قبل تصنيف أي رسالة (الحساب القديم — قبل كده من دورة الخلفية بس)
+    ensureRules = countryCode?.let { app.masroufy.usecase.EnsureDarahimRules(defaultSubsRepair(r, it), darahimRuleRepairs(spaceId, r, env, it)) },
     effects = smsRecordEffects(
         spaceId, r.wallets, inbox, r.categories,
         // التصنيف اللي المالك اختاره (شراء صادر) بيترفع كمان لقاعدة التجار المشتركة لو [share] موجود (رد المالك 2026-10-22)
@@ -77,20 +82,9 @@ fun backgroundCycle(
             support = support,
             openingDebtRepairs = spaces.map { (space, r) -> app.masroufy.usecase.RepairOpeningDebtCurrency(r.people, r.obligations, space.currency) },
             duplicateScans = spaces.map { (space, r) -> app.masroufy.usecase.DuplicateChargeAsks(space.id, r.transactions, env.clock) },
-            categoryRepairs = spaces.map { (space, r) -> app.masroufy.usecase.RepairMissingDefaultSubs(r.categories, app.masroufy.seed.BundledSeeds, countryPack(space.countryCode)) },
+            categoryRepairs = spaces.map { (space, r) -> defaultSubsRepair(r, space.countryCode) },
             // r06-1e (§110-2): قواعد محلات دراهم للحسابات الموجودة — مرة واحدة لكل بلد (علامة «خلص» في إعدادات الحساب)
-            ruleRepairs = spaces.flatMap { (space, r) ->
-                listOf(
-                    app.masroufy.usecase.RepairDarahimRules(
-                        space.id, r.categories, r.rules, app.masroufy.seed.BundledSeeds, countryPack(space.countryCode), r.assistant.settings, env.clock,
-                    ),
-                    // الدفعة التانية (§109 تعديل — مراجعة المالك 2026-10-23): علامة «خلص» لوحدها
-                    app.masroufy.usecase.RepairDarahimRules(
-                        space.id, r.categories, r.rules, app.masroufy.seed.BundledSeeds, countryPack(space.countryCode), r.assistant.settings, env.clock,
-                        app.masroufy.usecase.DARAHIM_RULES2_REPAIR, app.masroufy.usecase.DARAHIM_RULES2_FROM_PRIORITY, Int.MAX_VALUE,
-                    ),
-                )
-            },
+            ruleRepairs = spaces.flatMap { (space, r) -> darahimRuleRepairs(space.id, r, env, space.countryCode) },
         ),
     )
 }
@@ -107,7 +101,7 @@ internal fun smsLaneOf(space: Space, r: SpaceRepositories, env: DeviceEnv, inbox
     val pack = countryPack(space.countryCode)
     val reader = pack.smsReader ?: return null
     val manage = ManageSmsInbox(inbox, { m, n -> reader.parseTimed(m, n, pack.timeZone) }, otherCountryReaders(space.countryCode))
-    return SmsLane.of(space.id, smsImportDeps(space.id, r, env, inbox, shareMerchantOf(space, r, env)), manage, r.wallets, pack.timeZone)
+    return SmsLane.of(space.id, smsImportDeps(space.id, r, env, inbox, shareMerchantOf(space, r, env), space.countryCode), manage, r.wallets, pack.timeZone)
 }
 
 /**
@@ -120,3 +114,16 @@ internal fun otherCountryReaders(countryCode: String?): List<app.masroufy.port.B
         pack.smsReader?.let { reader -> { m: app.masroufy.core.BankSmsMessage, n: Int -> reader.parseTimed(m, n, pack.timeZone) } }
     }
 }
+
+/** الفرعيات الافتراضية الناقصة في البلد (`RepairMissingDefaultSubs`). */
+internal fun defaultSubsRepair(r: SpaceRepositories, countryCode: String?) =
+    app.masroufy.usecase.RepairMissingDefaultSubs(r.categories, app.masroufy.seed.BundledSeeds, countryPack(countryCode))
+
+/** دفعتين قواعد دراهم (§110-2 · §109-8) — كل دفعة بعلامة «خلص» لوحدها. نفسهم في دورة الخلفية وقبل تصنيف الرسايل (`EnsureDarahimRules`). */
+internal fun darahimRuleRepairs(spaceId: String, r: SpaceRepositories, env: DeviceEnv, countryCode: String?) = listOf(
+    app.masroufy.usecase.RepairDarahimRules(spaceId, r.categories, r.rules, app.masroufy.seed.BundledSeeds, countryPack(countryCode), r.assistant.settings, env.clock),
+    app.masroufy.usecase.RepairDarahimRules(
+        spaceId, r.categories, r.rules, app.masroufy.seed.BundledSeeds, countryPack(countryCode), r.assistant.settings, env.clock,
+        app.masroufy.usecase.DARAHIM_RULES2_REPAIR, app.masroufy.usecase.DARAHIM_RULES2_FROM_PRIORITY, Int.MAX_VALUE,
+    ),
+)
