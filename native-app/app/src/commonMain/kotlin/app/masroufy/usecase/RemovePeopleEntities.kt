@@ -16,6 +16,9 @@ class Removals(d: RemovalDeps) {
     val merchant: EntityRemover = RemoveMerchant(d)
     val incomeSource: EntityRemover = RemoveIncomeSource(d)
     val category: EntityRemover = RemoveCategory(d)
+
+    /** r06-archive (§118-ب-1): «أرشفه» و«رجّعه» للخطة والجمعية ومصدر الدخل. */
+    val archives: Archives = Archives(d)
 }
 
 /**
@@ -125,11 +128,12 @@ class RemoveIncomeSource internal constructor(private val d: RemovalDeps) : Enti
 
     override suspend fun ask(id: Id): RemovalAsk {
         val s = d.incomeSources.listAll().firstOrNull { it.id == id } ?: removalGone()
-        return askOf(s.name, rows(s).size, linkedChoices(archive = false))
+        return askOf(s.name, rows(s).size, linkedChoices(archive = !s.archived))
     }
 
     override suspend fun remove(id: Id, choice: RemoveChoice, moveTo: Id?): RemovalDone {
         val s = d.incomeSources.listAll().firstOrNull { it.id == id } ?: removalGone()
+        if (choice == RemoveChoice.ARCHIVE) return ArchiveIncomeSource(d).setArchived(id, true) ?: RemovalDone(choice, s.name) {}
         val rows = rows(s)
         val kept = if (choice == RemoveChoice.WITH_OPERATIONS) emptyList() else kit.keep(rows, removedMarker("income", s.name))
         val erased = if (choice == RemoveChoice.WITH_OPERATIONS) kit.erase(rows.map { it.id }, "income") else ErasedOps()

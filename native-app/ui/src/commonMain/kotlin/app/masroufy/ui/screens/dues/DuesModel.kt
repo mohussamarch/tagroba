@@ -56,7 +56,7 @@ data class DuesTileUi(val label: String, val count: Int, val target: DuesTarget)
 data class DuesCounts(val debts: Int, val roscas: Int, val installments: Int, val subscriptions: Int) {
     companion object {
         fun of(people: List<PersonRow>, roscas: List<RoscaView>, plans: List<InstallmentView>, recurring: RecurringView): DuesCounts =
-            DuesCounts(people.sumOf { it.obligations.size }, roscas.size, plans.size, recurring.items.size)
+            DuesCounts(people.sumOf { it.obligations.size }, roscas.count { !it.rosca.archived }, plans.count { !it.plan.archived }, recurring.items.size)
     }
 }
 

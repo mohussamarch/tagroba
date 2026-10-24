@@ -22,6 +22,9 @@ internal val MSA_R06_DELETE_TEXTS: Map<R06Key, String> = mapOf(
     R06Key.DEL_KEEP_BLOCKED_DEBTS to "عليه ديون مفتوحة — سدّدها أو احذفها أولًا",
     R06Key.DEL_REFUSED_CHILDREN to "تحته تصنيفات فرعية — احذفها أولًا",
     R06Key.DEL_SOURCE_REMOVED to "مصدرها محذوف",
+    R06Key.DEL_ARCHIVED_ROW to "المؤرشف ({0})",
+    R06Key.DEL_UNARCHIVE to "استعادة",
+    R06Key.DEL_UNARCHIVED to "استُعيد «{0}»",
 )
 
 internal val EGYPTIAN_R06_DELETE_TEXTS: Map<R06Key, String> = mapOf(
@@ -42,6 +45,9 @@ internal val EGYPTIAN_R06_DELETE_TEXTS: Map<R06Key, String> = mapOf(
     R06Key.DEL_KEEP_BLOCKED_DEBTS to "عليه ديون مفتوحة — سدّدها أو امسحها الأول",
     R06Key.DEL_REFUSED_CHILDREN to "تحته تصنيفات فرعية — امسحها الأول",
     R06Key.DEL_SOURCE_REMOVED to "مصدرها اتمسح",
+    R06Key.DEL_ARCHIVED_ROW to "المؤرشف ({0})",
+    R06Key.DEL_UNARCHIVE to "رجّعه",
+    R06Key.DEL_UNARCHIVED to "«{0}» رجع",
 )
 
 internal val ENGLISH_R06_DELETE_TEXTS: Map<R06Key, String> = mapOf(
@@ -62,4 +68,7 @@ internal val ENGLISH_R06_DELETE_TEXTS: Map<R06Key, String> = mapOf(
     R06Key.DEL_KEEP_BLOCKED_DEBTS to "Has open debts — settle or delete them first",
     R06Key.DEL_REFUSED_CHILDREN to "Has subcategories — delete them first",
     R06Key.DEL_SOURCE_REMOVED to "Source deleted",
+    R06Key.DEL_ARCHIVED_ROW to "Archived ({0})",
+    R06Key.DEL_UNARCHIVE to "Restore",
+    R06Key.DEL_UNARCHIVED to "“{0}” restored",
 )

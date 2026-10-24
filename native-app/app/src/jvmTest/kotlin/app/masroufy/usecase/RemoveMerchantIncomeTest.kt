@@ -73,7 +73,7 @@ class RemoveMerchantIncomeTest {
         val k = kit()
         val ask = k.removals.incomeSource.ask("inc-1")
         assertEquals(2, ask.linkedCount)
-        assertEquals(listOf(RemoveChoice.KEEP_OPERATIONS, RemoveChoice.WITH_OPERATIONS), ask.choices)
+        assertEquals(listOf(RemoveChoice.ARCHIVE, RemoveChoice.KEEP_OPERATIONS, RemoveChoice.WITH_OPERATIONS), ask.choices)
         val before = k.picture()
         val totals = k.totals()
         val done = k.removals.incomeSource.remove("inc-1", RemoveChoice.KEEP_OPERATIONS)

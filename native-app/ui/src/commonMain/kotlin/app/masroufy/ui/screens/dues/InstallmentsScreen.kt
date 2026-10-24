@@ -1,6 +1,7 @@
 package app.masroufy.ui.screens.dues
 
 import app.masroufy.core.UiKey
+import app.masroufy.usecase.ArchivedItem
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -51,8 +52,10 @@ fun InstallmentsScreen() {
             val bnpl = deps.bnplPlans?.load(today).orEmpty()
             val ids = bnpl.map { it.plan.id }.toSet()
             // السطر تحت المبلغ بيعدّ الكروت اللي فوق بس، وخطط «ادفع بعدين» لوحدها («و 2 مشتريات بالتقسيط» — `Installments.dc.html`)
-            val plans = deps.installments.list(today).filter { it.plan.id !in ids }
-            InstallmentsLoaded(installmentsUi(plans, totals, today, space.space.currency, bnplCount = bnpl.size), bnpl, today)
+            val all = deps.installments.list(today)
+            val plans = all.filter { it.plan.id !in ids && !it.plan.archived }
+            val archived = all.filter { it.plan.archived }.map { ArchivedItem(it.plan.id, it.plan.name) } // r06-archive (§118-ب-1)
+            InstallmentsLoaded(installmentsUi(plans, totals, today, space.space.currency, bnplCount = bnpl.size), bnpl, today, archived)
         }
     }
     DuesScaffold(t(UiKey.INSTALLMENTS_TITLE), actions = { TonalButton(t(UiKey.INSTALLMENTS_NEW), { nav.push(InstallmentEditRoute()) }, height = 44.dp) }) {
@@ -68,6 +71,7 @@ fun InstallmentsScreen() {
                             PrimaryButton(t(UiKey.INSTALLMENTS_NEW), { nav.push(InstallmentEditRoute()) })
                         })
                     }
+                    archivedSection(s.value.archived, space.shell.removals?.archives?.plan, load::reload)
                     return@DuesScaffold
                 }
                 item(key = "hero") {
@@ -93,6 +97,7 @@ fun InstallmentsScreen() {
                     }
                 }
                 item(key = "note") { BasicText(t(UiKey.INSTALLMENTS_NOTE), style = Type.caption().copy(color = Ink.muted)) }
+                archivedSection(s.value.archived, space.shell.removals?.archives?.plan, load::reload)
             }
         }
     }
@@ -100,7 +105,7 @@ fun InstallmentsScreen() {
 }
 
 /** «الأقساط» بعد القراية: الخطط العادية ([ui]) وخطط «ادفع بعدين» ([bnpl]) والنهارده. */
-private class InstallmentsLoaded(val ui: InstallmentsUi, val bnpl: List<BnplPlanView>, val today: String)
+private class InstallmentsLoaded(val ui: InstallmentsUi, val bnpl: List<BnplPlanView>, val today: String, val archived: List<ArchivedItem>)
 
 @Composable
 private fun PlanCard(c: PlanCardUi, onLongClick: () -> Unit, onClick: () -> Unit) {

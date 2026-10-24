@@ -31,7 +31,12 @@ import app.masroufy.port.WalletRepository
  * - **كل طريق ليه «تراجع»** ([RemovalDone.undo]) بيرجّع نفس المستندات بنفس معرّفاتها بالظبط. مسح العمليات قبله نسخة متأكدة الحجم
  *   (`saveVerifiedBackup`) لو الجهاز يقدر يحفظ — زي «راجع المكرر».
  */
-enum class RemoveChoice { DELETE, ARCHIVE, KEEP_OPERATIONS, WITH_OPERATIONS, MOVE_OPERATIONS }
+enum class RemoveChoice {
+    DELETE, ARCHIVE, KEEP_OPERATIONS, WITH_OPERATIONS, MOVE_OPERATIONS,
+
+    /** r06-archive (§118-ب-1): «رجّعه» من سطر «المؤرشف» — مش اختيار في لوحة المسح، بس نتيجة [EntityArchiver.setArchived]. */
+    UNARCHIVE,
+}
 
 /** تصنيف ممكن العمليات تتنقل له («انقل العمليات لتصنيف تاني»). */
 data class RemovalTarget(val id: Id, val name: String)

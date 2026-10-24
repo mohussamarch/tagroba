@@ -38,7 +38,7 @@ class LoadBnplPlans(
     private val categories: CategoryRepository?,
 ) {
     suspend fun load(today: IsoDate): List<BnplPlanView> {
-        val mine = plans.listAll().mapNotNull { p -> bnplProviderOf(p.provider)?.takeIf { p.kind == InstallmentKind.PURCHASE_PLAN }?.let { p to it } }
+        val mine = plans.listAll().filterNot { it.archived }.mapNotNull { p -> bnplProviderOf(p.provider)?.takeIf { p.kind == InstallmentKind.PURCHASE_PLAN }?.let { p to it } }
         if (mine.isEmpty()) return emptyList()
         val names = categories?.listAll().orEmpty().associate { it.id to it.name }
         return mine.map { (p, provider) ->

@@ -41,7 +41,11 @@ data class Rosca(
     val unit: CycleUnit = CycleUnit.MONTH,
     /** §75-8 (الشريحة S4): عمليات المالك قال عنها «مش من الجمعية دي» ⇒ ما تتقترحش عليها تاني (`SuggestDueLinks`). */
     val dismissedTxnIds: List<Id> = emptyList(),
-)
+    /** r06-archive (§118-ب-1): وقت الأرشفة — null = مش مؤرشفة. حقل اختياري جديد (ما بيتكتبش لو null). */
+    val archivedAt: String? = null,
+) {
+    val archived: Boolean get() = archivedAt != null
+}
 
 enum class RoscaEntryKind(val wire: String) {
     CONTRIBUTION("contribution"), PAYOUT("payout");

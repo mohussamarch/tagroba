@@ -80,7 +80,16 @@ data class IncomeSource(
      * null = الهوية هي الاسم المطبّع. حقل اختياري جديد (ما بيتكتبش لو null).
      */
     val employerKey: String? = null,
-)
+    /**
+     * r06-archive (§118-ب-1): وقت الأرشفة — null = مش مؤرشف. **المؤرشف بيتحسب منتهي**: الأرشفة بتقفل [endedAt] لو كان مفتوح
+     * (وبتعلّم [endedByArchive]) ⇒ كل اللي بيقرا [endedAt] (التوقع · التقويم · الأسئلة) بيشوفه منتهي من غير تغيير فيه. حقول اختيارية جديدة.
+     */
+    val archivedAt: String? = null,
+    /** true = [endedAt] اتحط بالأرشفة ⇒ «رجّعه» بيفتحه تاني. null = لأ (أو اتقفل قبل الأرشفة). */
+    val endedByArchive: Boolean? = null,
+) {
+    val archived: Boolean get() = archivedAt != null
+}
 
 /** الأنواع اللي ليها «مرتب» من شغل (يوم مرتب · مرتب متوقع · «هتروح بيها الشغل؟» · «ده مرتب من …؟»). */
 val SALARIED_KINDS: Set<IncomeSourceKind> = setOf(IncomeSourceKind.JOB, IncomeSourceKind.PART_TIME)

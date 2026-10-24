@@ -9,7 +9,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/** r06-delete (§118-1) — مسح خطة التقسيط بدفعاتها. مفيش أرشفة للخطط ⇒ اختيارين. كل الأسامي والمبالغ مخترعة. */
+/** r06-delete (§118-1) — مسح خطة التقسيط بدفعاتها. الأرشفة أول اختيار (§118-ب-1). كل الأسامي والمبالغ مخترعة. */
 class RemovePlanTest {
     private val plan = InstallmentPlan("pl-1", "جوال تجربة", "متجر تجربة", InstallmentKind.PURCHASE_PLAN, Currency.SAR, 3_000_00, 3_000_00, 1_000_00, 1, "2026-08-01")
 
@@ -32,10 +32,10 @@ class RemovePlanTest {
     }
 
     @Test
-    fun linked_twoChoicesWithoutArchive() = runBlocking {
+    fun linked_archiveFirstThenTwoChoices() = runBlocking {
         val ask = kit().removals.plan.ask("pl-1")
         assertEquals(2, ask.linkedCount)
-        assertEquals(listOf(RemoveChoice.KEEP_OPERATIONS, RemoveChoice.WITH_OPERATIONS), ask.choices)
+        assertEquals(listOf(RemoveChoice.ARCHIVE, RemoveChoice.KEEP_OPERATIONS, RemoveChoice.WITH_OPERATIONS), ask.choices)
     }
 
     @Test

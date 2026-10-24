@@ -56,7 +56,14 @@ data class InstallmentPlan(
      * (`planPaidMinor`). null = صفر (زي الأول).
      */
     val paidBeforeCount: Int? = null,
-)
+    /**
+     * r06-archive (OVERRIDES §118-ب-1): وقت الأرشفة — null = مش مؤرشفة. المؤرشفة بتختفي من القوايم الشغالة (المستحقات · الرئيسية · التنبيهات)
+     * وبتفضل في التاريخ والمجاميع. حقل اختياري جديد (ما بيتكتبش لو null ⇒ المستند القديم هو هو).
+     */
+    val archivedAt: String? = null,
+) {
+    val archived: Boolean get() = archivedAt != null
+}
 
 /** ربط عملية من الكشف بخطة الأقساط. */
 data class InstallmentPayment(val id: Id, val planId: Id, val transactionId: Id, val amountMinor: Halalas)
