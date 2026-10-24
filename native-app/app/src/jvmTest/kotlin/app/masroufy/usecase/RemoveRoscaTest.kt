@@ -36,7 +36,7 @@ class RemoveRoscaTest {
     @Test
     fun keep_totalsUnchanged_undoExact() = runBlocking {
         val k = kit()
-        assertEquals(listOf(RemoveChoice.KEEP_OPERATIONS, RemoveChoice.WITH_OPERATIONS), k.removals.rosca.ask("r-1").choices)
+        assertEquals(listOf(RemoveChoice.ARCHIVE, RemoveChoice.KEEP_OPERATIONS, RemoveChoice.WITH_OPERATIONS), k.removals.rosca.ask("r-1").choices)
         val before = k.picture()
         val totals = k.totals()
         val done = k.removals.rosca.remove("r-1", RemoveChoice.KEEP_OPERATIONS)

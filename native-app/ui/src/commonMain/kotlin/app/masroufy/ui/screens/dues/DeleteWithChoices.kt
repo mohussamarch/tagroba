@@ -93,6 +93,7 @@ internal fun DeleteWithChoices(remover: EntityRemover?, id: String, modifier: Mo
 internal fun doneText(done: RemovalDone): String = when (done.choice) {
     RemoveChoice.ARCHIVE -> t(R06Key.DEL_ARCHIVED, done.name)
     RemoveChoice.MOVE_OPERATIONS -> t(R06Key.DEL_MOVED, done.name)
+    RemoveChoice.UNARCHIVE -> t(R06Key.DEL_UNARCHIVED, done.name)
     else -> t(R06Key.DEL_DONE, done.name)
 }
 
@@ -125,7 +126,7 @@ internal fun DeleteSheet(ask: RemovalAsk?, onDismiss: () -> Unit, onPick: (Remov
                         }
                         TonalButton(t(R06Key.DEL_MOVE_OPS), { moveTo?.let { onPick(c, it) } }, Modifier.fillMaxWidth(), enabled = moveTo != null)
                     }
-                    RemoveChoice.DELETE -> Unit
+                    RemoveChoice.DELETE, RemoveChoice.UNARCHIVE -> Unit
                 }
             }
             TonalButton(t(UiKey.DUES_CANCEL), onDismiss, Modifier.fillMaxWidth(), muted = true)

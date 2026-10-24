@@ -49,10 +49,10 @@ data class SuggestDueLinksDeps(
 class SuggestDueLinks(private val deps: SuggestDueLinksDeps) {
     /** الاقتراحات على عمليات من [from] لـ[to] (بالتاريخ). فاضية = مفيش حاجة تتسأل. */
     suspend fun list(from: IsoDate, to: IsoDate): List<DueLinkSuggestion> {
-        val plans = deps.plans.listAll()
+        val plans = deps.plans.listAll().filterNot { it.archived } // r06-archive: المؤرشف ما يتقترحش عليه
         val openings = mutableListOf<DueOpening>()
         for (p in plans) openings += installmentOpenings(p, app.masroufy.core.planPaidMinor(p, deps.payments.listByPlan(p.id)), to)
-        for (r in deps.roscas.listAll()) openings += roscaOpenings(r, deps.roscaEntries.listByRosca(r.id), to)
+        for (r in deps.roscas.listAll().filterNot { it.archived }) openings += roscaOpenings(r, deps.roscaEntries.listByRosca(r.id), to)
         if (openings.isEmpty()) return emptyList()
         // فلترة أولية بالمبلغ والاتجاه قبل ما نسأل عن الروابط (القراية على المرشحين بس)
         val wanted = openings.map { it.amountMinor to it.kind.direction }.toSet()

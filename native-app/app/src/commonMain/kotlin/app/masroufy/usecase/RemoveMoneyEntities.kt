@@ -93,7 +93,7 @@ class RemoveAsset internal constructor(private val d: RemovalDeps) : EntityRemov
     }
 }
 
-/** خطة التقسيط (و«ادفع بعدين»): العمليات = الدفعات المربوطة + عملية استلام المبلغ لو موجودة. مفيش أرشفة للخطط لسه. */
+/** خطة التقسيط (و«ادفع بعدين»): العمليات = الدفعات المربوطة + عملية استلام المبلغ لو موجودة. الأرشفة = `archivedAt` (§118-ب-1 — [ArchivePlan]). */
 class RemoveInstallmentPlan internal constructor(private val d: RemovalDeps) : EntityRemover {
     private val kit = OpsKit(d)
 
@@ -101,11 +101,12 @@ class RemoveInstallmentPlan internal constructor(private val d: RemovalDeps) : E
 
     override suspend fun ask(id: Id): RemovalAsk {
         val p = d.links.installmentPlans.listAll().firstOrNull { it.id == id } ?: removalGone()
-        return askOf(p.name, txnIds(id, p.receivedTransactionId).size, linkedChoices(archive = false))
+        return askOf(p.name, txnIds(id, p.receivedTransactionId).size, linkedChoices(archive = !p.archived))
     }
 
     override suspend fun remove(id: Id, choice: RemoveChoice, moveTo: Id?): RemovalDone {
         val p = d.links.installmentPlans.listAll().firstOrNull { it.id == id } ?: removalGone()
+        if (choice == RemoveChoice.ARCHIVE) return ArchivePlan(d).setArchived(id, true) ?: RemovalDone(choice, p.name) {}
         val payments = d.links.installmentPayments.listByPlan(id)
         val ids = txnIds(id, p.receivedTransactionId)
         if (payments.isNotEmpty()) d.links.installmentPayments.deleteMany(payments.map { it.id })
@@ -121,17 +122,18 @@ class RemoveInstallmentPlan internal constructor(private val d: RemovalDeps) : E
     }
 }
 
-/** الجمعية: العمليات = مدخلاتها (الأقساط والقبض). مفيش أرشفة للجمعيات لسه. */
+/** الجمعية: العمليات = مدخلاتها (الأقساط والقبض). الأرشفة = `archivedAt` (§118-ب-1 — [ArchiveRosca]). */
 class RemoveRosca internal constructor(private val d: RemovalDeps) : EntityRemover {
     private val kit = OpsKit(d)
 
     override suspend fun ask(id: Id): RemovalAsk {
         val r = d.roscas.listAll().firstOrNull { it.id == id } ?: removalGone()
-        return askOf(r.name, d.links.roscaEntries.listByRosca(id).map { it.transactionId }.distinct().size, linkedChoices(archive = false))
+        return askOf(r.name, d.links.roscaEntries.listByRosca(id).map { it.transactionId }.distinct().size, linkedChoices(archive = !r.archived))
     }
 
     override suspend fun remove(id: Id, choice: RemoveChoice, moveTo: Id?): RemovalDone {
         val r = d.roscas.listAll().firstOrNull { it.id == id } ?: removalGone()
+        if (choice == RemoveChoice.ARCHIVE) return ArchiveRosca(d).setArchived(id, true) ?: RemovalDone(choice, r.name) {}
         val entries = d.links.roscaEntries.listByRosca(id)
         val ids = entries.map { it.transactionId }.distinct()
         if (entries.isNotEmpty()) d.links.roscaEntries.deleteMany(entries.map { it.id })

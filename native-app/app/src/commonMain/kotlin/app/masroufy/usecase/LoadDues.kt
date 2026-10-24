@@ -71,8 +71,9 @@ class LoadDues(private val deps: LoadDuesDeps) {
      */
     suspend fun dueItems(today: IsoDate, until: IsoDate): List<DueItem> {
         val items = mutableListOf<DueItem>()
-        for (r in deps.roscas.listAll()) items += roscaDueItems(r, deps.roscaEntries.listByRosca(r.id), today, until)
-        for (p in deps.plans.listAll()) items += installmentDueItems(p, deps.payments.listByPlan(p.id), today, until)
+        // r06-archive (§118-ب-1): المؤرشف ما بيظهرش في المواعيد (التقويم · التنبيهات · المساعد)
+        for (r in deps.roscas.listAll().filterNot { it.archived }) items += roscaDueItems(r, deps.roscaEntries.listByRosca(r.id), today, until)
+        for (p in deps.plans.listAll().filterNot { it.archived }) items += installmentDueItems(p, deps.payments.listByPlan(p.id), today, until)
         val names = deps.people.listAll().associate { it.id to it.name }
         val obligations = names.keys.flatMap { deps.obligations.listByPerson(it) }.associateBy { it.id }
         for (terms in deps.terms.listAll()) {
@@ -91,14 +92,14 @@ class LoadDues(private val deps: LoadDuesDeps) {
 
         val roscaStatuses = deps.roscas.listAll().map { r ->
             val entries = deps.roscaEntries.listByRosca(r.id)
-            items += roscaDueItems(r, entries, today, until)
+            if (!r.archived) items += roscaDueItems(r, entries, today, until) // المؤرشف في المجاميع بس (§118-ب-1)
             roscaStatus(r, entries, today)
         }
 
         var financingCost = 0L
         val installmentsLeft = deps.plans.listAll().map { p ->
             val payments = deps.payments.listByPlan(p.id)
-            items += installmentDueItems(p, payments, today, until)
+            if (!p.archived) items += installmentDueItems(p, payments, today, until)
             val dates = deps.txns.findByIds(payments.map { it.transactionId }).associate { it.id to it.occurredAt }
             financingCost = addMoney(financingCost, financingCostInPeriod(p, payments, payments.mapNotNull { pay -> dates[pay.transactionId]?.let { pay.id to it } }.toMap(), period))
             dueProgress(installmentSchedule(p), app.masroufy.core.planPaidMinor(p, payments), today).remainingMinor

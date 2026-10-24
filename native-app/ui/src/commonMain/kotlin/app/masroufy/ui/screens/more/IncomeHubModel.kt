@@ -43,9 +43,13 @@ data class IncomeHubView(val tiles: List<KindTile>)
 
 private fun isCurrent(s: IncomeSource) = s.endedAt == null
 
+/** r06-archive (§118-ب-1): المصادر المؤرشفة (من نوع [kind] لو اتحدد) — لسطر «المؤرشف» تحت القايمة. */
+fun archivedSources(sources: List<IncomeSource>, kind: IncomeSourceKind? = null): List<app.masroufy.usecase.ArchivedItem> =
+    sources.filter { it.archived && (kind == null || it.kind == kind) }.map { app.masroufy.usecase.ArchivedItem(it.id, it.name) }
+
 fun incomeHub(sources: List<IncomeSource>): IncomeHubView = IncomeHubView(
     HUB_KINDS.map { k ->
-        val xs = sources.filter { it.kind == k }
+        val xs = sources.filter { it.kind == k && !it.archived } // r06-archive: المؤرشف تحت في «المؤرشف» بس
         val now = xs.filter(::isCurrent).sortedByDescending { it.startedAt }
         val past = xs.filterNot(::isCurrent).sortedByDescending { it.endedAt }
         when {
@@ -86,7 +90,7 @@ fun expectedAmounts(s: IncomeSource, linked: List<LinkedEmployer>): List<String>
 }
 
 fun kindPage(kind: IncomeSourceKind, sources: List<IncomeSource>, linked: List<LinkedEmployer> = emptyList()): KindPageView {
-    val xs = sources.filter { it.kind == kind }
+    val xs = sources.filter { it.kind == kind && !it.archived }
     val now = xs.filter(::isCurrent).sortedByDescending { it.startedAt }
     val past = xs.filterNot(::isCurrent).sortedByDescending { it.endedAt }
     val work = isWorkKind(kind)

@@ -1,6 +1,7 @@
 package app.masroufy.ui.screens.dues
 
 import app.masroufy.core.UiKey
+import app.masroufy.usecase.ArchivedItem
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -40,19 +41,25 @@ fun RoscasScreen() {
     val deps = space.dues
     val nav = LocalNavigator.current
     val quick = rememberQuickMenu()
-    val load = rememberLoad(deps) { deps.roscas.list(space.shell.today()).map(::roscaCard) }
+    // r06-archive (§118-ب-1): المؤرشفة تحت في سطر «المؤرشف» بس
+    val load = rememberLoad(deps) {
+        val all = deps.roscas.list(space.shell.today())
+        all.filterNot { it.rosca.archived }.map(::roscaCard) to all.filter { it.rosca.archived }.map { ArchivedItem(it.rosca.id, it.rosca.name) }
+    }
     DuesScaffold(t(UiKey.ROSCAS_TITLE)) {
         when (val s = load.value) {
             Load.Loading -> item { LoadingBlocks(200, 200) }
             Load.Failed -> item { LoadFailed(load::reload) }
             is Load.Ready -> {
-                if (s.value.isEmpty()) item { EmptyState(t(UiKey.ROSCAS_EMPTY_TITLE), t(UiKey.ROSCAS_EMPTY_BODY)) }
-                for (c in s.value) item(key = c.roscaId) {
+                val (cards, archived) = s.value
+                if (cards.isEmpty()) item { EmptyState(t(UiKey.ROSCAS_EMPTY_TITLE), t(UiKey.ROSCAS_EMPTY_BODY)) }
+                for (c in cards) item(key = c.roscaId) {
                     QuickTarget(quick, c.name, { roscaQuickItems(c.roscaId, nav) }, subtitle = c.terms) { long ->
                         RoscaCard(c, onLongClick = long, onClick = quick.guardTap { nav.push(RoscaDetailRoute(c.roscaId)) })
                     }
                 }
                 item(key = "new") { PrimaryButton(t(UiKey.ROSCAS_NEW), { nav.push(RoscaWizardRoute) }, Modifier.fillMaxWidth()) }
+                archivedSection(archived, space.shell.removals?.archives?.rosca, load::reload)
             }
         }
     }

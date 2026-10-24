@@ -28,6 +28,7 @@ object DuesCodecs {
                 req("members", r.members.map { m -> doc { req("turn", m.turn); req("name", m.name); opt("personId", m.personId) } })
                 opt("organizerPersonId", r.organizerPersonId); req("createdAt", r.createdAt)
                 opt("dismissedTxnIds", r.dismissedTxnIds.takeIf { it.isNotEmpty() })
+                opt("archivedAt", r.archivedAt)
             }
         },
         { d ->
@@ -37,7 +38,7 @@ object DuesCodecs {
                 payoutMinor = d.long("payoutMinor"),
                 members = d.maps("members").map { m -> RoscaMember(m.int("turn"), m.str("name"), m.strOrNull("personId")) },
                 organizerPersonId = d.strOrNull("organizerPersonId"), createdAt = d.str("createdAt"), unit = d.wire("unit", CycleUnit::fromWire),
-                dismissedTxnIds = d.strings("dismissedTxnIds").orEmpty(),
+                dismissedTxnIds = d.strings("dismissedTxnIds").orEmpty(), archivedAt = d.strOrNull("archivedAt"),
             )
         },
     )
@@ -58,7 +59,7 @@ object DuesCodecs {
                 opt("receivedTransactionId", p.receivedTransactionId)
                 opt("dismissedTxnIds", p.dismissedTxnIds.takeIf { it.isNotEmpty() })
                 opt("cycleWeeks", p.cycleWeeks); opt("categoryId", p.categoryId); opt("remindDayBefore", p.remindDayBefore)
-                opt("paidBeforeCount", p.paidBeforeCount)
+                opt("paidBeforeCount", p.paidBeforeCount); opt("archivedAt", p.archivedAt)
             }
         },
         { d ->
@@ -67,6 +68,7 @@ object DuesCodecs {
                 d.long("principalMinor"), d.long("totalMinor"), d.long("installmentMinor"), d.int("cycleMonths"), d.str("firstDueAt"),
                 d.boolOrNull("hasInterest"), d.str("createdAt"), d.strOrNull("receivedTransactionId"), d.strings("dismissedTxnIds").orEmpty(),
                 d.intOrNull("cycleWeeks"), d.strOrNull("categoryId"), d.boolOrNull("remindDayBefore"), d.intOrNull("paidBeforeCount"),
+                d.strOrNull("archivedAt"),
             )
         },
     )
