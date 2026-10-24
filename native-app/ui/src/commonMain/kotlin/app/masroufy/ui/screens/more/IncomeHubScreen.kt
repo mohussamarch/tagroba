@@ -45,6 +45,7 @@ import app.masroufy.ui.icons.Lucide
 import app.masroufy.ui.icons.LucideIcon
 import app.masroufy.ui.nav.LocalNavigator
 import app.masroufy.ui.screens.common.InnerScaffold
+import app.masroufy.ui.screens.dues.archivedSection
 import app.masroufy.ui.text.BasicText
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
@@ -76,6 +77,7 @@ fun IncomeHubScreen() {
                 }
             }
         }
+        archivedSection(archivedSources(list), deps.shell.removals?.archives?.incomeSource) { changes.changed() }
     }
 }
 
@@ -156,6 +158,7 @@ fun IncomeKindScreen(kind: IncomeSourceKind) {
                 }
             }
         }
+        archivedSection(archivedSources(list.orEmpty(), kind), deps.shell.removals?.archives?.incomeSource) { tick++ }
         if (page.employersLink) item(key = "employers") {
             FloatingCard(Modifier.fillMaxWidth(), shape = RoundedCornerShape(20.dp), contentPadding = PaddingValues(horizontal = 14.dp, vertical = 12.dp), onClick = { nav.push(EmployersRoute) }, clickLabel = t(UiKey.EMPLOYER_MORE_ITEM)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
