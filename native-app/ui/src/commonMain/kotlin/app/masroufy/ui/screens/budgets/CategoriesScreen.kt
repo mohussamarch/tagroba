@@ -126,6 +126,7 @@ fun CategoriesScreen() {
             if (parentOrSelf != null) open = parentOrSelf
             reload++
         },
+        onRemoved = { reload++ },
     )
 }
 

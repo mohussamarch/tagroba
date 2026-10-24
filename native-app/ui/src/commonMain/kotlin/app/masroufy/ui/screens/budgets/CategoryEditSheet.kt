@@ -58,7 +58,7 @@ import kotlinx.coroutines.launch
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun CategoryEditSheet(target: CatEditTarget?, ui: CategoriesUi?, onDismiss: () -> Unit, onSaved: (String, String?) -> Unit) {
+fun CategoryEditSheet(target: CatEditTarget?, ui: CategoriesUi?, onDismiss: () -> Unit, onSaved: (String, String?) -> Unit, onRemoved: () -> Unit = {}) {
     val deps = app.masroufy.ui.app.LocalSpace.current.budgets
     val scope = rememberCoroutineScope()
     // اللوحة بتفضل بمحتواها وهي نازلة بعد القفل (حركة الخروج) — آخر تصنيف اتفتح
@@ -140,7 +140,9 @@ fun CategoryEditSheet(target: CatEditTarget?, ui: CategoriesUi?, onDismiss: () -
         // r06-delete (§118-1): «امسح» باللوحة الواحدة — بدل «امسح عملياته» فيه «انقل العمليات لتصنيف تاني»
         shown?.id?.let { catId ->
             app.masroufy.ui.screens.dues.DeleteWithChoices(
-                app.masroufy.ui.app.LocalSpace.current.shell.removals?.category, catId, afterDone = { text -> onSaved(text, shown.parentId) },
+                // fix055c: اللوحة بتتقفل لحظة المسح و«تراجع» في شريط الشل (مش جوه لوحة تصنيف اتمسح)
+                app.masroufy.ui.app.LocalSpace.current.shell.removals?.category, catId,
+                onChanged = onRemoved, onLeave = { onDismiss(); onRemoved() },
             )
         }
         if (error != null && v.nameError == null) FieldError(error!!)
