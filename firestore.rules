@@ -20,7 +20,7 @@ service cloud.firestore {
 
     // كل اسم بديل نص من 1 لـ80 حرف، وحتى 10 — القواعد مفيهاش لفّ، فكل خانة بتتفحص لوحدها (بند Codex §38-3)
     function validAlias(list, i) {
-      return list.size() <= i || (list[i] is string && list[i].size() > 0 && list[i].size() <= 80);
+      return list.size() <= i || (list[i] is string && list[i].size() > 0 && list[i].size() <= 80 && noLongDigits(list[i]));
     }
 
     function validAliases(list) {
@@ -30,15 +30,23 @@ service cloud.firestore {
           && validAlias(list, 8) && validAlias(list, 9);
     }
 
+    // RULES-4 (مسودة r06-security — ⚠️ ما اتنشرتش، النشر بموافقة المالك): مفيش 4 أرقام ورا بعض (لاتيني أو عربي) في الاسم
+    // ولا الاسم المعروض ولا أي اسم بديل — نفس منع البرنامج (رقم حساب أو تليفون ما يدخلش القاعدة المشتركة).
+    function noLongDigits(s) {
+      return !s.matches('.*[0-9\\x{0660}-\\x{0669}\\x{06F0}-\\x{06F9}]{4,}.*');
+    }
+
+    // التصنيف: null أو معرّف تصنيف من الشجرة الجاهزة «cat-…» — المعرّفات فيها حروف عربية (`SeedReferences.slug`) فالحروف العربية مسموحة.
     function validSharedMerchant(key) {
       let d = request.resource.data;
       return d.keys().hasOnly(['normalizedName', 'displayName', 'aliases', 'categoryId', 'confirmed', 'updatedAt'])
           && d.keys().hasAll(['normalizedName', 'displayName', 'aliases', 'categoryId', 'confirmed', 'updatedAt'])
           && d.normalizedName is string && d.normalizedName.size() > 0 && d.normalizedName.size() <= 80
           && d.normalizedName.replace(' ', '-') == key
-          && d.displayName is string && d.displayName.size() <= 80
+          && noLongDigits(d.normalizedName)
+          && d.displayName is string && d.displayName.size() <= 80 && noLongDigits(d.displayName)
           && validAliases(d.aliases)
-          && (d.categoryId == null || (d.categoryId is string && d.categoryId.size() <= 120))
+          && (d.categoryId == null || (d.categoryId is string && d.categoryId.matches('^cat-[a-z0-9\\p{Arabic}-]{1,60}$')))
           && d.confirmed == false
           && d.updatedAt == request.time;
     }
