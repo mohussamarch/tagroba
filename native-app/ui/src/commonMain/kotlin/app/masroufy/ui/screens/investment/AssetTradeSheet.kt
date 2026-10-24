@@ -45,6 +45,7 @@ import app.masroufy.ui.components.pressScale
 import app.masroufy.ui.components.rememberPress
 import app.masroufy.ui.components.tap
 import app.masroufy.ui.overlay.Sheet
+import app.masroufy.ui.overlay.SheetScroll
 import app.masroufy.ui.shell.LocalToaster
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
@@ -117,6 +118,8 @@ internal fun AssetTradeSheet(visible: Boolean, mode: TradeMode, asset: AssetDeta
     }
     Sheet(visible, onDismiss, title, closeLabel = t(UiKey.SHELL_CLOSE), spacing = 10.dp) {
         BasicText(title, style = Type.of(17, FontWeight.Bold))
+        // fix055: صفوف الربط كانت بتزق «سجّل البيع» تحت الشاشة ⇒ الخانات بتسكرول جوه اللوحة والزرار برّه السكرول دايمًا ظاهر
+        SheetScroll(10.dp) {
         if (mode == TradeMode.ADD && countries.both && deps.acrossCountries != null) {
             BasicText(t(app.masroufy.core.R06Key.CTY_ADD_COUNTRY), style = Type.caption())
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -167,6 +170,7 @@ internal fun AssetTradeSheet(visible: Boolean, mode: TradeMode, asset: AssetDeta
             TradeMode.ADD -> null
         }
         if (note != null) BasicText(t(note), style = Type.caption().copy(color = Ink.muted))
+        }
         error?.let { FieldError(it) }
         val saveKey = when (mode) {
             TradeMode.ADD -> UiKey.ASSET_TRADE_SAVE_ADD
@@ -199,7 +203,8 @@ private fun TradeFields(form: TradeForm, ops: List<LinkableOp>, asset: AssetDeta
         TextInput(form.amount, { onChange(form.copy(amount = it)) }, Modifier.weight(1f), label = t(if (buy) UiKey.ASSET_TRADE_PAID else UiKey.ASSET_TRADE_PROCEEDS),
             placeholder = "0", ltr = true, keyboard = KeyboardType.Decimal, unit = app.masroufy.core.currencySymbol(currency))
         TextInput(form.fee, { onChange(form.copy(fee = it)) }, Modifier.weight(1f), label = t(UiKey.ASSET_TRADE_FEES),
-            placeholder = "0", ltr = true, keyboard = KeyboardType.Decimal, unit = app.masroufy.core.currencySymbol(currency))
+            placeholder = "0", ltr = true, keyboard = KeyboardType.Decimal, imeAction = androidx.compose.ui.text.input.ImeAction.Done,
+            unit = app.masroufy.core.currencySymbol(currency))
     }
     if (!buy) return // البيع: الربط تحت «الفلوس راحت فين؟» (بنك بس — `SellLinkList`)
     BasicText(t(UiKey.ASSET_TRADE_LINK_BUY), style = Type.of(13, FontWeight.Bold))
