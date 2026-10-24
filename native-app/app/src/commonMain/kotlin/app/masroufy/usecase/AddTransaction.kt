@@ -101,7 +101,7 @@ class AddTransaction(private val deps: AddTransactionDeps) {
             occurredAt = input.occurredAt,
             datePrecision = "day",
             // العمليات اليدوية بعد أي عملية مستوردة في نفس اليوم
-            sourceOrder = 9_000_000,
+            sourceOrder = MANUAL_SOURCE_ORDER,
             economicKind = input.economicKind,
             // ✅ مؤكد فورًا: المستخدم اختاره بنفسه، فما يتكتبش فوقه آليًا (spec/05)
             economicKindConfirmed = true,
@@ -122,6 +122,8 @@ class AddTransaction(private val deps: AddTransactionDeps) {
             note = note,
         )
 
+        // r06-links2: رسالة البنك سبقت بنفس التحويل ⇒ ما يتحسبش مرتين (OwnTransferManualMerge.kt)
+        if (transferTo != null) manualOntoLegs(deps.txns, transaction, now)?.let { return it }
         deps.txns.saveMany(listOf(transaction))
         return transaction
     }
