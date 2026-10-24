@@ -61,7 +61,24 @@ class ShellGraph(
             ),
             repos.allocations, repos.obligations, repos.settlements, repos.wallets, repos.assets, repos.roscas, repos.recurring, repos.people,
             repos.merchants, repos.incomeSources, repos.categories, repos.rules, repos.debtTerms, env.smsInbox, space.id, env.repairBackup,
+            goals = repos.savingsGoals, goalContributions = repos.goalContributions,
         ),
+    )
+
+    // r06-links2 (فجوة ٣): روابط العملية وعمليات الدين والخطة
+    override val opLinks = app.masroufy.usecase.OperationLinks(
+        app.masroufy.usecase.OperationLinksDeps(
+            repos.transactions, repos.wallets, repos.people, repos.allocations, repos.personLinks, repos.obligations, repos.settlements,
+            repos.installmentPayments, repos.installmentPlans, repos.recurring, repos.assets, repos.assetSales, repos.incomeSources,
+        ),
+    )
+
+    // r06-links2 (§118-ج): النسخ المحفوظة على الجوال
+    override val savedBackups = env.repairBackup?.let { app.masroufy.usecase.ManageSavedBackups(it) }
+
+    // r06-links2 (فجوة ٥): تعديل السداد
+    override val settlementsEdit = app.masroufy.usecase.ManageSettlements(
+        app.masroufy.usecase.ManageSettlementsDeps(repos.settlements, repos.obligations, repos.transactions, repos.wallets, repos.uow, env.clock),
     )
 
     override fun today() = env.today()

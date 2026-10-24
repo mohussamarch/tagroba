@@ -88,6 +88,8 @@ private fun androidx.compose.foundation.lazy.LazyListScope.debtBody(ui: DebtDeta
     item(key = "origin") { Origin(ui) }
     if (!ui.done) item(key = "terms") { Terms(ui) }
     item(key = "settle") { SettleAction(ui, onCelebrate) }
+    item(key = "settlements") { DebtSettlements(ui.obligationId, ui.personId) } // r06-links2 (فجوة ٥): عدّل السداد أو امسحه
+    item(key = "ops") { app.masroufy.ui.screens.operations.DebtOps(ui.obligationId, ui.personId) } // r06-links2 (فجوة ٣ و٥)
     item(key = "opening") { OpeningCard(ui) }
 }
 

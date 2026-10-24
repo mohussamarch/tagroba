@@ -127,4 +127,18 @@ class ManageRecurring(private val deps: ManageRecurringDeps) {
         deps.items.save(item)
         return item
     }
+
+    /**
+     * r06-links2 (فجوة ٢): «ضيف اشتراك» بإيدك — من غير ما يتكشف من العمليات. الربط بالخصومات بالاسم (نفس [recurringKey] لعملية من غير
+     * تاجر: «name:» + الاسم بعد التوحيد) ⇒ الخصم اللي بنفس الاسم بيتحسب عليه. الدورة 1 أو 3 أو 12 شهر (نفس النموذج — مفيش أسبوعي).
+     */
+    suspend fun addManual(name: String, kind: String, cycleMonths: Int, expectedMinor: Halalas, currency: Currency, nextDueAt: IsoDate): RecurringItem {
+        val clean = app.masroufy.core.jsTrim(name)
+        return save(
+            RecurringSaveInput(
+                name = clean, merchantKey = if (clean.isEmpty()) "" else "name:" + app.masroufy.core.normalizeText(clean), kind = kind,
+                cycleMonths = cycleMonths, expectedMinor = expectedMinor, currency = currency, nextDueAt = nextDueAt, active = true,
+            ),
+        )
+    }
 }

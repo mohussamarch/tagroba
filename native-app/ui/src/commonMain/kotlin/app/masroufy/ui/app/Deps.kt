@@ -128,4 +128,13 @@ interface ShellDeps {
 
     /** r06-delete (OVERRIDES §118-1): لوحة المسح الواحدة لكل حاجة (حساب · أصل · خطة · جمعية · اشتراك · شخص · تاجر · مصدر دخل · تصنيف). null = مش متوصلة. */
     val removals: app.masroufy.usecase.Removals? get() = null
+
+    /** r06-links2 (فجوة ٣): روابط العملية وعمليات الدين والخطة. null = مش متوصلة. */
+    val opLinks: app.masroufy.usecase.OperationLinks? get() = null
+
+    /** r06-links2 (فجوة ٥): «عدّل السداد» في صفحة الدين. null = مش متوصلة. */
+    val settlementsEdit: app.masroufy.usecase.ManageSettlements? get() = null
+
+    /** r06-links2 (§118-ج): النسخ المحفوظة على الجوال — عرض ومسح بتأكيد (مالوش تراجع). null = الجهاز ما بيحفظش. */
+    val savedBackups: app.masroufy.usecase.ManageSavedBackups? get() = null
 }

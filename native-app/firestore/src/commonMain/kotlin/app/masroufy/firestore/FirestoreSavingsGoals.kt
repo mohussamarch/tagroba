@@ -20,6 +20,8 @@ class FirestoreSavingsGoalRepository(private val space: FirestoreSpace) : Saving
 
     /** دفعة واحدة (`writeBatch`) — النجمة الجديدة وشيل القديمة مع بعض. */
     override suspend fun saveMany(goals: List<SavingsGoal>) = space.saveAll(codec, goals)
+
+    override suspend fun delete(id: Id) = space.deleteAll(codec.group, listOf(id))
 }
 
 class FirestoreGoalContributionRepository(private val space: FirestoreSpace) : GoalContributionRepository {

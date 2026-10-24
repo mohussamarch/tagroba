@@ -40,6 +40,12 @@ interface AuthPort {
     suspend fun sendPasswordReset(email: String)
 
     suspend fun signOut()
+
+    /**
+     * r06-links2 (§118-ج «امسح حسابي»): مسح حساب الدخول نفسه — آخر خطوة بعد مسح البيانات. فايربيز بيطلب دخول قريب ⇒ [AuthError] بكود
+     * `auth/requires-recent-login` (الشاشة بتطلب دخول تاني وبعدها المحاولة تتعاد). الافتراضي: مش متاح.
+     */
+    suspend fun deleteCurrentUser(): Unit = throw AuthError("auth/operation-not-allowed", AuthField.FORM, app.masroufy.core.uiText(app.masroufy.core.R06Key.L2_ACC_FAILED, "auth"))
 }
 
 /**

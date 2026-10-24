@@ -76,6 +76,11 @@ interface WalletEditor {
     /** OVERRIDES §112-1: إخفاء الحساب من الرئيسية ومن «معك الآن» أو إظهاره. بيرجّع رسالة الغلط أو null. */
     suspend fun setHidden(walletId: Id, hidden: Boolean): String? = null
 
+    /** r06-links2 (فجوة ٥): اسم الحساب ونوعه بعد الإضافة. بيرجّع رسالة الغلط (أو سبب الرفض) أو null. */
+    suspend fun rename(walletId: Id, name: String): String? = null
+
+    suspend fun setKind(walletId: Id, kind: String): String? = null
+
     /** «النهارده» اللي التأكد بيقارن بيه (يوم البلد — `ManageWallets.today`) — اللوحة بتبدأ بيه. null ⇒ يوم الجوال. */
     fun today(): IsoDate? = null
 }

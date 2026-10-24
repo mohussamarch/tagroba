@@ -17,6 +17,17 @@ class MemoryAuth(private val uidPrefix: String = "u-") : AuthPort {
     private var current: AuthUser? = null
     val resetRequests = mutableListOf<String>()
 
+    /** r06-links2: الاختبار يقول إن فايربيز عايز دخول قريب قبل مسح الحساب. */
+    var requiresRecentLogin = false
+
+    override suspend fun deleteCurrentUser() {
+        val user = current ?: throw authError("auth/no-current-user")
+        if (requiresRecentLogin) throw authError("auth/requires-recent-login")
+        accounts.entries.removeAll { it.value.uid == user.uid }
+        current = null
+        listeners.toList().forEach { it(null) }
+    }
+
     override val googleUnavailableReason: String? = null
 
     override fun currentUser(): AuthUser? = current

@@ -23,8 +23,53 @@ sealed interface GoogleSignIn {
     data class Unavailable(val reason: String) : GoogleSignIn
 }
 
-class SignIn(private val auth: AuthPort, private val google: GoogleIdTokenSource?, private val cleanup: SignOutCleanup) {
+/** نتيجة «امسح حسابي» (r06-links2). */
+sealed interface DeleteAccountResult {
+    data object Done : DeleteAccountResult
+
+    /** البيانات اتمسحت، بس حساب الدخول محتاج دخول قريب ⇒ ادخل تاني وجرّب تاني (المحاولة التانية بتكمّل). */
+    data object NeedsRecentLogin : DeleteAccountResult
+
+    data class Failed(val reason: String) : DeleteAccountResult
+}
+
+class SignIn(
+    private val auth: AuthPort,
+    private val google: GoogleIdTokenSource?,
+    private val cleanup: SignOutCleanup,
+    /** r06-links2: بيمسح كل اللي تحت `users/{uid}` على السيرفر. null ⇒ «امسح حسابي» مش متاح. */
+    private val eraser: app.masroufy.port.AccountDataEraser? = null,
+) {
     constructor(auth: AuthPort, google: GoogleIdTokenSource?) : this(auth, google, SignOutCleanup.NONE)
+
+    val canDeleteAccount: Boolean get() = eraser != null
+
+    /**
+     * r06-links2 (§118-ج «امسح حسابي» — مطلوب للمتجر كمان): **مالوش رجوع**. بالترتيب: بيانات الحساب على السيرفر (لازم قبل حساب الدخول —
+     * القواعد بتطلب إنك داخل) ⇒ اللي على الجوال (نفس مسح الخروج) ⇒ حساب الدخول ⇒ نسخة فايربيز على الجوال. فايربيز عايز دخول قريب ⇒
+     * خروج و[DeleteAccountResult.NeedsRecentLogin]: يدخل تاني ويضغط تاني (البيانات اتمسحت خلاص، فالمرة التانية بتمسح حساب الدخول بس).
+     */
+    suspend fun deleteAccount(): DeleteAccountResult {
+        val erase = eraser ?: return DeleteAccountResult.Failed(uiText(TextKey.NOT_AVAILABLE))
+        val uid = auth.currentUser()?.uid ?: return DeleteAccountResult.Failed(uiText(TextKey.NOT_AVAILABLE))
+        try {
+            erase.eraseAll(uid)
+        } catch (e: Exception) {
+            if (e is kotlinx.coroutines.CancellationException) throw e
+            return DeleteAccountResult.Failed(e.message ?: e::class.simpleName.orEmpty())
+        }
+        runCatching { cleanup.beforeSignOut(uid) }
+        try {
+            auth.deleteCurrentUser()
+        } catch (e: AuthError) {
+            if (e.code != "auth/requires-recent-login") return DeleteAccountResult.Failed(e.message ?: e.code)
+            runCatching { auth.signOut() }
+            runCatching { cleanup.afterSignOut() }
+            return DeleteAccountResult.NeedsRecentLogin
+        }
+        runCatching { cleanup.afterSignOut() }
+        return DeleteAccountResult.Done
+    }
 
     /** null = دخول جوجل متاح. غير كده الجملة اللي بتتعرض بدل الزرار. */
     val googleUnavailableReason: String?

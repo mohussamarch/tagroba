@@ -70,4 +70,10 @@ class MemoryRepairBackup(private val truncate: Boolean = false) : RepairBackupPo
         files[fileName] = stored
         return SavedBackup("memory:$fileName", stored.encodeToByteArray().size.toLong())
     }
+
+    // r06-links2: الترتيب بترتيب الحفظ (الأحدث الأول) — الوقت = رقم الحفظ
+    override suspend fun list(): List<app.masroufy.port.SavedBackupFile> =
+        files.entries.mapIndexed { i, e -> app.masroufy.port.SavedBackupFile(e.key, e.value.encodeToByteArray().size.toLong(), i.toLong()) }.reversed()
+
+    override suspend fun delete(fileName: String): Boolean = files.remove(fileName) != null
 }

@@ -293,6 +293,7 @@ private fun AccountActions(email: String?, onSignOut: () -> Unit) {
                 Modifier.fillMaxWidth().defaultMinSize(minHeight = 56.dp).pressScale(press).tap(press, onClick = onSignOut).padding(horizontal = 8.dp),
                 contentAlignment = Alignment.CenterStart,
             ) { BasicText(t(UiKey.ACC_SIGN_OUT), style = Type.of(15, FontWeight.Bold).copy(color = Ink.expense)) }
+            RowRule(); AccountDeleteRow() // r06-links2 (§118-ج): «امسح حسابي»
         }
     }
 }

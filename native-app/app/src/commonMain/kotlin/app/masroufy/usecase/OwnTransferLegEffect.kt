@@ -35,6 +35,8 @@ import kotlin.math.abs
 class OwnTransferLegEffect(private val wallets: WalletRepository, private val txns: TransactionRepository?) : RecordEffect {
     override suspend fun prepare(ctx: RecordContext) {
         if (ctx.lines.none { it.sms != null }) return
+        // r06-links2: تحويل يدوي بنفس المبلغ ±يوم ⇒ بيندمج في الرسالة (OwnTransferManualMerge.kt)
+        txns?.let { mergeManualIntoSms(it, ctx) }
         mergeIncoming(ctx)
         addLegs(ctx)
     }
@@ -43,7 +45,8 @@ class OwnTransferLegEffect(private val wallets: WalletRepository, private val tx
         val repo = txns ?: return
         val walletId = ctx.request.walletId ?: return
         val taken = mutableSetOf<Id>()
-        val incoming = ctx.lines.filter { l -> l.sms != null && l.transaction.observedDirection == Direction.IN && l.transaction.walletId == walletId }
+        // r06-links2: الاتجاهين — الرِجل التلقائية ممكن تبقى صادرة (التحويل اليدوي اتسجل على رسالة الداخل الأول)
+        val incoming = ctx.lines.filter { l -> l.sms != null && l.transaction.walletId == walletId && l.transaction.transferToWalletId == null }
         if (incoming.isEmpty()) return
         // fix053: استعلام **واحد** للدفعة كلها (كان استعلام فايربيز لكل رسالة واردة ⇒ 1,000 استعلام في «اقرأ اللي فات» على 3,000 رسالة)
         val autoLegs = rangeOf(repo, incoming.map { it.transaction.occurredAt.take(10) }).filter { it.id.endsWith(OWN_LEG_SUFFIX) }
@@ -52,7 +55,7 @@ class OwnTransferLegEffect(private val wallets: WalletRepository, private val tx
             val t = line.transaction
             val day = t.occurredAt.take(10)
             val auto = autoLegs.firstOrNull { o ->
-                o.id.endsWith(OWN_LEG_SUFFIX) && o.id !in taken && o.walletId == walletId && o.observedDirection == Direction.IN &&
+                o.id.endsWith(OWN_LEG_SUFFIX) && o.id !in taken && o.walletId == walletId && o.observedDirection == t.observedDirection && o.id != t.id + OWN_LEG_SUFFIX &&
                     o.amountMinor == t.amountMinor && o.currency == t.currency && withinADay(o.occurredAt, day)
             } ?: continue
             taken += auto.id

@@ -70,6 +70,8 @@ class FirebaseAuthAdapter(
 
     override suspend fun signOut() = translated { auth.signOut() }
 
+    override suspend fun deleteCurrentUser() = translated { auth.currentUser?.delete() ?: throw authError("auth/no-current-user") }
+
     // AccountPort — صفحة الحساب: التطبيق ما بيستلمش كلمة سر، بيبعت إيميل إعادة تعيين بس
     override fun email(): String? = auth.currentUser?.email
 

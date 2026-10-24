@@ -76,6 +76,7 @@ fun InstallmentDetailScreen(planId: String) {
                 item(key = "hero") { PlanHero(d) }
                 item(key = "schedule") { Schedule(d) }
                 item(key = "received") { Received(d) }
+                item(key = "ops") { app.masroufy.ui.screens.operations.PlanOps(planId) } // r06-links2 (فجوة ٣)
                 if (d.card.financing) item(key = "profit") { Profit(d) }
                 item(key = "note") { BasicText(d.expenseNote, style = Type.caption().copy(color = Ink.muted)) }
                 // r06-delete (§118-1): اللوحة الواحدة بدل «حذف الخطة» القديم (كان بيرفض لو عليها دفعات)

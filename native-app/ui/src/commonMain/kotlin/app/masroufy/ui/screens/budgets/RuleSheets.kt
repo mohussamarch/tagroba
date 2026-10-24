@@ -107,6 +107,8 @@ private fun RuleSheet(sheet: RulesSheet.Rule?, ui: RulesUi?, deps: BudgetsDeps, 
             enabled = ruleProblem(r, editing, d) == null,
             loading = busy,
         )
+        // r06-links2 (§118-ج): القاعدة كانت إيقاف بس — «امسح» باللوحة الواحدة وتراجع (التصنيف اللي اتعمل بيها بيفضل)
+        editing?.let { row -> app.masroufy.ui.screens.dues.DeleteWithChoices(app.masroufy.ui.app.LocalSpace.current.shell.removals?.rule, row.id, afterDone = { onDone(it, null) }) }
     }
 }
 

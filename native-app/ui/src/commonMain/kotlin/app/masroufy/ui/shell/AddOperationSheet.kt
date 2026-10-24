@@ -72,7 +72,7 @@ import kotlinx.coroutines.launch
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun AddOperationSheet(visible: Boolean, onClose: () -> Unit, onVoice: () -> Unit) {
+fun AddOperationSheet(visible: Boolean, onClose: () -> Unit, onVoice: () -> Unit, onDebt: (() -> Unit)? = null, onSubscription: (() -> Unit)? = null) {
     val space = LocalSpace.current
     val shell = space.shell
     val toaster = LocalToaster.current
@@ -124,6 +124,13 @@ fun AddOperationSheet(visible: Boolean, onClose: () -> Unit, onVoice: () -> Unit
         Row(Modifier.fillMaxWidth().padding(bottom = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             BasicText(t(UiKey.ADD_TITLE), style = Type.section())
             VoiceButton(onVoice)
+        }
+        // r06-links2 (فجوة ٢ و٤): «ضيف دين» و«ضيف اشتراك» من «+» — بيفتحوا نفس اللوحات اللي في «الديون» و«الاشتراكات»
+        if (onDebt != null || onSubscription != null) {
+            Row(Modifier.fillMaxWidth().padding(bottom = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                onDebt?.let { SelectChip(t(app.masroufy.core.R06Key.L2_PLUS_DEBT), false, it, Modifier.weight(1f), height = 40.dp) }
+                onSubscription?.let { SelectChip(t(app.masroufy.core.R06Key.L2_SUB_ADD), false, it, Modifier.weight(1f), height = 40.dp) }
+            }
         }
         SegmentedTabs(
             listOf(AddKind.OUT to t(UiKey.ADD_TYPE_OUT), AddKind.IN to t(UiKey.ADD_TYPE_IN), AddKind.MOVE to t(UiKey.ADD_TYPE_MOVE)),

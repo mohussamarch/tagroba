@@ -65,12 +65,14 @@ internal class RemovalKit {
     val terms = MemoryDebtTermsRepository()
     val inbox = MemorySmsInbox()
     val backup = MemoryRepairBackup()
+    val goals = app.masroufy.memory.MemorySavingsGoalRepository()
+    val goalContributions = app.masroufy.memory.MemoryGoalContributionRepository()
     val removals = Removals(
         RemovalDeps(
             txns, sources, PassthroughUnitOfWork(), FixedClock("2026-10-24T10:00:00Z"),
             RevertLinkDeps(projects, events, tags, entries, payments, plans, zakat, lots, sales, personLinks = personLinks),
             allocations, obligations, settlements, wallets, assets, roscas, recurring, people, merchants, incomeSources, categories,
-            rules, terms, inbox, "sa", backup,
+            rules, terms, inbox, "sa", backup, goals = goals, goalContributions = goalContributions,
         ),
     )
 

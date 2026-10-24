@@ -84,7 +84,7 @@ class AppContainer(private val context: Context, private val problems: ProblemLo
         AccountSession(auth!!, { f.firestore }, scope, AndroidFirstSyncMarks(context)) { uid -> AndroidActiveSpaceStore(context, uid) }
     }
     private val google = firebase?.webClientId?.let { AndroidGoogleIdTokens({ activity }, it) }
-    val signIn = SignIn(auth ?: NoFirebaseAuth, google, AndroidSignOutCleanup(context, firebase))
+    val signIn = SignIn(auth ?: NoFirebaseAuth, google, AndroidSignOutCleanup(context, firebase), firebase?.let { f -> app.masroufy.firestore.FirestoreAccountEraser { f.firestore } })
     val appLock = AppLock(AndroidDeviceLock(context) { activity }, AndroidAppLockSettings(context), nowMillis)
 
     /** ملفات الأسعار (نسخة واحدة على الجهاز لكل البلاد). */

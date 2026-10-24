@@ -135,6 +135,8 @@ fun GoalDetailSheet(card: GoalCardUi?, deps: BudgetsDeps, today: String, onDismi
                 }
             }, Modifier.weight(1f), muted = true)
         }
+        // r06-links2 (§118-ج): الخطة كانت أرشفة بس — «امسح» باللوحة الواحدة (أرشفه · امسح) وتراجع
+        app.masroufy.ui.screens.dues.DeleteWithChoices(app.masroufy.ui.app.LocalSpace.current.shell.removals?.goal, shown.id, afterDone = { onDismiss(); refresh() })
         error?.let { FieldError(it) }
     }
     GoalEditSheet(editOpen, shown, deps, today, onDismiss = { editOpen = false }, onArchived = onDismiss, refresh = refresh)

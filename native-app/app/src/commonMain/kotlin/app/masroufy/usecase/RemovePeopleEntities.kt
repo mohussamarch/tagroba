@@ -19,6 +19,10 @@ class Removals(d: RemovalDeps) {
 
     /** r06-archive (§118-ب-1): «أرشفه» و«رجّعه» للخطة والجمعية ومصدر الدخل. */
     val archives: Archives = Archives(d)
+    // r06-links2 (§118-ج): السداد الغلط · خطة الادخار · القاعدة
+    val settlement: EntityRemover = RemoveSettlement(d)
+    val goal: EntityRemover = RemoveSavingsGoal(d)
+    val rule: EntityRemover = RemoveRule(d)
 }
 
 /**
