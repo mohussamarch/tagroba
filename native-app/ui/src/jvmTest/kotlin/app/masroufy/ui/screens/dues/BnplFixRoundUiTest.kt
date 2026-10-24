@@ -157,7 +157,10 @@ class BnplFixRoundUiTest {
         assertFalse(bnplSheetShown(hasAsk = true, holding = true, actionToast = false), "waits for a fresh read after an answer")
         assertTrue(bnplSheetShown(hasAsk = true, holding = false, actionToast = false))
         toaster.show("سُجّلت")
+        assertTrue(toaster.holdsAction, "fix055c: a plain toast waits behind a fresh undo bar")
+        toaster.endAction(toaster.current!!.id)
         assertFalse(toaster.holdsAction)
+        assertEquals("سُجّلت", toaster.current?.text)
         assertEquals("العملية مربوطة بحاجة تانية", bnplErrorText(DueLinkError("العملية مربوطة بحاجة تانية")))
         assertNull(bnplErrorText(IllegalStateException("internal")))
     }
