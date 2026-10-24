@@ -33,7 +33,7 @@ class FirestoreFeedbackInbox(private val dbOf: () -> FirebaseFirestore, private 
         if (done == null) throw IllegalStateException("inbox write not confirmed")
     }
 
-    private companion object {
+    internal companion object {
         const val COLLECTION = "inbox"
     }
 }
