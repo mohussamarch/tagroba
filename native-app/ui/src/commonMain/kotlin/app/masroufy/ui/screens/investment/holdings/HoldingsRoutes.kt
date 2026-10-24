@@ -62,7 +62,7 @@ internal fun AssetCategoryScreen(groupWire: String) {
     var snapshot by remember { mutableStateOf<HoldingsSnapshot?>(null) }
     var rates by remember { mutableStateOf<InvestRatesState?>(null) }
     var version by remember { mutableIntStateOf(0) }
-    LaunchedEffect(inv, version) {
+    LaunchedEffect(inv, version, app.masroufy.ui.app.LocalDataChanges.current.version) {
         val today = deps.today()
         val (s, r) = withContext(Dispatchers.Default) {
             runCatching { inv.holdingsSnapshot.load(today) }.getOrNull() to runCatching { inv.investRates.load(space.space, today) }.getOrNull()

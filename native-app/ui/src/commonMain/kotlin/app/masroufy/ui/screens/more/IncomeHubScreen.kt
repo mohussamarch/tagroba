@@ -116,7 +116,7 @@ fun IncomeKindScreen(kind: IncomeSourceKind) {
     var monthStart by remember(deps) { mutableIntStateOf(28) }
     var sheet by remember { mutableStateOf<JobSheetMode?>(null) }
     var tick by remember { mutableIntStateOf(0) }
-    LaunchedEffect(deps, tick) {
+    LaunchedEffect(deps, tick, app.masroufy.ui.app.LocalDataChanges.current.version) {
         sources = runCatching { more.incomeSources.list() }.getOrNull() ?: emptyList()
         linked = runCatching { more.employerLinks?.list(deps.shell.today()) }.getOrNull().orEmpty()
         monthStart = runCatching { more.profile.load().payday }.getOrDefault(monthStart)

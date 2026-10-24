@@ -76,7 +76,7 @@ fun WalletsScreen() {
     var mainId by remember(deps) { mutableStateOf<Id?>(null) }
     var adding by remember { mutableStateOf(false) }
     var tick by remember { mutableIntStateOf(0) }
-    LaunchedEffect(deps, tick) {
+    LaunchedEffect(deps, tick, app.masroufy.ui.app.LocalDataChanges.current.version) {
         now = runCatching { deps.more.wallets.load(deps.shell.today()) }.getOrNull()
         mainId = runCatching { deps.more.mainWallet?.current() }.getOrNull()
     }

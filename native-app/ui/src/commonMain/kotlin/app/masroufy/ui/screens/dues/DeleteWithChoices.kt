@@ -38,12 +38,22 @@ import kotlinx.coroutines.launch
  * ⇒ [DeleteSheet] («امسح <الاسم>؟» أو «<الاسم> عليه N عملية» بالاختيارات) ⇒ [EntityRemover.remove] ⇒ شريط «تراجع» مكان الزرار (نفس شريط
  * مسح العملية — `UndoStrip`) ⇒ لما الشباك يخلص [afterDone] (الافتراضي: رجوع للصفحة اللي قبلها). الشاشة ما بتكتبش ولا بتحسب حاجة.
  * [remover] null (مش متوصل) ⇒ مفيش زرار.
+ * [leaveOnDelete] (صفحة الحاجة نفسها — المحفظة والأصل ومصدر الدخل، r06-fix055b): بعد المسح (مش الأرشفة) رجوع فوري للقايمة و«تراجع»
+ * في شريط الشل ([app.masroufy.ui.shell.Toaster.showUndo]) — عشان الصفحة بتتحول لـ«لم تعد موجودة» والشريط اللي جواها كان بيختفي.
  */
 @Composable
-internal fun DeleteWithChoices(remover: EntityRemover?, id: String, modifier: Modifier = Modifier, afterDone: ((String) -> Unit)? = null, onChanged: () -> Unit = {}) {
+internal fun DeleteWithChoices(
+    remover: EntityRemover?,
+    id: String,
+    modifier: Modifier = Modifier,
+    afterDone: ((String) -> Unit)? = null,
+    leaveOnDelete: Boolean = false,
+    onChanged: () -> Unit = {},
+) {
     if (remover == null) return
     val toaster = LocalToaster.current
     val nav = LocalNavigator.current
+    val changes = app.masroufy.ui.app.LocalDataChanges.current
     val scope = rememberCoroutineScope()
     var ask by remember { mutableStateOf<RemovalAsk?>(null) }
     var removed by remember { mutableStateOf<Removed?>(null) }
@@ -78,8 +88,20 @@ internal fun DeleteWithChoices(remover: EntityRemover?, id: String, modifier: Mo
         if (a != null) scope.launch {
             try {
                 val done = remover.remove(id, choice, moveTo)
-                removed = Removed(doneText(done)) { done.undo() }
-                onChanged()
+                if (leaveOnDelete && choice != RemoveChoice.ARCHIVE) {
+                    // r06-fix055b: الصفحة نفسها اتمسحت ⇒ رجوع للقايمة و«تراجع» في شريط الشل (بيعيش بعد قفل الصفحة)
+                    nav.pop()
+                    changes.changed()
+                    val undone = t(UiKey.OPS_BULK_UNDONE)
+                    toaster.showUndo(doneText(done), t(UiKey.OPS_BULK_UNDO)) {
+                        val failed = runCatching { done.undo() }.exceptionOrNull()?.message
+                        changes.changed()
+                        failed ?: undone
+                    }
+                } else {
+                    removed = Removed(doneText(done)) { done.undo() }
+                    onChanged()
+                }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
