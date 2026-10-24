@@ -115,7 +115,9 @@ internal fun PeopleScreen() {
         val groups = ui?.let { cellsOf(it) } ?: emptyList()
         val fullDrum = groups.size * (ROW + GAP)
         val scrolls = ui != null && !empty
-        val extra = if (scrolls) max(0f, top + HERO_TOP + fullDrum - (viewDp - Space.tabContentBottom.value)) else 0f
+        // fix055: آخر صف في «الكل» كان لازق في شريط «اسأل مصروفي» ⇒ نفس مسافة القوايم التانية تحت (156) + شريط أزرار الجوال
+        val navInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding().value
+        val extra = if (scrolls) allListExtra(top, fullDrum, viewDp, navInset) else 0f
         // بيرجع لمكانه (المسرح مطوي ولا مفرود) مع الرجوع وتبديل التبويب — §85
         val scroll = rememberEntryScrollState()
         val reduce = LocalReduceMotion.current
@@ -225,6 +227,10 @@ private fun cellsOf(ui: PeopleTabUi): List<List<Cell>> {
 
 /** خلفية هيدر «الأشخاص»: شفاف فوق المسرح (p = 0) ⇒ مصمت من ثلث الطريق لـ«الكل» (الكروت بتتحرك لفوق تحته). */
 internal fun headerFill(p: Float): Float = (p * 3f).coerceIn(0f, 1f)
+
+/** الطول الزيادة للتمرير في «الكل» (dp): آخر صف بيقف فوق [Space.tabContentBottom] + شريط أزرار الجوال [navInset] — زي باقي القوايم. */
+internal fun allListExtra(top: Float, drum: Float, view: Float, navInset: Float): Float =
+    max(0f, top + HERO_TOP + drum - (view - Space.tabContentBottom.value - navInset))
 
 private fun smooth(x: Float): Float = x.coerceIn(0f, 1f).let { it * it * (3 - 2 * it) }
 
