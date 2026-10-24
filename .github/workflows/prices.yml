@@ -20,8 +20,8 @@ on:
   # زر تشغيل يدوي من تبويب Actions
   workflow_dispatch:
 
-permissions:
-  contents: write
+# SECRETS-6: المهمة كلها مالهاش صلاحيات غير اللي في المهمة نفسها تحت
+permissions: {}
 
 concurrency:
   group: prices
@@ -30,10 +30,16 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@v4
+      # SECRETS-6: الإضافات متثبتة على commit كامل (مش علامة بتتحرك) — v4 وقت التثبيت 2026-10-24
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          # التوكن ما بيتسابش في .git/config لباقي الخطوات (السكربتات) — خطوة الرفع بس بتاخده
+          persist-credentials: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '20'
 
@@ -49,6 +55,8 @@ jobs:
           node scripts/fetch-averages.mjs
 
       - name: حفظ الملف لو اتغير
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if git diff --quiet -- public/prices.json && [ -z "$(git status --porcelain -- public/averages.json)" ]; then
             echo "مفيش تغيير في الأسعار ولا المتوسطات"
@@ -59,4 +67,4 @@ jobs:
           git add public/prices.json
           if [ -f public/averages.json ]; then git add public/averages.json; fi
           git commit -m "تحديث الأسعار $(date -u +%Y-%m-%d)"
-          git push
+          git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:${GITHUB_REF_NAME}"
