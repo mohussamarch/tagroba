@@ -26,14 +26,26 @@ import kotlinx.coroutines.launch
  * عايشة في `AppShell` (مش في الشاشة) عشان ما تضيعش لما الشاشة تتقفل أو البلد يتبدّل.
  */
 @Stable
-class Toaster {
+class Toaster(private val clock: () -> Long = { app.masroufy.ui.screens.operations.monotonicMs() }) {
     internal class Message(val id: Long, val text: String, val dark: Boolean, val action: String? = null, val onAction: (() -> Unit)? = null)
 
     internal var current by mutableStateOf<Message?>(null)
     private var next = 0L
 
+    /** fix055c: رسالة عادية بتستنى ورا شريط «تراجع» لحد ما يكمّل [UNDO_MIN_MS] (ما بتقصّروش) — وبعدها بتظهر. */
+    internal var pending: Message? = null
+    private var actionShownAt = 0L
+
     fun show(text: String, dark: Boolean = false) {
-        current = Message(next++, text, dark)
+        val m = Message(next++, text, dark)
+        if (current?.action != null && clock() - actionShownAt < UNDO_MIN_MS) pending = m else current = m
+    }
+
+    /** الشريط اللي بزرار خلص (وقته أو اتداس) ⇒ الرسالة اللي كانت مستنية تظهر. */
+    internal fun endAction(id: Long) {
+        if (current?.id != id) return
+        current = pending
+        pending = null
     }
 
     /** فيه رسالة بزرار ظاهرة دلوقتي — اللوحات اللي بتطلع لوحدها (`BnplHost`) بتستناها عشان الزرار ما يتدفنش ورا الستارة. */
@@ -41,6 +53,8 @@ class Toaster {
 
     /** r051: رسالة بزرار واحد («تراجع» بعد الربط اللي لوحده) — بتفضل [TOAST_ACTION_MS] عشان تلحق تدوس. */
     fun show(text: String, action: String, dark: Boolean = true, onAction: () -> Unit) {
+        pending = null
+        actionShownAt = clock()
         current = Message(next++, text, dark, action, onAction)
     }
 
@@ -59,6 +73,9 @@ class Toaster {
 /** مدة رسالة فيها زرار (زي «تراجع» في رسايل البنك — 8 ثواني). */
 const val TOAST_ACTION_MS = 8_000L
 
+/** fix055c (§118): أقل وقت لأي شريط «تراجع» بعد المسح — ولا رسالة تانية بتقصّره. */
+const val UNDO_MIN_MS = 6_000L
+
 val LocalToaster = staticCompositionLocalOf { Toaster() }
 
 /** مكان الرسالة (فوق الشريطين في التبويبات، وتحت في الشاشات الداخلية — `AppShell` بيحطه). */
@@ -73,7 +90,7 @@ fun ToastHost(toaster: Toaster, modifier: Modifier = Modifier) {
         shown.animateTo(1f, inSpec)
         delay(if (msg.action != null) TOAST_ACTION_MS else 2600)
         shown.animateTo(0f, inSpec)
-        if (toaster.current?.id == msg.id) toaster.current = null
+        if (msg.action != null) toaster.endAction(msg.id) else if (toaster.current?.id == msg.id) toaster.current = null
     }
     Toast(
         msg.text,
@@ -83,6 +100,6 @@ fun ToastHost(toaster: Toaster, modifier: Modifier = Modifier) {
         },
         dark = msg.dark,
         action = msg.action,
-        onAction = msg.onAction?.let { run -> { if (toaster.current?.id == msg.id) toaster.current = null; run() } },
+        onAction = msg.onAction?.let { run -> { toaster.endAction(msg.id); run() } },
     )
 }
