@@ -32,6 +32,7 @@ class MainActivity : FragmentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         container.activity = this
+        hideWhenLocked()
         val permissions = AndroidPermissions(this)
         shell = ShellState()
         lock = LockGate(container.appLock)
@@ -98,9 +99,31 @@ class MainActivity : FragmentActivity() {
         resume.onVisible()
     }
 
+    override fun onResume() {
+        super.onResume()
+        hideWhenLocked()
+    }
+
+    override fun onPause() {
+        // قبل ما أندرويد ياخد صورة «التطبيقات الأخيرة»: القفل اتشغّل وأنا جوه ⇒ الصورة ما تتاخدش
+        hideWhenLocked()
+        super.onPause()
+    }
+
     override fun onStop() {
         lock.onHidden()
         super.onStop()
+    }
+
+    /**
+     * ANDROID-3: القفل متشغّل ⇒ ممنوع لقطة الشاشة وصورة «التطبيقات الأخيرة» (FLAG_SECURE)، وعلى أندرويد 13+ كمان
+     * `setRecentsScreenshotEnabled(false)`. القفل مقفول في الإعدادات ⇒ الشاشة عادية.
+     */
+    private fun hideWhenLocked() {
+        val on = runCatching { container.appLock.isEnabled() }.getOrDefault(false)
+        if (on) window.addFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
+        else window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
+        if (android.os.Build.VERSION.SDK_INT >= 33) setRecentsScreenshotEnabled(!on)
     }
 
     override fun onDestroy() {

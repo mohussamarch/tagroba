@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -94,8 +95,10 @@ fun MasroufyApp(app: AppDeps, shell: ShellState, lock: LockGate, reduceMotion: B
         CompositionLocalProvider(LocalApp provides app, LocalPermissions provides app.permissions) {
             val root = rememberBackdrop()
             Box(Modifier.fillMaxSize()) {
+                // ANDROID-3: وهو مقفول، المحتوى اللي ورا البلور ملوش وجود عند قارئ الشاشة (TalkBack ما يقراش أرصدة ولا يدوس على حاجة)
+                val hidden = lock.locked && session !is AppSession.SignedOut
                 // الخلفية جوه المتسجل (نفس سبب `AppShell`): بلور القفل لازم يغطي الأصل كله
-                Box(Modifier.fillMaxSize().backdropSource(root).screenBackground()) {
+                Box(Modifier.fillMaxSize().backdropSource(root).screenBackground().then(if (hidden) Modifier.clearAndSetSemantics {} else Modifier)) {
                     when (val s = session) {
                         AppSession.Starting -> OpeningScreen(null, null)
                         AppSession.SignedOut -> OverlayRoot(shell.overlays) { SignInFlow() }
@@ -103,7 +106,7 @@ fun MasroufyApp(app: AppDeps, shell: ShellState, lock: LockGate, reduceMotion: B
                         is AppSession.Ready -> AppShell(shell, registry, s.deps)
                     }
                 }
-                if (lock.locked && session !is AppSession.SignedOut) LockScreen(lock, root)
+                if (hidden) LockScreen(lock, root)
                 // القفل اتوقف لأن الجوال بقى مالوش قفل (حالة «غير متاح» في لوحة `Lock`) ⇒ كارت واضح بـ«متابعة» بدل رسالة بتختفي
                 if (lock.released) LockReleasedCard { lock.dismissReleased() }
             }
