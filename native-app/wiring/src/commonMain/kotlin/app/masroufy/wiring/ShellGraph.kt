@@ -64,6 +64,14 @@ class ShellGraph(
         ),
     )
 
+    // r06-links2 (فجوة ٣): روابط العملية وعمليات الدين والخطة
+    override val opLinks = app.masroufy.usecase.OperationLinks(
+        app.masroufy.usecase.OperationLinksDeps(
+            repos.transactions, repos.wallets, repos.people, repos.allocations, repos.personLinks, repos.obligations, repos.settlements,
+            repos.installmentPayments, repos.installmentPlans, repos.recurring, repos.assets, repos.assetSales, repos.incomeSources,
+        ),
+    )
+
     override fun today() = env.today()
 
     override fun hourNow() = env.hourNow()

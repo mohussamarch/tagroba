@@ -1,6 +1,7 @@
 package app.masroufy.ui.screens.more
 
 import app.masroufy.core.UiKey
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -147,7 +148,7 @@ fun WalletDetailScreen(walletId: Id) {
         if (more.smsRepair != null) item(key = "smsRepair") {
             TonalButton(t(app.masroufy.core.TextKey.SMS_REPAIR_ENTRY), onClick = { nav.push(SmsRepairRoute(walletId)) }, modifier = Modifier.fillMaxWidth(), height = 48.dp)
         }
-        item(key = "moves") { MovesCard(moves, n) }
+        item(key = "moves") { MovesCard(moves, n) { id -> nav.push(app.masroufy.ui.screens.operations.OperationDetailRoute(id)) } } // r06-links2 (فجوة ٣)
         item(key = "checkpoints") { BalanceCheckpointsCard(walletId, tick, onChanged = { tick++ }) }
         item(key = "rec") {
             if (row.isCash) NoteBox(t(UiKey.WDET_CASH_NOTE))
@@ -186,7 +187,7 @@ private fun MainWalletCard(isMain: Boolean, editable: Boolean, mainName: String?
 }
 
 @Composable
-private fun MovesCard(moves: List<WalletMove>?, n: WithYouNow) {
+private fun MovesCard(moves: List<WalletMove>?, n: WithYouNow, onOpen: (Id) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(Modifier.padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             BasicText(t(UiKey.WDET_MOVES), Modifier.weight(1f), style = Type.of(15, FontWeight.Bold))
@@ -198,7 +199,7 @@ private fun MovesCard(moves: List<WalletMove>?, n: WithYouNow) {
                 moves.isEmpty() -> BasicText(t(UiKey.WDET_NO_MOVES), Modifier.padding(vertical = 14.dp), style = Type.of(13).copy(color = Ink.muted))
                 else -> moves.forEachIndexed { i, m ->
                     Column {
-                        Row(Modifier.fillMaxWidth().defaultMinSize(minHeight = 60.dp).padding(vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Row(Modifier.fillMaxWidth().defaultMinSize(minHeight = 60.dp).clickable { onOpen(m.id) }.padding(vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
                             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                                 BasicText(m.title, style = Type.of(14, FontWeight.Bold), maxLines = 1)
                                 BasicText(withMoveNote(fullDate(m.date) ?: m.date, m.moveNote), style = Type.caption().copy(color = Ink.muted), maxLines = 1)

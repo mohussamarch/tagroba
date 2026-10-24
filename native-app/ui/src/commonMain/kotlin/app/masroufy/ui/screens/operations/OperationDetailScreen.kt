@@ -145,6 +145,7 @@ fun OperationDetailScreen(transactionId: Id, openPerson: Boolean = false) {
                 if (duplicateAskShown(v.transaction)) item(key = "dup-ask") { DuplicateAskCard(v.transaction, onErased = { erased = it }) { reload++ } } // §12-5 · fix053
                 if (v.flow == LinkFlow.PURCHASE && !s.locked && deps.payerKinds != null) item(key = "await-refund") { AwaitRefundToggle(v.transaction) { reload++ } }
                 item(key = "quick-links") { QuickLinksSection(v.id, onChanged = { reload++ }) }
+                item(key = "op-links") { OperationLinksSection(v.id, reload) } // r06-links2 (فجوة ٣)
                 (linkedView as? app.masroufy.usecase.LinkedInflowsView.Inflow)?.let { li ->
                     item(key = "linked-parent") { LinkedParentBanner(li, unlinks) { linkStep { l, show -> confirm(l, show) } } }
                 }

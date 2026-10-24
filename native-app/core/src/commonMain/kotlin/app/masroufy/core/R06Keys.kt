@@ -89,4 +89,5 @@ enum class R06Key : TextRef {
     SEC_SIGN_OUT_WIPE,
     /** r06-links2 — فجوات الربط والمسح الناقص (OVERRIDES §118-ج) — نصوصها في `TextsR06Links2.kt`. */
     L2_SUB_ADD, L2_SUB_ADD_TITLE, L2_SUB_NAME, L2_SUB_NAME_HINT, L2_SUB_ADDED, L2_PLUS_DEBT,
+    L2_LK_TITLE, L2_LK_WALLET, L2_LK_PERSON, L2_LK_DEBT, L2_LK_PLAN, L2_LK_SUB, L2_LK_SALE, L2_LK_INCOME, L2_LK_OPS, L2_LK_OP,
 }
