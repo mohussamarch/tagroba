@@ -23,7 +23,7 @@ class BackupRelationMessageTest {
     private fun messageIn(variant: ArabicVariant): String {
         Texts.language = Language.AR
         Texts.arabicVariant = variant
-        return assertFailsWith<BackupError> { checkFullBackupData(data, groups = listOf("categories", "merchants")) }.message.orEmpty()
+        return assertFailsWith<BackupError> { checkFullBackupData(data, groups = listOf("categories", "merchants")) }.display
     }
 
     @Test fun brokenRelationIsArabicInBothDialects() {

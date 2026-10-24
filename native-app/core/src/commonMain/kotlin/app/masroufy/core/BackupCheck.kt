@@ -145,7 +145,7 @@ fun checkFullBackupData(data: Any?, groups: List<String> = BACKUP_GROUPS, extern
     val ids = rowsByGroup.mapValues { (g, rows) -> rows.map { backupRowId(g, it) }.toSet() }
     for (group in groups) for (row in rowsByGroup.getValue(group)) for ((field, target) in BACKUP_RELATIONS[group].orEmpty()) {
         val v = row[field]
-        if (v != null && jsString(v) !in (ids[target] ?: external[target].orEmpty())) throw BackupError(relationBroken(group, target))
+        if (v != null && jsString(v) !in (ids[target] ?: external[target].orEmpty())) throw BackupError(uiText(TextKey.BACKUP_RELATION_MISSING, group, field), relationBroken(group, target))
     }
 }
 

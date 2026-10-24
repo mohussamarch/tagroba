@@ -142,7 +142,8 @@ fun backupChecksumText(data: FullBackupData, profile: Any?, hasProfile: Boolean)
 
 fun backupChecksum(text: String): String = Sha256.hex(text)
 
-class BackupError(message: String) : IllegalArgumentException(message)
+/** [display] = نص للمستخدم لما يختلف عن [message] (r06-fix055b: «علاقة ناقصة» بالعربي — [message] فاضل زي ملف التطبيق الحالي للاختبارات الذهبية). */
+class BackupError(message: String, val display: String = message) : IllegalArgumentException(message)
 
 internal fun isSafeInteger(value: Any?): Boolean = when (value) {
     is Int -> true
