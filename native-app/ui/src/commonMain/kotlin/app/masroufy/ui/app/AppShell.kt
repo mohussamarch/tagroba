@@ -99,6 +99,8 @@ fun AppShell(shell: ShellState, registry: RouteRegistry, deps: SpaceDeps) {
     val nav = shell.navigator
     val backdrop = rememberBackdrop()
     var adding by remember { mutableStateOf(false) }
+    var plusDebt by remember { mutableStateOf(false) }
+    var plusSub by remember { mutableStateOf(false) }
     var ask by remember { mutableStateOf<Boolean?>(null) }
     var bellTick by remember { mutableStateOf(0) }
     var bell by remember(deps) { mutableStateOf<BellState?>(null) }
@@ -150,7 +152,16 @@ fun AppShell(shell: ShellState, registry: RouteRegistry, deps: SpaceDeps) {
                 registry.Sheet(sheet) { nav.close(sheet) }
             }
             // «بصوتك» في «+» ⇒ المساعد بيتفتح ويسمعك هناك (رد المالك §82-2 — زي ميكروفون الشريط)
-            AddOperationSheet(adding, onClose = { adding = false }, onVoice = { adding = false; ask = true })
+            AddOperationSheet(
+                adding, onClose = { adding = false }, onVoice = { adding = false; ask = true },
+                onDebt = if (deps.dues.addDebt != null) ({ adding = false; plusDebt = true }) else null,
+                onSubscription = { adding = false; plusSub = true },
+            )
+            // r06-links2 (فجوة ٢ و٤): نفس لوحة «ضيف دين» ولوحة «ضيف اشتراك»
+            app.masroufy.ui.screens.dues.AddDebtSheet(plusDebt, app.masroufy.ui.screens.dues.DebtSide.ALL, onDismiss = { plusDebt = false }) {
+                plusDebt = false; shell.changes.changed()
+            }
+            app.masroufy.ui.screens.dues.SubscriptionAddSheet(plusSub, onDismiss = { plusSub = false }, onSaved = { shell.changes.changed() })
             // «رسائل البنك» من أول تشغيل ⇒ الشرح ثم إذن النظام بعد ما الرحلة تخلص (OVERRIDES §91)
             SmsHandoffHost()
             // r051: خصم من تابي أو تمارا أو زيهم اتسجل ⇒ لوحة «ادفع بعدين» بتطلع لوحدها (OVERRIDES §107)

@@ -60,7 +60,10 @@ fun SubscriptionsScreen() {
     var error by remember { mutableStateOf<String?>(null) }
     val today = space.shell.today()
     val load = rememberLoad(deps) { deps.recurring.load(today) }
+    var adding by remember { mutableStateOf(false) }
     DuesScaffold(t(UiKey.SUBS_TITLE)) {
+        // r06-links2 (فجوة ٢): «ضيف اشتراك» بإيدك — ظاهر حتى لو القايمة فاضية
+        item(key = "add") { TonalButton(t(app.masroufy.core.R06Key.L2_SUB_ADD), { adding = true }, Modifier.fillMaxWidth(), height = 44.dp) }
         when (val s = load.value) {
             Load.Loading -> item { LoadingBlocks(90, 260) }
             Load.Failed -> item { LoadFailed(load::reload) }
@@ -102,6 +105,7 @@ fun SubscriptionsScreen() {
         }
     }
     QuickMenuHost(quick)
+    SubscriptionAddSheet(adding, onDismiss = { adding = false }, onSaved = { load.reload() })
 }
 
 @Composable
