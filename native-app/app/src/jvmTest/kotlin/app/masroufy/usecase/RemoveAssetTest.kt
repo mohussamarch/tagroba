@@ -34,6 +34,21 @@ class RemoveAssetTest {
         assertEquals(listOf(gold), k.assets.listAll())
     }
 
+    /** r06-fix055b (فحص 0.5.5 ملاحظة 5): صفقة شرا من غير عملية مربوطة مش «1 عملية» ⇒ «امسح» بس، والتراجع بيرجّع الصفقة. */
+    @Test
+    fun lotWithoutTransaction_countsZero() = runBlocking {
+        val k = kit(trades = false)
+        k.lots.saveMany(listOf(AssetLot("l-free", "a-1", "2026-02-01", 5L, 400_00, 0)))
+        val ask = k.removals.asset.ask("a-1")
+        assertEquals(0, ask.linkedCount)
+        assertEquals(listOf(RemoveChoice.DELETE), ask.choices)
+        val done = k.removals.asset.remove("a-1", RemoveChoice.DELETE)
+        assertTrue(k.assets.listAll().isEmpty() && k.lots.listAll().isEmpty())
+        done.undo()
+        assertEquals(listOf(gold), k.assets.listAll())
+        assertEquals(1, k.lots.listAll().size)
+    }
+
     @Test
     fun archive_thenUndo() = runBlocking {
         val k = kit()
