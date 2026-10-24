@@ -80,7 +80,8 @@ class NoSecretsInLogsTest {
         when (m.groupValues[1]) {
             "recordException" -> !args.startsWith("CrashSanitizer.sanitize(")
             "setCustomKey" -> args.substringBefore(',').trim() !in allowedKeys || secret.containsMatchIn(args)
-            "setUserId" -> !(args == "uid.orEmpty()" || args == "uid")
+            // LOGS-2: `setUserId("")` = مسح رقم الحساب (مش بيبعت حاجة)
+            "setUserId" -> !(args == "uid.orEmpty()" || args == "uid" || args == "\"\"")
             else -> true
         }
     }
@@ -94,6 +95,8 @@ class NoSecretsInLogsTest {
         assertEquals(false, crashLeaks("""crashlytics?.recordException(CrashSanitizer.sanitize(error, code.name))"""))
         assertEquals(false, crashLeaks("""c.setCustomKey(KEY_COUNTRY, country.orEmpty().take(2))"""))
         assertEquals(false, crashLeaks("""c.setUserId(uid.orEmpty())"""))
+        assertEquals(false, crashLeaks("""c.setUserId("")"""))
+        assertTrue(crashLeaks("""c.setUserId("someone")"""))
     }
 
     @Test fun crashReportsCarryNoMessagesNamesOrAmounts() {

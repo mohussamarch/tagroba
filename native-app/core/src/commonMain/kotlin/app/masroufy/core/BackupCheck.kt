@@ -109,6 +109,17 @@ private val LAST_FOUR = Regex("[0-9]{4}")
  * بلد غير السعودية في الإصدار 3 (§64): [groups] = مجموعات البلد بس، والعلاقات لمجموعات الحساب (الأشخاص · التجار · الوسوم · …)
  * بتتفحص على معرّفات الحساب [external] (من بيانات الجذر في نفس الملف).
  */
+/** PRIVACY-3: أطول نص في أي خانة (السطر الخام من كشف PDF أطول حاجة طبيعية — أقل من كده بكتير) وأعمق تداخل (سطر ⇒ قايمة ⇒ عنصر ⇒ …). */
+const val MAX_BACKUP_STRING = 20_000
+const val MAX_BACKUP_DEPTH = 6
+
+fun withinBackupLimits(value: Any?, depth: Int): Boolean = when (value) {
+    is String -> value.length <= MAX_BACKUP_STRING
+    is Map<*, *> -> depth <= MAX_BACKUP_DEPTH && value.all { (k, v) -> (k as? String)?.length?.let { it <= 200 } == true && withinBackupLimits(v, depth + 1) }
+    is List<*> -> depth <= MAX_BACKUP_DEPTH && value.all { withinBackupLimits(it, depth + 1) }
+    else -> true
+}
+
 fun checkFullBackupData(data: Any?, groups: List<String> = BACKUP_GROUPS, external: Map<String, Set<String>> = emptyMap()) {
     val value = data as? Map<*, *> ?: throw BackupError(uiText(TextKey.BACKUP_DATA_INVALID))
     for (group in groups) {
@@ -117,6 +128,8 @@ fun checkFullBackupData(data: Any?, groups: List<String> = BACKUP_GROUPS, extern
         for (raw in rows) {
             @Suppress("UNCHECKED_CAST")
             val row = raw as? Map<String, Any?> ?: throw BackupError(uiText(TextKey.BACKUP_ROW_INVALID, group))
+            // PRIVACY-3: نص طويل بزيادة أو تداخل عميق ⇒ الملف مش نسخة مصروفي (والكتابة ما تبدأش)
+            if (!withinBackupLimits(row, 1)) throw BackupError(uiText(TextKey.BACKUP_ROW_INVALID, group))
             val id = backupRowId(group, row)
             // مفاتيح الإيصالات وصفحة الإشعارات ممكن يبقى فيها «/» (أسامي أطراف) — معرّف المستند بيتشفّر (`receiptDocId`)
             val slashOk = group == "notificationReceipts" || group == ALERT_INBOX_GROUP

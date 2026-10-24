@@ -6,9 +6,8 @@ import app.masroufy.core.BackupRow
 import app.masroufy.core.FullBackupData
 import app.masroufy.core.backupRowId
 import app.masroufy.core.emptyBackupData
-import app.masroufy.core.redactSms
 import app.masroufy.data.receiptDocId
-import app.masroufy.data.sanitizeAccountNumbers
+import app.masroufy.data.restoreForm
 import app.masroufy.port.FullBackupPort
 import dev.gitlive.firebase.firestore.DocumentSnapshot
 import dev.gitlive.firebase.firestore.FieldPath
@@ -91,20 +90,15 @@ class FirestoreFullBackup(
     private companion object {
         const val PAGE = 200
         const val TRANSACTION_ROWS = 100
-        val BANK_TEXT_FIELDS = listOf("accountIdentity", "rawLine", "rawDescription", "rawMerchantName")
 
         /** الإيصالات وصفحة الإشعارات (§69) مفاتيحها فيها «|» و«/» ⇒ معرّف المستند متشفّر — نفس اللي `AlertCodecs` بيكتبه، فالاسترجاع ما بيكررش السطر. */
         fun docIdOf(group: String, row: BackupRow): String =
             backupRowId(group, row).let { if (group == "notificationReceipts" || group == ALERT_INBOX_GROUP) receiptDocId(it) else it }
 
-        /** نصوص البنك بتتقص، وعنوان وتفاصيل سطر صفحة الإشعارات بيتقصوا زي ما المحوّل بيعمل (أي رقم طويل ⇒ آخر 4). */
-        fun protectBankText(group: String, row: BackupRow): BackupRow = row.mapValues { (key, value) ->
-            when {
-                value !is String -> value
-                key in BANK_TEXT_FIELDS -> redactSms(value)
-                group == ALERT_INBOX_GROUP && (key == "title" || key == "body") -> sanitizeAccountNumbers(value)
-                else -> value
-            }
-        }
+        /**
+         * PRIVACY-3: المجموعات اللي فيها نص بنك بتتكتب بنفس شكل الكتابة العادية ([restoreForm] — مفاتيح المحوّل بس + قص كل النصوص
+         * + حجب نصوص البنك)، وصفحة الإشعارات عنوانها وتفاصيلها بيتقصوا. الحدود (طول النص والتداخل) اتفحصت قبلها (`checkFullBackupData`).
+         */
+        fun protectBankText(group: String, row: BackupRow): BackupRow = restoreForm(group, row)
     }
 }

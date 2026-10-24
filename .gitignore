@@ -44,3 +44,17 @@ dist-android-apk/
 
 # ملفات إعدادات خاصة (google-services.json) — برا المستودع العام
 secrets/
+
+# SECRETS-2 (PLAN-0.6 §1): اللي كان متمنع على جهاز المالك بس (.git/info/exclude) أو مش متمنع خالص
+# ⚠️ `/data/` مربوط بجذر المستودع — `data/` من غير «/» كان بيخبّي أي ملف جديد في `native-app/data/` (كود البرنامج)
+/data/
+.env
+.env.*
+!.env.example
+**/google-services.json
+**/GoogleService-Info.plist
+*.p12
+*.pfx
+*.jks
+*.keystore
+native-app/*.log

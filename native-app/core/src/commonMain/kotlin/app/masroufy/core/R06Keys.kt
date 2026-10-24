@@ -85,4 +85,6 @@ enum class R06Key : TextRef {
     /** r06-delete (OVERRIDES §118-1) — لوحة المسح الواحدة بالتلات اختيارات و«تراجع» — نصوصها في `TextsR06Delete.kt`. */
     DEL_ACTION, DEL_TITLE, DEL_BODY, DEL_CONFIRM, DEL_LINKED_TITLE, DEL_LINKED_BODY, DEL_ARCHIVE, DEL_KEEP_OPS, DEL_WITH_OPS, DEL_MOVE_OPS,
     DEL_MOVE_PICK, DEL_DONE, DEL_ARCHIVED, DEL_MOVED, DEL_KEEP_BLOCKED_DEBTS, DEL_REFUSED_CHILDREN, DEL_SOURCE_REMOVED,
+    /** r06-security (AUTH-4) — سطر لوحة تسجيل الخروج: إيه اللي بيتمسح من الجوال — نصوصه في `TextsR06Security.kt`. */
+    SEC_SIGN_OUT_WIPE,
 }

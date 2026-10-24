@@ -10,7 +10,14 @@ package app.masroufy.data
  */
 private val LONG_DIGITS = Regex("[0-9٠-٩۰-۹]{5,}")
 
-fun sanitizeAccountNumbers(text: String): String = LONG_DIGITS.replace(text) { "****" + it.value.takeLast(4) }
+/**
+ * PRIVACY-2: رقم مقسّم بمسافة أو شَرطة («1234 5678 9012 3456» · «SA03-8000-…») — 12 رقم أو أكتر ⇒ «****» + آخر 4 (زي `REDACT_LONG` في الرسايل).
+ * أقل من 12 ما بيتلمسش (تاريخ «2026-10-01» = 8 · تليفون = 10).
+ */
+private val GROUPED_DIGITS = Regex("(?<![0-9٠-٩۰-۹])[0-9٠-٩۰-۹](?:[ -]?[0-9٠-٩۰-۹]){11,40}(?![0-9٠-٩۰-۹])")
+
+fun sanitizeAccountNumbers(text: String): String =
+    LONG_DIGITS.replace(GROUPED_DIGITS.replace(text) { m -> "****" + m.value.filter { it != ' ' && it != '-' }.takeLast(4) }) { "****" + it.value.takeLast(4) }
 
 /** المجموعات اللي التطبيق الحالي بيقص فيها الأرقام: العمليات ومصادرها ودفعات الاستيراد (`sanitize`). */
 private val SANITIZED_GROUPS = setOf("transactions", "sourceRecords", "importBatches")

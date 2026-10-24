@@ -59,6 +59,15 @@ internal class SmsInboxStore(context: Context) : SQLiteOpenHelper(context, "sms-
         if (uid == owner()) check(prefs.edit().putBoolean("enabled", false).commit()) { "settings write failed" }
     }
 
+    /**
+     * تسجيل الخروج (AUTH-4): القراية بتقف لصاحب الصندوق ده، ورسايله المحفوظة (نصوص ومعرّفات) بتتمسح من القاعدة. بيرجّع كام سطر اتمسح.
+     * المؤشر بيفضل (لو نفس الشخص دخل تاني، «اقرأ اللي فات؟» بتجيب الفترة دي من رسايل الجوال نفسه).
+     */
+    fun forget(uid: String): Int {
+        disable(uid)
+        return writableDatabase.delete("messages", "owner=?", arrayOf(uid))
+    }
+
     fun cursorDate(): Long = prefs.getLong("cursorDate", System.currentTimeMillis())
 
     fun cursorId(): Long = prefs.getLong("cursorId", -1)
