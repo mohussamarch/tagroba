@@ -44,6 +44,8 @@ class AndroidCrashReports(context: Context) : CrashReportsPort {
         val on = isOn()
         c.setCrashlyticsCollectionEnabled(on)
         if (!on) {
+            // LOGS-2: التقارير اتقفلت ⇒ رقم الحساب بيتشال كمان (ما يفضلش متعلّق لو اتفتحت تاني بعد ما الحساب خرج)
+            c.setUserId("")
             c.deleteUnsentReports()
             return
         }
@@ -52,8 +54,13 @@ class AndroidCrashReports(context: Context) : CrashReportsPort {
 
     /** الحساب الداخل ([uid] — رقم فايربيز المجهول بس) والبلد الشغالة. null ⇒ خرج. */
     fun session(uid: String?, country: String?) {
-        if (!isOn()) return
         val c = crashlytics ?: return
+        // LOGS-2: الخروج بيمسح رقم الحساب **دايمًا** — حتى لو التقارير مقفولة (التقرير الجاي ما يتبعتش باسم حساب خرج)
+        if (uid == null) {
+            c.setUserId("")
+            c.setCustomKey(KEY_COUNTRY, "")
+        }
+        if (!isOn()) return
         c.setUserId(uid.orEmpty())
         c.setCustomKey(KEY_COUNTRY, country.orEmpty().take(2))
     }
