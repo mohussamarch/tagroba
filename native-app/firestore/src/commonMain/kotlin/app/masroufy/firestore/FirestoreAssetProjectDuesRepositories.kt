@@ -36,6 +36,8 @@ class FirestoreAssetRepository(private val space: FirestoreSpace) : AssetReposit
     override suspend fun listAll(): List<Asset> = space.select(codec)
 
     override suspend fun save(asset: Asset) = space.saveAll(codec, listOf(asset))
+
+    override suspend fun delete(id: String) = space.deleteAll(codec.group, listOf(id))
 }
 
 class FirestoreAssetLotRepository(private val space: FirestoreSpace) : AssetLotRepository {
@@ -107,6 +109,8 @@ class FirestoreRoscaRepository(private val space: FirestoreSpace) : RoscaReposit
     override suspend fun listAll(): List<Rosca> = space.select(codec)
 
     override suspend fun save(rosca: Rosca) = space.saveAll(codec, listOf(rosca))
+
+    override suspend fun delete(id: String) = space.deleteAll(codec.group, listOf(id))
 }
 
 class FirestoreRoscaEntryRepository(private val space: FirestoreSpace) : RoscaEntryRepository {

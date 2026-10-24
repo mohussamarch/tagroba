@@ -24,6 +24,10 @@ class MemoryPersonRepository(seed: List<Person> = emptyList()) : PersonRepositor
     override suspend fun save(person: Person) {
         items[person.id] = person
     }
+
+    override suspend fun delete(id: String) {
+        items.remove(id)
+    }
 }
 
 /** كاتب التسوية في الذاكرة — نقل `memory/settlementWriter.ts` (المنطق نفسه في `prepareSettlement`). */

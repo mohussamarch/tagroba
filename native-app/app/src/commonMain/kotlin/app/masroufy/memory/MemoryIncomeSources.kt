@@ -14,6 +14,10 @@ class MemoryIncomeSourceRepository(seed: List<IncomeSource> = emptyList()) : Inc
         for (s in sources) items[s.id] = s
     }
 
+    override suspend fun delete(id: String) {
+        items.remove(id)
+    }
+
     override fun snapshot(): Any = LinkedHashMap(items)
 
     @Suppress("UNCHECKED_CAST")

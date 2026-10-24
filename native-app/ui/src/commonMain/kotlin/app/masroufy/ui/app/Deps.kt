@@ -125,4 +125,7 @@ interface ShellDeps {
 
     /** «تراجع» (٤ ثواني) — الإشعار بيرجع زي ما كان. */
     suspend fun undoDismiss(dismissed: DismissedAlert)
+
+    /** r06-delete (OVERRIDES §118-1): لوحة المسح الواحدة لكل حاجة (حساب · أصل · خطة · جمعية · اشتراك · شخص · تاجر · مصدر دخل · تصنيف). null = مش متوصلة. */
+    val removals: app.masroufy.usecase.Removals? get() = null
 }

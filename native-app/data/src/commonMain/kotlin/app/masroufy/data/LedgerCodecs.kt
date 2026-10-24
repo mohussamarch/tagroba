@@ -55,6 +55,8 @@ object LedgerCodecs {
                 opt("linkedSplit", t.linkedSplit?.takeIf { it.isNotEmpty() })
                 // r06-darahim (§12): «برّه التقارير» · الوجبة · سؤال «مكرر؟» — لو موجودين بس
                 opt("excludedFromReports", t.excludedFromReports); opt("meal", t.meal?.wire); opt("duplicateAskPending", t.duplicateAskPending)
+                // r06-delete (§118-1): مصدرها اتمسح — لو موجود بس
+                opt("sourceRemoved", t.sourceRemoved)
             }
         },
         { r ->
@@ -85,6 +87,7 @@ object LedgerCodecs {
                 excludedFromReports = r.boolOrNull("excludedFromReports"),
                 meal = r.strOrNull("meal")?.let { w -> Meal.entries.firstOrNull { it.wire == w } },
                 duplicateAskPending = r.boolOrNull("duplicateAskPending"),
+                sourceRemoved = r.strOrNull("sourceRemoved"),
             )
         },
     )

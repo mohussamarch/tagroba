@@ -22,6 +22,9 @@ interface CategoryRepository {
     suspend fun listAll(): List<Category>
 
     suspend fun save(category: Category)
+
+    /** r06-delete (OVERRIDES §118-1): مسح بـ«تراجع». التنفيذ اللي ما بيدعموش (بدائل اختبارات قديمة) بيرمي. */
+    suspend fun delete(id: String): Unit = throw UnsupportedOperationException("delete")
 }
 
 interface MerchantRepository {
@@ -30,6 +33,9 @@ interface MerchantRepository {
     suspend fun findByNormalizedName(normalizedName: String): Merchant?
 
     suspend fun saveMany(merchants: List<Merchant>)
+
+    /** r06-delete (OVERRIDES §118-1): مسح بـ«تراجع». التنفيذ اللي ما بيدعموش (بدائل اختبارات قديمة) بيرمي. */
+    suspend fun delete(id: String): Unit = throw UnsupportedOperationException("delete")
 }
 
 interface RuleRepository {
@@ -45,6 +51,9 @@ interface PersonRepository {
     suspend fun listAll(): List<Person>
 
     suspend fun save(person: Person)
+
+    /** r06-delete (OVERRIDES §118-1): مسح بـ«تراجع». التنفيذ اللي ما بيدعموش (بدائل اختبارات قديمة) بيرمي. */
+    suspend fun delete(id: String): Unit = throw UnsupportedOperationException("delete")
 }
 
 /**
@@ -55,6 +64,9 @@ interface AssetRepository {
     suspend fun listAll(): List<Asset>
 
     suspend fun save(asset: Asset)
+
+    /** r06-delete (OVERRIDES §118-1): مسح بـ«تراجع». التنفيذ اللي ما بيدعموش (بدائل اختبارات قديمة) بيرمي. */
+    suspend fun delete(id: String): Unit = throw UnsupportedOperationException("delete")
 }
 
 interface AssetLotRepository {
@@ -97,6 +109,9 @@ interface RecurringRepository {
     suspend fun listAll(): List<app.masroufy.core.RecurringItem>
 
     suspend fun save(item: app.masroufy.core.RecurringItem)
+
+    /** r06-delete (OVERRIDES §118-1): مسح بـ«تراجع». التنفيذ اللي ما بيدعموش (بدائل اختبارات قديمة) بيرمي. */
+    suspend fun delete(id: String): Unit = throw UnsupportedOperationException("delete")
 }
 
 interface TagRepository {

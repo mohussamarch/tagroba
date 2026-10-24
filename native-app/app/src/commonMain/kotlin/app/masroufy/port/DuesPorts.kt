@@ -16,6 +16,9 @@ interface RoscaRepository {
     suspend fun listAll(): List<Rosca>
 
     suspend fun save(rosca: Rosca)
+
+    /** r06-delete (OVERRIDES §118-1): مسح بـ«تراجع». التنفيذ اللي ما بيدعموش (بدائل اختبارات قديمة) بيرمي. */
+    suspend fun delete(id: String): Unit = throw UnsupportedOperationException("delete")
 }
 
 interface RoscaEntryRepository {

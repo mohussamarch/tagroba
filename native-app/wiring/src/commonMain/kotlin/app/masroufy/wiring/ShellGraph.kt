@@ -51,6 +51,19 @@ class ShellGraph(
     /** إنشاء بلد · أرشفة · رجوع (§41 · §64) — **نفس الكائن** لـ«البلدان» (`MoreGraph`) و«أول تشغيل» (`OnboardingGraph`). null لو الجلسة مالهاش. */
     val spacesAdmin: SpacesAdmin? = session.spaceAdmin()?.let { SessionSpacesAdmin(it, env.clock) }
 
+    // r06-delete (OVERRIDES §118-1): لوحة المسح الواحدة — نفس روابط «امسح» للعملية + ربط مرسلي الرسايل + نسخة قبل مسح العمليات
+    override val removals = app.masroufy.usecase.Removals(
+        app.masroufy.usecase.RemovalDeps(
+            repos.transactions, repos.sourceRecords, repos.uow, env.clock,
+            app.masroufy.usecase.RevertLinkDeps(
+                repos.projectLinks, repos.eventLinks, repos.transactionTags, repos.roscaEntries, repos.installmentPayments, repos.installmentPlans,
+                repos.zakatPayments, repos.assetLots, repos.assetSales, personLinks = repos.personLinks,
+            ),
+            repos.allocations, repos.obligations, repos.settlements, repos.wallets, repos.assets, repos.roscas, repos.recurring, repos.people,
+            repos.merchants, repos.incomeSources, repos.categories, repos.rules, repos.debtTerms, env.smsInbox, space.id, env.repairBackup,
+        ),
+    )
+
     override fun today() = env.today()
 
     override fun hourNow() = env.hourNow()

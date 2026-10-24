@@ -141,6 +141,9 @@ interface WalletRepository {
     suspend fun findById(id: Id): Wallet?
 
     suspend fun save(wallet: Wallet)
+
+    /** r06-delete (OVERRIDES §118-1): مسح بـ«تراجع». التنفيذ اللي ما بيدعموش (بدائل اختبارات قديمة) بيرمي. */
+    suspend fun delete(id: String): Unit = throw UnsupportedOperationException("delete")
 }
 
 interface ObligationRepository {

@@ -105,6 +105,10 @@ class MemoryCategoryRepository(seed: List<Category> = emptyList()) : CategoryRep
     override suspend fun save(category: Category) {
         items[category.id] = category
     }
+
+    override suspend fun delete(id: String) {
+        items.remove(id)
+    }
 }
 
 class MemoryAllocationRepository(seed: List<PersonAllocation> = emptyList()) : AllocationRepository {
