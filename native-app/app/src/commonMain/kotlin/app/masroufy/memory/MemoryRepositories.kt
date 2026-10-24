@@ -118,6 +118,8 @@ class MemoryAllocationRepository(seed: List<PersonAllocation> = emptyList()) : A
         for (a in seed) items[a.id] = a
     }
 
+    override suspend fun listByPerson(personId: Id): List<PersonAllocation> = items.values.filter { it.personId == personId }
+
     override suspend fun listByTransactionIds(ids: List<Id>): List<PersonAllocation> {
         val wanted = ids.toSet()
         return items.values.filter { it.transactionId in wanted }

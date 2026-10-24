@@ -44,6 +44,8 @@ class FirestoreAllocationRepository(private val space: FirestoreSpace) : Allocat
 
     override suspend fun listByTransactionIds(ids: List<Id>): List<PersonAllocation> = space.findIn(codec, "transactionId", ids)
 
+    override suspend fun listByPerson(personId: Id): List<PersonAllocation> = space.select(codec, DocQuery(listOf(Cond.Eq("personId", personId))))
+
     override suspend fun saveMany(allocations: List<PersonAllocation>) = space.saveAll(codec, allocations)
 
     override suspend fun deleteMany(ids: List<Id>) = space.deleteAll(codec.group, ids)

@@ -169,6 +169,9 @@ interface SettlementRepository {
 interface AllocationRepository {
     suspend fun listByTransactionIds(ids: List<Id>): List<PersonAllocation>
 
+    /** r06-delete (§118-1): نصيب الشخص في كل العمليات (مسح الشخص). بدائل الاختبارات القديمة ⇒ فاضية. */
+    suspend fun listByPerson(personId: Id): List<PersonAllocation> = emptyList()
+
     suspend fun saveMany(allocations: List<PersonAllocation>)
 
     suspend fun deleteMany(ids: List<Id>)

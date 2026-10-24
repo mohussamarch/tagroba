@@ -9,6 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import app.masroufy.core.UiKey
 import app.masroufy.ui.components.TonalButton
 import app.masroufy.ui.nav.LocalNavigator
@@ -71,7 +72,10 @@ internal fun PlanRemove(remove: app.masroufy.usecase.RemoveDues, planId: String,
 @Composable
 internal fun PersonArchive(personId: String, name: String) {
     val people = app.masroufy.ui.app.LocalSpace.current.people.people
-    androidx.compose.foundation.layout.Box(Modifier.padding(horizontal = app.masroufy.ui.theme.Space.gutter)) {
+    androidx.compose.foundation.layout.Column(
+        Modifier.padding(horizontal = app.masroufy.ui.theme.Space.gutter),
+        verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
+    ) {
         RemoveWithUndo(
             t(app.masroufy.core.R06Key.PERSON_ARCHIVE_ACTION), t(app.masroufy.core.R06Key.PERSON_ARCHIVE_TITLE, name), t(app.masroufy.core.R06Key.PERSON_ARCHIVE_BODY),
             remove = {
@@ -79,6 +83,8 @@ internal fun PersonArchive(personId: String, name: String) {
                 Removed(t(app.masroufy.core.R06Key.PERSON_ARCHIVE_DONE, name)) { people.archivePerson(personId, false) }
             },
         )
+        // r06-delete (§118-1): «امسح» — الديون المفتوحة بتقفل «امسحه وسيب العمليات» وبتقول ليه
+        DeleteWithChoices(app.masroufy.ui.app.LocalSpace.current.shell.removals?.person, personId)
     }
 }
 

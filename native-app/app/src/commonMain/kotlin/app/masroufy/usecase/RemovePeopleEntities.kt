@@ -44,7 +44,7 @@ class RemovePerson internal constructor(private val d: RemovalDeps) : EntityRemo
         val settlements = if (obligations.isEmpty()) emptyList() else d.settlements.listByObligations(obligations.map { it.id })
         val links = d.links.personLinks?.listByPerson(id).orEmpty()
         val base = (links.map { it.transactionId } + obligations.mapNotNull { it.originTransactionId } + settlements.map { it.transactionId }).distinct()
-        val allocations = if (base.isEmpty()) emptyList() else d.allocations.listByTransactionIds(base).filter { it.personId == id }
+        val allocations = d.allocations.listByPerson(id)
         val open = obligations.any { o -> settlements.filter { it.obligationId == o.id }.sumOf { it.amountMinor } < o.originalMinor }
         return Graph(obligations, settlements, links, allocations, (base + allocations.map { it.transactionId }).distinct(), open)
     }
