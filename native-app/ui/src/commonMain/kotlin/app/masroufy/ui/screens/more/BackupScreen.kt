@@ -130,6 +130,7 @@ fun BackupScreen() {
                 TonalButton(t(UiKey.BAK_PICK), onClick = pick, enabled = backup != null, modifier = Modifier.fillMaxWidth())
             }
         }
+        item(key = "saved") { SavedBackupsCard() } // r06-links2 (§118-ج)
         item(key = "csv") {
             BackupCard(MoreIcons.TABLE, t(UiKey.BAK_CSV_TITLE), t(UiKey.BAK_CSV_BODY, countryLabel(deps.space))) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

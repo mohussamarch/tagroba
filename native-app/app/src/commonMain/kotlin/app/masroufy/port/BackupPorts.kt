@@ -41,7 +41,16 @@ interface SpacesBackupPort {
 /** `bytes` = الحجم الفعلي بالبايت كما التخزين قراه **بعد** الكتابة؛ null = التخزين ما يقدرش يأكد (ويتقال للمستخدم). */
 data class SavedBackup(val location: String, val bytes: Long?)
 
+/** نسخة محفوظة على الجوال: الاسم والحجم بالبايت وآخر تعديل (ملّي ثانية). */
+data class SavedBackupFile(val name: String, val bytes: Long, val modifiedMillis: Long)
+
 /** حفظ نسخة «قبل الإصلاح» **من غير نافذة نظام** — النافذة على أندرويد بترمي التطبيق للخلفية وتقطع الشغل. */
 interface RepairBackupPort {
     suspend fun save(fileName: String, content: String): SavedBackup
+
+    /** r06-links2 (§118-ج): النسخ المحفوظة على الجوال (الأحدث الأول) — للعرض والمسح. الافتراضي: مفيش. */
+    suspend fun list(): List<SavedBackupFile> = emptyList()
+
+    /** مسح نسخة بالاسم — **ملف، مالوش تراجع**. بيرجّع true لو اتمسحت. */
+    suspend fun delete(fileName: String): Boolean = false
 }

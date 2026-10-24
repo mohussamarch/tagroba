@@ -40,6 +40,24 @@ class AndroidRepairBackup(private val context: Context) : RepairBackupPort {
         SavedBackup(file.absolutePath, size)
     }
 
+    /** r06-links2 (§118-ج): نسخ «قبل الإصلاح» في `noBackupFilesDir/backups` (والقديم الخارجي لو فضل) — الأحدث الأول. */
+    override suspend fun list(): List<app.masroufy.port.SavedBackupFile> = withContext(Dispatchers.IO) {
+        dirs().flatMap { d -> d.listFiles { f -> f.isFile }.orEmpty().toList() }
+            .map { app.masroufy.port.SavedBackupFile(it.name, it.length(), it.lastModified()) }
+            .sortedByDescending { it.modifiedMillis }
+    }
+
+    /** مسح ملف بالاسم (اسم بسيط بس — لا مسارات). ملف ⇒ مالوش تراجع. */
+    override suspend fun delete(fileName: String): Boolean = withContext(Dispatchers.IO) {
+        if (!SAFE_NAME.matches(fileName)) return@withContext false
+        dirs().map { File(it, fileName) }.filter { it.isFile }.count { it.delete() } > 0
+    }
+
+    private fun dirs(): List<File> = listOfNotNull(
+        File(context.noBackupFilesDir, DIR).takeIf { it.isDirectory },
+        context.getExternalFilesDir(null)?.let { File(it, DIR) }?.takeIf { it.isDirectory },
+    )
+
     private fun pruneOld(written: File) = runCatching {
         val siblings = written.parentFile?.listFiles { f -> f.isFile }.orEmpty().map { BackupFileInfo(it.name, it.lastModified()) }
         for (name in BackupPruning.toDelete(siblings, written.name)) File(written.parentFile, name).delete()
