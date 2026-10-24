@@ -23,6 +23,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
@@ -142,9 +143,8 @@ private fun LanguageSection() {
             if (lang != Language.AR) { hook?.choose(Language.AR); lang = Language.AR; toaster.show(t(UiKey.APPS_LANG_NEXT_OPEN), dark = true) }
         }
         RowRule()
-        LangRow(t(UiKey.APPS_LANG_EN), t(UiKey.APPS_LANG_EN_ALT), t(UiKey.APPS_LANG_EN_DESC), lang == Language.EN, hook != null) {
-            if (lang != Language.EN) { hook?.choose(Language.EN); lang = Language.EN; toaster.show(t(UiKey.APPS_LANG_NEXT_OPEN), dark = true) }
-        }
+        // r06-fix055b (فحص 0.5.5 ملاحظة 6): الإنجليزي لسه مش مبني ⇒ السطر مقفول ومكتوب عليه «قريب» (مش شكله بيتداس وما بيعملش حاجة)
+        LangRow(t(UiKey.APPS_LANG_EN), t(app.masroufy.core.R06Key.LANG_EN_SOON), t(UiKey.APPS_LANG_EN_DESC), lang == Language.EN, enabled = false) {}
         RowRule()
         BasicText(t(if (lang == Language.EN) UiKey.APPS_DIR_LTR else UiKey.APPS_DIR_RTL), Modifier.padding(vertical = 12.dp), style = Type.caption().copy(color = Ink.muted))
         if (hook == null) NotYetLine(t(UiKey.APPS_LANG_NOT_YET), Modifier.padding(bottom = 12.dp))
@@ -155,7 +155,7 @@ private fun LanguageSection() {
 private fun LangRow(name: String, alt: String?, desc: String, on: Boolean, enabled: Boolean, onPick: () -> Unit) {
     val press = rememberPress()
     Row(
-        Modifier.fillMaxWidth().defaultMinSize(minHeight = 64.dp).pressScale(press, enabled).tap(press, enabled, role = Role.RadioButton, onClick = onPick)
+        Modifier.fillMaxWidth().defaultMinSize(minHeight = 64.dp).alpha(if (enabled) 1f else 0.45f).pressScale(press, enabled).tap(press, enabled, role = Role.RadioButton, onClick = onPick)
             .semantics { selected = on }.padding(vertical = 10.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,

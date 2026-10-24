@@ -179,6 +179,9 @@ class RemoveCategory internal constructor(private val d: RemovalDeps) : EntityRe
         val rows = kit.all().filter { it.categoryId == id }
         val rules = d.rules?.listAll().orEmpty().filter { it.categoryId == id }
         val now = d.clock.nowIso()
+        // r06-fix055b: التجار وسقوف الميزانية اللي بتشاور على التصنيف — من غيرها النسخة الشاملة بترفض («علاقة ناقصة»)
+        val merchants = d.merchants.listAll().filter { it.verifiedCategoryId == id || it.suggestedCategoryId == id }
+        val caps = d.budgets?.listCategoryBudgetsByCategory(id).orEmpty()
         val kept = if (target != null) {
             if (rows.isNotEmpty()) d.txns.saveMany(rows.map { it.copy(categoryId = target.id, updatedAt = now) })
             if (rules.isNotEmpty()) d.rules?.saveMany(rules.map { it.copy(categoryId = target.id) })
@@ -187,11 +190,21 @@ class RemoveCategory internal constructor(private val d: RemovalDeps) : EntityRe
             if (rules.isNotEmpty()) d.rules?.deleteMany(rules.map { it.id })
             kit.keep(rows, removedMarker("category", c.name)) { it.copy(categoryId = null, categoryConfirmed = false) }
         }
+        if (merchants.isNotEmpty()) d.merchants.saveMany(merchants.map { categoryOff(it, id, target?.id) })
+        for (cap in caps) d.budgets?.removeCategoryBudget(cap.id)
         d.categories.delete(id)
         return RemovalDone(choice, c.name) {
             d.categories.save(c)
             kit.unkeep(kept)
             if (rules.isNotEmpty()) d.rules?.saveMany(rules)
+            if (merchants.isNotEmpty()) d.merchants.saveMany(merchants)
+            for (cap in caps) d.budgets?.saveCategoryBudget(cap)
         }
     }
 }
+
+/** التاجر بعد مسح تصنيفه: «انقل» ⇒ للتصنيف الجديد · «سيب» ⇒ «مالوش تصنيف» (null). */
+private fun categoryOff(m: app.masroufy.core.Merchant, gone: Id, to: Id?) = m.copy(
+    verifiedCategoryId = if (m.verifiedCategoryId == gone) to else m.verifiedCategoryId,
+    suggestedCategoryId = if (m.suggestedCategoryId == gone) null else m.suggestedCategoryId,
+)

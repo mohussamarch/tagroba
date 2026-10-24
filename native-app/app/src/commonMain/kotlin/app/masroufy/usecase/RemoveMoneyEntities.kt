@@ -63,7 +63,9 @@ class RemoveAsset internal constructor(private val d: RemovalDeps) : EntityRemov
 
     override suspend fun ask(id: Id): RemovalAsk {
         val a = d.assets.listAll().firstOrNull { it.id == id } ?: removalGone()
-        val n = d.links.assetLots.listByAsset(id).size + d.links.assetSales.listByAsset(id).size
+        // r06-fix055b: العمليات الحقيقية بس — صفقة شرا من غير عملية مربوطة (`transactionId` فاضي) مش «عملية» (فحص 0.5.5 ملاحظة 5)
+        val txnIds = (d.links.assetLots.listByAsset(id).mapNotNull { it.transactionId } + d.links.assetSales.listByAsset(id).mapNotNull { it.transactionId }).distinct()
+        val n = if (txnIds.isEmpty()) 0 else d.txns.findByIds(txnIds).size
         return askOf(a.name, n, linkedChoices(archive = true))
     }
 

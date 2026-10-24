@@ -15,7 +15,11 @@ import androidx.compose.ui.unit.dp
 import app.masroufy.ui.components.Toast
 import app.masroufy.ui.theme.Springs
 import app.masroufy.ui.theme.motion
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /**
  * الرسايل الصغيرة («سُجّلت: …» · «انتقلت إلى حساب مصر») — مستوى 1 من «مستويات الإحساس». واحدة بس في المرة، وبتختفي بعد 2.6 ثانية زي النموذج.
@@ -39,6 +43,17 @@ class Toaster {
     fun show(text: String, action: String, dark: Boolean = true, onAction: () -> Unit) {
         current = Message(next++, text, dark, action, onAction)
     }
+
+    /** نطاق [ToastHost] (عايش في `AppShell`) — الشغل اللي بعد الزرار يكمّل حتى لو الشاشة اللي طلبته اتقفلت. */
+    internal var hostScope: CoroutineScope? = null
+
+    /**
+     * r06-fix055b: «تراجع» بعد مسح حاجة من صفحتها — الصفحة بتتقفل وبنرجع للقايمة، والشريط بيفضل هنا. [undo] بيرجّع رسالة النتيجة
+     * (أو null ⇒ مفيش رسالة) وبيشتغل في [hostScope] مش في نطاق الشاشة اللي اتقفلت.
+     */
+    fun showUndo(text: String, action: String, undo: suspend () -> String?) {
+        show(text, action) { hostScope?.launch { undo()?.let { show(it) } } }
+    }
 }
 
 /** مدة رسالة فيها زرار (زي «تراجع» في رسايل البنك — 8 ثواني). */
@@ -49,6 +64,8 @@ val LocalToaster = staticCompositionLocalOf { Toaster() }
 /** مكان الرسالة (فوق الشريطين في التبويبات، وتحت في الشاشات الداخلية — `AppShell` بيحطه). */
 @Composable
 fun ToastHost(toaster: Toaster, modifier: Modifier = Modifier) {
+    val hostScope = rememberCoroutineScope()
+    SideEffect { toaster.hostScope = hostScope }
     val msg = toaster.current ?: return
     val shown = remember(msg.id) { Animatable(0f) }
     val inSpec = motion<Float>(Springs.SNAPPY)

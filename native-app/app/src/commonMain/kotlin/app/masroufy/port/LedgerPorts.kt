@@ -191,4 +191,7 @@ interface BudgetRepository {
     suspend fun saveCategoryBudget(line: CategoryBudget)
 
     suspend fun removeCategoryBudget(id: Id)
+
+    /** r06-fix055b: سقوف تصنيف واحد في كل الفترات — مسح التصنيف بيشيلها (وإلا النسخة الشاملة بترفض «علاقة ناقصة»). */
+    suspend fun listCategoryBudgetsByCategory(categoryId: Id): List<CategoryBudget>
 }

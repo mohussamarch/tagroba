@@ -102,6 +102,8 @@ data class RemovalDeps(
     /** r06-links2: خطط الادخار وإيداعاتها (مسح الخطة). null ⇒ اللوحة بتقول «مش موجودة». */
     val goals: app.masroufy.port.SavingsGoalRepository? = null,
     val goalContributions: app.masroufy.port.GoalContributionRepository? = null,
+    /** r06-fix055b: سقوف التصنيف (مسح التصنيف بيشيلها والتراجع بيرجّعها). null ⇒ ما بتتلمسش. */
+    val budgets: app.masroufy.port.BudgetRepository? = null,
 )
 
 /** العمليات اللي اتمسحت وكل اللي كان بيشاور عليها — للتراجع بالظبط. */

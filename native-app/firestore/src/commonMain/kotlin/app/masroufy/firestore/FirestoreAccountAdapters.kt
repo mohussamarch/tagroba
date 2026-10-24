@@ -80,7 +80,7 @@ class FirestoreReferenceSeed(
     /** التجار مشتركين على مستوى الحساب (§41) — بيتكتبوا هناك حتى لو العلامة والتصنيفات في مساحة البلد. */
     private val merchantsAt: FirestoreSpace = space,
 ) : ReferenceSeedPort {
-    private fun marker() = space.db.document("${space.root}/initialization/references-v1")
+    private fun marker() = space.collection(INITIALIZATION_GROUP).document(REFERENCES_MARKER_ID)
 
     private fun stateOf(data: Doc?): SeedState = when (data?.get("state")) {
         "pending" -> SeedState.PENDING
@@ -178,7 +178,7 @@ class FirestoreSharedMerchantCatalog(private val db: FirebaseFirestore) : Shared
         )
     }
 
-    private companion object {
+    internal companion object {
         const val COLLECTION = "sharedMerchants"
 
         /** نفس `fromDoc`: من غير اسم موحد ⇒ مستند مش صالح ويتساب · أي `confirmed` غير `true` بالظبط = مش مؤكد. */

@@ -140,7 +140,7 @@ fun WalletDetailScreen(walletId: Id) {
         w?.wallet?.let { wallet -> item(key = "account") { WalletAccountCard(wallet) { tick++ } } } // r06-links: آخر 4 · إخفاء (§112-1)
         w?.wallet?.let { wallet -> item(key = "name-kind") { WalletNameKindCard(wallet) { tick++ } } } // r06-links2 (فجوة ٥): الاسم والنوع
         // r06-delete (§118-1): «امسح» باللوحة الواحدة — أرشفه (إخفاء) · سيب العمليات · هو وعملياته، والمرسلين بيرجعوا «مالوش حساب»
-        item(key = "delete") { app.masroufy.ui.screens.dues.DeleteWithChoices(deps.shell.removals?.wallet, walletId, onChanged = { tick++ }) }
+        item(key = "delete") { app.masroufy.ui.screens.dues.DeleteWithChoices(deps.shell.removals?.wallet, walletId, leaveOnDelete = true, onChanged = { tick++ }) }
         // 2026-10-16: «صلّح رصيدي» — الأدوات بالترتيب على شاشة واحدة (محفظة البنك بس)
         if (more.fixBalance != null && w?.wallet?.kind == "bank") item(key = "fix") {
             PrimaryButton(t(UiKey.FIX_BAL_ENTRY), onClick = { nav.push(FixMyBalanceRoute(walletId)) }, modifier = Modifier.fillMaxWidth(), height = 52.dp)

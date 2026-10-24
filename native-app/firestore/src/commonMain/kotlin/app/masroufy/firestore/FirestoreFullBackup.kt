@@ -28,9 +28,9 @@ class FirestoreFullBackup(
     /** المجموعات اللي بتتقرا وتتكتب هنا — بلد غير السعودية (الإصدار 3) = مجموعاتها بس. */
     private val groups: List<String> = BACKUP_GROUPS,
 ) : FullBackupPort {
-    private fun profileRef() = space.db.document("${space.root}/profile/main")
+    private fun profileRef() = space.collection(PROFILE_GROUP).document(PROFILE_ID)
 
-    private fun revisionRef() = space.db.document("${space.root}/concurrency/settlements")
+    private fun revisionRef() = space.collection(CONCURRENCY_GROUP).document(SETTLEMENTS_REVISION_ID)
 
     override suspend fun read(): FullBackupData {
         val data = emptyBackupData()

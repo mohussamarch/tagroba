@@ -117,7 +117,7 @@ fun BackupScreen() {
                         scope.launch {
                             runCatching { b.createText(more.nowIso()) }
                                 .onSuccess { made -> expected = made.utf8Bytes; saveJson(backupFileName(today), made.text) }
-                                .onFailure { Problems.report(ProblemCode.BACKUP_CREATE_FAILED, it); making = false; backupError = it.message ?: t(UiKey.BAK_FAILED) }
+                                .onFailure { Problems.report(ProblemCode.BACKUP_CREATE_FAILED, it); making = false; backupError = shownBackupError(it) }
                         }
                     },
                     enabled = backup != null, loading = making, modifier = Modifier.fillMaxWidth(),
@@ -146,7 +146,7 @@ fun BackupScreen() {
                         scope.launch {
                             runCatching { more.exportCsv.export(from, to, payday) }
                                 .onSuccess { saveCsv(exportFileName(from, to), it) }
-                                .onFailure { exporting = false; toaster.show(it.message ?: t(UiKey.BAK_FAILED), dark = true) }
+                                .onFailure { exporting = false; toaster.show(shownBackupError(it), dark = true) }
                         }
                     },
                     enabled = range.ok && !exporting, modifier = Modifier.fillMaxWidth(),
@@ -169,3 +169,7 @@ private fun BackupCard(icon: Lucide, title: String, body: String, content: @Comp
         }
     }
 }
+
+/** r06-fix055b: رفض النسخة بنصه العربي ([app.masroufy.core.BackupError.display]) بدل «merchants.verifiedCategoryId». */
+private fun shownBackupError(e: Throwable): String =
+    (e as? app.masroufy.core.BackupError)?.display ?: e.message ?: t(UiKey.BAK_FAILED)

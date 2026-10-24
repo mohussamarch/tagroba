@@ -21,7 +21,7 @@ import dev.gitlive.firebase.firestore.Source
 class FirestoreSettlementWriter(private val space: FirestoreSpace) : SettlementWriter {
     private val settlements = LedgerCodecs.settlements
     private val obligations = LedgerCodecs.obligations
-    private fun revisionRef() = space.db.document("${space.root}/concurrency/settlements")
+    private fun revisionRef() = space.collection(CONCURRENCY_GROUP).document(SETTLEMENTS_REVISION_ID)
 
     private class SnapshotMoved : RuntimeException()
 
