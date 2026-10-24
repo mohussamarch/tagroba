@@ -59,7 +59,7 @@ internal fun SavedBackupsCard() {
                 }
                 if (asking == f.name) WarnBox(t(R06Key.L2_BK_CONFIRM_TITLE), t(R06Key.L2_BK_CONFIRM_BODY)) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        TonalButton(t(R06Key.DEL_CONFIRM), {
+                        TonalButton(t(R06Key.L2_BK_CONFIRM_DO), {
                             scope.launch {
                                 val ok = runCatching { manage.delete(f.name) }.getOrDefault(false)
                                 toaster.show(t(if (ok) R06Key.L2_BK_DONE else R06Key.L2_BK_FAILED))
