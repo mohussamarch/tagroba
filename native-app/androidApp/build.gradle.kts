@@ -16,6 +16,9 @@ plugins {
 
 val firebaseSettings = rootProject.extra["firebaseSettings"] as File?
 
+/** AUTH-1: App Check — الافتراضي مقفول (`-Pmasroufy.appCheck=true` يفتحه بعد خطوات المالك في `tools/security/APP-CHECK-STEPS.md`). */
+val appCheckOn = providers.gradleProperty("masroufy.appCheck").orNull == "true"
+
 android {
     namespace = "app.masroufy.android"
     compileSdk = 36
@@ -72,6 +75,9 @@ android {
         }
     }
 
+    // AUTH-1 (PLAN-0.6 §1 · `tools/security/APP-CHECK-STEPS.md`): App Check **مقفول** لحد ما المالك يسجّل البرنامج في Play Integrity ويوافق.
+    // مقفول ⇒ ملف فاضي (`src/appCheckOff`) ومفيش مكتبة جديدة ولا تنزيل. مفتوح بـ`-Pmasroufy.appCheck=true` ⇒ `src/appCheckOn` + المكتبات تحت.
+    sourceSets.getByName("main").java.srcDir(if (appCheckOn) "src/appCheckOn/kotlin" else "src/appCheckOff/kotlin")
     // «السريعة» على المحاكي محتاجة نفس إذن HTTP لـ10.0.2.2 بتاع نسخة المحاكي (محاكي الدخول من غير TLS) — نفس الملفات، من غير نسخ
     sourceSets.getByName("fastEmulator") {
         manifest.srcFile("src/emulator/AndroidManifest.xml")
@@ -125,6 +131,12 @@ dependencies {
     // بيانات الاستخدام (OVERRIDES §114 — السبب في ARCHITECTURE «بيانات الاستخدام»): من نفس BoM (من غير رقم نسخة — الـBoM بيحدده).
     // الجمع مقفول في المانيفست والتطبيق بيفتحه في نسخ المالك بس (`FirebaseUsage.kt`)؛ معرّف الإعلانات والإعلانات المخصصة مقفولين
     implementation("com.google.firebase:firebase-analytics")
+    // AUTH-1 — App Check (السبب في ARCHITECTURE «App Check»): من نفس BoM. مزوّد Play Integrity في كل النسخ، ومزوّد التجربة (debug)
+    // في نسخ debug والمحاكي بس (`AppCheckSetup` بيلاقيه بالاسم — نسخة الإصدار مالهاش مزوّد تجربة خالص)
+    if (appCheckOn) {
+        implementation("com.google.firebase:firebase-appcheck-playintegrity")
+        for (config in listOf("debugImplementation", "emulatorImplementation", "fastEmulatorImplementation")) add(config, "com.google.firebase:firebase-appcheck-debug")
+    }
 }
 
 /*

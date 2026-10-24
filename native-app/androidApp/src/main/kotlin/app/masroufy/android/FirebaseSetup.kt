@@ -58,6 +58,8 @@ fun openFirebase(context: Context): FirebaseHandles? {
     if (!BuildConfig.HAS_FIREBASE_SETTINGS) return null
     // الإعدادات بتتقري من الموارد اللي إضافة google-services ولّدتها وقت البناء (من غير ما المفاتيح تبقى في الكود)
     val app = Firebase.initialize(context) ?: return null
+    // AUTH-1: App Check قبل أول طلب لفايربيز — مقفول افتراضيًا (`AppCheckSetup.ENABLED`)، والمحاكي المحلي ما بيتركّبش عليه
+    AppCheckSetup.install(context, emulator = false)
     val id = context.resources.getIdentifier("default_web_client_id", "string", context.packageName)
     val webClientId = if (id != 0) context.getString(id).takeIf { it.isNotBlank() } else null
     return FirebaseHandles(Firebase.auth(app), Firebase.firestore(app), emulator = false, webClientId = webClientId) { Firebase.firestore(app) }
