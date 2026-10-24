@@ -137,6 +137,12 @@ fun CategoryEditSheet(target: CatEditTarget?, ui: CategoriesUi?, onDismiss: () -
                 BasicText(v.hideNote, style = Type.caption().copy(color = Ink.muted))
             }
         }
+        // r06-delete (§118-1): «امسح» باللوحة الواحدة — بدل «امسح عملياته» فيه «انقل العمليات لتصنيف تاني»
+        shown?.id?.let { catId ->
+            app.masroufy.ui.screens.dues.DeleteWithChoices(
+                app.masroufy.ui.app.LocalSpace.current.shell.removals?.category, catId, afterDone = { text -> onSaved(text, shown.parentId) },
+            )
+        }
         if (error != null && v.nameError == null) FieldError(error!!)
         PrimaryButton(
             v.saveLabel,

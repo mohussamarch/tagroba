@@ -40,14 +40,17 @@ import kotlinx.coroutines.launch
  * [remover] null (مش متوصل) ⇒ مفيش زرار.
  */
 @Composable
-internal fun DeleteWithChoices(remover: EntityRemover?, id: String, modifier: Modifier = Modifier, afterDone: (() -> Unit)? = null, onChanged: () -> Unit = {}) {
+internal fun DeleteWithChoices(remover: EntityRemover?, id: String, modifier: Modifier = Modifier, afterDone: ((String) -> Unit)? = null, onChanged: () -> Unit = {}) {
     if (remover == null) return
     val toaster = LocalToaster.current
     val nav = LocalNavigator.current
     val scope = rememberCoroutineScope()
     var ask by remember { mutableStateOf<RemovalAsk?>(null) }
     var removed by remember { mutableStateOf<Removed?>(null) }
-    val window = undoWindowFor(removed) { if (removed != null) (afterDone ?: { nav.pop() })() }
+    val window = undoWindowFor(removed) {
+        val gone = removed
+        if (gone != null) afterDone?.invoke(gone.text) ?: nav.pop()
+    }
     val r = removed
     if (r != null) {
         UndoStrip(r.text, window) {
