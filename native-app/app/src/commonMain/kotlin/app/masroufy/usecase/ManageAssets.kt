@@ -130,7 +130,11 @@ class ManageAssets(private val deps: ManageAssetsDeps) {
         // cty-10: المجموع بعملة البلد بس — أصل بعملة تانية (سجل قديم غلط) بيفضل في القايمة بس ما بيتجمعش
         val home = deps.countryCode?.let { app.masroufy.core.countryPack(it).currency }
         val counted = rows.filter { home == null || it.asset.currency == home }
-        return PortfolioView(rows, computePortfolioTotals(counted.map { it.position }), computePortfolioTotals(counted.filter { !it.asset.archived }.map { it.position }))
+        // §117-2: «المكسب المحقق» للمملوك من غير بيعات الأصول اللي تكلفتها مش متسجلة (وعددهم للسطر الصغير)
+        val owned = counted.filter { !it.asset.archived }
+        val unknownCost = owned.filter { it.asset.costKnown == false }.mapTo(HashSet()) { it.asset.id }
+        val ownedTotals = app.masroufy.core.totalsCountingKnownCost(owned.map { it.position }, unknownCost, owned.associate { it.asset.id to it.sales.size })
+        return PortfolioView(rows, computePortfolioTotals(counted.map { it.position }), ownedTotals)
     }
 
     suspend fun addAsset(input: NewAsset): Asset {
