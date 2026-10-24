@@ -24,6 +24,10 @@ class MemoryRoscaRepository(seed: List<Rosca> = emptyList()) : RoscaRepository {
     override suspend fun save(rosca: Rosca) {
         items[rosca.id] = rosca
     }
+
+    override suspend fun delete(id: String) {
+        items.remove(id)
+    }
 }
 
 class MemoryRoscaEntryRepository(seed: List<RoscaEntry> = emptyList()) : RoscaEntryRepository, Snapshotable {

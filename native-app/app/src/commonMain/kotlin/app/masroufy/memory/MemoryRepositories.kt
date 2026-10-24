@@ -105,6 +105,10 @@ class MemoryCategoryRepository(seed: List<Category> = emptyList()) : CategoryRep
     override suspend fun save(category: Category) {
         items[category.id] = category
     }
+
+    override suspend fun delete(id: String) {
+        items.remove(id)
+    }
 }
 
 class MemoryAllocationRepository(seed: List<PersonAllocation> = emptyList()) : AllocationRepository {
@@ -113,6 +117,8 @@ class MemoryAllocationRepository(seed: List<PersonAllocation> = emptyList()) : A
     init {
         for (a in seed) items[a.id] = a
     }
+
+    override suspend fun listByPerson(personId: Id): List<PersonAllocation> = items.values.filter { it.personId == personId }
 
     override suspend fun listByTransactionIds(ids: List<Id>): List<PersonAllocation> {
         val wanted = ids.toSet()

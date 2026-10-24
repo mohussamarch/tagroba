@@ -78,7 +78,8 @@ fun InstallmentDetailScreen(planId: String) {
                 item(key = "received") { Received(d) }
                 if (d.card.financing) item(key = "profit") { Profit(d) }
                 item(key = "note") { BasicText(d.expenseNote, style = Type.caption().copy(color = Ink.muted)) }
-                deps.remove?.let { rm -> item(key = "remove") { PlanRemove(rm, planId, d.card.name) } } // r06-links
+                // r06-delete (§118-1): اللوحة الواحدة بدل «حذف الخطة» القديم (كان بيرفض لو عليها دفعات)
+                item(key = "remove") { DeleteWithChoices(app.masroufy.ui.app.LocalSpace.current.shell.removals?.plan, planId) }
             }
         }
     }

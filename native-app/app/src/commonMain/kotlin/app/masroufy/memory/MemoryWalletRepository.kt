@@ -19,4 +19,8 @@ class MemoryWalletRepository(seed: List<Wallet> = emptyList()) : WalletRepositor
     override suspend fun save(wallet: Wallet) {
         items[wallet.id] = wallet
     }
+
+    override suspend fun delete(id: String) {
+        items.remove(id)
+    }
 }

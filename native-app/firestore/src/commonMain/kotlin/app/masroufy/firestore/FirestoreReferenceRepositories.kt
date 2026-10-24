@@ -23,6 +23,8 @@ class FirestoreCategoryRepository(private val space: FirestoreSpace) : CategoryR
     override suspend fun listAll(): List<Category> = space.select(codec).sortedBy { it.order }
 
     override suspend fun save(category: Category) = space.saveAll(codec, listOf(category))
+
+    override suspend fun delete(id: String) = space.deleteAll(codec.group, listOf(id))
 }
 
 /** بترتيب الأولوية (الأصغر الأول) — زي التطبيق الحالي. */
@@ -49,6 +51,8 @@ class FirestoreMerchantRepository(private val space: FirestoreSpace) : MerchantR
     }
 
     override suspend fun saveMany(merchants: List<Merchant>) = space.saveAll(codec, merchants)
+
+    override suspend fun delete(id: String) = space.deleteAll(codec.group, listOf(id))
 }
 
 /**
@@ -63,6 +67,8 @@ class FirestoreWalletRepository(private val space: FirestoreSpace) : WalletRepos
     override suspend fun findById(id: Id): Wallet? = space.readDoc(codec.group, id)?.let(codec::decode)
 
     override suspend fun save(wallet: Wallet) = space.saveAll(codec, listOf(wallet.copy(accountLast4 = last4Only(wallet.accountLast4))))
+
+    override suspend fun delete(id: String) = space.deleteAll(codec.group, listOf(id))
 }
 
 internal fun last4Only(value: String?): String? = value?.filter { it in '0'..'9' }?.takeLast(4)?.ifEmpty { null }
@@ -73,4 +79,6 @@ class FirestorePersonRepository(private val space: FirestoreSpace) : PersonRepos
     override suspend fun listAll(): List<Person> = space.select(codec)
 
     override suspend fun save(person: Person) = space.saveAll(codec, listOf(person))
+
+    override suspend fun delete(id: String) = space.deleteAll(codec.group, listOf(id))
 }

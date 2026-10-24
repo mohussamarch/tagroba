@@ -14,4 +14,6 @@ class FirestoreIncomeSourceRepository(private val space: FirestoreSpace) : Incom
     override suspend fun listAll(): List<IncomeSource> = space.select(codec)
 
     override suspend fun saveMany(sources: List<IncomeSource>) = space.saveAll(codec, sources)
+
+    override suspend fun delete(id: String) = space.deleteAll(codec.group, listOf(id))
 }

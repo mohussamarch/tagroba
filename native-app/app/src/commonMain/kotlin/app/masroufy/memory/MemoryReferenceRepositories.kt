@@ -34,6 +34,10 @@ class MemoryMerchantRepository(seed: List<Merchant> = emptyList()) : MerchantRep
     override suspend fun saveMany(merchants: List<Merchant>) {
         for (m in merchants) items[m.id] = m
     }
+
+    override suspend fun delete(id: String) {
+        items.remove(id)
+    }
 }
 
 class MemoryRecurringRepository(seed: List<RecurringItem> = emptyList()) : RecurringRepository {
@@ -47,6 +51,10 @@ class MemoryRecurringRepository(seed: List<RecurringItem> = emptyList()) : Recur
 
     override suspend fun save(item: RecurringItem) {
         items[item.id] = item
+    }
+
+    override suspend fun delete(id: String) {
+        items.remove(id)
     }
 }
 

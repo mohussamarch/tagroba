@@ -122,6 +122,8 @@ fun AssetDetailScreen(assetId: Id) {
         if (!a.archived) item(key = "archive") {
             TonalButton(t(UiKey.ASSET_DETAIL_ARCHIVE), { act { deps.assets.archiveAsset(a.assetId, true); t(UiKey.ASSET_DETAIL_ARCHIVED_TOAST) } }, Modifier.fillMaxWidth(), muted = true)
         }
+        // r06-delete (§118-1): «امسح» باللوحة الواحدة — الصفقات هي العمليات (وعملية فلوس البيع معاها في «هو وعملياته»)
+        item(key = "delete") { app.masroufy.ui.screens.dues.DeleteWithChoices(space.shell.removals?.asset, a.assetId, onChanged = { scope.launch { reload() } }) }
     }
     AssetTradeSheet(tradeOpen, tradeMode, a, onDismiss = { tradeOpen = false }) { scope.launch { reload() } }
     FeedPickSheet(picking, a, onDismiss = { picking = false }) { symbol, name ->

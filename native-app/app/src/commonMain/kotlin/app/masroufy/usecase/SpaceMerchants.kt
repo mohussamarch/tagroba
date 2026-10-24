@@ -39,6 +39,9 @@ class SpaceMerchantRepository(
         return shared.listAll().map { inSpace(it, categories, known) }
     }
 
+    /** r06-delete (§118-1): التاجر المحفوظ بيتمسح من القايمة المشتركة (العمليات بتفضل بأساميها). */
+    override suspend fun delete(id: String) = shared.delete(id)
+
     override suspend fun findByNormalizedName(normalizedName: String): Merchant? =
         shared.findByNormalizedName(normalizedName)?.let { inSpace(it, local.listAll(), activeCategoryIds()) }
 

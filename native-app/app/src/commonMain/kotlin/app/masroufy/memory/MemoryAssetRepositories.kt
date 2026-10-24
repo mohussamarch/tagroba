@@ -23,6 +23,10 @@ class MemoryAssetRepository(seed: List<Asset> = emptyList()) : AssetRepository {
     override suspend fun save(asset: Asset) {
         items[asset.id] = asset
     }
+
+    override suspend fun delete(id: String) {
+        items.remove(id)
+    }
 }
 
 class MemoryAssetLotRepository(seed: List<AssetLot> = emptyList()) : AssetLotRepository {

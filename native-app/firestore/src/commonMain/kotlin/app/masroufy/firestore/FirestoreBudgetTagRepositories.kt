@@ -70,6 +70,8 @@ class FirestoreRecurringRepository(private val space: FirestoreSpace) : Recurrin
     override suspend fun listAll(): List<RecurringItem> = space.select(codec)
 
     override suspend fun save(item: RecurringItem) = space.saveAll(codec, listOf(item))
+
+    override suspend fun delete(id: String) = space.deleteAll(codec.group, listOf(id))
 }
 
 /** معرّف المستند = مفتاح الحدث متشفّر (`receiptDocId`) — نفس الإيصال مرتين بيكتب فوق نفسه. */

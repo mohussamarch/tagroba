@@ -132,6 +132,7 @@ fun SubscriptionDetailScreen(itemId: String) {
                         error?.let { FieldError(it) }
                     }
                 }
+                item(key = "delete") { DeleteWithChoices(space.shell.removals?.subscription, itemId) } // r06-delete (§118-1): «أرشفه» = «وقّف»
             }
         }
     }

@@ -141,6 +141,9 @@ interface WalletRepository {
     suspend fun findById(id: Id): Wallet?
 
     suspend fun save(wallet: Wallet)
+
+    /** r06-delete (OVERRIDES §118-1): مسح بـ«تراجع». التنفيذ اللي ما بيدعموش (بدائل اختبارات قديمة) بيرمي. */
+    suspend fun delete(id: String): Unit = throw UnsupportedOperationException("delete")
 }
 
 interface ObligationRepository {
@@ -165,6 +168,9 @@ interface SettlementRepository {
 
 interface AllocationRepository {
     suspend fun listByTransactionIds(ids: List<Id>): List<PersonAllocation>
+
+    /** r06-delete (§118-1): نصيب الشخص في كل العمليات (مسح الشخص). بدائل الاختبارات القديمة ⇒ فاضية. */
+    suspend fun listByPerson(personId: Id): List<PersonAllocation> = emptyList()
 
     suspend fun saveMany(allocations: List<PersonAllocation>)
 

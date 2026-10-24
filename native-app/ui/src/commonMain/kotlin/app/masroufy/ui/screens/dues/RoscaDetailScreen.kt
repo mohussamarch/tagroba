@@ -74,6 +74,7 @@ fun RoscaDetailScreen(roscaId: String) {
                 item(key = "turns") { Turns(d) }
                 item(key = "analysis") { Analysis(d) }
                 item(key = "kind") { BasicText(t(UiKey.ROSCA_KIND_NOTE), style = Type.caption().copy(color = Ink.muted)) }
+                item(key = "delete") { DeleteWithChoices(space.shell.removals?.rosca, roscaId) } // r06-delete (§118-1)
             }
         }
     }
