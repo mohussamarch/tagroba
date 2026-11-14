@@ -61,7 +61,7 @@ class ProblemLogDeviceTest {
 
     @Test
     fun theCrashKeepsTypeAndPlaceButNotTheMessage() {
-        val inner = java.io.IOException("account 1234567890 balance 4,837.83")
+        val inner = java.io.IOException("account 1234567890 balance 7,654.32")
         val outer = IllegalStateException("SMS body: you paid 250.00 SAR at Some Shop", inner)
         outer.addSuppressed(RuntimeException("secret suppressed"))
         val clean = CrashSanitizer.sanitize(outer, "SYNC_WRITE_FAILED")
@@ -73,7 +73,7 @@ class ProblemLogDeviceTest {
         assertNull(cause.cause)
         assertTrue(clean.suppressed.isEmpty())
         val all = generateSequence(clean as Throwable) { it.cause }.joinToString("\n") { it.stackTraceToString() }
-        for (secret in listOf("SAR", "1234567890", "4,837", "Shop", "secret")) assertFalse(secret in all, "«$secret» وصل للتقرير")
+        for (secret in listOf("SAR", "1234567890", "7,654", "Shop", "secret")) assertFalse(secret in all, "«$secret» وصل للتقرير")
     }
 
     @Test

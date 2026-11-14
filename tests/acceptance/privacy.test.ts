@@ -36,7 +36,7 @@ describe('قص أرقام الحسابات قبل الكتابة', () => {
   it('لا يمس المبالغ ولا الأوقات ولا التواريخ', () => {
     // المبالغ: أطول تتابع أرقام فيها 4 خانات
     expect(sanitizeAccountNumbers('96.47')).toBe('96.47')
-    expect(sanitizeAccountNumbers('4837.83')).toBe('4837.83')
+    expect(sanitizeAccountNumbers('7654.32')).toBe('7654.32')
     expect(sanitizeAccountNumbers('9999.99')).toBe('9999.99') // أطول مبلغ آمن كنص
     expect(sanitizeAccountNumbers('22:07:50')).toBe('22:07:50')
     expect(sanitizeAccountNumbers('2026-09-04')).toBe('2026-09-04')
@@ -65,7 +65,7 @@ describe('قص أرقام الحسابات قبل الكتابة', () => {
  *
  * الدالة تنظر إلى تتابعات الأرقام لا إلى المعنى، فأي مبلغ **نصّي**
  * جزؤه الصحيح 5 خانات فأكثر (100,000 ر.س وما فوق) سيُقص.
- * اكتُشف هذا بفشل اختبار على `302171.45`، لا بالمراجعة.
+ * اكتُشف هذا بفشل اختبار على مبلغ من 6 خانات صحيحة، لا بالمراجعة.
  *
  * **لماذا هذا غير ضار في التطبيق:**
  * `sanitize` تُطبَّق على الحقول **النصية فقط** (`typeof v === 'string'`)،
@@ -79,12 +79,12 @@ describe('قص أرقام الحسابات قبل الكتابة', () => {
 describe('حدّ القص — موثَّق لا مخفي', () => {
   it('مبلغ نصّي من 5 خانات صحيحة فأكثر يُقص — وهذا مقصود', () => {
     expect(sanitizeAccountNumbers('100000')).toBe('****0000')
-    expect(sanitizeAccountNumbers('302171.45')).toBe('****2171.45')
+    expect(sanitizeAccountNumbers('512345.67')).toBe('****2345.67')
   })
 
   it('لكن المبالغ لا تُخزَّن نصوصًا أصلًا، فلا تمرّ على الدالة', () => {
-    // 302,171.45 ر.س تُخزَّن هكذا: عددًا صحيحًا بالهللة
-    const amountMinor = 30217145
+    // 512,345.67 ر.س تُخزَّن هكذا: عددًا صحيحًا بالهللة
+    const amountMinor = 51234567
     expect(typeof amountMinor).toBe('number')
     expect(Number.isInteger(amountMinor)).toBe(true)
   })

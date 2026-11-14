@@ -46,6 +46,10 @@ tasks.withType<Test>().configureEach {
         systemProperty("masroufy.ownerFiles", ownerFiles.absolutePath)
     }
     else filter { excludeTestsMatching("app.masroufy.core.RealStatementTest") }
+    // الأرقام المستهدفة من `PRIVATE-FIGURES.md` (OVERRIDES §120-1) — مش موجود ⇒ الاختبارين الحقيقيين ما بيشتغلوش
+    val privateFigures = rootProject.extra["privateFigures"] as File?
+    if (privateFigures != null) systemProperty("masroufy.privateFigures", privateFigures.absolutePath)
+    else filter { excludeTestsMatching("app.masroufy.core.RealStatementTest"); excludeTestsMatching("app.masroufy.core.RealPdfStatementTest") }
     // كلمات الـPDF الحقيقي بتتطلع بـ`scripts/real/exportPdfPages.mjs` — لو مش موجودة الاختبار ما بيشتغلش
     if (ownerFiles == null || !File(ownerFiles, "alrajhi-pdf-pages.json").isFile) {
         filter { excludeTestsMatching("app.masroufy.core.RealPdfStatementTest") }

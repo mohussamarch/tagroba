@@ -43,7 +43,10 @@ tasks.withType<Test>().configureEach {
     // الكشف الحقيقي على جهاز المالك بس — مكانه بيتدوّر عليه في `build.gradle.kts` الرئيسي
     val ownerFiles = rootProject.extra["ownerFiles"] as File?
     if (ownerFiles != null) systemProperty("masroufy.ownerFiles", ownerFiles.absolutePath)
-    if (ownerFiles == null || !File(ownerFiles, "alrajhi-pdf-pages.json").isFile) filter { excludeTestsMatching("app.masroufy.data.RealDataFlowTest") }
+    // الأرقام المستهدفة من `PRIVATE-FIGURES.md` (OVERRIDES §120-1)
+    val privateFigures = rootProject.extra["privateFigures"] as File?
+    if (privateFigures != null) systemProperty("masroufy.privateFigures", privateFigures.absolutePath)
+    if (ownerFiles == null || privateFigures == null || !File(ownerFiles, "alrajhi-pdf-pages.json").isFile) filter { excludeTestsMatching("app.masroufy.data.RealDataFlowTest") }
     // كشف QNB مصر الحقيقي (scripts/real/exportPdfPages.mjs ⇒ files/qnb-pdf-pages.json)
     if (ownerFiles == null || !File(ownerFiles, "qnb-pdf-pages.json").isFile) filter { excludeTestsMatching("app.masroufy.data.RealQnbImportTest") }
     // «زون التحويلات» على الكشفين الحقيقيين (§60)

@@ -43,6 +43,16 @@ if (ownerFiles == null) logger.lifecycle("⚠️ ملفات المالك (files/
 else logger.lifecycle("ملفات المالك الحقيقية: ${ownerFiles.absolutePath}")
 
 /*
+ * أرقام المالك المستهدفة (OVERRIDES §120-1): مش مكتوبة في الكود — في `PRIVATE-FIGURES.md` (مستبعد من Git)،
+ * بندوّر عليه لفوق زي `files/`. مش موجود ⇒ اختبارات الكشف الحقيقي ما بتشتغلش (بسطر واضح).
+ */
+val privateFigures: File? = generateSequence(rootDir) { it.parentFile }
+    .map { File(it, "PRIVATE-FIGURES.md") }
+    .firstOrNull { it.isFile }
+extra["privateFigures"] = privateFigures
+if (ownerFiles != null && privateFigures == null) logger.lifecycle("⚠️ PRIVATE-FIGURES.md مش موجود — اختبارات الكشف الحقيقي مش هتشتغل")
+
+/*
  * ملف إعدادات فايربيز لأندرويد (`google-services.json`) — **برا المستودع** في `secrets/` (مستبعد من Git). بندوّر لفوق زي `files/`.
  * `-Pmasroufy.firebaseSettings=<مسار>` بيغلب. مش موجود ⇒ التطبيق بيتبني من غير فايربيز الحقيقي (المحاكي بس).
  */

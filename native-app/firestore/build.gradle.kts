@@ -79,6 +79,8 @@ if (withAndroid) {
     val ownerAssets = layout.buildDirectory.dir("ownerTestAssets")
     val copyOwnerStatement = tasks.register<Copy>("copyOwnerStatement") {
         if (ownerCsv != null) from(ownerCsv) { into("owner") }
+        // الأرقام المستهدفة (OVERRIDES §120-1) — برا Git زي الكشف
+        (rootProject.extra["privateFigures"] as File?)?.let { from(it) { into("owner") } }
         into(ownerAssets)
     }
     extensions.configure<com.android.build.gradle.LibraryExtension>("android") {

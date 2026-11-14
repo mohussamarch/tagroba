@@ -75,6 +75,12 @@ class RealStatementOnFirestoreTest {
         InstrumentationRegistry.getInstrumentation().context.assets.open("owner/transactions_full.csv").use { it.readBytes().toString(Charsets.UTF_8) }
     }.getOrNull()
 
+    /** الأرقام المستهدفة من PRIVATE-FIGURES.md (برا Git — OVERRIDES §120-1)، سطور «مفتاح=قيمة». */
+    private fun ownerFigures(): Map<String, String>? = runCatching {
+        InstrumentationRegistry.getInstrumentation().context.assets.open("owner/PRIVATE-FIGURES.md").use { it.readBytes().toString(Charsets.UTF_8) }
+            .lineSequence().mapNotNull { Regex("^([A-Za-z][A-Za-z0-9]*)=(.+)$").matchEntire(it.trim()) }.associate { it.groupValues[1] to it.groupValues[2].trim() }
+    }.getOrNull()
+
     /** الشاشات التلاتة فترة فترة (يوم الراتب 28) ⇒ عدد العمليات اللي ظهرت + أبطأ رئيسية. */
     private suspend fun screens(c: FirestoreContainer, label: String): Int = screens(c.transactions, c.categories, c.allocations, c.budgets, c.merchants, label)
 
@@ -106,9 +112,13 @@ class RealStatementOnFirestoreTest {
         val csv = ownerCsv()
         if (csv == null) log("⚠️ كشف المالك مش في الـAPK (files/transactions_full.csv مش موجود وقت البناء) — الاختبار اتخطّى")
         assumeTrue("كشف المالك مش موجود على الجهاز ده", csv != null)
+        val fig = ownerFigures()
+        if (fig == null) log("⚠️ PRIVATE-FIGURES.md مش في الـAPK — الاختبار اتخطّى")
+        assumeTrue("PRIVATE-FIGURES.md مش موجود", fig != null)
+        val rows = fig!!.getValue("rows").toInt()
         withTimeout(600_000) {
             val uid = "kt-real-" + java.util.UUID.randomUUID()
-            val wallet = Wallet("w-bank", "البنك", Currency.SAR, "bank", parseMoney("4837.83"), "2025-01-01")
+            val wallet = Wallet("w-bank", "البنك", Currency.SAR, "bank", parseMoney(fig.getValue("opening")), fig.getValue("openingAt"))
 
             // جهاز «أ»: الاستيراد كله على فايربيز (التصنيفات والتجار والقواعد كمان)
             val a = FirestoreContainer(FirestoreSpace.forUser(Emulator.firestore("real-a"), uid))
@@ -121,8 +131,8 @@ class RealStatementOnFirestoreTest {
             )
             val request = ImportRequest("transactions_full.csv", csv!!, "alrajhi-main", ImportSourceType.CSV_LEGACY, wallet.id, SchemaId.LEGACY)
             val preview = timed("معاينة الكشف على فايربيز") { importer.preview(request) }
-            assertEquals(1912, preview.counts.newCount)
-            timed("حفظ 1,912 عملية + مصادرها على فايربيز (مستنيين السيرفر)") { importer.commit(request, preview) }
+            assertEquals(rows, preview.counts.newCount)
+            timed("حفظ كل العمليات + مصادرها على فايربيز (مستنيين السيرفر)") { importer.commit(request, preview) }
 
             // جهاز «ب» جديد: التنزيل الأول — بنسجّل التقدم مجموعة مجموعة (ده اللي شريط التقدم هيعرضه)
             val spaceB = FirestoreSpace.forUser(Emulator.firestore("real-b"), uid)
@@ -151,22 +161,22 @@ class RealStatementOnFirestoreTest {
             log("الذاكرة المستعملة بعد التنزيل: ${(rt.totalMemory() - rt.freeMemory()) / (1024 * 1024)} MB")
 
             // الشاشات من الذاكرة (ب) ومن السيرفر (أ — من غير مزامنة)
-            assertEquals(1912, screens(b, "من الذاكرة (بعد التزامن)"), "كل عملية في فترة واحدة بالظبط")
-            assertEquals(1912, screens(a, "من السيرفر (المحاكي على نفس الكمبيوتر)"))
+            assertEquals(rows, screens(b, "من الذاكرة (بعد التزامن)"), "كل عملية في فترة واحدة بالظبط")
+            assertEquals(rows, screens(a, "من السيرفر (المحاكي على نفس الكمبيوتر)"))
             // المقياس: نفس الشاشات بمستودعات الذاكرة العادية على نفس المحاكي — الفرق ده بس هو تكلفة التخزين
             val bare = screens(
                 MemoryTransactionRepository(b.transactions.listByDateRange("0000", "9999")), MemoryCategoryRepository(b.categories.listAll()),
                 MemoryAllocationRepository(), MemoryBudgetRepository(), MemoryMerchantRepository(b.merchants.listAll()), "مستودعات الذاكرة العادية (من غير فايربيز خالص)",
             )
-            assertEquals(1912, bare)
+            assertEquals(rows, bare)
 
             val reconciled = timed("مطابقة الرصيد من الذاكرة") { ReconcileBalance(ReconcileDeps(b.transactions, b.wallets)).run(wallet.id, "2026-09-04", 28) }
-            assertEquals("2,707.25", formatAmount(reconciled.result.closingMinor))
+            assertEquals(formatAmount(parseMoney(fig.getValue("closing"))), formatAmount(reconciled.result.closingMinor))
             assertEquals(0, reconciled.result.mismatches.size)
 
             // «ب» من غير نت: نفس الشاشات بنفس العدد (الذاكرة ما بتتأثرش)
             spaceB.db.disableNetwork()
-            assertEquals(1912, screens(b, "من غير نت"))
+            assertEquals(rows, screens(b, "من غير نت"))
             spaceB.db.enableNetwork()
 
             // النسخة الشاملة من السيرفر ⇒ استعادة في حساب فاضي ⇒ نفس البصمة

@@ -14,7 +14,7 @@ import kotlin.test.assertTrue
 /**
  * قارئ كشف الراجحي PDF بكوتلن على **الكشف الحقيقي** (68 صفحة) — على جهاز المالك بس، ومفيش رقم بيتطبع.
  * الكلمات بإحداثياتها اتطلعت بنفس قراية التطبيق الحالي (`scripts/real/exportPdfPages.mjs` ⇒ `files/alrajhi-pdf-pages.json`)،
- * فالاختبار ده بيحكم على **القارئ نفسه**: لازم يطلّع نفس الـ1,912 صف اللي في ملف الـCSV، صف بصف، والرصيد يتقفل.
+ * فالاختبار ده بيحكم على **القارئ نفسه**: لازم يطلّع نفس عدد صفوف اللي في ملف الـCSV، صف بصف، والرصيد يتقفل.
  */
 class RealPdfStatementTest {
     private val files = File(System.getProperty("masroufy.ownerFiles") ?: error("مكان ملفات المالك مش متحدد"))
@@ -33,19 +33,19 @@ class RealPdfStatementTest {
         val outcome = parseAlrajhiPdf(pages())
         assertEquals(68, outcome.pagesRead)
         assertTrue(outcome.errors.isEmpty(), "صفوف مرفوضة من الـPDF: ${outcome.errors.size}")
-        assertEquals(1912, outcome.rows.size)
+        assertEquals(PrivateFigures.int("rows"), outcome.rows.size)
 
         val debit = sumMoney(outcome.rows.filter { it.direction == Direction.OUT }.map { it.amountMinor })
         val credit = sumMoney(outcome.rows.filter { it.direction == Direction.IN }.map { it.amountMinor })
-        assertEquals("302,171.45", formatAmount(debit))
-        assertEquals("300,040.87", formatAmount(credit))
+        assertEquals(formatAmount(parseMoney(PrivateFigures["debit"])), formatAmount(debit))
+        assertEquals(formatAmount(parseMoney(PrivateFigures["credit"])), formatAmount(credit))
 
         val movements = outcome.rows.mapIndexed { i, r ->
             LedgerMovement(r.date, i, if (r.direction == Direction.OUT) r.amountMinor else 0, if (r.direction == Direction.IN) r.amountMinor else 0, r.statedBalanceMinor, label = r.merchantName)
         }
-        val chain = reconcileBalance(parseMoney("4837.83"), "2025-01-01", movements)
-        assertEquals("2,707.25", formatAmount(chain.closingMinor))
-        assertEquals("2026-09-04", chain.closingAt)
+        val chain = reconcileBalance(parseMoney(PrivateFigures["opening"]), PrivateFigures["openingAt"], movements)
+        assertEquals(formatAmount(parseMoney(PrivateFigures["closing"])), formatAmount(chain.closingMinor))
+        assertEquals(PrivateFigures["closingAt"], chain.closingAt)
         assertEquals(0, chain.mismatches.size, "الرصيد لازم يطابق في كل سطر")
 
         // نفس صفوف الـCSV بالظبط (تاريخ · مبلغ · اتجاه · رصيد) — بالترتيب بعد الفرز، عشان ترتيب الصفحات مش شرط

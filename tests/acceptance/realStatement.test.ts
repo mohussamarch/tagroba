@@ -7,6 +7,7 @@ import { computeExpenseBreakdown } from '../../src/domain/expenseClassification'
 import { reconcileBalance, type LedgerMovement } from '../../src/domain/reconcile'
 import { formatAmount } from '../../src/domain/formatMoney'
 import { parseMoney } from '../../src/domain/money'
+import { figure, readPrivateFigures } from '../privateFigures'
 
 /**
  * معايير القبول على البيانات الحقيقية — OVERRIDES §7 و CLAUDE.md.
@@ -20,16 +21,17 @@ import { parseMoney } from '../../src/domain/money'
 
 const CSV_PATH = resolve(__dirname, '../../files/transactions_full.csv')
 
+const FIG = readPrivateFigures()
 const TARGETS = {
-  debit: parseMoney('302171.45'),
-  nonExpense: parseMoney('201703.18'),
-  realExpense: parseMoney('100468.27'),
-  credit: parseMoney('300040.87'),
-  opening: parseMoney('4837.83'),
-  closing: parseMoney('2707.25'),
-  openingAt: '2025-01-01',
-  closingAt: '2026-09-04',
-  rowCount: 1912,
+  debit: parseMoney(figure(FIG, 'debit')),
+  nonExpense: parseMoney(figure(FIG, 'nonExpense')),
+  realExpense: parseMoney(figure(FIG, 'realExpense')),
+  credit: parseMoney(figure(FIG, 'credit')),
+  opening: parseMoney(figure(FIG, 'opening')),
+  closing: parseMoney(figure(FIG, 'closing')),
+  openingAt: figure(FIG, 'openingAt'),
+  closingAt: figure(FIG, 'closingAt'),
+  rowCount: Number(figure(FIG, 'rows')),
 }
 
 describe('معايير القبول على files/transactions_full.csv', () => {
@@ -61,10 +63,10 @@ describe('معايير القبول على files/transactions_full.csv', () => {
   const breakdown = computeExpenseBreakdown(classifiable)
 
   it('معيار (ب): المجاميع المرجعية الأربعة مطابقة بالهللة', () => {
-    expect(formatAmount(breakdown.totalDebitMinor)).toBe('302,171.45')
-    expect(formatAmount(breakdown.nonExpenseMinor)).toBe('201,703.18')
-    expect(formatAmount(breakdown.realExpenseMinor)).toBe('100,468.27')
-    expect(formatAmount(breakdown.totalCreditMinor)).toBe('300,040.87')
+    expect(formatAmount(breakdown.totalDebitMinor)).toBe(formatAmount(TARGETS.debit))
+    expect(formatAmount(breakdown.nonExpenseMinor)).toBe(formatAmount(TARGETS.nonExpense))
+    expect(formatAmount(breakdown.realExpenseMinor)).toBe(formatAmount(TARGETS.realExpense))
+    expect(formatAmount(breakdown.totalCreditMinor)).toBe(formatAmount(TARGETS.credit))
 
     expect(breakdown.totalDebitMinor).toBe(TARGETS.debit)
     expect(breakdown.nonExpenseMinor).toBe(TARGETS.nonExpense)
@@ -97,8 +99,8 @@ describe('معايير القبول على files/transactions_full.csv', () => {
 
   const result = reconcileBalance(TARGETS.opening, TARGETS.openingAt, movements)
 
-  it('معيار (ج): سلسلة الرصيد تنتهي عند 2,707.25 بتاريخ 2026-09-04', () => {
-    expect(formatAmount(result.closingMinor)).toBe('2,707.25')
+  it('معيار (ج): سلسلة الرصيد تنتهي عند الرصيد المعتمد ([P:closing])', () => {
+    expect(formatAmount(result.closingMinor)).toBe(formatAmount(TARGETS.closing))
     expect(result.closingMinor).toBe(TARGETS.closing)
     expect(result.closingAt).toBe(TARGETS.closingAt)
   })

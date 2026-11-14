@@ -35,7 +35,7 @@ function txn(id: string): BackupRow {
 function damagedAccount(): StoredData {
   const s = emptyStoredData()
   const put = (group: BackupGroup, docId: string, data: BackupRow) => s[group].push({ docId, data })
-  put('wallets', 'wallet-bank', { id: 'wallet-bank', name: 'الراجحي', kind: 'bank', currency: 'SAR', openingBalanceMinor: 483783, openingAt: '2025-01-01' })
+  put('wallets', 'wallet-bank', { id: 'wallet-bank', name: 'الراجحي', kind: 'bank', currency: 'SAR', openingBalanceMinor: 765432, openingAt: '2025-01-01' })
   put('categories', 'cat-food', { id: 'cat-food', parentId: null, name: 'مطاعم', iconKey: 'food', lightColor: '#fff', darkColor: '#000', active: true, order: 1 })
   put('merchants', 'merch-00001', { id: 'merch-00001', displayName: 'ALBAIK', normalizedName: 'albaik', verifiedCategoryId: 'cat-food' })
   put('people', 'person-a', { id: 'person-a', name: 'شخص', archived: false })
