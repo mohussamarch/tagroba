@@ -24,7 +24,8 @@ import app.masroufy.port.WalletRepository
  */
 class CashWithdrawalEffect(private val wallets: WalletRepository) : RecordEffect {
     override suspend fun prepare(ctx: RecordContext) {
-        val lines = ctx.lines.filter { it.sms?.movesToCash() == true && it.transaction.observedDirection == Direction.OUT }
+        // transferToWalletId موجودة خلاص = اندمج مع تحويل يدوي للكاش (`mergeManualIntoSms`) ⇒ المحفظة اللي المالك اختارها هي اللي تفضل
+        val lines = ctx.lines.filter { it.sms?.movesToCash() == true && it.transaction.observedDirection == Direction.OUT && it.transaction.transferToWalletId == null }
         if (lines.isEmpty()) return
         val all = wallets.listAll()
         for (line in lines) {

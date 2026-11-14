@@ -103,7 +103,7 @@ private val FROM_WORDS = setOf("من", "from")
  * null. كلمة عامة («البنك») لأكتر من حساب ⇒ أول واحد في ترتيبك (الأساسية لو منهم — بيختارها المستدعي).
  */
 fun movePair(s: AssistSignals): Pair<AssistEntity, AssistEntity>? {
-    val byPlace = s.entities.ofType(AssistEntityType.WALLET).groupBy { it.start }.toSortedMap().values.map { at -> at.firstOrNull { !it.generic } ?: at.first() }
+    val byPlace = s.entities.ofType(AssistEntityType.WALLET).groupBy { it.start }.entries.sortedBy { it.key }.map { it.value }.map { at -> at.firstOrNull { !it.generic } ?: at.first() }
     if (byPlace.size < 2 || byPlace.map { it.id }.distinct().size < 2) return null
     val from = byPlace.firstOrNull { e -> s.tokens.getOrNull(e.start - 1)?.let { t -> cliticForms(t).any { it in FROM_WORDS } } == true } ?: byPlace.first()
     val to = byPlace.first { it.id != from.id }

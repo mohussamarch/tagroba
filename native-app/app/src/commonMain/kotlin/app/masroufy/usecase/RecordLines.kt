@@ -91,7 +91,8 @@ internal suspend fun prepareRecordedLines(
     // مراجعة r051: حسابات حقيقية بس (اختيار الجهة لعملية قديمة ما بيطابقش عملية جديدة)
     val payers = deps.incomeSources?.listAll().orEmpty().filter { app.masroufy.core.partyPayerKeys(it).isNotEmpty() }
     if (payers.isNotEmpty()) {
-        for (i in transactions.indices) transactions[i] = applyKnownPayerSalary(transactions[i], payers, now)
+        val payday = deps.payday?.invoke()
+        for (i in transactions.indices) transactions[i] = applyKnownPayerSalary(transactions[i], payers, now, payday)
     }
     if (deps.effects.isEmpty()) return PreparedLines(transactions, emptyList(), null, includedLines)
     // عقد C0: آثار وقت التسجيل بالترتيب (`RecordEffects.kt`) على العمليات **بعد** القرارين اللي فوق

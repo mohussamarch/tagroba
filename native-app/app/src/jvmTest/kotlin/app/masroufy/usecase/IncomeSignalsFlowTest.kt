@@ -112,6 +112,34 @@ class IncomeSignalsFlowTest {
         assertEquals(EconomicKind.SUPPORT_RECEIVED to true, kindOf(later.id))
     }
 
+    /** مراجعة 2026-11-14 (todo-types-3): جهة العمل مالهاش يوم خاص ⇒ يومها يوم المرتب في الملف الشخصي، ولازم يوصل لطريق التسجيل. */
+    @Test fun anEmployerWithoutItsOwnDayUsesTheProfilePaydayAtRecordTime() = runBlocking<Unit> {
+        manage.add(IncomeSourceInput("مصدر وهمي", "2026-01-01"))
+        sources.saveMany(sources.listAll().map { it.copy(expectedMinor = 1_000_000, expectedDayOfMonth = null) })
+        txns.saveMany(listOf(deposit(star, "2026-01-27")))
+        signals.answerPayer(signals.payerQuestions().single(), yes = true)
+        suspend fun importOn(day: String, payday: Int?): Transaction {
+            val records = app.masroufy.memory.MemorySourceRecordRepository()
+            val batches = app.masroufy.memory.MemoryImportBatchRepository()
+            val importer = ImportStatement(
+                ImportStatementDeps(
+                    txns, records, batches, app.masroufy.memory.MemoryMerchantRepository(), app.masroufy.memory.MemoryCategoryRepository(),
+                    app.masroufy.memory.MemoryRuleRepository(), MemoryUnitOfWork(listOf(txns, records, batches)), app.masroufy.memory.SequentialIdGenerator(), clock,
+                    incomeSources = sources, payday = payday?.let { p -> { p } },
+                ),
+            )
+            val csv = "التاريخ,مدين,دائن,الرصيد,التاجر,التصنيف,نوع العملية,التفاصيل\n" +
+                "${day.replace('-', '/')},0.00,10000.00,10000.00,,,حواالت سريع الواردة,${deposit(star, day).rawDescription}\n"
+            val request = ImportRequest("t-$day.csv", csv, "a", app.masroufy.core.ImportSourceType.CSV_LEGACY, "w-1", app.masroufy.core.SchemaId.LEGACY)
+            importer.commit(request, importer.preview(request))
+            return txns.all().single { it.occurredAt.take(10) == day }
+        }
+        val without = importOn("2026-02-27", payday = null)
+        assertFalse(without.economicKindConfirmed, "من غير يوم المرتب: زي الأول، بيفضل مستني")
+        val with = importOn("2026-03-27", payday = 28)
+        assertEquals(EconomicKind.SALARY to true, with.economicKind to with.economicKindConfirmed, "يوم 27 قريب من يوم المرتب 28 ⇒ مرتب لوحده")
+    }
+
     @Test fun anImportedDepositFromAKnownPayerIsSalaryByItself() = runBlocking<Unit> {
         manage.add(IncomeSourceInput("مصدر وهمي", "2026-01-01"))
         sources.saveMany(sources.listAll().map { it.copy(expectedMinor = 1_000_000, expectedDayOfMonth = 27) }) // PLAN-0.6 §7

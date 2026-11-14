@@ -71,6 +71,22 @@ class OwnTransferLegEffectTest {
         assertTrue(leg.economicKindConfirmed)
     }
 
+    /** مراجعة 2026-11-14 (todo-transfers-2): تحويلين بنفس المبلغ لنفس الحساب في يومين ورا بعض ⇒ رِجلين، والمجموع زي ما هو. */
+    @Test fun twoEqualTransfersOnFollowingDaysEachGetTheirOwnLeg() = runBlocking<Unit> {
+        val txns = MemoryTransactionRepository()
+        val wallets = MemoryWalletRepository(listOf(a, b))
+        val effect = OwnTransferLegEffect(wallets, txns)
+        val before = LoadWithYouNow(wallets, txns, Currency.SAR).load("2026-10-10").totalMinor
+        for ((id, day) in listOf("t-one" to "2026-10-07", "t-two" to "2026-10-08")) {
+            val out = txn(id, a.id, Direction.OUT, day, EconomicKind.INTERNAL_TRANSFER, true).copy(rawDescription = outBody)
+            val c = ctx(a, out, outBody, SmsKind.OWN_TRANSFER, "r-$id")
+            effect.prepare(c)
+            txns.saveMany(c.lines.map { it.transaction } + c.extra.map { it.first })
+        }
+        assertEquals(2, all(txns).count { it.walletId == b.id && it.observedDirection == Direction.IN }, "رِجل لكل تحويل: ${all(txns)}")
+        assertEquals(before, LoadWithYouNow(wallets, txns, Currency.SAR).load("2026-10-10").totalMinor, "«معك الآن» زي ما هو")
+    }
+
     @Test fun outThenTheOtherBanksMessageNextDayIsOnePair() = runBlocking<Unit> {
         val txns = MemoryTransactionRepository()
         val effect = OwnTransferLegEffect(MemoryWalletRepository(listOf(a, b)), txns)

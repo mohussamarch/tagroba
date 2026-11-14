@@ -12,6 +12,7 @@ import app.masroufy.core.Transaction
 import app.masroufy.core.Wallet
 import app.masroufy.core.daysBetween
 import app.masroufy.core.hashContent
+import app.masroufy.core.movesToCash
 import app.masroufy.core.shiftDays
 import app.masroufy.core.smsLegsOf
 import app.masroufy.core.transferPartyOf
@@ -36,7 +37,10 @@ class OwnTransferLegEffect(private val wallets: WalletRepository, private val tx
     override suspend fun prepare(ctx: RecordContext) {
         if (ctx.lines.none { it.sms != null }) return
         // r06-links2: تحويل يدوي بنفس المبلغ ±يوم ⇒ بيندمج في الرسالة (OwnTransferManualMerge.kt)
-        txns?.let { mergeManualIntoSms(it, ctx) }
+        txns?.let { repo ->
+            val cash = if (ctx.lines.any { it.sms?.movesToCash() == true }) wallets.listAll().filter { it.kind == "cash" }.map { it.id }.toSet() else emptySet()
+            mergeManualIntoSms(repo, ctx, cash)
+        }
         mergeIncoming(ctx)
         addLegs(ctx)
     }
@@ -87,7 +91,7 @@ class OwnTransferLegEffect(private val wallets: WalletRepository, private val tx
             val day = t.occurredAt.take(10)
             val read = around ?: txns?.let { rangeOf(it, outs.map { l -> l.transaction.occurredAt.take(10) }) }.orEmpty().also { around = it }
             val near = read.filter { withinADay(it.occurredAt, day) } + ctx.lines.map { it.transaction } + ctx.extra.map { it.first }
-            if (ownLegAlreadyThere(near, t, target.id)) continue
+            if (ownLegAlreadyThere(near, t, target.id, walletLast4(target.accountLast4))) continue
             val leg = ownInLegOf(t, target, ctx.nowIso)
             ctx.extra += leg to SourceRecord(
                 id = ctx.ids.next("src"),
@@ -119,13 +123,20 @@ internal fun ownLegOn(t: Transaction, targetId: Id, now: String): Transaction = 
  * الرِجل موجودة خلاص: نفس المعرّف، أو المحفظة [targetId] فيها عملية بالاتجاه العكسي ونفس المبلغ والعملة في **يوم قبل أو بعد**
  * (§112-3 — البنك التاني ممكن يسجّل الوارد تاني يوم).
  */
-internal fun ownLegAlreadyThere(all: List<Transaction>, t: Transaction, targetId: Id): Boolean {
+internal fun ownLegAlreadyThere(all: List<Transaction>, t: Transaction, targetId: Id, targetLast4: String? = null): Boolean {
     val direction = if (t.observedDirection == Direction.OUT) Direction.IN else Direction.OUT
     val day = t.occurredAt.take(10)
-    return all.any { o ->
-        o.id == t.id + OWN_LEG_SUFFIX ||
-            (o.walletId == targetId && o.observedDirection == direction && o.amountMinor == t.amountMinor && o.currency == t.currency && withinADay(o.occurredAt, day))
+    val rows = all.distinctBy { it.id }
+    if (rows.any { it.id == t.id + OWN_LEG_SUFFIX }) return true
+    fun sameMoney(o: Transaction) = o.amountMinor == t.amountMinor && o.currency == t.currency && withinADay(o.occurredAt, day)
+    val legs = rows.count { o -> o.walletId == targetId && o.observedDirection == direction && sameMoney(o) }
+    // مراجعة 2026-11-14 (todo-transfers-2): **رِجل لكل تحويل**. تحويل تاني بنفس المبلغ لنفس الحساب (نفس آخر 4 أرقام) في نفس اليومين محتاج
+    // رِجل لوحده — قبل كده رِجل الأول كانت بتتحسب «موجودة» للتاني فالحساب التاني كان بينقص تحويل كامل.
+    val others = if (targetLast4 == null) 0 else rows.count { o ->
+        o.id != t.id && !o.id.endsWith(OWN_LEG_SUFFIX) && o.walletId == t.walletId && o.observedDirection == t.observedDirection && sameMoney(o) &&
+            o.economicKind == EconomicKind.INTERNAL_TRANSFER && o.economicKindConfirmed && o.transferToWalletId == null && (transferPartyOf(o)?.last4 == targetLast4 || smsLegsOf(o.rawDescription.orEmpty()).toLast4 == targetLast4)
     }
+    return legs > others
 }
 
 private fun withinADay(at: String, day: String): Boolean = abs(daysBetween(day, at.take(10))) <= 1

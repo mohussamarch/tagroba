@@ -104,6 +104,11 @@ data class ImportStatementDeps(
     val crossSourceWindowDays: Int? = null,
     /** fix055: قواعد دراهم للحساب القديم قبل التصنيف (`EnsureDarahimRules`). null = من غيرها (الملفات · الاختبارات القديمة). */
     val ensureRules: EnsureDarahimRules? = null,
+    /**
+     * مراجعة 2026-11-14 (todo-types-3): يوم المرتب من الملف الشخصي — جهة العمل اللي مالهاش يوم خاص بيها يومها هو ده (`salaryByPayerAllowed`).
+     * من غيره المرتب من حساب معروف كان بيفضل «مش متحدد» وقت التسجيل وبيتسأل عنه كل شهر. null = من غيره (ملفات المرجع · الاختبارات القديمة).
+     */
+    val payday: (suspend () -> Int?)? = null,
 )
 
 data class ImportRequest(

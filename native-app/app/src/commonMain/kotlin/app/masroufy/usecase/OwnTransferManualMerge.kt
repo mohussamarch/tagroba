@@ -11,6 +11,7 @@ import app.masroufy.core.SourceRecord
 import app.masroufy.core.Transaction
 import app.masroufy.core.daysBetween
 import app.masroufy.core.hashContent
+import app.masroufy.core.movesToCash
 import app.masroufy.core.shiftDays
 import app.masroufy.core.uiText
 import app.masroufy.port.TransactionRepository
@@ -44,7 +45,7 @@ private fun confirmedLeg(t: Transaction, now: String) =
     t.copy(economicKind = EconomicKind.INTERNAL_TRANSFER, economicKindConfirmed = true, reviewState = ReviewState.CONFIRMED, categoryId = null, updatedAt = now)
 
 /** اليدوي الأول: كل سطر رسالة بيطابق تحويل يدوي ⇒ اليدوي بيتشال والرِجل التانية بتتعمل تلقائية مع الدفعة. */
-internal suspend fun mergeManualIntoSms(repo: TransactionRepository, ctx: RecordContext) {
+internal suspend fun mergeManualIntoSms(repo: TransactionRepository, ctx: RecordContext, cashWalletIds: Set<Id> = emptySet()) {
     val smsLines = ctx.lines.filter { it.sms != null && it.transaction.walletId != null }
     if (smsLines.isEmpty()) return
     val days = smsLines.map { it.transaction.occurredAt.take(10) }
@@ -52,10 +53,19 @@ internal suspend fun mergeManualIntoSms(repo: TransactionRepository, ctx: Record
     if (manual.isEmpty()) return
     for (line in smsLines) {
         val t = line.transaction
-        val m = manual.firstOrNull { legOfTransfer(t, it.walletId!!, it.transferToWalletId!!, it.amountMinor, it.currency, it.occurredAt.take(10)) } ?: continue
+        // مراجعة 2026-11-14 (todo-transfers-4): سحب الصرّاف بيتنقل للكاش **سطر واحد** (`CashWithdrawalEffect` — محفظة تانية على نفس السطر) ⇒
+        // بيندمج بس مع تحويل يدوي رايح لمحفظة كاش، ومن غير رِجل تلقائية (كانت بتزوّد الكاش مرتين: الرِجل + المحفظة التانية).
+        val toCash = line.sms?.movesToCash() == true && t.observedDirection == Direction.OUT
+        val m = manual.firstOrNull {
+            (!toCash || it.transferToWalletId in cashWalletIds) && legOfTransfer(t, it.walletId!!, it.transferToWalletId!!, it.amountMinor, it.currency, it.occurredAt.take(10))
+        } ?: continue
         manual -= m
         repo.deleteMany(listOf(m.id))
         val merged = confirmedLeg(t, ctx.nowIso).copy(note = t.note ?: m.note)
+        if (toCash) {
+            line.transaction = merged.copy(transferToWalletId = m.transferToWalletId)
+            continue
+        }
         line.transaction = merged
         val otherWallet = if (t.observedDirection == Direction.OUT) m.transferToWalletId!! else m.walletId!!
         ctx.extra += ownLegOn(merged, otherWallet, ctx.nowIso) to SourceRecord(
@@ -75,7 +85,13 @@ internal suspend fun manualOntoLegs(repo: TransactionRepository, manual: Transac
     val from = manual.walletId ?: return null
     val to = manual.transferToWalletId ?: return null
     val day = manual.occurredAt.take(10)
-    val near = repo.listByDateRange(shiftDays(day, -1), shiftDays(day, 1)).filter { legOfTransfer(it, from, to, manual.amountMinor, manual.currency, day) }
+    val around = repo.listByDateRange(shiftDays(day, -1), shiftDays(day, 1))
+    // مراجعة 2026-11-14 (todo-transfers-4): رسالة السحب للكاش سبقت واتسجلت **سطر واحد** بنفس المحفظتين ⇒ هي التحويل؛ مفيش سطر يدوي تاني
+    around.firstOrNull { o ->
+        !isManualTransfer(o) && o.walletId == from && o.transferToWalletId == to && o.observedDirection == Direction.OUT &&
+            o.amountMinor == manual.amountMinor && o.currency == manual.currency && o.economicKind == EconomicKind.INTERNAL_TRANSFER
+    }?.let { return it }
+    val near = around.filter { legOfTransfer(it, from, to, manual.amountMinor, manual.currency, day) }
     val out = near.firstOrNull { it.walletId == from }
     val inc = near.firstOrNull { it.walletId == to }
     if (out == null && inc == null) return null

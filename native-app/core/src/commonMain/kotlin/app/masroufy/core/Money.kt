@@ -52,8 +52,8 @@ fun parseMoney(raw: String, currency: Currency = Currency.SAR): Halalas {
     var s = JsText.trim(normalizeDigits(raw))
     if (s.isEmpty()) throw MoneyError(uiText(TextKey.MONEY_EMPTY), raw)
 
-    // فواصل الآلاف والمسافات بأنواعها
-    s = s.filterNot { JsText.isWhitespace(it) || it == ',' }
+    // المسافات بأنواعها. الفاصلة بتتشال تحت **بعد** التأكد إنها فاصل آلاف فعلًا ([groupedInt])
+    s = s.filterNot { JsText.isWhitespace(it) }
 
     // إشارة سالبة قبل أو بعد، أو أقواس محاسبية
     var negative = false
@@ -73,7 +73,7 @@ fun parseMoney(raw: String, currency: Currency = Currency.SAR): Halalas {
     }
 
     val dot = s.indexOf('.')
-    val intRaw = if (dot < 0) s else s.substring(0, dot)
+    val intRaw = groupedInt(if (dot < 0) s else s.substring(0, dot)) ?: throw MoneyError(uiText(TextKey.MONEY_BAD_FORMAT), raw)
     val fracRaw = if (dot < 0) "" else s.substring(dot + 1)
     val valid = intRaw.all(JsText::isAsciiDigit) && fracRaw.all(JsText::isAsciiDigit)
     if (!valid || (intRaw.isEmpty() && fracRaw.isEmpty())) throw MoneyError(uiText(TextKey.MONEY_BAD_FORMAT), raw)
@@ -92,6 +92,17 @@ fun parseMoney(raw: String, currency: Currency = Currency.SAR): Halalas {
     val value = digits.toLong()
     if (value > MAX_SAFE_HALALAS) throw MoneyError(uiText(TextKey.MONEY_OUT_OF_SAFE_RANGE), raw)
     return if (negative) -value else value
+}
+
+/**
+ * مراجعة 2026-11-14 (money-1): الفاصلة فاصل آلاف **بس** لو كل مجموعة بعدها 3 أرقام بالظبط («1,234» · «12,345,678»). غير كده null ⇒
+ * المبلغ بيترفض بدل ما «12,50» تتسجل 1,250.00 (نفس قاعدة رسايل البنك في `SmsAmountTokens.kt`). من غير فاصلة بيرجع زي ما هو.
+ */
+private fun groupedInt(int: String): String? {
+    if (',' !in int) return int
+    val groups = int.split(',')
+    val ok = groups.first().length in 1..3 && groups.drop(1).all { it.length == 3 } && groups.all { g -> g.all(JsText::isAsciiDigit) }
+    return if (ok) groups.joinToString("") else null
 }
 
 /** زي `parseMoney` بس بيرجّع null بدل ما يرمي — للاستيراد اللي بيجمع الأخطاء بأرقام الصفوف. */

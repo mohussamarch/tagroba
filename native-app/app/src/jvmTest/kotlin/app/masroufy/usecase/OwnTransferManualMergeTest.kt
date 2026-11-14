@@ -68,6 +68,72 @@ class OwnTransferManualMergeTest {
         assertTrue(rows(txns).all { it.economicKind == EconomicKind.INTERNAL_TRANSFER })
     }
 
+    private val cash = Wallet("w-cash", "كاش وهمي", Currency.SAR, "cash", 0, "2026-01-01")
+
+    /** رسالة سحب صرّاف على [a] بالأثرين بترتيبهم الحقيقي (`smsRecordEffects`): التحويل لنفسك ثم السحب للكاش. */
+    private suspend fun atmSms(txns: MemoryTransactionRepository, wallets: List<Wallet>, day: String) {
+        val t = txn("t-atm", a.id, Direction.OUT, day)
+        val body = "سحب صراف وهمي"
+        val row = ParsedRow(1, t.occurredAt, t.amountMinor, t.observedDirection, "", "r-atm", "SMS", body, body)
+        val smsRow = SmsRow(1, t.occurredAt, t.amountMinor, t.observedDirection, "", "r-atm", "SMS", body, body, SmsKind.CASH_WITHDRAWAL, a.accountLast4)
+        val request = ImportRequest(fileName = "sms", content = body, accountIdentity = a.name, sourceType = ImportSourceType.SMS, walletId = a.id, parsedRows = listOf(row))
+        val line = ImportPreviewLine(row = row, state = MatchingState.NEW, reason = "", categoryReason = "", selectedByDefault = true)
+        val ids = object : app.masroufy.port.IdGenerator {
+            var n = 0
+            override fun next(prefix: String) = "$prefix-atm-${n++}"
+        }
+        val ctx = RecordContext(request, "batch-atm", "2026-10-08T00:00:00Z", false, emptyMap(), mutableListOf(RecordedLine(line, smsRow, t)), mutableListOf(), ids)
+        val repo = MemoryWalletRepository(wallets)
+        OwnTransferLegEffect(repo, txns).prepare(ctx)
+        CashWithdrawalEffect(repo).prepare(ctx)
+        txns.saveMany(ctx.lines.map { it.transaction } + ctx.extra.map { it.first })
+    }
+
+    private suspend fun manualToCash(txns: MemoryTransactionRepository, wallets: List<Wallet>, day: String): Transaction =
+        AddTransaction(AddTransactionDeps(txns, MemoryWalletRepository(wallets), SequentialIdGenerator(), FixedClock("2026-10-08T00:00:00Z"))).add(
+            NewTransactionInput(50_000, occurredAt = day, walletId = a.id, transferToWalletId = cash.id, economicKind = EconomicKind.INTERNAL_TRANSFER, merchantName = "سحب وهمي"),
+        )
+
+    private suspend fun assertOneWithdrawal(txns: MemoryTransactionRepository, wallets: List<Wallet>) {
+        val bal = walletBalancesOn(wallets, rows(txns), "2026-12-31")
+        val base = walletBalancesOn(wallets, emptyList(), "2026-12-31")
+        assertEquals(1, rows(txns).size, "سطر واحد: ${rows(txns)}")
+        assertEquals(base[a.id]!! - 50_000, bal[a.id], "البنك نقص مرة واحدة")
+        assertEquals(base[cash.id]!! + 50_000, bal[cash.id], "الكاش زاد مرة واحدة")
+        assertEquals(base.values.sumOf { it!! }, bal.values.sumOf { it!! }, "«معك الآن» ما اتغيرش")
+    }
+
+    /** مراجعة 2026-11-14 (todo-transfers-4): سجّلت السحب بإيدك وبعدين وصلت رسالة الصرّاف ⇒ الكاش كان بيزيد مرتين. */
+    @Test fun manualCashWithdrawalThenAtmSmsCreditsCashOnce() = runBlocking<Unit> {
+        val txns = MemoryTransactionRepository()
+        val w = listOf(a, b, cash)
+        manualToCash(txns, w, "2026-10-07")
+        atmSms(txns, w, "2026-10-08")
+        assertOneWithdrawal(txns, w)
+        assertEquals("t-atm", rows(txns).single().id, "رسالة البنك هي اللي فضلت")
+    }
+
+    @Test fun atmSmsThenManualCashWithdrawalCreditsCashOnce() = runBlocking<Unit> {
+        val txns = MemoryTransactionRepository()
+        val w = listOf(a, b, cash)
+        atmSms(txns, w, "2026-10-07")
+        assertEquals("t-atm", manualToCash(txns, w, "2026-10-08").id, "اليدوي رجّع سطر الرسالة")
+        assertOneWithdrawal(txns, w)
+    }
+
+    /** تحويل يدوي لحساب بنك تاني ما يندمجش في رسالة سحب صرّاف بنفس المبلغ — دي حركتين مختلفتين. */
+    @Test fun aManualTransferToAnotherBankIsNotSwallowedByAnAtmSms() = runBlocking<Unit> {
+        val txns = MemoryTransactionRepository()
+        val w = listOf(a, b, cash)
+        manual(txns, w)
+        atmSms(txns, w, "2026-10-07")
+        assertEquals(2, rows(txns).size, "التحويل اليدوي فضل، والسحب اتسجل لوحده: ${rows(txns)}")
+        val bal = walletBalancesOn(w, rows(txns), "2026-12-31")
+        val base = walletBalancesOn(w, emptyList(), "2026-12-31")
+        assertEquals(base[a.id]!! - 100_000, bal[a.id])
+        assertEquals(base[b.id]!! + 50_000 to base[cash.id]!! + 50_000, bal[b.id] to bal[cash.id])
+    }
+
     @Test fun manualThenSmsIsOneTransfer() = runBlocking<Unit> {
         val txns = MemoryTransactionRepository()
         val w = listOf(a, b)

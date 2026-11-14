@@ -28,6 +28,8 @@ import app.masroufy.usecase.smsRecordEffects
 fun importDeps(r: SpaceRepositories, env: DeviceEnv) = ImportStatementDeps(
     r.transactions, r.sourceRecords, r.importBatches, r.merchants, r.categories, r.rules, r.uow, env.ids, env.clock,
     transferParties = r.transferParties, incomeSources = r.incomeSources, crossSourceWindowDays = CROSS_SOURCE_WINDOW_DAYS,
+    // مراجعة 2026-11-14 (todo-types-3): نفس يوم المرتب اللي الشاشة بتسأل بيه (`PayerKindDeps.payday`) — القراية لو فشلت ⇒ من غير يوم زي الأول
+    payday = { runCatching { r.profile.load()?.payday }.getOrNull() ?: app.masroufy.core.DEFAULT_PAYDAY },
 )
 
 /**
