@@ -68,6 +68,7 @@ import app.masroufy.ui.screens.investment.future.investFutureHero
 import app.masroufy.ui.screens.investment.future.rememberInvestFuture
 import app.masroufy.ui.screens.investment.holdings.HoldingsOverlays
 import app.masroufy.ui.screens.investment.holdings.holdingsSection
+import app.masroufy.ui.screens.investment.holdings.holdingsPutAwaySection
 import app.masroufy.ui.screens.investment.holdings.rememberHoldings
 import app.masroufy.ui.screens.investment.insights.FaqRoute
 import app.masroufy.ui.screens.investment.insights.InvestTipsRoute
@@ -141,9 +142,11 @@ fun InvestmentScreen() {
         val empty = snapshot?.items?.isEmpty() == true && i != null && i.cashMinor <= 0 && i.saveMinor == null
         if (empty) {
             holdingsSection(holdings)
+            holdingsPutAwaySection(holdings)
         } else {
             investFutureHero(future)
             holdingsSection(holdings)
+            holdingsPutAwaySection(holdings)
             investFutureBody(future)
             investTipItem(insights)
             incomeRopeItem(insights)

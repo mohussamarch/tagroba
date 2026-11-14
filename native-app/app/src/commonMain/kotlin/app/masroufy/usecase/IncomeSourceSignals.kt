@@ -141,6 +141,17 @@ class IncomeSourceSignals(private val deps: IncomeSignalsDeps) {
         return compareAroundSourceStart(source, txns, allocations, payday, today)
     }
 
+    /** §120 (صفحة مصدر الدخل): اللي وصل شهر بشهر + «وصل كام من المتوقع الشهر ده» (`core/SourceIncome.kt`). */
+    suspend fun received(sourceId: Id, today: IsoDate): app.masroufy.core.SourceIncome {
+        val sources = deps.sources.listAll()
+        val source = sources.firstOrNull { it.id == sourceId } ?: throw IncomeSourceError(uiText(TextKey.INCOME_SOURCE_NOT_FOUND))
+        val payday = (deps.profiles.load() ?: emptyProfile()).payday
+        // القراية محدودة: من بداية المصدر أو آخر [SOURCE_MONTHS_MAX] شهر (الأقرب) — والراتب البدري قبلها بشوية
+        val window = maxOf(source.startedAt, app.masroufy.core.addMonthsClamped(today, -app.masroufy.core.SOURCE_MONTHS_MAX))
+        val from = countingReadStart(app.masroufy.core.periodForDate(window, payday).start)
+        return app.masroufy.core.sourceIncome(source, sources, deps.txns.listByDateRange(from, today), payday, today)
+    }
+
     private companion object {
         const val EARLIEST = "0000-01-01"
         const val LATEST = "9999-12-31"

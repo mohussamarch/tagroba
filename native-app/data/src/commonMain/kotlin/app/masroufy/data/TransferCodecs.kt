@@ -27,6 +27,8 @@ object TransferCodecs {
                 opt("kind", p.kind?.wire); opt("note", p.note); opt("dues", p.dues.takeIf { it })
                 if (p.autoSkip.isNotEmpty()) req("autoSkip", p.autoSkip) else opt("autoSkip", null)
                 opt("walletId", p.walletId) // §120-8: حساب طرف «حسابي التاني» من غير أرقام
+                // §120-6 «ما تسألنيش تاني» — بتتكتب بس لو متعلّمة
+                opt("autoKind", p.autoKind.takeIf { it })
             }
         },
         { d ->
@@ -34,7 +36,7 @@ object TransferCodecs {
                 d.str("key"), d.str("label"), d.strOrNull("accountLast4"), d.wire("verdict", TransferVerdict::fromWire), d.strOrNull("personId"),
                 d.str("decidedAt"), d.strOrNull("autoMeaning")?.let(AutoMeaning::fromWire), d.strOrNull("autoSince"),
                 kind = d.strOrNull("kind")?.let(EconomicKind::fromWire), note = d.strOrNull("note"), dues = d.boolOrNull("dues") ?: false,
-                autoSkip = d.strings("autoSkip").orEmpty(), walletId = d.strOrNull("walletId"),
+                autoSkip = d.strings("autoSkip").orEmpty(), walletId = d.strOrNull("walletId"), autoKind = d.boolOrNull("autoKind") ?: false,
             )
         },
     )

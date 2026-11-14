@@ -52,7 +52,7 @@ import app.masroufy.ui.theme.Type
 
 /**
  * تفاصيل مصدر الدخل (`IncomeSourceDetail` — §48 · §64 · §65-7): الحالة والنوع والمدة · موعد القبض والمتوقع والجهة المحوِّلة ·
- * العمليات المنسوبة له (مالهاش حالة استخدام ⇒ «غير متاح بعد») · قبل البداية وبعدها (`compareAroundStart` — `null` ⇒ «غير متاح» بسببه) ·
+ * «مرتب دايمًا من الحساب ده» (§120-7) · اللي وصل شهر بشهر و«وصل كام من المتوقع» (§120 — `ReceivedSection`) · قبل البداية وبعدها (`compareAroundStart` — `null` ⇒ «غير متاح» بسببه) ·
  * «تعديل» (`IncomeSourceEditSheet`) · «إنهاء المصدر» (`JobChangeSheet`).
  */
 @Composable
@@ -88,13 +88,10 @@ fun IncomeSourceDetailScreen(sourceId: Id) {
                 FactRow(t(UiKey.INCSRC_PAYER), t(payerKey(s)), last = true, muted = s.kind !in SALARIED_KINDS || partyPayerKeys(s).isEmpty())
             }
         }
-        item(key = "tx") {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                BasicText(t(UiKey.INCSRC_TX_TITLE), Modifier.padding(horizontal = 4.dp), style = Type.of(15, FontWeight.Bold))
-                // العمليات المنسوبة للمصدر مالهاش حالة استخدام (بيتنسب بالجهة المحوِّلة جوه المنطق بس) ⇒ مش «لا عمليات» (القاعدة 10)
-                NotYetLine(t(UiKey.INCSRC_TX_NOT_YET))
-            }
-        }
+        // §120-7: «ده مرتب دايمًا من الحساب ده» لكل حساب محوِّل (الجهات بس)
+        if (s.kind in SALARIED_KINDS) item(key = "always") { AlwaysSalaryCard(s.id, onChanged = { tick++ }) }
+        // §120 (التصميم): «وصل كام من المتوقع الشهر ده» + اللي وصل شهر بشهر (`IncomeSourceSignals.received`)
+        item(key = "tx") { ReceivedSection(s.id, deps.shell.today(), tick) }
         item(key = "cmp") { CompareCard(cmp, cmpLoaded) }
         item(key = "acts") {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {

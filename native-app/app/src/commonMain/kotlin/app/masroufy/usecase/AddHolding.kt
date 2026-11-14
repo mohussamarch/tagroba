@@ -60,7 +60,13 @@ fun storedKindFor(type: HoldingType): String = when (type) {
  * الاسم متكرر ⇒ رقم جنبه («ذهب 2»).
  */
 class AddHolding(private val deps: AddHoldingDeps) {
-    suspend fun add(h: NewHolding, today: IsoDate): Id = deps.uow.run {
+    suspend fun add(h: NewHolding, today: IsoDate): Id {
+        val since = h.ownedSince
+        if (since != null && since.take(10) > today) throw app.masroufy.core.AssetError(app.masroufy.core.uiText(app.masroufy.core.R06Key.ADD_DATE_FUTURE))
+        return addChecked(h, today)
+    }
+
+    private suspend fun addChecked(h: NewHolding, today: IsoDate): Id = deps.uow.run {
         val name = uniqueName(h.name)
         val created = deps.assets.addAsset(NewAsset(name, storedKindFor(h.type), currency = deps.currency))
         val costGiven = (h.type.metal || h.type == HoldingType.STK) && h.priceMinor != null
@@ -77,7 +83,9 @@ class AddHolding(private val deps: AddHoldingDeps) {
         // الشراء: المصنعية جوه السعر ⇒ الأصل = السعر − المصنعية والرسوم = المصنعية (المجموع = السعر بالظبط)
         val price = if (costGiven) h.priceMinor!! else 0L
         val fee = if (costGiven) minOf(h.makingMinor ?: 0L, price) else 0L
-        deps.lots.saveMany(listOf(AssetLot(deps.ids.next("lot"), asset.id, today, h.quantity, subtractMoney(price, fee), fee)))
+        // §120-14: أول دفعة بتاريخ «امتلكتها إمتى؟» أو «من زمان» (مش النهارده — كان بيرفض بيعة بتاريخ قبل يوم الإضافة)
+        val ownedAt = app.masroufy.core.openingLotDate(h.ownedSince, today)
+        deps.lots.saveMany(listOf(AssetLot(deps.ids.next("lot"), asset.id, ownedAt, h.quantity, subtractMoney(price, fee), fee)))
 
         when {
             h.type.metal -> {

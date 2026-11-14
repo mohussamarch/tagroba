@@ -209,7 +209,7 @@ fun TransferPartyCard(party: TransferPartyRef, transactionId: Id, onChanged: () 
             PartyDecision.AsPerson(person.name, kind, added = who == null)
         }
     }
-    CompanyKindSheet(company, party, error, onDismiss = { company = false }) { k -> act { answers?.let { NewPartyDecision.Company(k, it.markCompany(party, transactionId, k)) } } }
+    CompanyKindSheet(company, party, error, onDismiss = { company = false }) { k, dontAsk -> act { answers?.let { NewPartyDecision.Company(k, it.markCompany(party, transactionId, k, dontAsk)) } } }
     LabelSheet(labeling, party, error, onDismiss = { labeling = false }) { text, k ->
         act { answers?.let { NewPartyDecision.Label(text.trim(), it.markLabel(party, transactionId, text, k)) } }
     }

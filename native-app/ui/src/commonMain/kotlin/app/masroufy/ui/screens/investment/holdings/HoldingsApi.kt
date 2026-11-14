@@ -82,6 +82,15 @@ fun LazyListScope.holdingsSection(state: HoldingsState) {
     }
 }
 
+/** مراجعة todo-assets-3: «مؤرشف ومتباع (N)» مطوي تحت «حاجاتي» (مفتاح "holdings-away") — فاضي ⇒ مفيش عنصر. */
+fun LazyListScope.holdingsPutAwaySection(state: HoldingsState) {
+    if (state.snapshot?.putAway.isNullOrEmpty()) return
+    item(key = "holdings-away") {
+        val items = state.snapshot?.putAway.orEmpty()
+        PutAwaySection(items, onChanged = { state.onChanged() })
+    }
+}
+
 /** لوحة «ضيف حاجة» + رسالة «اتضافت». */
 @Composable
 fun HoldingsOverlays(state: HoldingsState) {

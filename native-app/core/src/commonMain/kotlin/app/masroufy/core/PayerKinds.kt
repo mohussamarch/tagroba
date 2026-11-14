@@ -50,10 +50,22 @@ fun nearPayday(date: IsoDate, payday: Int?): Boolean {
  * الأسبوعي بيتكرر كل 7 أيام فالميعاد مش علامة — اختيار Claude).
  */
 fun salaryByPayerAllowed(t: Transaction, employer: IncomeSource, profilePayday: Int?): Boolean {
-    if (hasSalaryWord(t)) return true
+    if (hasSalaryWord(t) || alwaysSalaryFrom(t, employer)) return true
     if (!amountNearSalary(t.amountMinor, employer.expectedMinor)) return false
     if (employer.payFrequency == PayFrequency.WEEKLY) return true
     return nearPayday(t.occurredAt, employer.expectedDayOfMonth ?: profilePayday)
+}
+
+/** §120-7: التحويل من حساب المالك علّم عليه «ده مرتب دايمًا من الحساب ده» (ولسه حساب الجهة). */
+fun alwaysSalaryFrom(t: Transaction, employer: IncomeSource): Boolean {
+    val key = transferPartyOf(t)?.key ?: return false
+    return key in employer.alwaysSalaryKeys && key in employer.payerKeys
+}
+
+/** §120-7: الجهة بعد تشغيل/قفل «مرتب دايمًا» للحساب [partyKey] (لازم يكون من حساباتها). */
+fun withAlwaysSalary(source: IncomeSource, partyKey: String, on: Boolean): IncomeSource {
+    val kept = source.alwaysSalaryKeys - partyKey
+    return source.copy(alwaysSalaryKeys = if (on && partyKey in source.payerKeys) kept + partyKey else kept)
 }
 
 private const val RULE_SEP = '='

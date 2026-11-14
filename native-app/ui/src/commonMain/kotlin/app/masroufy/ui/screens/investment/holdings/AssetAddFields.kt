@@ -67,6 +67,7 @@ internal fun AssetAddContent(
     onBack: () -> Unit,
     onChange: (HoldingFormText) -> Unit,
     onSave: () -> Unit,
+    today: app.masroufy.core.IsoDate? = null,
 ) {
     // سموك r05: والكيبورد مفتوح اللوحة بتقصر و«حفظ» كان بيستخبى تحته ⇒ المحتوى بيتمرر جوه المساحة اللي فاضلة
     Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -74,7 +75,7 @@ internal fun AssetAddContent(
             if (form != null) Box(Modifier.mirrorInLtr()) { SurfaceIconButton(Lucide.CHEVRON_RIGHT, t(K.HOLD_FORM_BACK), onBack) }
             BasicText(t(if (form == null) K.HOLD_SHEET_SUB else K.HOLD_FORM_SUB), style = Type.of(12).copy(color = Ink.muted))
         }
-        if (form == null) TypeGroups(only, onPick) else FormStep(form, currency, preview, error, saving, onChange, onSave)
+        if (form == null) TypeGroups(only, onPick) else FormStep(form, currency, preview, error, saving, onChange, onSave, today)
     }
 }
 
@@ -134,7 +135,7 @@ private fun <T> ChipRow(label: String, options: List<Pair<T, String>>, selected:
 @Composable
 private fun FormStep(
     form: HoldingFormText, currency: Currency, preview: Halalas?, error: AddError?, saving: Boolean,
-    onChange: (HoldingFormText) -> Unit, onSave: () -> Unit,
+    onChange: (HoldingFormText) -> Unit, onSave: () -> Unit, today: app.masroufy.core.IsoDate?,
 ) {
     val type = form.type
     if (type.metal) {
@@ -147,6 +148,8 @@ private fun FormStep(
         onChange(form.copy(origin = it))
     }
     ChipRow(t(K.HOLD_F_PURPOSE), HoldingPurpose.entries.map { it to t(purposeKey(it)) }, form.purpose) { onChange(form.copy(purpose = it)) }
+    // §120-14 «امتلكتها إمتى؟» — اختياري: «من زمان» (الافتراضي) أو تاريخ
+    if (today != null) OwnedSinceRow(form.ownedSince, today) { onChange(form.copy(ownedSince = it)) }
     for (field in fieldsFor(type, form.form, form.rented)) {
         val spec = fieldSpec(field, form, currency)
         HoldField(spec, form.text(field), error?.field == field) { onChange(form.with(field, it)) }

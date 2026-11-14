@@ -84,6 +84,42 @@ class TransferPartyAnswersTest {
         assertEquals(before.copy(updatedAt = w.tx("t-1").updatedAt), w.tx("t-1"))
     }
 
+    @Test fun companyDontAskAgainTakesTheLastKindUntilAskedAgain() = runBlocking<Unit> {
+        val w = World(listOf(transfer("t-1", 12_345), transfer("t-2", 500, "2026-10-11")))
+        // من غير العلامة: الجاي بيتسأل
+        w.answers.markCompany(party, "t-1", EconomicKind.REFUND_RECEIVED)
+        assertEquals(EconomicKind.UNCLASSIFIED, applyTransferVerdict(transfer("t-3", 700, "2026-10-20"), w.verdict(), "now").economicKind)
+        // كل مرة بيتسأل ⇒ الرد بيبقى «آخر اختيار»، و«ما تسألنيش تاني» بتخلّي الجاي ياخده لوحده
+        val undo = w.answers.answerCompanyKind("t-2", EconomicKind.BENEFIT_RECEIVED, dontAskAgain = true)
+        assertEquals(EconomicKind.BENEFIT_RECEIVED to true, w.tx("t-2").let { it.economicKind to it.economicKindConfirmed })
+        assertEquals(EconomicKind.BENEFIT_RECEIVED to true, w.verdict()!!.let { it.kind to it.autoKind })
+        val next = applyTransferVerdict(transfer("t-3", 700, "2026-10-20"), w.verdict(), "now")
+        assertEquals(Triple(EconomicKind.BENEFIT_RECEIVED, true, ReviewState.CONFIRMED), Triple(next.economicKind, next.economicKindConfirmed, next.reviewState))
+        val out = applyTransferVerdict(transfer("t-4", 700, "2026-10-20", Direction.OUT), w.verdict(), "now")
+        assertEquals(EconomicKind.UNCLASSIFIED, out.economicKind, "الصادر ما بيتلمسش")
+        assertEquals(listOf(party.key), w.answers.autoKinds().map { it.key })
+        // «اسألني تاني» من الإعداد
+        w.answers.askAgain(party.key)
+        assertEquals(emptyList(), w.answers.autoKinds())
+        assertEquals(EconomicKind.UNCLASSIFIED, applyTransferVerdict(transfer("t-5", 700, "2026-10-21"), w.verdict(), "now").economicKind)
+        // التراجع بيرجّع الجهة زي ما كانت (آخر نوع قبل الرد ومن غير العلامة)
+        w.answers.undo(undo)
+        assertEquals(EconomicKind.REFUND_RECEIVED to false, w.verdict()!!.let { it.kind to it.autoKind })
+        assertEquals(EconomicKind.UNCLASSIFIED, w.tx("t-2").economicKind)
+    }
+
+    @Test fun companyDontAskAgainFromTheFirstAnswer() = runBlocking<Unit> {
+        val w = World(listOf(transfer("t-1", 12_345)))
+        w.answers.markCompany(party, "t-1", EconomicKind.FREELANCE, dontAskAgain = true)
+        assertEquals(EconomicKind.FREELANCE, applyTransferVerdict(transfer("t-2", 900, "2026-11-01"), w.verdict(), "now").economicKind)
+        assertNull(w.answers.companyOf("t-1")?.takeIf { it.verdict != TransferVerdict.COMPANY })
+        // من كارت النوع العام: آخر اختيار + شيل العلامة، والتراجع بيرجّع الجهة بس
+        val u = w.answers.rememberCompanyKind("t-1", EconomicKind.REFUND_RECEIVED, dontAskAgain = false)!!
+        assertEquals(EconomicKind.REFUND_RECEIVED to false, w.verdict()!!.let { it.kind to it.autoKind })
+        w.answers.undo(u)
+        assertEquals(EconomicKind.FREELANCE to true, w.verdict()!!.let { it.kind to it.autoKind })
+    }
+
     @Test fun labelIsRememberedAndCarriedByFutureTransfers() = runBlocking<Unit> {
         val w = World(listOf(transfer("t-1", 80_000), transfer("t-2", 80_000, "2026-09-05")))
         val undo = w.answers.markLabel(party, "t-1", "  إيجار تجريبي ", null)

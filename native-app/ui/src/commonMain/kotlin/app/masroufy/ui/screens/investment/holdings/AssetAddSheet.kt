@@ -54,6 +54,7 @@ internal fun AssetAddSheet(
             onPick = { form = HoldingFormText(it); error = null },
             onBack = { form = null; error = null },
             onChange = { form = it; error = null },
+            today = deps.today(),
             onSave = save@{
                 val cur = form ?: return@save
                 when (val check = checkForm(cur, currency)) {

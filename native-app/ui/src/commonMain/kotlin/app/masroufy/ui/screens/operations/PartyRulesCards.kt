@@ -93,3 +93,33 @@ private fun RuleRow(title: String, sub: String?, action: String, onClick: () -> 
         TonalButton(action, onClick, height = 40.dp)
     }
 }
+
+/**
+ * §120-6 «حسابات بتتسجل لوحدها» في «إعداد القراءة» تحت «حسابات متجاهَلة»: كل جهة اتقال عليها «ما تسألنيش تاني» بنوعها، و«اسألني تاني»
+ * (`TransferPartyAnswers.askAgain`). مفيش ولا جهة ⇒ مفيش كارت.
+ */
+@Composable
+fun AutoKindAccountsCard(modifier: Modifier = Modifier) {
+    val answers = LocalSpace.current.operations.partyAnswers ?: return
+    val toaster = LocalToaster.current
+    val scope = rememberCoroutineScope()
+    var version by remember { mutableStateOf(0) }
+    var list by remember { mutableStateOf<List<TransferParty>>(emptyList()) }
+    LaunchedEffect(answers, version) { list = attempt { answers.autoKinds() }.orEmpty() }
+    if (list.isEmpty()) return
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        BasicText(t(app.masroufy.core.R06Key.C120_AUTO_TITLE), style = Type.section())
+        BasicText(t(app.masroufy.core.R06Key.C120_AUTO_SUB), style = Type.of(12).copy(color = Ink.muted))
+        FloatingCard(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)) {
+            for (p in list) {
+                val kind = p.kind?.let { app.masroufy.core.ruleFor(it).label }.orEmpty()
+                RuleRow(accountOf(p), t(app.masroufy.core.R06Key.C120_AUTO_ROW, kind), t(app.masroufy.core.R06Key.C120_AUTO_STOP)) {
+                    scope.launch {
+                        toaster.show(failureOf { answers.askAgain(p.key) } ?: t(app.masroufy.core.R06Key.C120_AUTO_STOPPED))
+                        version++
+                    }
+                }
+            }
+        }
+    }
+}

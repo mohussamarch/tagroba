@@ -21,6 +21,8 @@ data class HoldingFormText(
     val origin: HoldingOrigin = HoldingOrigin.BUY,
     val purpose: HoldingPurpose = type.defaultPurpose,
     val rented: Boolean = false,
+    /** §120-14 «امتلكتها إمتى؟» — null = اتخطّى السؤال (من زمان). */
+    val ownedSince: IsoDate? = null,
     val fields: Map<HoldingField, String> = emptyMap(),
 ) {
     fun with(field: HoldingField, value: String): HoldingFormText = copy(fields = fields + (field to value))
@@ -71,6 +73,8 @@ data class NewHolding(
     val place: String? = null,
     val monthlyRentMinor: Halalas? = null,
     val sharePercentBp: Int? = null,
+    /** §120-14 «امتلكتها إمتى؟» (اختياري) — null = «من زمان» ([OWNED_LONG_AGO]). */
+    val ownedSince: IsoDate? = null,
 )
 
 sealed interface HoldingFormCheck {
@@ -115,7 +119,7 @@ private fun build(text: HoldingFormText, currency: Currency, label: String): New
         }
     } ?: if (f == need) throw FormStop(HoldingFormCheck.Missing(f)) else null
     val name = raw(HoldingField.NAME)?.let(JsText::trim) ?: label
-    return when {
+    val built = when {
         type.metal -> NewHolding(
             type, name, text.purpose, text.origin, quantity = quantity(HoldingField.GRAMS)!!,
             priceMinor = money(HoldingField.PRICE), makingMinor = money(HoldingField.MAKING),
@@ -140,4 +144,16 @@ private fun build(text: HoldingFormText, currency: Currency, label: String): New
         )
         else -> NewHolding(type, name, text.purpose, text.origin, quantity = QUANTITY_SCALE, valueMinor = money(HoldingField.VALUE))
     }
+    return built.copy(ownedSince = text.ownedSince)
 }
+
+/**
+ * §120-14 (قرار المالك — مراجعة todo-assets-2): الحاجة اللي عندك من غير ما تقول «امتلكتها إمتى؟» بتتسجل من زمان ⇒ أي تاريخ بيع بيتقبل.
+ * تاريخ ثابت قديم بدل «النهارده» (اللي كان بيرفض بيعة امبارح). الشاشات بتعرضه «من زمان» ([isOwnedLongAgo]) مش السنة.
+ */
+const val OWNED_LONG_AGO: IsoDate = "1900-01-01"
+
+fun isOwnedLongAgo(date: IsoDate?): Boolean = date != null && date.take(10) == OWNED_LONG_AGO
+
+/** تاريخ أول دفعة للحاجة: اللي اتكتب (مش بعد [today]) أو [OWNED_LONG_AGO]. */
+fun openingLotDate(ownedSince: IsoDate?, today: IsoDate): IsoDate = ownedSince?.take(10)?.takeIf { it <= today } ?: OWNED_LONG_AGO

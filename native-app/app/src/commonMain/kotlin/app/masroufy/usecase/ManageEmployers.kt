@@ -100,6 +100,26 @@ class ManageEmployers(private val deps: ManageEmployersDeps) {
         return before
     }
 
+    /**
+     * §120-7 «ده مرتب دايمًا من الحساب ده» للحساب [partyKey] (لازم يكون من حسابات الجهة). التشغيل بيسجّل كمان الإيداعات المستنية من الحساب
+     * ده (اللي نوعها لسه ما اتأكدش) مرتب — القفل ما بيرجّعهاش (اتسجلت مؤكدة؛ تتغير بإيدك). بيرجّع عدد اللي اتسجل.
+     */
+    suspend fun setAlwaysSalary(employerId: Id, partyKey: String, on: Boolean): Int {
+        val all = deps.sources.listAll()
+        val employer = find(all, employerId)
+        if (on && partyKey !in employer.payerKeys) throw IncomeSourceError(uiText(UiKey.EMPLOYER_ERR_NOT_FOUND))
+        val updated = app.masroufy.core.withAlwaysSalary(employer, partyKey, on)
+        if (updated == employer) return 0
+        deps.sources.saveMany(listOf(updated))
+        if (!on) return 0
+        val now = deps.clock.nowIso()
+        val sources = all.map { if (it.id == employerId) updated else it }
+        val changed = everything().filter { !it.economicKindConfirmed && app.masroufy.core.transferPartyOf(it)?.key == partyKey }
+            .mapNotNull { t -> app.masroufy.core.applyKnownPayerSalary(t, sources, now).takeIf { it != t } }
+        if (changed.isNotEmpty()) deps.txns.saveMany(changed)
+        return changed.size
+    }
+
     /** r06-1b3: اختيار «حاجة تانية» بيفضل محفوظ للحساب [partyKey] بس على الجهة (نفس الاسم موجود ⇒ ولا كتابة). */
     suspend fun addPayerCustomKind(employerId: Id, partyKey: String, custom: app.masroufy.core.PayerCustomKind) {
         val employer = find(deps.sources.listAll(), employerId)
@@ -111,7 +131,7 @@ class ManageEmployers(private val deps: ManageEmployersDeps) {
     suspend fun detach(employerId: Id, key: String): IncomeSource {
         val employer = find(deps.sources.listAll(), employerId)
         if (key !in employer.payerKeys) return employer
-        val updated = employer.copy(payerKeys = employer.payerKeys - key)
+        val updated = employer.copy(payerKeys = employer.payerKeys - key, alwaysSalaryKeys = employer.alwaysSalaryKeys - key)
         deps.sources.saveMany(listOf(updated))
         return updated
     }
