@@ -58,3 +58,14 @@ secrets/
 *.jks
 *.keystore
 native-app/*.log
+
+# مراجعة الأمان 2026-11-14 (repo-exposure-3): مفاتيح وملفات ما تترفعش أبدًا على مستودع علني
+*firebase-adminsdk*.json
+*service-account*.json
+serviceAccount*.json
+keystore.properties
+signing.properties
+local.properties
+**/firebase-export/
+*.hprof
+*.log
