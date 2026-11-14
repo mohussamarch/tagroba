@@ -77,6 +77,8 @@ internal fun ProblemsSection() {
             c.setOn(!on)
             on = c.isOn()
         }
+        // OVERRIDES §120-13: سطر تنبيه ثابت (الافتراضي زي ما هو لحد المتجر) — بيقول إنها شغالة من الأول وإزاي تتقفل
+        if (available) BasicText(t(UiKey.PLOG_CRASH_NOTICE), Modifier.padding(horizontal = 16.dp, vertical = 4.dp), style = Type.of(12).copy(color = Ink.muted))
         RowRule()
         MenuRow(Lucide.FILE_TEXT, t(UiKey.PLOG_TITLE), t(UiKey.PLOG_OPEN_HINT), last = true, onClick = { nav.push(ProblemLogRoute) })
     }
