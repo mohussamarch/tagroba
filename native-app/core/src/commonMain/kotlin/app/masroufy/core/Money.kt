@@ -45,7 +45,7 @@ fun normalizeDigits(text: String): String {
 
 /**
  * نص مالي ⇒ هللات **من غير أي عملية عشرية**.
- * بيقبل: "96.47" · "1,234.5" · الأرقام العربية · "-12" · "12.4-" · "(12.40)"
+ * بيقبل: "96.47" · "1,234.5" · "12,50" (فاصلة عشرية §120-3) · الأرقام العربية · "-12" · "12.4-" · "(12.40)"
  * بيرفض: "" · "NaN" · "1.2.3" · أكتر من خانتين كسريتين غير صفرية (ما بيقربش بصمت)
  */
 fun parseMoney(raw: String, currency: Currency = Currency.SAR): Halalas {
@@ -72,6 +72,7 @@ fun parseMoney(raw: String, currency: Currency = Currency.SAR): Halalas {
         s = s.dropLast(1)
     }
 
+    s = decimalComma(s) ?: throw MoneyError(uiText(TextKey.MONEY_BAD_FORMAT), raw)
     val dot = s.indexOf('.')
     val intRaw = groupedInt(if (dot < 0) s else s.substring(0, dot)) ?: throw MoneyError(uiText(TextKey.MONEY_BAD_FORMAT), raw)
     val fracRaw = if (dot < 0) "" else s.substring(dot + 1)
@@ -96,13 +97,26 @@ fun parseMoney(raw: String, currency: Currency = Currency.SAR): Halalas {
 
 /**
  * مراجعة 2026-11-14 (money-1): الفاصلة فاصل آلاف **بس** لو كل مجموعة بعدها 3 أرقام بالظبط («1,234» · «12,345,678»). غير كده null ⇒
- * المبلغ بيترفض بدل ما «12,50» تتسجل 1,250.00 (نفس قاعدة رسايل البنك في `SmsAmountTokens.kt`). من غير فاصلة بيرجع زي ما هو.
+ * المبلغ بيترفض بدل ما «1,2345» تتسجل غلط (الفاصلة العشرية «12,50» بتتحول لنقطة قبلها في [decimalComma]) (نفس قاعدة رسايل البنك في `SmsAmountTokens.kt`). من غير فاصلة بيرجع زي ما هو.
  */
 private fun groupedInt(int: String): String? {
     if (',' !in int) return int
     val groups = int.split(',')
     val ok = groups.first().length in 1..3 && groups.drop(1).all { it.length == 3 } && groups.all { g -> g.all(JsText::isAsciiDigit) }
     return if (ok) groups.joinToString("") else null
+}
+
+/**
+ * OVERRIDES §120-3: من غير نقطة، الفاصلة الأخيرة اللي بعدها رقم أو رقمين **بس** في الآخر = علامة عشرية
+ * («12,50» = 12.50 · «12,5» = 12.50). «1,234» تفضل فاصل آلاف. لو قبلها فاصلة تانية («1,234,50») ⇒ null (ملتبس، يترفض).
+ */
+private fun decimalComma(s: String): String? {
+    if ('.' in s) return s
+    val c = s.lastIndexOf(',')
+    if (c < 0 || (s.length - c - 1) !in 1..2) return s
+    val head = s.substring(0, c)
+    if (',' in head) return null
+    return head + "." + s.substring(c + 1)
 }
 
 /** زي `parseMoney` بس بيرجّع null بدل ما يرمي — للاستيراد اللي بيجمع الأخطاء بأرقام الصفوف. */
