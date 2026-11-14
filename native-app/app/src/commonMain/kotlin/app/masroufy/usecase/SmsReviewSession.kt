@@ -54,7 +54,7 @@ internal class SmsSession(
             confirmReason = wait?.let { uiText(it) },
             kind = part.request.smsRows[number]?.kind ?: SmsKind.OTHER,
             waitReason = wait,
-            askLast4 = if (wait == TextKey.SMS_WAIT_UNKNOWN_ACCOUNT) part.request.smsRows[number]?.let(::smsAskedLast4) else null,
+            askLast4 = if (wait == TextKey.SMS_WAIT_UNKNOWN_ACCOUNT) part.request.smsRows[number]?.let { smsAskedLast4(it) ?: it.accountLast4 } else null, // §120-9
             question = questionByLine[number],
             walletId = part.request.walletId,
             fee = part.request.smsRows[number]?.let(::smsFeeToRecord),
