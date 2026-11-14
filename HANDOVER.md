@@ -957,3 +957,22 @@ export ANDROID_HOME="C:/Users/atgs0/Documents/Codex/android-build-tools/sdk"
 **ما اتجربش:** ولا حاجة على جوال أو محاكي — شكل الكروت الجديدة ما اتشافش بعيني.
 
 **اختيارات مني (المالك يقدر يغيّرها):** «من زمان» = تاريخ ثابت 1900-01-01 · الأصول اللي اتضافت قبل الجولة دي لسه أول دفعتها بيوم الإضافة (ما اتصلحتش لوحدها) · تشغيل «مرتب دايمًا» بيسجّل المستني مرتب والقفل ما بيرجّعهوش · الشهر من غير ولا مرتب مكتوب «ما وصلش».
+
+## جولة r052-d (2026-11-15) — §120-1 · §120-13 · §120-18 · §120-15
+
+**اتعمل إيه:**
+1. **§120-1 تنضيف الأرقام الحقيقية (من دلوقتي — التاريخ القديم زي ما هو):** كل رصيد ومجموع وعدد صفوف ومتوسط ويوم المرتب واسم بنك المالك جنب رصيده اتشالوا من الملفات المتتبعة واتحط مكانهم رموز `[P:opening]` `[P:debit]` … — القيم في **`PRIVATE-FIGURES.md`** (جذر المستودع، مستبعد من Git). اختبارات الكشف الحقيقي (كوتلن core/data/firestore + الويب realStatement/alrajhiPdfReal) بتقرا أرقامها منه (بتدوّر لفوق زي `files/`). الأرقام اللي كانت بالصدفة في اختبارات تانية اتغيرت لأرقام مخترعة. `masroofi-claude-code.zip` بطّل يتتبع (لسه موجود على الجهاز).
+   - ⚠️ **`PRIVATE-FIGURES.md` اتعمل جوه الـworktree `r052-d` بس** — لازم يتنسخ لـ`E:/work/masroufy/PRIVATE-FIGURES.md` قبل ما الـworktree يتمسح، وإلا اختبارات الكشف الحقيقي بتتخطى (بسطر ⚠️) في أي نسخة تانية.
+   - ⚠️ `.git/info/exclude` على جهاز المالك فيه `data/` ⇒ أي ملف **جديد** تحت `native-app/data/` لازم `git add -f`.
+2. **§120-13 تقارير الأعطال:** المفتاح كان موجود أصلًا («القفل واللغة» ⇐ «الأعطال والمشاكل»). اتضاف تحته **سطر تنبيه** ثابت (`PLOG_CRASH_NOTICE`، سعودي/مصري/إنجليزي): شغالة من الأول ومربوطة برقم الحساب المجهول وتتقفل من هنا. **الافتراضي ما اتغيرش** (مفتوح) لحد المتجر.
+3. **§120-18 App Check:** التصميم الموجود زي ما هو (مفتاح وقت البناء `-Pmasroufy.appCheck=true` · Play Integrity + مزوّد التجربة بالاسم). المكتبتين من نفس BoM. الافتراضي **مقفول**. السبب مكتوب في ARCHITECTURE «App Check».
+4. **§120-15 تجربة مسح الحساب:** `AccountEraserOnFirestoreTest` (موجود من قبل) على محاكي أندرويد `masroufy-fbtrial` + محاكي Firestore (8088، `firebase` من `E:/work/masroufy/node_modules/.bin` — مش متثبت عام).
+
+**اتفحص إزاي (الأعداد من JUnit XML):** `:core:jvmTest` 1050/0 فشل (منهم RealStatementTest وRealPdfStatementTest بالأرقام من PRIVATE-FIGURES.md + PrivateFiguresTest + CrashNoticeTextsTest) · `:data:jvmTest` 123/0 (منهم RealDataFlowTest) · `:device:jvmTest` 61/0 · `:ui:jvmTest` 563/0 · `:androidApp:assembleDebug` نجح مقفول **ومفتوح** (`-Pmasroufy.appCheck=true` — المكتبتين اتنزلوا، و`PlayIntegrityAppCheckProviderFactory` و`DebugAppCheckProviderFactory` جوه الـAPK) · **`AccountEraserOnFirestoreTest` على المحاكيين: 1/0 فشل (78 ثانية)** · الويب: `realStatement.test.ts` 7/7 على الكشف الحقيقي، والاختبارات اللي اتغيرت أرقامها عدّت · `npm run typecheck` فيه خطأين **قدام** في `container.ts` و`demoContainer.ts` (نوع `mode` في rule-reference.json — ما اتلمسوش). ⚠️ آخر `androidApp-debug.apk` على F (r052-d) هو النسخة **المفتوحة** — ابنِ تاني من غير الخاصية قبل أي تثبيت.
+
+**ما اتجربش:** App Check مفتوح على جوال حقيقي (محتاج تسجيل المالك في اللوحة) · سطر التنبيه على الشاشة بالعين.
+
+**أسئلة مستنية المالك (ما تتحسمش من النموذج):**
+- قايمة المحلات الحقيقية (`merchant-reference.json` · `rule-reference.json` · `legacy/rules_categories.csv`): البرنامج نفسه بيقراها كقواعد تصنيف جاهزة (`BundledSeedJson.kt` · `scripts/gen-bundled-seed.mjs` · الويب `container.ts`) واختبارات كتير. نشيلها ونبدلها بقايمة عامة مكتوبة من الصفر (القواعد اللي بتطلع للمستخدمين هتتغير)، ولا تفضل لأنها بقت جزء من البرنامج؟
+- البرنامج القديم (الويب المجمّد) فيه رصيد المالك الافتتاحي **جوه الكود** (`src/application/useCases/seedWallets.ts` — «أرصدة المالك» لحسابك بس) واختباره `reconcileUseCase.test.ts`. نشيله (البرنامج القديم هيبدأ بصفر) ولا يفضل؟
+- سطر تنبيه الأعطال: يكفي في الإعدادات، ولا كمان سطر في أول تشغيل؟ وبيانات الاستخدام (Analytics) تاخد نفس المفتاح ولا مفتاح لوحدها؟

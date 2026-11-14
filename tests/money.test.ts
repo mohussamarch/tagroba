@@ -27,7 +27,7 @@ describe('parseMoney — التحويل إلى هللة', () => {
     expect(parseMoney('0.01')).toBe(1)
     expect(parseMoney('0')).toBe(0)
     expect(parseMoney('1000')).toBe(100000)
-    expect(parseMoney('4837.83')).toBe(483783)
+    expect(parseMoney('7654.32')).toBe(765432)
   })
 
   it('يتجنّب خطأ العشري الذي يصيب ٩٪ من المبالغ', () => {
@@ -57,7 +57,7 @@ describe('parseMoney — التحويل إلى هللة', () => {
 
   it('يقبل فواصل الآلاف', () => {
     expect(parseMoney('1,234.56')).toBe(123456)
-    expect(parseMoney('302,171.45')).toBe(30217145)
+    expect(parseMoney('512,345.67')).toBe(51234567)
   })
 
   it('يقبل الأرقام العربية والفاصلة العربية', () => {
@@ -90,7 +90,7 @@ describe('parseMoney — التحويل إلى هللة', () => {
 describe('الحساب — لا فقد ولا خلق هللة', () => {
   it('يجمع ويطرح بدقة', () => {
     expect(addMoney(9647, 7955, 1400)).toBe(19002)
-    expect(subtractMoney(483783, 9647)).toBe(474136) // أول سطر في الكشف
+    expect(subtractMoney(765432, 9647)).toBe(755785)
     expect(sumMoney([])).toBe(0)
   })
 
@@ -100,7 +100,7 @@ describe('الحساب — لا فقد ولا خلق هللة', () => {
       [10000, 7],
       [1, 3],
       [100, 3],
-      [30217145, 13],
+      [51234567, 13],
     ] as const) {
       const shares = splitMoney(amount, parts)
       expect(shares).toHaveLength(parts)
@@ -149,9 +149,9 @@ describe('العرض — التحويل للريال يحدث هنا فقط', ()
     expect(formatAmount(0)).toBe('0.00')
     expect(formatAmount(1)).toBe('0.01')
     expect(formatAmount(-9647)).toBe('-96.47')
-    expect(formatAmount(30217145)).toBe('302,171.45')
-    expect(formatAmount(10046827)).toBe('100,468.27')
-    expect(formatAmount(270725)).toBe('2,707.25')
+    expect(formatAmount(51234567)).toBe('512,345.67')
+    expect(formatAmount(12345678)).toBe('123,456.78')
+    expect(formatAmount(765432)).toBe('7,654.32')
   })
 
   it('لا يظهر أي خطأ عشري في أي مبلغ حتى 10 آلاف ريال', () => {

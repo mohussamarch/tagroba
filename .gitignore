@@ -69,3 +69,8 @@ local.properties
 **/firebase-export/
 *.hprof
 *.log
+
+# OVERRIDES §120-1: أرقام المالك الحقيقية — محلي بس
+PRIVATE-FIGURES.md
+# نسخة مكررة من design-source/masroofi-claude-code (فيها قايمة المحلات) — بقت محلية بس
+/masroofi-claude-code.zip

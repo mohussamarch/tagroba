@@ -55,11 +55,11 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
- * البرنامج كله على **كشف المالك الحقيقي** (20 شهر، 1,912 عملية) — على جهازه بس (`files/` مستبعد من Git).
+ * البرنامج كله على **كشف المالك الحقيقي** (20 شهر) — على جهازه بس (`files/` مستبعد من Git).
  * بيستورد الـCSV، وبعدين نفس الكشف PDF (**لازم يطلع كله مكرر**)، ويفتح الرئيسية والميزانية والعمليات فترة فترة،
  * ويطابق الرصيد، ويحوّل كل حاجة لمستندات فايربيز ويرجّعها، ويعمل نسخة شاملة ويستعيدها.
  * **مفيش مبلغ بيتكتب في أي ملف:** التقرير (`data/build/real-data-report.txt`) فيه أعداد وأوقات بس.
- * الأرقام المستهدفة هي نفسها المكتوبة في CLAUDE.md.
+ * الأرقام المستهدفة في `PRIVATE-FIGURES.md` (برا Git — OVERRIDES §120-1)، ورموزها في CLAUDE.md.
  */
 class RealDataFlowTest {
     private val files = File(System.getProperty("masroufy.ownerFiles") ?: error("مكان ملفات المالك مش متحدد"))
@@ -83,7 +83,7 @@ class RealDataFlowTest {
     }
 
     @Test fun wholeProgramOnTheRealStatement() = runBlocking<Unit> {
-        val wallet = Wallet("w-bank", "البنك", Currency.SAR, "bank", parseMoney("4837.83"), "2025-01-01")
+        val wallet = Wallet("w-bank", "البنك", Currency.SAR, "bank", parseMoney(PrivateFigures["opening"]), PrivateFigures["openingAt"])
         val txns = MemoryTransactionRepository()
         val sources = MemorySourceRecordRepository()
         val batches = MemoryImportBatchRepository()
@@ -98,16 +98,16 @@ class RealDataFlowTest {
 
         // 1) الـCSV
         val csv = ImportRequest("transactions_full.csv", File(files, "transactions_full.csv").readText(Charsets.UTF_8), account, ImportSourceType.CSV_LEGACY, wallet.id, SchemaId.LEGACY)
-        val csvPreview = timed("معاينة الـCSV (1,912 صف)") { importer.preview(csv) }
-        assertEquals(1912, csvPreview.counts.total)
-        assertEquals(1912, csvPreview.counts.newCount, "أول استيراد: كله جديد")
+        val csvPreview = timed("معاينة الـCSV (كل الصفوف)") { importer.preview(csv) }
+        assertEquals(PrivateFigures.int("rows"), csvPreview.counts.total)
+        assertEquals(PrivateFigures.int("rows"), csvPreview.counts.newCount, "أول استيراد: كله جديد")
         timed("حفظ الـCSV") { importer.commit(csv, csvPreview) }
-        assertEquals(1912, txns.all().size)
+        assertEquals(PrivateFigures.int("rows"), txns.all().size)
 
         // 2) نفس الكشف PDF بعد الـCSV ⇒ مفيش ولا عملية تتضاف (منع التكرار بمفتاح الرصيد — OVERRIDES §30)
         val rows = timed("قراية الـPDF (68 صفحة)") { parseAlrajhiPdf(pdfPages()).rows }
         val pdf = ImportRequest("statement.pdf", rows.joinToString("\n") { it.raw }, account, ImportSourceType.PDF_ALRAJHI, wallet.id, SchemaId.ALRAJHI_PDF, parsedRows = rows)
-        val pdfPreview = timed("معاينة الـPDF قدام 1,912 موجودين") { importer.preview(pdf) }
+        val pdfPreview = timed("معاينة الـPDF قدام الموجودين") { importer.preview(pdf) }
         report.appendLine("الـPDF بعد الـCSV: جديد=${pdfPreview.counts.newCount} مكرر=${pdfPreview.counts.duplicates} متشابه=${pdfPreview.counts.similar} تعارض=${pdfPreview.counts.conflicts} غلط=${pdfPreview.counts.invalid}")
         assertEquals(0, pdfPreview.counts.newCount, "نفس الكشف PDF المفروض ما يضيفش ولا عملية")
 
@@ -130,16 +130,16 @@ class RealDataFlowTest {
             period = periodForDate(dayNumberToIso(toDayNumber(parseIsoDate(period.end)) + 1), 28)
         }
         report.appendLine("الشاشات التلاتة × $periods فترة: ${(System.nanoTime() - started) / 1_000_000} ms (أبطأ رئيسية ${slowestHome} ms، والرئيسية بتقرا التاريخ كمان)")
-        assertEquals(1912, shown, "كل عملية لازم تظهر في فترة واحدة بالظبط")
+        assertEquals(PrivateFigures.int("rows"), shown, "كل عملية لازم تظهر في فترة واحدة بالظبط")
 
         // 4) الرصيد
         val reconciled = timed("مطابقة الرصيد") { ReconcileBalance(ReconcileDeps(txns, wallets)).run(wallet.id, "2026-09-04", 28) }
-        assertEquals("2,707.25", formatAmount(reconciled.result.closingMinor))
+        assertEquals(formatAmount(parseMoney(PrivateFigures["closing"])), formatAmount(reconciled.result.closingMinor))
         assertEquals(0, reconciled.result.mismatches.size)
 
         // 5) مستندات فايربيز: كل عملية ومصدر ودفعة ⇒ مستند ⇒ كيان، من غير ما حاجة تتغير، ومفيش رقم حساب كامل يتخزن
         val longDigits = Regex("[0-9٠-٩۰-۹]{5,}")
-        val stored = timed("تحويل 1,912 عملية + مصادرها لمستندات والعكس") {
+        val stored = timed("تحويل كل العمليات + مصادرها لمستندات والعكس") {
             val t = txns.all().map { LedgerCodecs.transactions.toStore(it) }
             val s = sources.all().map { LedgerCodecs.sourceRecords.toStore(it) }
             val b = batches.all().map { LedgerCodecs.importBatches.toStore(it) }
@@ -162,7 +162,7 @@ class RealDataFlowTest {
         report.appendLine("حجم النسخة الشاملة: ${text.length / 1024} KB")
         val target = FullBackup(MemoryFullBackup())
         val plan = timed("فحص النسخة وخطة الاستعادة") { target.plan(text) }
-        assertEquals(1 + 1912 + stored.second.size + stored.third.size, plan.totalToAdd)
+        assertEquals(1 + PrivateFigures.int("rows") + stored.second.size + stored.third.size, plan.totalToAdd)
         val applied = timed("الاستعادة") { target.apply(plan.file) }
         assertEquals(plan.totalToAdd, applied.totalAdded)
 

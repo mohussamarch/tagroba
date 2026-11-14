@@ -28,7 +28,7 @@ const BANK: Wallet = {
   name: 'الراجحي',
   kind: 'bank',
   currency: 'SAR',
-  openingBalanceMinor: 483783,
+  openingBalanceMinor: 765432,
   openingAt: '2025-01-01',
 }
 

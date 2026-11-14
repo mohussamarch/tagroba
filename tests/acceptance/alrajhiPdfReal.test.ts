@@ -5,6 +5,7 @@ import { globSync } from 'node:fs'
 import { parseAlrajhiPdf, type PdfPage } from '../../src/infrastructure/import/pdf/alrajhiPdfSchema'
 import { addMoney, parseMoney, subtractMoney } from '../../src/domain/money'
 import { formatAmount } from '../../src/domain/formatMoney'
+import { figure, readPrivateFigures } from '../privateFigures'
 import type { PositionedWord } from '../../src/infrastructure/import/pdf/arabicText'
 
 /**
@@ -19,13 +20,14 @@ import type { PositionedWord } from '../../src/infrastructure/import/pdf/arabicT
  * بلا أي CSV.
  */
 
+const FIG = readPrivateFigures()
 const TARGETS = {
-  debit: parseMoney('302171.45'),
-  credit: parseMoney('300040.87'),
-  opening: parseMoney('4837.83'),
-  closing: parseMoney('2707.25'),
-  count: 1912,
-  closingAt: '2026-09-04',
+  debit: parseMoney(figure(FIG, 'debit')),
+  credit: parseMoney(figure(FIG, 'credit')),
+  opening: parseMoney(figure(FIG, 'opening')),
+  closing: parseMoney(figure(FIG, 'closing')),
+  count: Number(figure(FIG, 'rows')),
+  closingAt: figure(FIG, 'closingAt'),
 }
 
 function findStatementPdf(): string | null {

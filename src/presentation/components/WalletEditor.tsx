@@ -34,7 +34,7 @@ export function WalletEditor({ wallet, onSave, onCancel }: Props) {
 
     const openingBalanceMinor = tryParseMoney(amountText)
     if (openingBalanceMinor === null) {
-      setError('اكتب مبلغ صحيح، زي 4837.83')
+      setError('اكتب مبلغ صحيح، زي 1500.00')
       return
     }
     if (!isValidIsoDate(dateText)) {
@@ -62,7 +62,7 @@ export function WalletEditor({ wallet, onSave, onCancel }: Props) {
           inputMode="decimal"
           value={amountText}
           onChange={(e) => setAmountText(e.target.value)}
-          placeholder="4837.83"
+          placeholder="1500.00"
           autoFocus
         />
         <span className="limitEditor__hint">
