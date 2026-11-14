@@ -38,6 +38,12 @@ internal val MSA_R06_LINKS_TEXTS: Map<R06Key, String> = mapOf(
     R06Key.PERSON_ARCHIVE_TITLE to "أرشفة «{0}»؟",
     R06Key.PERSON_ARCHIVE_BODY to "يختفي من القوائم، وسجله وديونه تبقى كما هي.",
     R06Key.PERSON_ARCHIVE_DONE to "أُرشف «{0}»",
+    R06Key.OWN_PICK_TITLE to "أي حساب من حساباتك؟",
+    R06Key.OWN_PICK_BODY to "سنتذكره لهذا الحساب، وتُسجَّل تحويلاته القادمة على الحسابين.",
+    R06Key.OWN_PICK_SAVE to "احفظ",
+    R06Key.OWN_LEG_ACTION to "اخصمها من حسابي الآخر",
+    R06Key.OWN_LEG_PICK_BODY to "من أي حساب خرج المبلغ؟",
+    R06Key.OWN_LEG_DONE to "خُصمت من {0}",
 )
 
 internal val EGYPTIAN_R06_LINKS_TEXTS: Map<R06Key, String> = mapOf(
@@ -74,6 +80,12 @@ internal val EGYPTIAN_R06_LINKS_TEXTS: Map<R06Key, String> = mapOf(
     R06Key.PERSON_ARCHIVE_TITLE to "تأرشف «{0}»؟",
     R06Key.PERSON_ARCHIVE_BODY to "هيختفي من القوايم، وسجله وديونه زي ما هم.",
     R06Key.PERSON_ARCHIVE_DONE to "«{0}» اتأرشف",
+    R06Key.OWN_PICK_TITLE to "أنهي حساب من حساباتك؟",
+    R06Key.OWN_PICK_BODY to "هنفتكره للحساب ده، وتحويلاته الجاية هتتسجل على الحسابين.",
+    R06Key.OWN_PICK_SAVE to "احفظ",
+    R06Key.OWN_LEG_ACTION to "اخصمها من حسابي التاني",
+    R06Key.OWN_LEG_PICK_BODY to "الفلوس خرجت من أنهي حساب؟",
+    R06Key.OWN_LEG_DONE to "اتخصمت من {0}",
 )
 
 internal val ENGLISH_R06_LINKS_TEXTS: Map<R06Key, String> = mapOf(
@@ -110,4 +122,10 @@ internal val ENGLISH_R06_LINKS_TEXTS: Map<R06Key, String> = mapOf(
     R06Key.PERSON_ARCHIVE_TITLE to "Archive «{0}»?",
     R06Key.PERSON_ARCHIVE_BODY to "Hidden from lists. History and debts stay as they are.",
     R06Key.PERSON_ARCHIVE_DONE to "«{0}» archived",
+    R06Key.OWN_PICK_TITLE to "Which of your accounts?",
+    R06Key.OWN_PICK_BODY to "We will remember it for this account, and its next transfers go on both accounts.",
+    R06Key.OWN_PICK_SAVE to "Save",
+    R06Key.OWN_LEG_ACTION to "Take it from my other account",
+    R06Key.OWN_LEG_PICK_BODY to "Which account did the money leave?",
+    R06Key.OWN_LEG_DONE to "Taken from {0}",
 )

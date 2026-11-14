@@ -92,6 +92,7 @@ fun TransferPartyCard(party: TransferPartyRef, transactionId: Id, onChanged: () 
     var company by remember { mutableStateOf(false) }
     var labeling by remember { mutableStateOf(false) }
     var salary by remember { mutableStateOf(false) }
+    var pickOwn by remember { mutableStateOf<List<app.masroufy.core.Wallet>?>(null) } // §120-8: «أنهي حساب من حساباتك؟»
     var error by remember { mutableStateOf<String?>(null) }
     val answers = deps.partyAnswers
     // «راتب الدوام» · «عمل إضافي» · «بيعة» (البند 6) — نتيجتها بكارتها و«تراجع» بتاعها
@@ -139,7 +140,7 @@ fun TransferPartyCard(party: TransferPartyRef, transactionId: Id, onChanged: () 
             }
             PrimaryButton(t(UiKey.TRANSFER_PARTY_PERSON), onClick = { sheet = true; error = null }, modifier = Modifier.fillMaxWidth())
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                PartyButton(t(UiKey.TRANSFER_PARTY_OWN), Modifier.weight(1f)) { act { PartyDecision.OwnAccount(deps.transfers.markOwnAccount(party)) } }
+                PartyButton(t(UiKey.TRANSFER_PARTY_OWN), Modifier.weight(1f)) { ownTapped(party, deps.transfers, scope, { pickOwn = it }) { act { PartyDecision.OwnAccount(deps.transfers.markOwnAccount(party)) } } }
                 if (deps.incomeAnswers != null) PartyButton(t(UiKey.TRANSFER_PARTY_SALARY), Modifier.weight(1f)) { salary = true; error = null }
             }
             if (answers != null) {
@@ -160,6 +161,7 @@ fun TransferPartyCard(party: TransferPartyRef, transactionId: Id, onChanged: () 
                 IncomeAnswerChips(transactionId, withOther = false, withSalary = false) { income = it; error = null; onChanged() }
             }
             error?.let { FieldError(it) }
+            OwnAccountPickSheet(pickOwn, t(app.masroufy.core.R06Key.OWN_PICK_BODY), null, { pickOwn = null }) { w -> pickOwn = null; act { PartyDecision.OwnAccount(deps.transfers.markOwnAccount(party, w.id)) } }
         }
     } else if (ignored != null) {
         UndoStrip(t(UiKey.TRANSFER_PARTY_IGNORED_STRIP, partyAccount(party)), ignoreWindow) { undoNew(ignored) }

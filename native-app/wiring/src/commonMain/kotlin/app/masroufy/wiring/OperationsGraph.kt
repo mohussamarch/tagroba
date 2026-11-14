@@ -83,6 +83,8 @@ class OperationsGraph(private val c: AreaContext) : OperationsDeps {
         ManageTransfersDeps(r.transactions, r.transferParties, r.people, r.uow, clock, wallets = r.wallets, work = c.env.work, personLinks = r.personLinks),
     )
 
+    override val ownLeg = app.masroufy.usecase.AddOwnLeg(r.transactions, r.wallets, r.uow, clock) // OVERRIDES §120-5
+
     // تحديد كذا عملية (§6.5 بند 15): المسح بيرفض أي عملية متربطة بحاجة — نفس فحص رجول «التحويل لنفسك»
     private val txnLinks = app.masroufy.usecase.TransactionLinkRepos(
         r.roscaEntries, r.installmentPayments, r.installmentPlans, r.zakatPayments, r.eventLinks, r.projectLinks, r.allocations, r.obligations, r.settlements,

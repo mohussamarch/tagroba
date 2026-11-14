@@ -9,6 +9,7 @@ import app.masroufy.core.ReviewState
 import app.masroufy.core.SmsKind
 import app.masroufy.core.SourceRecord
 import app.masroufy.core.Transaction
+import app.masroufy.core.TransferVerdict
 import app.masroufy.core.Wallet
 import app.masroufy.core.daysBetween
 import app.masroufy.core.hashContent
@@ -18,6 +19,7 @@ import app.masroufy.core.smsLegsOf
 import app.masroufy.core.transferPartyOf
 import app.masroufy.core.uiText
 import app.masroufy.port.TransactionRepository
+import app.masroufy.port.TransferPartyRepository
 import app.masroufy.port.WalletRepository
 import kotlin.math.abs
 
@@ -33,7 +35,12 @@ import kotlin.math.abs
  * رسايل البنك بس — الكشف زي ما هو (المجاميع المرجعية ما بتتغيرش).
  * ⚠️ تراجع عن دفعة البنك التاني بعد الدمج ما بيرجّعش الرِجل التلقائية (HANDOVER).
  */
-class OwnTransferLegEffect(private val wallets: WalletRepository, private val txns: TransactionRepository?) : RecordEffect {
+class OwnTransferLegEffect(
+    private val wallets: WalletRepository,
+    private val txns: TransactionRepository?,
+    /** §120-8: الحساب اللي المالك اختاره لطرف «حسابي التاني» من غير أرقام ([TransferParty.walletId]). null ⇒ الأرقام بس زي الأول. */
+    private val parties: TransferPartyRepository? = null,
+) : RecordEffect {
     override suspend fun prepare(ctx: RecordContext) {
         if (ctx.lines.none { it.sms != null }) return
         // r06-links2: تحويل يدوي بنفس المبلغ ±يوم ⇒ بيندمج في الرسالة (OwnTransferManualMerge.kt)
@@ -73,11 +80,13 @@ class OwnTransferLegEffect(private val wallets: WalletRepository, private val tx
     private suspend fun addLegs(ctx: RecordContext) {
         val outs = ctx.lines.filter { l ->
             val t = l.transaction
-            l.sms != null && t.observedDirection == Direction.OUT && t.economicKind == EconomicKind.INTERNAL_TRANSFER && t.economicKindConfirmed &&
+            // §120-5: الداخل كمان — فلوس دخلت من حسابك التاني ومفيش رسالة خصم من بنكه ⇒ رِجل خارجة منه لوحدها (نفس القاعدة بالعكس)
+            l.sms != null && t.economicKind == EconomicKind.INTERNAL_TRANSFER && t.economicKindConfirmed &&
                 t.transferToWalletId == null && t.walletId != null
         }
         if (outs.isEmpty()) return
         val all = wallets.listAll()
+        val chosen = parties?.listAll().orEmpty().filter { it.verdict == TransferVerdict.OWN_ACCOUNT && it.walletId != null }.associateBy { it.key }
         // fix053: العمليات حوالين أيام الدفعة مرة واحدة (مش استعلام لكل تحويل)
         var around: List<Transaction>? = null
         for (line in outs) {
@@ -85,9 +94,12 @@ class OwnTransferLegEffect(private val wallets: WalletRepository, private val tx
             val sms = line.sms ?: continue
             val digits = buildSet {
                 transferPartyOf(t)?.last4?.let(::add)
-                if (sms.kind == SmsKind.OWN_TRANSFER) smsLegsOf(sms.raw).toLast4?.let(::add)
+                if (sms.kind == SmsKind.OWN_TRANSFER) smsLegsOf(sms.raw).let { if (t.observedDirection == Direction.OUT) it.toLast4 else it.fromLast4 }?.let(::add)
             } - setOfNotNull(sms.ownLast4)
-            val target = all.filter { w -> w.id != t.walletId && w.currency == t.currency && walletLast4(w.accountLast4) in digits }.singleOrNull() ?: continue
+            val byDigits = all.filter { w -> w.id != t.walletId && w.currency == t.currency && walletLast4(w.accountLast4) in digits }.singleOrNull()
+            // §120-8: طرف من غير أرقام والمالك اختار حسابه
+            val byChoice = transferPartyOf(t)?.let { chosen[it.key]?.walletId }?.let { id -> all.firstOrNull { it.id == id && it.id != t.walletId && it.currency == t.currency } }
+            val target = byDigits ?: byChoice ?: continue
             val day = t.occurredAt.take(10)
             val read = around ?: txns?.let { rangeOf(it, outs.map { l -> l.transaction.occurredAt.take(10) }) }.orEmpty().also { around = it }
             val near = read.filter { withinADay(it.occurredAt, day) } + ctx.lines.map { it.transaction } + ctx.extra.map { it.first }

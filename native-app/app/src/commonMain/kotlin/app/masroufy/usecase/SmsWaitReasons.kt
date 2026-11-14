@@ -56,10 +56,23 @@ internal fun waitReasonOf(row: SmsRow, target: SmsReviewTarget): TextKey? = when
     // sms-fix (HANDOVER §6.5-3): تحويل أرقام «من:/الى:» فيه مش لأي محفظة من محافظك ⇒ «الحساب ده بتاعك؟» — عمره ما يتسجل في محفظة البنك الوحيدة
     smsLegVerdict(row, target.otherAccountsLast4 + setOfNotNull(target.accountLast4), target.notMineLast4) is SmsLegVerdict.Unknown -> TextKey.SMS_WAIT_UNKNOWN_ACCOUNT
     target.otherAccount(row) -> TextKey.SMS_WAIT_OTHER_ACCOUNT
+    target.unknownAccount(row) -> TextKey.SMS_WAIT_UNKNOWN_ACCOUNT // OVERRIDES §120-9
     row.kind == SmsKind.REFUND -> TextKey.SMS_WAIT_REFUND
     row.kind == SmsKind.CASH_WITHDRAWAL -> cashWithdrawalWait(row, target) // S2 (§75-4): نفس قاعدة `CashWithdrawalEffect.kt` — بيتنقل ⇒ null
     row.kind == SmsKind.CARD_PAYMENT && row.direction == Direction.IN && (row.ownLast4 == null || row.ownLast4 != target.accountLast4) -> TextKey.SMS_WAIT_CARD_CREDIT
     row.kind == SmsKind.CASH_DEPOSIT -> TextKey.SMS_WAIT_CASH_DEPOSIT
     row.kind == SmsKind.PURCHASE_WITH_CASH -> TextKey.SMS_WAIT_PURCHASE_CASH
     else -> null
+}
+
+/**
+ * OVERRIDES §120-9 (قرار المالك 2026-11-15): أرقام **حسابك** في الرسالة ([SmsRow.accountLast4] — سطر الحساب بس، مش الكارت) مش لأي محفظة
+ * في البلد ولا اتقال عليها «مش بتاعي» ⇒ الرسالة بتستنى «الحساب ده بتاعك؟» بدل ما تتسجل لوحدها في محفظة المرسل (`routeSender` بيرجع
+ * لمحفظة المرسل). الرد (`AnswerSmsAccount`) بيكتب الأرقام على محفظة أو بيحفظها «مش بتاعي» ⇒ الرسايل الجاية ما بتسألش تاني.
+ */
+internal fun SmsReviewTarget.unknownAccount(row: SmsRow): Boolean {
+    val digits = row.accountLast4 ?: return false
+    // محفظة المرسل مالهاش أرقام مكتوبة ⇒ ممكن تكون الأرقام دي بتاعتها — زي الأول (سؤال مفتوح للمالك في HANDOVER)
+    if (accountLast4 == null) return false
+    return digits != accountLast4 && digits !in otherAccountsLast4 && digits !in notMineLast4
 }
