@@ -26,6 +26,7 @@ object TransferCodecs {
                 // 2026-10-16: «شركة أو جهة» · «حاجة تانية» · «مستحقات دايمًا» — بتتكتب بس لو ليها قيمة (المستند القديم زي ما هو)
                 opt("kind", p.kind?.wire); opt("note", p.note); opt("dues", p.dues.takeIf { it })
                 if (p.autoSkip.isNotEmpty()) req("autoSkip", p.autoSkip) else opt("autoSkip", null)
+                opt("walletId", p.walletId) // §120-8: حساب طرف «حسابي التاني» من غير أرقام
             }
         },
         { d ->
@@ -33,7 +34,7 @@ object TransferCodecs {
                 d.str("key"), d.str("label"), d.strOrNull("accountLast4"), d.wire("verdict", TransferVerdict::fromWire), d.strOrNull("personId"),
                 d.str("decidedAt"), d.strOrNull("autoMeaning")?.let(AutoMeaning::fromWire), d.strOrNull("autoSince"),
                 kind = d.strOrNull("kind")?.let(EconomicKind::fromWire), note = d.strOrNull("note"), dues = d.boolOrNull("dues") ?: false,
-                autoSkip = d.strings("autoSkip").orEmpty(),
+                autoSkip = d.strings("autoSkip").orEmpty(), walletId = d.strOrNull("walletId"),
             )
         },
     )

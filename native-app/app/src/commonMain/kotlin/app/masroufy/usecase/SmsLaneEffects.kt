@@ -30,10 +30,12 @@ fun smsRecordEffects(
     sources: SourceRecordRepository? = null,
     /** A2: قواعد الحسابات المربوطة بشخص لحظة التسجيل ([PersonRulesEffect]) — آخر واحد، بعد ما كل الآثار التانية خلصت. */
     personRules: RecordEffect? = null,
+    /** OVERRIDES §120-8: الحساب اللي المالك اختاره لطرف «حسابي التاني» من غير أرقام ⇒ رِجل تحويلاته الجاية. */
+    parties: app.masroufy.port.TransferPartyRepository? = null,
 ): List<RecordEffect> = buildList {
     add(OwnAccountByLast4Effect(wallets))
     // §112-3: رِجل الحساب التاني لوحدها (والدمج لما رسالة بنكه توصل) — بعد ما «حسابي التاني» اتحدد
-    add(OwnTransferLegEffect(wallets, txns))
+    add(OwnTransferLegEffect(wallets, txns, parties))
     add(SmsSalaryEffect(inbox, spaceId))
     add(CashWithdrawalEffect(wallets))
     addAll(returns)

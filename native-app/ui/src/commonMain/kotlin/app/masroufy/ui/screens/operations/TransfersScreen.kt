@@ -73,6 +73,7 @@ fun TransfersScreen() {
     var reload by remember { mutableIntStateOf(0) }
     var expanded by rememberSaveable { mutableStateOf<String?>(null) }
     var personFor by remember { mutableStateOf<TransferPartyRef?>(null) }
+    var pickOwn by remember { mutableStateOf<Pair<TransferPartyRef, List<app.masroufy.core.Wallet>>?>(null) } // §120-8
     LaunchedEffect(deps, reload) {
         people = attempt { deps.people.listWithBalances().map { it.person } }.orEmpty()
         attempt { deps.partyAnswers?.sweepDues() }
@@ -101,7 +102,7 @@ fun TransfersScreen() {
                 for (r in rows) item(key = "party-${r.ref.key}-${r.currency}") {
                     PartyCard(r, expanded == r.ref.key, onToggle = { expanded = if (expanded == r.ref.key) null else r.ref.key }) {
                         if (r.verdict == null) {
-                            SmallAction(t(UiKey.TRANSFER_PARTY_OWN)) { act({ n -> t(UiKey.TRANSFERS_DONE_OWN, transfersCount(n)) }) { deps.transfers.markOwnAccount(r.ref) } }
+                            SmallAction(t(UiKey.TRANSFER_PARTY_OWN)) { ownTapped(r.ref, deps.transfers, scope, { pickOwn = r.ref to it }) { act({ n -> t(UiKey.TRANSFERS_DONE_OWN, transfersCount(n)) }) { deps.transfers.markOwnAccount(r.ref) } } }
                             SmallAction(t(UiKey.TRANSFERS_PERSON), strong = true) { personFor = r.ref }
                             SmallAction(t(UiKey.TRANSFER_PARTY_NOT)) { act({ t(UiKey.TRANSFERS_DONE_NOT) }) { deps.transfers.dismiss(r.ref); 0 } }
                         } else {
@@ -118,6 +119,11 @@ fun TransfersScreen() {
             val person = who ?: deps.people.addPerson(newName)
             deps.transfers.markPerson(ref, person.id)
         }
+    }
+    OwnAccountPickSheet(pickOwn?.second, t(app.masroufy.core.R06Key.OWN_PICK_BODY), null, { pickOwn = null }) { w ->
+        val ref = pickOwn?.first ?: return@OwnAccountPickSheet
+        pickOwn = null
+        act({ n -> t(UiKey.TRANSFERS_DONE_OWN, transfersCount(n)) }) { deps.transfers.markOwnAccount(ref, w.id) }
     }
 }
 

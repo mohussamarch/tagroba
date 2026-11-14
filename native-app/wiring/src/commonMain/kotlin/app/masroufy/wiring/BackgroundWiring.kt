@@ -47,7 +47,7 @@ fun smsImportDeps(
         spaceId, r.wallets, inbox, r.categories,
         // التصنيف اللي المالك اختاره (شراء صادر) بيترفع كمان لقاعدة التجار المشتركة لو [share] موجود (رد المالك 2026-10-22)
         remember = RememberChosenCategoryEffect(MerchantMemory(r.merchants, env.ids, share?.hook)), subscriptions = r.recurring,
-        txns = r.transactions, sources = r.sourceRecords,
+        txns = r.transactions, sources = r.sourceRecords, parties = r.transferParties, // §120-8
         // A2: «مستحقات دايمًا» و«سجّل تحويلاته لوحده» أول ما الرسالة تتسجل (الخلفية · التسجيل لوحده · تأكيد المالك)
         personRules = app.masroufy.usecase.PersonRulesEffect(personLinksOf(r, env.ids, env.clock, SpaceLegsOf(spaceId, r.spaceTransfers)).rules),
     ),

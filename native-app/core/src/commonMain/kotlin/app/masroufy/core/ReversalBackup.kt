@@ -11,6 +11,8 @@ package app.masroufy.core
 val BACKUP_SOFT_RELATIONS: Map<String, Map<String, String>> = mapOf(
     // §6.5-14: «العمليات التابعة» لين برضه — بيتحوّل مع المعرّفات في الدمج، والمصروف اللي مش في الملف ما بيرفضش النسخة
     "transactions" to linkedMapOf("reversalOfId" to "transactions", "reversedById" to "transactions", "linkedExpenseId" to "transactions"),
+    // OVERRIDES §120-8: حساب طرف «حسابي التاني» من غير أرقام — لين (محفظة اتمسحت ما ترفضش النسخة؛ الرِجل بتتجاهله)
+    "transferParties" to mapOf("walletId" to "wallets"),
 )
 
 /** النسخة بعد تصليح أزواج «اللي رجعت» المكسورة — **نفس الكائن** لو مفيش حاجة اتصلحت (نفس الملف ونفس البصمة). */

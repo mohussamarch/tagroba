@@ -109,7 +109,21 @@ class ManageTransfers(private val deps: ManageTransfersDeps) {
      * في نفس الخطوة. السلفة اللي عليها سداد اتسجل **من مكان تاني** ⇒ مرفوض بسببه ومفيش ولا كتابة (ما بنمسحش حاجة المالك كتبها).
      * الربط اللي المالك عمله بنفسه من شاشة الأشخاص ما بيتلمسش (زي ما كان).
      */
-    suspend fun markOwnAccount(party: TransferPartyRef): Int = decide(party, TransferVerdict.OWN_ACCOUNT, null)
+    suspend fun markOwnAccount(party: TransferPartyRef, walletId: Id? = null): Int = decide(party, TransferVerdict.OWN_ACCOUNT, null, walletId)
+
+    /**
+     * OVERRIDES §120-8: «ده حسابي التاني» لطرف **من غير أرقام** ⇒ الشاشة بتسأل «أنهي حساب من حساباتك؟» قبل [markOwnAccount] (والاختيار
+     * بيتحفظ للطرف). [accountChoices] = محافظك اللي ينفع تبقى الحساب ده (مش كاش · بعملة تحويلاته); فاضية ⇒ الشاشة ما بتسألش.
+     */
+    fun needsAccountChoice(party: TransferPartyRef): Boolean = party.last4 == null
+
+    suspend fun accountChoices(party: TransferPartyRef): List<app.masroufy.core.Wallet> {
+        val all = deps.wallets?.listAll().orEmpty()
+        val mine = everything().filter { transferPartyOf(it)?.key == party.key && !it.id.endsWith(OWN_LEG_SUFFIX) }
+        val currencies = mine.map { it.currency }.toSet()
+        val used = mine.mapNotNull { it.walletId }.toSet()
+        return all.filter { it.kind != "cash" && (currencies.isEmpty() || it.currency in currencies) && it.id !in used.takeIf { u -> u.size == 1 }.orEmpty() }
+    }
 
     /**
      * «ده شخص» ⇒ كل تحويل معاه نوعه لسه ما اتأكدش **بيتسأل** (القديم كمان): الصادر «سلفة ولا دعم؟» كل مرة (قرار المالك §75-5 —
@@ -155,9 +169,9 @@ class ManageTransfers(private val deps: ManageTransfersDeps) {
         return reverted.size
     }
 
-    private suspend fun decide(party: TransferPartyRef, verdict: TransferVerdict, personId: Id?): Int {
+    private suspend fun decide(party: TransferPartyRef, verdict: TransferVerdict, personId: Id?, walletId: Id? = null): Int {
         val now = deps.clock.nowIso()
-        val decision = TransferParty(party.key, party.label, party.last4, verdict, personId, now)
+        val decision = TransferParty(party.key, party.label, party.last4, verdict, personId, now, walletId = walletId?.takeIf { party.last4 == null })
         val mine = everything().filter { transferPartyOf(it)?.key == party.key }
         val personLinked = deps.personLinks?.listByTransactionIds(mine.map { it.id })?.map { it.transactionId }?.toSet().orEmpty()
         val free = mine.filter { it.id !in personLinked }
@@ -166,7 +180,7 @@ class ManageTransfers(private val deps: ManageTransfersDeps) {
         val ledger = deps.ledger?.takeIf { verdict == TransferVerdict.OWN_ACCOUNT }
         val stale = ledger?.let { it.askWrites(it.linksOf(free.map { t -> t.id }).values, withLoans = true) }
         if (stale != null && stale.blocking.isNotEmpty()) throw TransferZoneError(uiText(TextKey.ASK_LOAN_HAS_REPAYMENT))
-        val legs = if (verdict == TransferVerdict.OWN_ACCOUNT) otherLegs(party, free, now) else emptyList()
+        val legs = if (verdict == TransferVerdict.OWN_ACCOUNT) otherLegs(party, free, now, decision.walletId) else emptyList()
         deps.uow.run {
             deps.parties.save(decision)
             if (changed.isNotEmpty() || legs.isNotEmpty()) deps.txns.saveMany(changed + legs)
@@ -180,9 +194,10 @@ class ManageTransfers(private val deps: ManageTransfersDeps) {
      * المبلغ واليوم ونوعها «تحويل داخلي» مؤكد. ما بتتعملش لو موجودة (نفس المعرّف) أو المحفظة دي فيها عملية بنفس الاتجاه والمبلغ في نفس اليوم
      * (رسالتها أو كشفها سجّلها قبل كده) — عشان الفلوس ما تتعدّش مرتين.
      */
-    private suspend fun otherLegs(party: TransferPartyRef, mine: List<Transaction>, now: String): List<Transaction> {
-        val last4 = party.last4 ?: return emptyList()
-        val target = deps.wallets?.listAll()?.firstOrNull { walletLast4(it.accountLast4) == last4 } ?: return emptyList()
+    private suspend fun otherLegs(party: TransferPartyRef, mine: List<Transaction>, now: String, chosen: Id? = null): List<Transaction> {
+        // §120-8: طرف من غير أرقام ⇒ الحساب اللي المالك اختاره
+        val all0 = deps.wallets?.listAll().orEmpty()
+        val target = party.last4?.let { l4 -> all0.firstOrNull { walletLast4(it.accountLast4) == l4 } } ?: chosen?.let { id -> all0.firstOrNull { it.id == id } } ?: return emptyList()
         val all = everything()
         return mine.filter { it.walletId != null && it.walletId != target.id && it.currency == target.currency && !it.id.endsWith(OWN_LEG_SUFFIX) }
             // §112-3: يوم قبل أو بعد (البنك التاني ممكن يسجّل الوارد تاني يوم) — `ownLegAlreadyThere` · الرِجل نفسها `ownLegOn`

@@ -73,6 +73,9 @@ interface OperationsDeps {
     /** «امسح» للعملية الواحدة (OVERRIDES §91-11 — نفس اللي التحديد بيمشي عليه). `null` ⇒ البند والزرار ما بيظهروش. */
     val erase: app.masroufy.usecase.DeleteTransaction? get() = null
 
+    /** OVERRIDES §120-5: «اخصمها من حسابي التاني» على فلوس داخلة. `null` ⇒ الفعل ما بيظهرش. */
+    val ownLeg: app.masroufy.usecase.AddOwnLeg? get() = null
+
     /**
      * ردود الداخل الجديدة (البند 6): «راتب الدوام» · «عمل إضافي» · «بيعة» · نوع تاني — في «مَن هذا؟» وفي تغيير نوع أي تحويل داخل.
      * null (المعاينة) ⇒ الأزرار ما بتظهرش.
