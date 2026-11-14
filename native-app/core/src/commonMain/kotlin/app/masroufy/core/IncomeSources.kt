@@ -87,6 +87,11 @@ data class IncomeSource(
     val archivedAt: String? = null,
     /** true = [endedAt] اتحط بالأرشفة ⇒ «رجّعه» بيفتحه تاني. null = لأ (أو اتقفل قبل الأرشفة). */
     val endedByArchive: Boolean? = null,
+    /**
+     * §120-7 «ده مرتب دايمًا من الحساب ده»: مفاتيح حسابات من [payerKeys] أي إيداع منها = مرتب (من غير شرط المبلغ والميعاد). من غيرها
+     * القرار الأحدث ([salaryByPayerAllowed]). حقل اختياري جديد (ما بيتكتبش لو فاضي).
+     */
+    val alwaysSalaryKeys: List<String> = emptyList(),
 ) {
     val archived: Boolean get() = archivedAt != null
 }

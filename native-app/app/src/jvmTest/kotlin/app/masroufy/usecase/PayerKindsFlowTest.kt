@@ -87,6 +87,29 @@ class PayerKindsFlowTest {
         assertFalse(nearPayday("2026-03-05", 28))
     }
 
+    @Test fun alwaysSalaryFromThisAccountMakesAnyDepositSalaryUntilTurnedOff() = runBlocking<Unit> {
+        // جهة اتعملت من رد «راتب» — من غير مبلغ ولا يوم (مراجعة todo-types-4)
+        val e = employers.save(null, EmployerInput("جهة الندى", "2025-01-01"))
+        val key = transferPartyOf(deposit("2026-09-27", 1))!!.key
+        employers.attach(e.id, transferPartyOf(deposit("2026-09-27", 1))!!)
+        val waiting = deposit("2026-10-05", 915_000)
+        txns.saveMany(listOf(waiting))
+        assertTrue(asksPayerKind(waiting, sources.listAll(), 28), "من غيره: القرار الأحدث (مبلغ وميعاد) ⇒ بيتسأل")
+        assertEquals(1, employers.setAlwaysSalary(e.id, key, on = true), "المستني من الحساب اتسجل مرتب")
+        assertEquals(EconomicKind.SALARY to true, txns.findByIds(listOf(waiting.id)).single().let { it.economicKind to it.economicKindConfirmed })
+        val any = deposit("2026-11-13", 33_000)
+        assertEquals(EconomicKind.SALARY, applyKnownPayerSalary(any, sources.listAll(), "now").economicKind)
+        assertFalse(asksPayerKind(any, sources.listAll(), 28))
+        employers.setAlwaysSalary(e.id, key, on = false)
+        assertEquals(any, applyKnownPayerSalary(any, sources.listAll(), "now"), "القفل ⇒ يرجع للقرار الأحدث")
+        assertEquals(EconomicKind.SALARY, txns.findByIds(listOf(waiting.id)).single().economicKind, "اللي اتسجل ما بيرجعش")
+        // حساب مش من حسابات الجهة ⇒ مرفوض · شيل الحساب بيشيل العلامة
+        kotlin.test.assertFailsWith<app.masroufy.core.IncomeSourceError> { employers.setAlwaysSalary(e.id, "#9999", on = true) }
+        employers.setAlwaysSalary(e.id, key, on = true)
+        employers.detach(e.id, key)
+        assertEquals(emptyList(), sources.listAll().single().alwaysSalaryKeys)
+    }
+
     @Test fun samePayerOtherAmountAsksAndTheAnswerIsRememberedThenUndone() = runBlocking<Unit> {
         val all = nada()
         val first = deposit("2026-10-05", 85_000)
