@@ -85,7 +85,7 @@ class AppContainer(private val context: Context, private val problems: ProblemLo
     }
     private val google = firebase?.webClientId?.let { AndroidGoogleIdTokens({ activity }, it) }
     val signIn = SignIn(auth ?: NoFirebaseAuth, google, AndroidSignOutCleanup(context, firebase), firebase?.let { f -> app.masroufy.firestore.FirestoreAccountEraser { f.firestore } })
-    val appLock = AppLock(AndroidDeviceLock(context) { activity }, AndroidAppLockSettings(context), nowMillis)
+    val appLock = AppLock(AndroidDeviceLock(context) { activity }, AndroidAppLockSettings(context), app.masroufy.device.ElapsedClock::nowMs)
 
     /** ملفات الأسعار (نسخة واحدة على الجهاز لكل البلاد). */
     val feeds = LoadOnlineFeeds(PlatformHttpText(), AndroidFeedCache(context), clock, nowMillis)

@@ -49,13 +49,13 @@ class UseCaseTextVariantsTest {
 
     /** رسالة الجهاز كانت جدول ثابت بيتبني مرة واحدة — دلوقتي بتتبني وقت الطلب، فالتبديل بيوصلها. */
     @Test fun lockAvailabilityMessageIsBuiltAtCallTime() = runBlocking<Unit> {
-        val lock = AppLock(MemoryDeviceLock(DeviceLockAvailability(false, "HW_UNAVAILABLE")), MemoryAppLockSettings(), now = { 0L })
+        val lock = AppLock(MemoryDeviceLock(DeviceLockAvailability(false, "HW_UNAVAILABLE")), MemoryAppLockSettings(), elapsedMs = { 0L })
         Texts.arabicVariant = ArabicVariant.EGYPTIAN
         assertEquals(LockChange.Refused("حساس البصمة مش متاح دلوقتي. جرّب تاني بعد شوية."), lock.enable())
         Texts.arabicVariant = ArabicVariant.MSA
         assertEquals(LockChange.Refused("مستشعر البصمة غير متاح الآن. أعد المحاولة بعد قليل."), lock.enable())
         val device = MemoryDeviceLock(results = listOf(LockResult.OK))
-        AppLock(device, MemoryAppLockSettings(), now = { 0L }).enable()
+        AppLock(device, MemoryAppLockSettings(), elapsedMs = { 0L }).enable()
         assertEquals(listOf("أكّد لتفعيل قفل مصروفي"), device.prompts)
     }
 }

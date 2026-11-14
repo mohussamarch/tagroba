@@ -37,7 +37,11 @@ private fun availabilityMessage(code: String): String? = when (code) {
     else -> null
 }
 
-class AppLock(private val device: DeviceLockPort, private val settings: AppLockSettingsPort, val now: () -> Long) {
+/**
+ * [elapsedMs] = وقت **منقضي ثابت الاتجاه** (أندرويد: `ElapsedClock` = `elapsedRealtime`) — مش ساعة الحيطة: الرجوع بساعة الجوال لورا
+ * كان بيخلّي مهلة الخمس دقايق ما تخلصش فالقفل ما يرجعش (مراجعة 2026-11-14).
+ */
+class AppLock(private val device: DeviceLockPort, private val settings: AppLockSettingsPort, val elapsedMs: () -> Long) {
     val supported: Boolean get() = device.supported
 
     private suspend fun confirmOwner(title: String): LockChange {
@@ -49,7 +53,7 @@ class AppLock(private val device: DeviceLockPort, private val settings: AppLockS
 
     fun isEnabled(): Boolean = settings.read()
 
-    fun needsUnlock(hiddenAt: Long?): Boolean = shouldLock(settings.read(), hiddenAt, now())
+    fun needsUnlock(hiddenAt: Long?): Boolean = shouldLock(settings.read(), hiddenAt, elapsedMs())
 
     suspend fun enable(): LockChange = confirmOwner(uiText(TextKey.LOCK_CONFIRM_ENABLE)).also { if (it == LockChange.Ok) settings.write(true) }
 
