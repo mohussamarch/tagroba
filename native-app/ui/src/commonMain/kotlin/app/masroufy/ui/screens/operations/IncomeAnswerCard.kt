@@ -46,7 +46,11 @@ import app.masroufy.usecase.SalaryAnswer
 import kotlinx.coroutines.launch
 
 /** نتيجة رد الداخل (البند 6): العنوان والسطر و«تراجع» ومعاينة «طبّق على اللي فات» لو فيه جهة. */
-data class IncomeDone(val title: String, val body: String, val undo: AnswerUndo, val retro: RetroPreview? = null, val refund: Boolean = false)
+/** [partyUndo] §120-6: الرد على وارد من جهة غيّر «آخر اختيار» للجهة ⇒ «تراجع» بيرجّعها كمان. */
+data class IncomeDone(
+    val title: String, val body: String, val undo: AnswerUndo, val retro: RetroPreview? = null, val refund: Boolean = false,
+    val partyUndo: app.masroufy.usecase.PartyUndo? = null,
+)
 
 /** «راتب الدوام»: «راتب من الجهة» · الحساب اتربط ولا لأ · من غير جهة ⇒ زي أي دخل. أسامي الأنواع زي ما هي ([ruleFor]). */
 fun salaryDone(a: SalaryAnswer): IncomeDone {
@@ -73,10 +77,22 @@ fun IncomeAnswerChips(transactionId: Id, withOther: Boolean, withSalary: Boolean
     var picking by remember { mutableStateOf(false) }
     var other by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
+    val parties = LocalSpace.current.operations.partyAnswers
+    var company by remember(transactionId) { mutableStateOf<app.masroufy.core.TransferParty?>(null) }
+    var dontAsk by remember(transactionId) { mutableStateOf(false) }
+    LaunchedEffect(transactionId, parties) {
+        company = parties?.let { p -> attempt { p.companyOf(transactionId) } }
+        dontAsk = company?.autoKind == true
+    }
     fun mark(kind: EconomicKind) = scope.launch {
         var undo: AnswerUndo? = null
-        error = failureOf { undo = answers.markIncome(transactionId, kind) }
-        undo?.let { onDone(IncomeDone(t(UiKey.INCOME_ANS_DONE_INCOME, ruleFor(kind).label), t(UiKey.INCOME_ANS_DONE_INCOME_BODY), it)) }
+        var partyUndo: app.masroufy.usecase.PartyUndo? = null
+        error = failureOf {
+            undo = answers.markIncome(transactionId, kind)
+            // §120-6: وارد من جهة ⇒ النوع ده آخر اختيار ليها + «ما تسألنيش تاني»
+            if (company != null) partyUndo = parties?.rememberCompanyKind(transactionId, kind, dontAsk)
+        }
+        undo?.let { onDone(IncomeDone(t(UiKey.INCOME_ANS_DONE_INCOME, ruleFor(kind).label), t(UiKey.INCOME_ANS_DONE_INCOME_BODY), it, partyUndo = partyUndo)) }
     }
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         if (withSalary) SelectChip(t(UiKey.INCOME_ANS_SALARY), false, { picking = true; error = null })
@@ -89,6 +105,7 @@ fun IncomeAnswerChips(transactionId: Id, withOther: Boolean, withSalary: Boolean
             for (k in IncomeAnswers.OTHER_KINDS) SelectChip(ruleFor(k).label, false, { mark(k) })
         }
     }
+    if (company != null) MwRuleBox(dontAsk, t(app.masroufy.core.R06Key.C120_DONT_ASK_BODY), title = t(app.masroufy.core.R06Key.C120_DONT_ASK)) { dontAsk = !dontAsk }
     error?.let { FieldError(it) }
     EmployerPickSheet(picking, transactionId, onDismiss = { picking = false }) { picking = false; onDone(it) }
 }
@@ -108,7 +125,10 @@ fun IncomeDoneBox(done: IncomeDone, onUndone: () -> Unit, onChanged: () -> Unit)
             BasicText(done.body, style = Type.of(13))
             TonalButton(t(UiKey.TRANSFER_PARTY_UNDO), {
                 scope.launch {
-                    val err = failureOf { deps.incomeAnswers?.undo(done.undo) }
+                    val err = failureOf {
+                        deps.incomeAnswers?.undo(done.undo)
+                        done.partyUndo?.let { deps.partyAnswers?.undo(it) }
+                    }
                     if (err == null) onUndone() else error = err
                 }
             }, height = 40.dp)

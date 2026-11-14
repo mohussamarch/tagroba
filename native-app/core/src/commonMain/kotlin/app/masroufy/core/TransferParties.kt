@@ -53,6 +53,8 @@ data class TransferParty(
      * دايمًا») عمرها ما ترجع تتطبق عليها.
      */
     val autoSkip: List<Id> = emptyList(),
+    /** §120-6 «ما تسألنيش تاني» مع [TransferVerdict.COMPANY]: الوارد الجاي من الحساب بياخد [kind] (آخر اختيار) لوحده — بيتشال من إعداد رسائل البنك. */
+    val autoKind: Boolean = false,
 )
 
 /** أطول اسم حر في «حاجة تانية». */
@@ -260,7 +262,13 @@ fun applyTransferVerdict(t: Transaction, party: TransferParty?, nowIso: String):
             t.reviewState == ReviewState.NEEDS_REVIEW -> t
             else -> t.copy(reviewState = ReviewState.NEEDS_REVIEW, updatedAt = nowIso)
         }
-        TransferVerdict.DISMISSED, TransferVerdict.COMPANY -> t
+        TransferVerdict.DISMISSED -> t
+        // §120-6: الجهة بتتسأل كل مرة — إلا لو المالك علّم «ما تسألنيش تاني» ⇒ آخر نوع اختاره (مؤكد)
+        TransferVerdict.COMPANY -> {
+            val kind = party.kind
+            if (!party.autoKind || kind == null || t.observedDirection != Direction.IN || t.economicKindConfirmed) t
+            else t.copy(economicKind = kind, economicKindConfirmed = true, reviewState = ReviewState.CONFIRMED, suggestedKind = null, updatedAt = nowIso)
+        }
         // «حاجة تانية»: الوارد اللي نوعه لسه ما اتأكدش ⇒ النوع المختار مؤكد والاسم في الملاحظة (ملاحظة المالك ما بتتلمسش)
         TransferVerdict.LABEL ->
             if (t.observedDirection != Direction.IN || t.economicKindConfirmed) t

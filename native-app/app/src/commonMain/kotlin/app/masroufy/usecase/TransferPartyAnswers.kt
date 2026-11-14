@@ -74,16 +74,59 @@ class TransferPartyAnswers(private val deps: TransferPartyAnswersDeps) {
     private fun decision(party: TransferPartyRef, verdict: TransferVerdict, now: String, kind: EconomicKind? = null, note: String? = null, personId: Id? = null, dues: Boolean = false) =
         TransferParty(party.key, party.label, party.last4, verdict, personId, now, kind = kind, note = note, dues = dues)
 
-    /** «شركة أو جهة»: الجهة بتتفتكر، والمبلغ ده بالنوع المختار (مؤكد). */
-    suspend fun markCompany(party: TransferPartyRef, transactionId: Id, kind: EconomicKind): PartyUndo {
+    /**
+     * «شركة أو جهة»: الجهة بتتفتكر، والمبلغ ده بالنوع المختار (مؤكد). §120-6: [dontAskAgain] («ما تسألنيش تاني») ⇒ الوارد الجاي من الحساب
+     * بياخد النوع ده لوحده (`applyTransferVerdict`)، وإلا بيتسأل كل مرة.
+     */
+    suspend fun markCompany(party: TransferPartyRef, transactionId: Id, kind: EconomicKind, dontAskAgain: Boolean = false): PartyUndo {
         if (kind !in COMPANY_INCOMING_KINDS) throw TransferPartyAnswerError(uiText(UiKey.EMPLOYER_ERR_KIND))
         val before = decisionOf(party.key)
         val t = load(transactionId)
         deps.uow.run {
-            deps.parties.save(decision(party, TransferVerdict.COMPANY, deps.clock.nowIso(), kind = kind))
+            deps.parties.save(decision(party, TransferVerdict.COMPANY, deps.clock.nowIso(), kind = kind).copy(autoKind = dontAskAgain))
             deps.kinds.setOne(transactionId, kind)
         }
         return PartyUndo(party.key, before, listOf(t))
+    }
+
+    /** §120-6: الجهة المحفوظة للتحويل ده (null = مش جهة) — عشان كارت النوع يعرض «ما تسألنيش تاني». */
+    suspend fun companyOf(transactionId: Id): TransferParty? {
+        val key = transferPartyOf(load(transactionId))?.key ?: return null
+        return decisionOf(key)?.takeIf { it.verdict == TransferVerdict.COMPANY }
+    }
+
+    /**
+     * §120-6: نوع وارد من جهة معروفة (كل مرة بيتسأل): المبلغ ده بالنوع، والنوع ده بقى «آخر اختيار» للجهة. [dontAskAgain] ⇒ الجاي بياخده لوحده.
+     */
+    suspend fun answerCompanyKind(transactionId: Id, kind: EconomicKind, dontAskAgain: Boolean): PartyUndo {
+        if (kind !in COMPANY_INCOMING_KINDS && kind !in IncomeAnswers.OTHER_KINDS) throw TransferPartyAnswerError(uiText(UiKey.EMPLOYER_ERR_KIND))
+        val t = load(transactionId)
+        val before = companyOf(transactionId) ?: throw TransferPartyAnswerError(uiText(UiKey.EMPLOYER_ERR_KIND))
+        deps.uow.run {
+            deps.parties.save(before.copy(kind = kind, autoKind = dontAskAgain))
+            deps.kinds.setOne(transactionId, kind)
+        }
+        return PartyUndo(before.key, before, listOf(t))
+    }
+
+    /**
+     * §120-6 من كارت نوع الوارد العام (`IncomeAnswers.markIncome` بيكتب العملية): النوع ده بقى «آخر اختيار» للجهة + «ما تسألنيش تاني».
+     * null = التحويل مش من جهة. التراجع ([undo]) بيرجّع الجهة بس.
+     */
+    suspend fun rememberCompanyKind(transactionId: Id, kind: EconomicKind, dontAskAgain: Boolean): PartyUndo? {
+        val before = companyOf(transactionId) ?: return null
+        deps.parties.save(before.copy(kind = kind, autoKind = dontAskAgain))
+        return PartyUndo(before.key, before, emptyList())
+    }
+
+    /** §120-6: الجهات اللي عليها «ما تسألنيش تاني» (إعداد رسائل البنك) — الأحدث الأول. */
+    suspend fun autoKinds(): List<TransferParty> =
+        deps.parties.listAll().filter { it.verdict == TransferVerdict.COMPANY && it.autoKind && it.kind != null }.sortedByDescending { it.decidedAt }
+
+    /** §120-6 «اسألني تاني»: الجهة بتفضل جهة، والجاي منها بيتسأل عن نوعه تاني (اللي اتسجل قبل كده زي ما هو). */
+    suspend fun askAgain(key: String) {
+        val d = decisionOf(key) ?: return
+        if (d.autoKind) deps.parties.save(d.copy(autoKind = false))
     }
 
     /**

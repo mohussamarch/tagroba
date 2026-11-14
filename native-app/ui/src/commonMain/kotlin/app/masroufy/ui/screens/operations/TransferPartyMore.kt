@@ -17,6 +17,7 @@ import app.masroufy.core.COMPANY_INCOMING_KINDS
 import app.masroufy.core.EconomicKind
 import app.masroufy.core.LABEL_DEFAULT_KIND
 import app.masroufy.core.PARTY_NOTE_MAX
+import app.masroufy.core.R06Key
 import app.masroufy.core.TransferPartyRef
 import app.masroufy.core.UiKey
 import app.masroufy.core.ruleFor
@@ -57,17 +58,23 @@ fun newDecisionTexts(d: NewPartyDecision, party: TransferPartyRef): Pair<String,
     is NewPartyDecision.Ignored -> t(UiKey.TRANSFER_PARTY_DONE_NOT) to t(UiKey.TRANSFER_PARTY_DONE_NOT_BODY)
 }
 
-/** «شركة أو جهة»: نوع المبلغ من [COMPANY_INCOMING_KINDS] (مش «متجر جديد»). الاختيار بيحفظ على طول. */
+/**
+ * «شركة أو جهة»: نوع المبلغ من [COMPANY_INCOMING_KINDS] (مش «متجر جديد»). الاختيار بيحفظ على طول. §120-6: علامة «ما تسألنيش تاني» جنب
+ * السؤال (مقفولة من الأول) ⇒ `onPick(kind, true)`.
+ */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun CompanyKindSheet(visible: Boolean, party: TransferPartyRef, error: String?, onDismiss: () -> Unit, onPick: (EconomicKind) -> Unit) {
+fun CompanyKindSheet(visible: Boolean, party: TransferPartyRef, error: String?, onDismiss: () -> Unit, onPick: (EconomicKind, Boolean) -> Unit) {
     val title = t(UiKey.TRANSFER_PARTY_COMPANY_TITLE, party.label)
+    var dontAsk by remember(party.key) { mutableStateOf(false) }
+    LaunchedEffect(visible) { if (visible) dontAsk = false }
     Sheet(visible, onDismiss, title = title, closeLabel = t(UiKey.SHELL_CLOSE), spacing = 12.dp) {
         BasicText(title, style = Type.of(17, FontWeight.Bold))
         BasicText(t(UiKey.TRANSFER_PARTY_COMPANY_NOTE), style = Type.of(13).copy(color = Ink.muted))
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            for (k in COMPANY_INCOMING_KINDS) SelectChip(ruleFor(k).label, false, { onPick(k) }, height = 44.dp)
+            for (k in COMPANY_INCOMING_KINDS) SelectChip(ruleFor(k).label, false, { onPick(k, dontAsk) }, height = 44.dp)
         }
+        MwRuleBox(dontAsk, t(R06Key.C120_DONT_ASK_BODY), title = t(R06Key.C120_DONT_ASK)) { dontAsk = !dontAsk }
         error?.let { FieldError(it) }
     }
 }

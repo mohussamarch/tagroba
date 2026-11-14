@@ -157,6 +157,7 @@ fun BankSmsSettingsScreen() {
             }
         }
         item(key = "ignored") { app.masroufy.ui.screens.operations.IgnoredAccountsCard() }
+        item(key = "auto-kinds") { app.masroufy.ui.screens.operations.AutoKindAccountsCard() } // §120-6
         item(key = "notif") { LinkRow(t(UiKey.SMS_SETTINGS_NOTIF_LINK), { nav.push(NotificationSettingsRoute) }) }
     }
 

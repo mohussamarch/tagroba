@@ -181,7 +181,7 @@ internal fun MwEffect(text: String) {
 
 /** «خليها قاعدة للمرات الجاية» — فاضية من الأول. */
 @Composable
-internal fun MwRuleBox(on: Boolean, body: String, onToggle: () -> Unit) {
+internal fun MwRuleBox(on: Boolean, body: String, title: String = t(R06Key.MW_RULE_TITLE), onToggle: () -> Unit) {
     Row(
         Modifier.fillMaxWidth().heightIn(min = 52.dp).clip(RoundedCornerShape(14.dp)).background(TileBg)
             .toggleable(value = on, role = Role.Checkbox, onValueChange = { onToggle() }).padding(horizontal = 10.dp, vertical = 9.dp),
@@ -189,7 +189,7 @@ internal fun MwRuleBox(on: Boolean, body: String, onToggle: () -> Unit) {
     ) {
         Box(Modifier.padding(top = 1.dp)) { MwTick(on) }
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            BasicText(t(R06Key.MW_RULE_TITLE), style = Type.of(13, FontWeight.Bold))
+            BasicText(title, style = Type.of(13, FontWeight.Bold))
             BasicText(body, style = Type.of(12, lineHeight = 1.6).copy(color = Ink.muted))
         }
     }
