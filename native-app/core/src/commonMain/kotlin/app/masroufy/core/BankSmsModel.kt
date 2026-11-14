@@ -240,6 +240,7 @@ internal fun smsRow(
         SmsRow(
             lineNumber = lineNumber, date = date, amountMinor = amount, direction = direction,
             merchantName = redactSms(merchant),
+            // OVERRIDES §120-10: نفس المرسل والوقت والنص ⇒ نفس المرجع ⇒ التانية نسخة وبتتشال (`SmsSameSecondCopyTest`)
             reference = "SMS:" + hashContent(message.sender + "|" + message.receivedAt + "|" + body),
             sourceName = message.sender, description = safeBody, raw = safeBody, kind = kind,
             ownLast4 = ownLast4Of(body, direction), shape = shape,
