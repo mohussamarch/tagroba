@@ -57,7 +57,7 @@ if (withAndroid) {
         namespace = "app.masroufy.firestore"
         compileSdk = 36
         defaultConfig {
-            minSdk = 24
+            minSdk = 26
             testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         }
         // قياس الأداء ببناء نهائي (مش debug): `./gradlew :firestore:connectedReleaseAndroidTest -Pmasroufy.releaseTests=true`

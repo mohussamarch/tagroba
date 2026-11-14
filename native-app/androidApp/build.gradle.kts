@@ -25,7 +25,7 @@ android {
 
     defaultConfig {
         applicationId = "app.masroufy.mobile"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 36
         versionCode = 12
         versionName = "kotlin-0.5.5"
