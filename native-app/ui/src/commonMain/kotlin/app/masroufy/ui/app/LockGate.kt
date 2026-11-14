@@ -29,10 +29,20 @@ class LockGate(private val lock: AppLock?) {
     var released by mutableStateOf(false)
         private set
 
+    /**
+     * شاشة القفل ظاهرة فعلًا فوق المحتوى (مقفول + فيه حساب — [lockCovers]). بيتحدّث من `MasroufyApp`. وهي ظاهرة زرار الرجوع
+     * **ما بيتنقلش جوه التطبيق** ورا القفل (مراجعة 2026-11-14) — بيروح لأندرويد بس (التطبيق يخرج للخلفية ويفضل مقفول).
+     */
+    var covering by mutableStateOf(false)
+        internal set
+
+    /** زرار الرجوع يتنقل جوه التطبيق؟ لأ وهو مغطّى بالقفل. */
+    fun backNavigates(): Boolean = !covering
+
     private var hiddenAt: Long? = null
 
     fun onHidden() {
-        hiddenAt = lock?.now?.invoke()
+        hiddenAt = lock?.elapsedMs?.invoke()
     }
 
     fun onVisible() {
@@ -67,3 +77,6 @@ class LockGate(private val lock: AppLock?) {
         released = false
     }
 }
+
+/** القفل بيغطي المحتوى: مقفول وفيه حساب (شاشة الدخول نفسها مالهاش قفل). */
+fun lockCovers(locked: Boolean, session: AppSession): Boolean = locked && session !is AppSession.SignedOut

@@ -41,7 +41,8 @@ class MainActivity : FragmentActivity() {
             this,
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
-                    if (shell.handleBack()) return
+                    // ورا شاشة القفل: مفيش تنقل جوه التطبيق — الرجوع بيروح لأندرويد (خروج للخلفية والقفل فاضل)
+                    if (lock.backNavigates() && shell.handleBack()) return
                     isEnabled = false
                     onBackPressedDispatcher.onBackPressed()
                     isEnabled = true

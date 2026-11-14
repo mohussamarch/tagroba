@@ -96,7 +96,8 @@ fun MasroufyApp(app: AppDeps, shell: ShellState, lock: LockGate, reduceMotion: B
             val root = rememberBackdrop()
             Box(Modifier.fillMaxSize()) {
                 // ANDROID-3: وهو مقفول، المحتوى اللي ورا البلور ملوش وجود عند قارئ الشاشة (TalkBack ما يقراش أرصدة ولا يدوس على حاجة)
-                val hidden = lock.locked && session !is AppSession.SignedOut
+                val hidden = lockCovers(lock.locked, session)
+                androidx.compose.runtime.SideEffect { lock.covering = hidden }
                 // الخلفية جوه المتسجل (نفس سبب `AppShell`): بلور القفل لازم يغطي الأصل كله
                 Box(Modifier.fillMaxSize().backdropSource(root).screenBackground().then(if (hidden) Modifier.clearAndSetSemantics {} else Modifier)) {
                     when (val s = session) {

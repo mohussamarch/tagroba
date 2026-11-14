@@ -6,7 +6,9 @@ import app.masroufy.port.AppLockSettingsPort
 import app.masroufy.port.DeviceLockAvailability
 import app.masroufy.port.DeviceLockPort
 import app.masroufy.port.LockResult
+import app.masroufy.ui.app.AppSession
 import app.masroufy.ui.app.LockGate
+import app.masroufy.ui.app.lockCovers
 import app.masroufy.usecase.AppLock
 import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
@@ -65,5 +67,32 @@ class LockScreenStateTest {
         assertFalse(settings.on, "القفل اتقفل في الإعدادات")
         gate.dismissReleased()
         assertFalse(gate.released)
+    }
+
+    /** المهلة بالوقت المنقضي بس (`AppLock.elapsedMs`): ساعة الحيطة مش داخلة — الرجوع بيها لورا ما بيفتحش. */
+    @Test fun graceUsesElapsedTimeOnly() = runBlocking {
+        var elapsed = 1_000L
+        val gate = LockGate(AppLock(Device(mutableListOf(LockResult.OK)), Settings(true)) { elapsed })
+        gate.unlock()
+        assertFalse(gate.locked)
+        gate.onHidden()
+        elapsed += 4 * 60_000L
+        gate.onVisible()
+        assertFalse(gate.locked, "أقل من ٥ دقايق منقضية ⇒ مفتوح")
+        gate.onHidden()
+        elapsed += 6 * 60_000L
+        gate.onVisible()
+        assertTrue(gate.locked, "٦ دقايق منقضية ⇒ مقفول، مهما كانت ساعة الجوال")
+    }
+
+    /** مراجعة 2026-11-14: زرار الرجوع ما بيتنقلش جوه التطبيق ورا شاشة القفل. */
+    @Test fun backDoesNotNavigateBehindTheLock() {
+        val gate = LockGate(AppLock(Device(mutableListOf()), Settings(true)) { 0L })
+        assertTrue(gate.backNavigates(), "قبل ما الشاشة تترسم")
+        gate.covering = lockCovers(gate.locked, AppSession.Starting)
+        assertFalse(gate.backNavigates())
+        gate.covering = lockCovers(gate.locked, AppSession.SignedOut)
+        assertTrue(gate.backNavigates(), "شاشة الدخول مالهاش قفل")
+        assertFalse(lockCovers(false, AppSession.Starting))
     }
 }
