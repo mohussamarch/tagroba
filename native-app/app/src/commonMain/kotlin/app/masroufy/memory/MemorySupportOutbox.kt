@@ -21,4 +21,9 @@ class MemorySupportOutbox : SupportOutboxPort {
     override fun sent(id: String) {
         waiting.removeAll { it.id == id }
     }
+
+    override fun refused(id: String) {
+        val i = waiting.indexOfFirst { it.id == id }
+        if (i >= 0) waiting[i] = waiting[i].copy(refusals = waiting[i].refusals + 1)
+    }
 }

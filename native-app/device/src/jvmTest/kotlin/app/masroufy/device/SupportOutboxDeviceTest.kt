@@ -51,4 +51,20 @@ class SupportOutboxDeviceTest {
         assertTrue(box.pending().isEmpty())
         assertEquals(2, box.all().size)
     }
+
+    /** rules-deep-5: عدّاد رفض السيرفر بيتحفظ في الملف ويتقري بعد إعادة التشغيل — والرسالة بنصها زي ما هي. */
+    @Test
+    fun refusalsSurviveARestart() {
+        val box = FileSupportOutbox(file)
+        val a = SupportMessage(SupportKind.PROBLEM, "R2\tنص", "2026-10-23", "EG")
+        box.add(a, "id-a")
+        box.add(SupportMessage(SupportKind.IDEA, "تانية", "2026-10-23", null), "id-b")
+        box.refused("id-a")
+        box.refused("id-a")
+        val back = FileSupportOutbox(file).pending()
+        assertEquals(listOf(2, 0), back.map { it.refusals })
+        assertEquals(a.copy(text = "R2 نص"), back.first().message)
+        box.sent("id-a")
+        assertEquals(listOf("id-b"), FileSupportOutbox(file).pending().map { it.id })
+    }
 }

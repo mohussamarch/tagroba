@@ -7,6 +7,7 @@ import app.masroufy.memory.MemorySupportOutbox
 import app.masroufy.memory.SequentialIdGenerator
 import app.masroufy.port.FeedbackInboxPort
 import app.masroufy.port.FeedbackRejected
+import app.masroufy.port.SUPPORT_MAX_REFUSALS
 import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -56,15 +57,35 @@ class SendSupportMessageTest {
         assertEquals(2, outbox.all().size)
     }
 
-    @Test fun rejectedIsDroppedFromPendingButKeptLocally() = runBlocking {
+    /** rules-deep-5: رفض السيرفر (PERMISSION_DENIED) مش «اتبعت» — بتفضل مستنية وبتتعاد، وبعد الحد بتبطّل وتتعد «ما وصلتش». */
+    @Test fun refusedStaysPendingIsRetriedThenStopsAndStaysVisible() = runBlocking {
         val outbox = MemorySupportOutbox()
-        val inbox = FakeInbox().apply { online = false }
+        val inbox = FakeInbox().apply { reject = true }
+        val use = SendSupportMessage(outbox, inbox, SequentialIdGenerator(), "v")
+        assertEquals(SupportSendResult.QUEUED, use.send(msg))
+        assertEquals(1, outbox.pending().single().refusals)
+        repeat(10) { assertEquals(0, use.flush()) }
+        assertEquals(SUPPORT_MAX_REFUSALS, outbox.pending().single().refusals, "بيبطّل بعد الحد — مش لفّ للأبد")
+        assertEquals(1, use.undelivered())
+        assertEquals(1, outbox.all().size)
+        assertTrue(inbox.written.isEmpty())
+    }
+
+    @Test fun undeliveredLineInBothDialects() {
+        assertEquals("رسايل ما وصلتش: 2", app.masroufy.core.SupportChrome(true).undelivered(2))
+        assertEquals("رسائل لم تصل: 2", app.masroufy.core.SupportChrome(false).undelivered(2))
+    }
+
+    @Test fun aRefusalThatClearsIsSentOnTheNextCycle() = runBlocking {
+        val outbox = MemorySupportOutbox()
+        val inbox = FakeInbox().apply { reject = true }
         val use = SendSupportMessage(outbox, inbox, SequentialIdGenerator(), "v")
         use.send(msg)
-        inbox.reject = true
-        assertEquals(0, use.flush())
+        use.send(msg)
+        inbox.reject = false
+        assertEquals(2, use.flush())
         assertTrue(outbox.pending().isEmpty())
-        assertEquals(1, outbox.all().size)
+        assertEquals(0, use.undelivered())
     }
 
     @Test fun aHangingWriteIsQueuedAfterTheTimeoutAndRetriedLater() = runBlocking {

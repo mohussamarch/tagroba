@@ -6,6 +6,7 @@ import app.masroufy.core.SupportMessage
 import app.masroufy.port.FeedbackInboxPort
 import app.masroufy.port.FeedbackRejected
 import app.masroufy.port.IdGenerator
+import app.masroufy.port.SUPPORT_MAX_REFUSALS
 import app.masroufy.port.SupportOutboxPort
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.coroutines.cancellation.CancellationException
@@ -18,8 +19,9 @@ enum class SupportSendResult { SENT, QUEUED }
 
 /**
  * «ابعتلنا» (OVERRIDES §114 · PLAN-0.6 §16): النسخة على الجهاز **دايمًا** + مستند في `inbox/{id}` على فايربيز. «اتبعت» بعد ما السيرفر يأكّد بس.
- * [flush] = إعادة المحاولة للمستنية (دورة الخلفية). نفس المعرّف في كل محاولة ⇒ المستند ما بيتكررش. السيرفر رفض ([FeedbackRejected] —
- * غالبًا المحاولة الأولى وصلت فعلًا من طابور فايربيز والتانية بقت تعديل ممنوع، أو حقل مش مقبول) ⇒ بتتشال من المستنية (ما بنلفّش عليها للأبد).
+ * [flush] = إعادة المحاولة للمستنية (دورة الخلفية). نفس المعرّف في كل محاولة ⇒ المستند ما بيتكررش. مراجعة rules-deep-5: السيرفر رفض
+ * ([FeedbackRejected] — قواعد · حقل مش مقبول · أو المحاولة الأولى وصلت من طابور فايربيز والتانية بقت تعديل ممنوع) ⇒ **مش «اتبعت»**:
+ * بتفضل مستنية وعدّاد الرفض يزيد، وبعد [SUPPORT_MAX_REFUSALS] بتبطّل تتعاد وتتعد في [undelivered] (ظاهرة «ما وصلتش» — مش لفّ للأبد).
  * [inbox] = null (المعاينة · من غير فايربيز) ⇒ محفوظ بس.
  */
 class SendSupportMessage(
@@ -42,6 +44,7 @@ class SendSupportMessage(
         if (inbox == null) return 0
         var sent = 0
         for (p in outbox.pending()) {
+            if (p.refusals >= SUPPORT_MAX_REFUSALS) continue
             try {
                 inbox.send(p.id, FeedbackDoc.of(p.message, appVersion))
                 outbox.sent(p.id)
@@ -49,13 +52,16 @@ class SendSupportMessage(
             } catch (e: CancellationException) {
                 throw e
             } catch (_: FeedbackRejected) {
-                outbox.sent(p.id)
+                outbox.refused(p.id)
             } catch (_: Exception) {
                 break
             }
         }
         return sent
     }
+
+    /** رسايل السيرفر رفضها [SUPPORT_MAX_REFUSALS] مرة ⇒ بطّلنا نعيدها. محفوظة على الجهاز، والشاشة بتعرض عددها. */
+    fun undelivered(): Int = outbox.pending().count { it.refusals >= SUPPORT_MAX_REFUSALS }
 
     private suspend fun attempt(id: String, m: SupportMessage): Boolean {
         val box = inbox ?: return false
@@ -66,6 +72,9 @@ class SendSupportMessage(
             true
         } catch (e: CancellationException) {
             throw e
+        } catch (_: FeedbackRejected) {
+            outbox.refused(id)
+            false
         } catch (_: Exception) {
             false
         }

@@ -29,15 +29,26 @@ class FileSupportOutbox(private val file: File) : SupportOutboxPort {
 
     override fun pending(): List<PendingSupport> = synchronized(lock) { readPending() }
 
-    override fun sent(id: String) = synchronized(lock) {
-        val left = readPending().filterNot { it.id == id }
-        if (left.isEmpty()) pendingFile.delete() else pendingFile.writeText(left.joinToString("") { it.id + "\t" + line(it.message) + "\n" }, Charsets.UTF_8)
-        Unit
+    override fun sent(id: String) = synchronized(lock) { writePending(readPending().filterNot { it.id == id }) }
+
+    override fun refused(id: String) = synchronized(lock) {
+        writePending(readPending().map { if (it.id == id) it.copy(refusals = it.refusals + 1) else it })
+    }
+
+    /** السطر: `المعرّف<TAB>[R<عدد الرفض><TAB>]الرسالة` — الخانة دي بتتكتب بس لو فيه رفض (الملفات القديمة بتتقري زي ما هي). */
+    private fun writePending(left: List<PendingSupport>) {
+        if (left.isEmpty()) pendingFile.delete()
+        else pendingFile.writeText(left.joinToString("") { it.id + "\t" + (if (it.refusals > 0) "R${it.refusals}\t" else "") + line(it.message) + "\n" }, Charsets.UTF_8)
     }
 
     private fun readPending(): List<PendingSupport> = if (!pendingFile.isFile) emptyList() else pendingFile.readLines(Charsets.UTF_8).mapNotNull { l ->
         val tab = l.indexOf('\t')
-        if (tab <= 0) null else parse(l.substring(tab + 1))?.let { PendingSupport(l.substring(0, tab), it) }
+        if (tab <= 0) return@mapNotNull null
+        var rest = l.substring(tab + 1)
+        val next = rest.indexOf('\t')
+        val refusals = if (next > 1 && rest[0] == 'R') rest.substring(1, next).toIntOrNull() else null
+        if (refusals != null) rest = rest.substring(next + 1)
+        parse(rest)?.let { PendingSupport(l.substring(0, tab), it, refusals ?: 0) }
     }
 
     companion object {

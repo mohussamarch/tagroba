@@ -90,6 +90,8 @@ internal fun SupportForm(egypt: Boolean, prefill: String = "", modifier: Modifie
                 }
             }, Modifier.fillMaxWidth(), enabled = text.isNotBlank(), loading = sending) // smoke 0.5.4: مشغول بكلام على طول، مش رمادي فاضي
             BasicText(chrome.note, style = Type.caption().copy(color = Ink.muted))
+            val undelivered = remember(sender) { runCatching { sender.undelivered() }.getOrDefault(0) }
+            if (undelivered > 0) BasicText(chrome.undelivered(undelivered), style = Type.caption().copy(color = Ink.muted))
         }
     }
 }

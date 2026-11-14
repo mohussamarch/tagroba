@@ -41,7 +41,7 @@ data class FeedbackDoc(val kind: String, val country: String, val text: String, 
 }
 
 /** نصوص النموذج نفسه بالمصري والسعودي. */
-class SupportChrome(egypt: Boolean) {
+class SupportChrome(private val egypt: Boolean) {
     val title = if (egypt) "ابعتلنا" else "أرسل لنا"
     val kindLabel = if (egypt) "نوعه" else "النوع"
     val send = if (egypt) "ابعت" else "أرسل"
@@ -51,5 +51,8 @@ class SupportChrome(egypt: Boolean) {
     /** الكتابة على فايربيز ما نجحتش (غالبًا النت) — النسخة على الجهاز وبتتبعت في دورة الخلفية الجاية. */
     val queued = if (egypt) "محفوظ وهيتبعت لما النت يرجع" else "محفوظة وستُرسل عند عودة الاتصال"
     val pageTitle = "الدعم"
+
+    /** مراجعة rules-deep-5: رسايل السيرفر رفضها أكتر من مرة وبطّلنا نعيدها — محفوظة على الجهاز. */
+    fun undelivered(n: Int): String = if (egypt) "رسايل ما وصلتش: $n" else "رسائل لم تصل: $n"
     val faqFirst = if (egypt) "شوف الأسئلة الشائعة الأول" else "اطّلع على الأسئلة الشائعة أولًا"
 }

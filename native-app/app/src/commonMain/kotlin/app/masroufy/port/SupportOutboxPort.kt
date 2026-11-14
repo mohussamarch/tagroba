@@ -20,9 +20,19 @@ interface SupportOutboxPort {
 
     /** اتبعت (أو مش هيتبعت أبدًا) ⇒ يتشال من المستنية. النسخة المحلية بتفضل. */
     fun sent(id: String)
+
+    /**
+     * مراجعة rules-deep-5: السيرفر رفض الكتابة ⇒ الرسالة **بتفضل مستنية** وعدّاد الرفض ([PendingSupport.refusals]) يزيد ويتحفظ —
+     * دورة الخلفية بتعيد لحد [SUPPORT_MAX_REFUSALS] وبعدها بتبطّل وتفضل ظاهرة «ما وصلتش».
+     */
+    fun refused(id: String)
 }
 
-data class PendingSupport(val id: String, val message: SupportMessage)
+/** [refusals] = كام مرة السيرفر رفضها (مش النت). */
+data class PendingSupport(val id: String, val message: SupportMessage, val refusals: Int = 0)
+
+/** بعد كام رفض من السيرفر نبطّل نعيد ونعرضها «ما وصلتش» (مش لفّ للأبد). */
+const val SUPPORT_MAX_REFUSALS = 5
 
 /**
  * الكتابة في `inbox/{id}` على فايربيز (OVERRIDES §114 · PLAN-0.6 §16 — `FirestoreFeedbackInbox` في `:firestore`). بترمي لو ما اتأكدتش من
