@@ -3,7 +3,9 @@
 //   ١. أي ملف **اتضاف** اسمه ممنوع: google-services.json · GoogleService-Info.plist · .env* (غير .env.example) · *.jks · *.keystore ·
 //      *.p12 · *.pfx · *.zip · *.apk · *.aab — الملفات دي ممكن يبقى جواها مفاتيح والفحص النصي مش شايفها.
 //   ٢. أي ملف **ثنائي** (binary) اتضاف ومش صورة ولا خط — Git بيقول عليه «Binary files differ» والفحص النصي ما بيشوفش جواه.
-//   ٣. أي سطر مضاف شكله مفتاح أو توكن.
+//   ٣. أي سطر مضاف شكله مفتاح أو توكن — ومنها (مراجعة 2026-11-14): ملف حساب خدمة جوجل (client_email بـ iam.gserviceaccount.com) ·
+//      storePassword/keyPassword بين علامتين · وأي «password=…» من غير تنصيص في ملف .properties.
+//      والأسامي: keystore/signing/key/secrets.properties · *adminsdk*/*service-account*/*credentials*.json · *.pem/*.p8.
 // ما بيطبعش القيمة نفسها — بس الملف والسطر ونوع المطابقة.
 // التشغيل: node scripts/secretscan.mjs <من> <لحد>   (مثلًا: origin/claude/masroufy-kotlin-setup-c02bd8 HEAD)
 // الخروج 1 لو فيه مطابقة.
@@ -20,7 +22,13 @@ const PATTERNS = [
   ['توكن جيت هب', /\bgh[pousr]_[A-Za-z0-9]{30,}/],
   ['مفتاح AWS', /\bAKIA[0-9A-Z]{16}\b/],
   ['كلمة سر مكتوبة', /\b(password|passwd|secret|api[_-]?key)\s*[:=]\s*["']([^"'\s]{8,})["']/i],
+  // مراجعة 2026-11-14 (sec-firebase-5): ملف حساب خدمة جوجل/فايربيز (JSON بمفتاحه) — حتى لو اتلصق من غير سطر "private_key"
+  ['حساب خدمة جوجل', /"client_email"\s*:\s*"[^"]+@[^"]+\.iam\.gserviceaccount\.com"|"type"\s*:\s*"service_account"|"private_key_id"\s*:\s*"[0-9a-f]{20,}"/i],
+  // كلمات سر التوقيع في Gradle بين علامتين (storePassword = "…" — النمط اللي فوق ما بيمسكهاش لأن Password لازقة في كلمة)
+  ['كلمة سر التوقيع', /\b(store|key|keystore|signing)[._-]?(password|pass|pwd)\s*[:=]\s*["']([^"'\s$]{4,})["']/i],
 ]
+// سطر في ملف .properties: «مفتاح=قيمة» من غير علامات تنصيص (storePassword=… · key.password=… · api.secret=…)
+const PROPERTIES_SECRET = /^\s*[\w.\-]*(password|passwd|pwd|secret|token|api[_.\-]?key)\s*[=:]\s*(\S{4,})\s*$/i
 // ملفات مسموحة، وكل واحد معاه السبب:
 // - السكربت ده نفسه: بيشرح الأنماط.
 // - FirebaseSetup.kt: قيم وهمية لمحاكي فايربيز (مشروع demo-*، مش مفتاح حقيقي — المحاكي بيطلب أي قيمة).
@@ -37,6 +45,9 @@ const FORBIDDEN_NAMES = [
   [/(^|\/)\.env(\..*)?$/i, 'ملف .env'],
   [/\.(jks|keystore|p12|pfx)$/i, 'مفتاح توقيع أو شهادة'],
   [/\.(zip|apk|aab)$/i, 'ملف مضغوط أو برنامج'],
+  [/(^|\/)(keystore|signing|release|key|secrets?)\.properties$/i, 'إعدادات توقيع أو كلمات سر (.properties)'],
+  [/(adminsdk|service[-_]?account|credentials?)[^/]*\.json$/i, 'ملف حساب خدمة (JSON بمفتاح)'],
+  [/\.(pem|p8)$/i, 'مفتاح خاص (pem)'],
 ]
 const NAME_OK = [/(^|\/)\.env\.example$/i]
 // ٢. الثنائي المسموح: صور وخطوط، وملفات معروفة بسببها
@@ -84,6 +95,8 @@ for (const raw of diff.split('\n')) {
     if (name === 'كلمة سر مكتوبة' && KNOWN_FAKE.has(m[2])) continue
     warn(`${file}:${line} — ${name}`)
   }
+  const prop = /\.properties$/i.test(file) && !allowed(file, 'كلمة سر في properties') ? raw.slice(1).match(PROPERTIES_SECRET) : null
+  if (prop && !KNOWN_FAKE.has(prop[2]) && !prop[2].startsWith('${')) warn(`${file}:${line} — كلمة سر في properties`)
   line++
 }
 console.log(hits ? `فحص المفاتيح: ${hits} مطابقة — راجعها قبل الرفع` : 'فحص المفاتيح: مفيش حاجة شكلها مفتاح ✓')
