@@ -677,7 +677,7 @@
 - `commonMain/kotlin/app/masroufy/core/TextsMoreBanks.kt` (92) — — · «اختار بنكك» (دليل البنوك جوه البرنامج — OVERRIDES §81) في «محفظة جديدة» و«أول تشغيل» + اسم المرسل الخام جنب البنك المقترح (§74) +
 - `commonMain/kotlin/app/masroufy/core/TextsMoreIncome.kt` (185) — — · «مصادر الدخل» و«تفاصيل المصدر» (`IncomeSources` · `IncomeSourceDetail`) — منطقة «المزيد». من النموذج بالحرف، إلا:
 - `commonMain/kotlin/app/masroufy/core/TextsMoreJob.kt` (190) — — · «تعديل المصدر» (`IncomeSourceEditSheet`) و«غيّرت عملي / أضف مصدر دخل / إنهاء» (`JobChangeSheet`) — منطقة «المزيد». من النموذج بالحرف، إلا:
-- `commonMain/kotlin/app/masroufy/core/TextsMoreProblems.kt` (132) — — · «سجل المشاكل» وتقارير الأعطال (OVERRIDES §90) — جزء من نصوص «المزيد» (بيتضم في `TextsAreaMore.kt`). الفصحى للسعودية والافتراضي ·
+- `commonMain/kotlin/app/masroufy/core/TextsMoreProblems.kt` (135) — — · «سجل المشاكل» وتقارير الأعطال (OVERRIDES §90) — جزء من نصوص «المزيد» (بيتضم في `TextsAreaMore.kt`). الفصحى للسعودية والافتراضي ·
 - `commonMain/kotlin/app/masroufy/core/TextsMoreSettings.kt` (218) — — · «إعدادات الإشعارات» (`NotificationSettings`) + «القفل واللغة والمحتوى» (`AppSettings`) — منطقة «المزيد». من النموذج بالحرف، إلا:
 - `commonMain/kotlin/app/masroufy/core/TextsMoreSpaces.kt` (164) — — · «البلدان» (`Spaces`) + «المحافظ» (`Wallets`) — منطقة «المزيد». من النموذج بالحرف، إلا:
 - `commonMain/kotlin/app/masroufy/core/TextsMoreWallet.kt` (160) — — · «تفاصيل المحفظة» (`WalletDetail`) — منطقة «المزيد». من النموذج بالحرف (المطابقة بصيغة العدد بدل «{1} حركة» — spec/06)، إلا:
@@ -1189,7 +1189,7 @@
 - `commonMain/kotlin/app/masroufy/ui/screens/more/MoreScreen.kt` (204) — MoreScreen, MoreItem, MoreGroup, MoreView, moreView, moreGroups · «المزيد» (`More` — من الترس، OVERRIDES §74 · إعادة الترتيب §116 · `More.dc.html` فرع التصميم c37ce76a): كارت الملف وجنبه علم البلد ([MeRow])
 - `commonMain/kotlin/app/masroufy/ui/screens/more/MoreText.kt` (37) — CountWords, WALLET_WORDS, RECORD_WORDS, DAY_WORDS, countText, fullDate · عرض بس (من غير أي حساب فلوس): صيغة العدد بالعربي (واحد · اتنين · 3–10 · 11+) والتاريخ الكامل «12 مايو 2026».
 - `commonMain/kotlin/app/masroufy/ui/screens/more/NotificationSettingsScreen.kt` (148) — NotifRow, notificationRows, NotificationSettingsScreen · سطر مجموعة في إعدادات الإشعارات — [on] من المجموعات المقفولة، و[desc] بيتغيّر لرسائل البنك المقفولة (§74).
-- `commonMain/kotlin/app/masroufy/ui/screens/more/ProblemLogScreen.kt` (150) — ProblemLogRoute, ProblemRowView, problemRow, ProblemLogScreen · «سجل المشاكل» (OVERRIDES §90) — من «القفل واللغة» (`AppSettings`).
+- `commonMain/kotlin/app/masroufy/ui/screens/more/ProblemLogScreen.kt` (152) — ProblemLogRoute, ProblemRowView, problemRow, ProblemLogScreen · «سجل المشاكل» (OVERRIDES §90) — من «القفل واللغة» (`AppSettings`).
 - `commonMain/kotlin/app/masroufy/ui/screens/more/ReconcileState.kt` (54) — RecLineKind, RecLine, MOVE_WORDS, OPERATION_WORDS, reconcileLines · نتيجة «مطابقة الرصيد» (`ReconcileBalance.run` ⇒ `ReconcileOutcome`) كسطور — **دالة نقية** (JVM). الأرقام كلها من النتيجة نفسها
 - `commonMain/kotlin/app/masroufy/ui/screens/more/RestorePreviewScreen.kt` (197) — RestorePreviewScreen
 - `commonMain/kotlin/app/masroufy/ui/screens/more/SalaryInput.kt` (92) — SalaryText, readSalaryText, salaryKeys, salaryDraft, readSalaryForm, SalaryInput · المرتب **مبلغ بالظبط** (قرار المالك 2026-10-16 — «انا محتاج اكتبه ونخلي الناس تكتبه»). القراية بالهللة بـ`tryParseMoney` (قراية مش حساب —
