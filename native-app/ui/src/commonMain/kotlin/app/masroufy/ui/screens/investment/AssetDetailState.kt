@@ -15,6 +15,8 @@ import app.masroufy.core.displayKind
 import app.masroufy.core.isRealEstate
 import app.masroufy.core.sentenceNumber
 import app.masroufy.core.uiText
+import app.masroufy.core.R06Key
+import app.masroufy.core.isOwnedLongAgo
 import app.masroufy.usecase.AssetProjectionView
 import app.masroufy.usecase.AssetRow
 
@@ -100,7 +102,8 @@ fun assetDetailUi(row: AssetRow, projection: AssetProjectionView?, currency: Cur
     val kindLabel = ASSET_KIND_LABELS[a.displayKind] ?: a.displayKind
     // أصل اتضاف من غير تكلفة ⇒ دفعته صفر — مش «شراء −0.00» (الكمية بتفضل في المملوك)
     val log = row.lots.filterNot { a.costKnown == false && it.principalMinor == 0L && it.feeMinor == 0L }.map { lot ->
-        LogRow(TradeKind.BUY, dateText(lot.purchasedAt), lot.purchasedAt + "0", lot.principalMinor, feeLine(lot.quantity, unit, lot.feeMinor, currency), lot.transactionId != null)
+        // §120-14: «من زمان» بدل سنة 1900
+        LogRow(TradeKind.BUY, if (isOwnedLongAgo(lot.purchasedAt)) uiText(R06Key.C120_OWNED_LONG_AGO) else dateText(lot.purchasedAt), lot.purchasedAt + "0", lot.principalMinor, feeLine(lot.quantity, unit, lot.feeMinor, currency), lot.transactionId != null)
     } + row.sales.map { sale ->
         LogRow(TradeKind.SELL, dateText(sale.soldAt), sale.soldAt + "1", sale.grossProceedsMinor, feeLine(sale.quantity, unit, sale.feeMinor, currency), sale.transactionId != null)
     }

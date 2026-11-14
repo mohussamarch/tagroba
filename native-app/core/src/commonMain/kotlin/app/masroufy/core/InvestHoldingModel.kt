@@ -124,6 +124,8 @@ data class HoldingsSnapshot(
     val goldPriceMissing: Boolean,
     /** رد المالك 2026-10-16 ٢أ: الشخصي داخل المجموع وفي التوقّع؟ (الافتراضي لأ — `UserSetting.HoldingsPrefs`). */
     val includePersonal: Boolean = false,
+    /** مراجعة todo-assets-3 (§120 — التصميم): المؤرشف واللي اتباع كله — قسم صغير مطوي تحت «حاجاتي» (رجّعه · بيع · امسح من صفحة الحاجة). */
+    val putAway: List<PutAwayHolding> = emptyList(),
 )
 
 /** اللي بيدخل «هيبقى معاك كام»: غير الشخصي بقيمة معروفة، مقسوم على نوع الزيادة. [unknownCount] غير الشخصي من غير قيمة. */
@@ -186,3 +188,6 @@ fun holdingsMixBp(split: InvestableSplit, rates: InvestRates): Int? {
         multiplyMoneyByInt(split.goldMinor, rates.goldBp.toLong()) + multiplyMoneyByInt(split.sharesMinor, rates.sharesBp.toLong())
     return num.floorDiv(den).toInt()
 }
+
+/** حاجة مش ظاهرة في «حاجاتي»: [archived] مؤرشفة · [soldOut] اتباعت كلها (ممكن الاتنين). */
+data class PutAwayHolding(val assetId: Id, val name: String, val type: HoldingType, val archived: Boolean, val soldOut: Boolean)

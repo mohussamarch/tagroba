@@ -120,6 +120,47 @@ class AddHoldingTest {
         assertNull(w.load.load(today).items.single().valueMinor) // مفيش سعر ⇒ «غير متاح»
     }
 
+    @Test fun ownedSinceSkippedMeansLongAgoSoAnEarlierSaleIsAccepted() = runBlocking<Unit> {
+        // §120-14 · مراجعة todo-assets-2: اتضافت النهارده واتباعت امبارح ⇒ مقبولة
+        val w = World()
+        val id = w.add.add(NewHolding(HoldingType.GOLD, "دهب", HoldingPurpose.RESERVE, HoldingOrigin.INHERIT, 10 * QUANTITY_SCALE), today)
+        assertEquals(app.masroufy.core.OWNED_LONG_AGO, w.lots.listAll().single().purchasedAt)
+        w.assets.recordSale(SaleInput(id, "2026-03-09", 10 * QUANTITY_SCALE, 320_000))
+        assertTrue(app.masroufy.core.isOwnedLongAgo(w.lots.listAll().single().purchasedAt))
+    }
+
+    @Test fun ownedSinceIsTheLotDateAndAFutureDateIsRefused() = runBlocking<Unit> {
+        val w = World()
+        val id = w.add.add(
+            NewHolding(HoldingType.CAR, "سيارة", HoldingPurpose.PERSONAL, HoldingOrigin.GIFT, QUANTITY_SCALE, valueMinor = 1_000_000, ownedSince = "2024-05-01"),
+            today,
+        )
+        assertEquals("2024-05-01", w.lots.listAll().single().purchasedAt)
+        w.assets.recordSale(SaleInput(id, "2025-01-01", QUANTITY_SCALE, 900_000))
+        val w2 = World()
+        val car = NewHolding(HoldingType.CAR, "سيارة", HoldingPurpose.PERSONAL, HoldingOrigin.GIFT, QUANTITY_SCALE, ownedSince = "2026-04-01")
+        kotlin.test.assertFailsWith<app.masroufy.core.AssetError> { w2.add.add(car, today) }
+        assertEquals(emptyList(), w2.assetRepo.listAll())
+    }
+
+    @Test fun archivedAndSoldOutGoToTheFoldedSection() = runBlocking<Unit> {
+        // مراجعة todo-assets-3: المؤرشف واللي اتباع كله مش بيختفوا — بيروحوا «مؤرشف ومتباع»
+        val w = World()
+        val gold = w.add.add(NewHolding(HoldingType.GOLD, "دهب", HoldingPurpose.RESERVE, HoldingOrigin.INHERIT, 10 * QUANTITY_SCALE), today)
+        val car = w.add.add(NewHolding(HoldingType.CAR, "سيارة", HoldingPurpose.PERSONAL, HoldingOrigin.BUY, QUANTITY_SCALE, valueMinor = 1_000_000), today)
+        w.add.add(NewHolding(HoldingType.CAR, "عربية", HoldingPurpose.PERSONAL, HoldingOrigin.BUY, QUANTITY_SCALE, valueMinor = 1_000_000), today)
+        w.assets.recordSale(SaleInput(gold, today, 10 * QUANTITY_SCALE, 320_000))
+        w.assets.archiveAsset(car, true)
+        val snap = w.load.load(today)
+        assertEquals(listOf("عربية"), snap.items.map { it.asset.name })
+        assertEquals(
+            listOf(Triple("دهب", false, true), Triple("سيارة", true, false)),
+            snap.putAway.map { Triple(it.name, it.archived, it.soldOut) },
+        )
+        w.assets.archiveAsset(car, false)
+        assertEquals(listOf("دهب"), w.load.load(today).putAway.map { it.name })
+    }
+
     @Test fun propertyIsWholeValueWithAreaRentAndPlace() = runBlocking {
         val w = World()
         w.add.add(

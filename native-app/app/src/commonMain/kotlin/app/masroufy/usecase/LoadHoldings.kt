@@ -5,6 +5,7 @@ import app.masroufy.core.HoldingType
 import app.masroufy.core.HoldingValue
 import app.masroufy.core.HoldingsSnapshot
 import app.masroufy.core.IsoDate
+import app.masroufy.core.PutAwayHolding
 import app.masroufy.core.UserSetting
 import app.masroufy.core.ZakatPurpose
 import app.masroufy.core.currentValueOf
@@ -20,7 +21,7 @@ import app.masroufy.port.ZakatFactRepository
  * حساب جديد (المعادن والأسهم والباقي = المركز × السعر · العقار = `currentValueOf`). ⚠️ «الخطوة 0» — اتعملت هنا لأن الحزم بدأت قبلها.
  *
  * القيمة «غير متاح» (null، مش صفر) لو: مفيش سعر · مفيش شراء متسجل خالص (غير العقار) · عملة الأصل غير عملة البلد.
- * الأصل اللي اتباع كله (شراء متسجل والمملوك صفر) مش «حاجة معاك» ⇒ مش ظاهر.
+ * الأصل اللي اتباع كله (شراء متسجل والمملوك صفر) والمؤرشف مش «حاجة معاك» ⇒ مش في المجموع — بيروحوا [HoldingsSnapshot.putAway] (قسم مطوي تحت).
  * [LoadHoldingsDeps.settings] = مكان اختيار «تدخل الحاجات الشخصية في المجموع؟» (null أو مش محفوظ ⇒ لأ — رد المالك ٢أ).
  */
 data class LoadHoldingsDeps(val assets: ManageAssets, val zakatFacts: ZakatFactRepository, val currency: Currency, val settings: UserSettingsStore? = null)
@@ -29,8 +30,10 @@ class LoadHoldings(private val deps: LoadHoldingsDeps) {
     suspend fun load(today: IsoDate): HoldingsSnapshot {
         val view = deps.assets.listPortfolio(today)
         val facts = deps.zakatFacts.listAll().associateBy { it.subjectId }
-        val items = view.rows
-            .filter { !it.asset.archived && !(it.lots.isNotEmpty() && it.position.heldQuantity <= 0L) }
+        val (shown, away) = view.rows.partition { !it.asset.archived && !soldOut(it) }
+        val putAway = away.map { PutAwayHolding(it.asset.id, it.asset.name, holdingTypeOf(it.asset), it.asset.archived, soldOut(it)) }
+            .sortedBy { it.name }
+        val items = shown
             .map { row ->
                 val asset = row.asset
                 val fact = facts[asset.id]
@@ -45,8 +48,11 @@ class LoadHoldings(private val deps: LoadHoldingsDeps) {
             }
         val goldMissing = items.any { it.type == HoldingType.GOLD && it.valueMinor == null && it.asset.currency == deps.currency && it.quantity > 0L }
         val includePersonal = deps.settings?.let { readIncludePersonal(it) } ?: false
-        return HoldingsSnapshot(deps.currency, items, goldMissing, includePersonal)
+        return HoldingsSnapshot(deps.currency, items, goldMissing, includePersonal, putAway)
     }
+
+    /** اتباع كله: فيه شراء متسجل والمملوك صفر. */
+    private fun soldOut(row: AssetRow): Boolean = row.lots.isNotEmpty() && row.position.heldQuantity <= 0L
 }
 
 /** الاختيار المحفوظ (مش موجود أو الإعدادات وقعت ⇒ لأ — الافتراضي بتاع المالك). */

@@ -141,7 +141,7 @@ class ManageAssetGrowth(private val deps: ManageAssetGrowthDeps) {
         val projection = projectAsset(
             currentValueMinor = currentValueOf(asset, position, lotsRecorded = lots.isNotEmpty()),
             costBasisMinor = if (lots.isEmpty()) null else position.costBasisMinor,
-            purchasedAt = lots.minOfOrNull { it.purchasedAt },
+            purchasedAt = lots.minOfOrNull { it.purchasedAt }?.takeUnless { app.masroufy.core.isOwnedLongAgo(it) }, // §120-14: «من زمان» = سنة مش معروفة
             today = day,
             sellYear = sellYear,
             rateBp = rate,
