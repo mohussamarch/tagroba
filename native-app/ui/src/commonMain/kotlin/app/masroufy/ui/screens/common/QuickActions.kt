@@ -29,6 +29,9 @@ enum class QuickAct(val label: TextRef) {
     ADD_EVENT_ON_DAY(UiKey.QM_ADD_EVENT_DAY),
     MARK_READ(UiKey.QM_MARK_READ),
     DELETE(UiKey.QM_DELETE),
+
+    /** §121-2: «بيع» من الضغطة الطويلة على حاجة في «حاجاتي». */
+    SELL(app.masroufy.core.R06Key.C121_HOLD_SELL),
 }
 
 /** البنود للقايمة بالترتيب — [onAct] بيتنادي بعد ما القايمة تقفل. */
@@ -117,3 +120,6 @@ fun notificationQuickActs(unread: Boolean, canOpen: Boolean, canDelete: Boolean 
     if (unread) add(QuickAct.MARK_READ)
     deleteIf(canDelete)
 }
+
+/** OVERRIDES §121-2: الضغطة الطويلة على حاجة في «حاجاتي» ⇒ «بيع» و«امسح» بس («امسح» بتسأل «متأكد؟» قبل المسح). */
+fun holdingQuickActs(): List<QuickAct> = listOf(QuickAct.SELL, QuickAct.DELETE)

@@ -76,6 +76,9 @@ internal fun AssetCategoryScreen(groupWire: String) {
     var plan by remember(currency) { mutableStateOf(slider.defaultMinor) }
     val holdings = rememberHoldings(deps, snapshot) { version++ }
     val quick = rememberQuickMenu()
+    // §121-2: الضغطة الطويلة على حاجة ⇒ «بيع» · «امسح» (بسؤال «متأكد؟»)
+    val remover = space.shell.removals?.asset
+    val holdQuick = rememberHoldingQuick(remover, sell = { nav.push(AssetDetailRoute(it, startSell = true)) })
     val s = snapshot
     val ui = remember(s, rates) { s?.let { categoryUi(it, group, rates) } }
     val projection = remember(ui, plan, span, rates) { ui?.let { deps.group.project(it.startMinor, plan, group, rates, span) } }
@@ -88,6 +91,7 @@ internal fun AssetCategoryScreen(groupWire: String) {
         archive = { row -> scope.launch { runCatching { inv.assets.archiveAsset(row.assetId, true) }; version++ } },
         add = { holdings.openAdd(group) },
         savingsPlan = { nav.push(SavingsGoalsRoute) },
+        longItems = { row -> holdQuick.items(row.assetId) },
     )
     val statusTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     LazyColumn(
@@ -109,4 +113,5 @@ internal fun AssetCategoryScreen(groupWire: String) {
     }
     HoldingsOverlays(holdings)
     QuickMenuHost(quick)
+    HoldingQuickHost(holdQuick, remover) { version++ }
 }

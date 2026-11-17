@@ -11,6 +11,7 @@ import app.masroufy.ui.screens.common.QuickAct.OPEN
 import app.masroufy.ui.screens.common.QuickAct.OPEN_SECTION
 import app.masroufy.ui.screens.common.QuickAct.PERSON
 import app.masroufy.ui.screens.common.QuickAct.PREP
+import app.masroufy.ui.screens.common.QuickAct.SELL
 import app.masroufy.ui.screens.common.QuickAct.SETTLE
 import app.masroufy.ui.screens.common.QuickAct.SHOW_DAY
 import app.masroufy.ui.screens.common.QuickAct.STAR
@@ -45,6 +46,12 @@ class QuickActionsTest {
     @Test fun assetArchiveToggles() {
         assertEquals(listOf(OPEN, ARCHIVE), assetQuickActs(archived = false))
         assertEquals(listOf(OPEN, UNARCHIVE), assetQuickActs(archived = true))
+    }
+
+    /** §121-2: الضغطة الطويلة على حاجة في «حاجاتي» ⇒ «بيع» و«امسح» بس، بالترتيب ده. */
+    @Test fun holdingLongPressIsSellThenDelete() {
+        assertEquals(listOf(SELL, DELETE), holdingQuickActs())
+        assertEquals("بيع", app.masroufy.core.uiText(SELL.label))
     }
 
     @Test fun archivedEventHasNoPrep() {

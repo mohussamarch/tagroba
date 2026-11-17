@@ -55,7 +55,7 @@ import kotlinx.coroutines.launch
 
 /** «تفاصيل الأصل» (لوحة `AssetDetail`) — التحميل في [loadAssetDetail]، والشراء والبيع والسعر اليدوي في `AssetTradeSheet`. */
 @Composable
-fun AssetDetailScreen(assetId: Id) {
+fun AssetDetailScreen(assetId: Id, startSell: Boolean = false) {
     val space = LocalSpace.current
     val deps = space.investment
     val nav = LocalNavigator.current
@@ -79,7 +79,11 @@ fun AssetDetailScreen(assetId: Id) {
             msg?.let { toaster.show(it) }
         }
     }
-    LaunchedEffect(space, assetId) { reload() }
+    LaunchedEffect(space, assetId) {
+        reload()
+        // §121-2: «بيع» من الضغطة الطويلة في «حاجاتي» ⇒ لوحة البيع على طول بعد التحميل
+        if (startSell && ui != null) openTrade(TradeMode.SELL)
+    }
     val a = ui
     InnerScaffold(a?.name.orEmpty(), actions = { a?.let { ToneChip(it.kindLabel, Ink.primary, Ink.selected) } }) {
         if (a == null) {

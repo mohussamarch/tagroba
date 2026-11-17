@@ -126,7 +126,7 @@ internal fun doneText(done: RemovalDone): String = when (done.choice) {
 
 /** اللوحة الواحدة: من غير عمليات ⇒ «امسح» · بعمليات ⇒ الاختيارات اللي الحاجة بتدعمها (والمقفول بيقول ليه). */
 @Composable
-internal fun DeleteSheet(ask: RemovalAsk?, onDismiss: () -> Unit, onPick: (RemoveChoice, String?) -> Unit) {
+internal fun DeleteSheet(ask: RemovalAsk?, onDismiss: () -> Unit, sure: Boolean = false, onPick: (RemoveChoice, String?) -> Unit) {
     val title = when {
         ask == null -> ""
         ask.linkedCount == 0 -> t(R06Key.DEL_TITLE, ask.name)
@@ -135,6 +135,8 @@ internal fun DeleteSheet(ask: RemovalAsk?, onDismiss: () -> Unit, onPick: (Remov
     var moveTo by remember(ask) { mutableStateOf<String?>(null) }
     Sheet(ask != null, onDismiss, title, closeLabel = t(UiKey.SHELL_CLOSE)) {
         if (ask != null) {
+            // §121-2: «امسح» من الضغطة الطويلة ⇒ السؤال «متأكد؟» فوق
+            if (sure) BasicText(t(R06Key.C121_SURE), style = Type.of(20, androidx.compose.ui.text.font.FontWeight.Bold))
             BasicText(title, style = Type.section())
             BasicText(t(if (ask.linkedCount == 0) R06Key.DEL_BODY else R06Key.DEL_LINKED_BODY), style = Type.of(14).copy(color = Ink.soft))
             if (ask.linkedCount == 0) DangerButton(t(R06Key.DEL_CONFIRM), { onPick(RemoveChoice.DELETE, null) }, Modifier.fillMaxWidth())
