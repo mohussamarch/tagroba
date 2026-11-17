@@ -29,6 +29,6 @@ internal fun OwnedSinceRow(ownedSince: IsoDate?, today: IsoDate, onChange: (IsoD
         BasicText(t(R06Key.C120_OWNED_SINCE), style = Type.of(13, FontWeight.Bold))
         BasicText(t(R06Key.C120_OWNED_SINCE_HINT), style = Type.of(12).copy(color = Ink.muted))
         SelectChip(t(R06Key.C120_OWNED_LONG_AGO), !picking && ownedSince == null, { picking = false; onChange(null) })
-        DateField(ownedSince, today, onPick = { picking = true; onChange(it) })
+        DateField(ownedSince, today, onPick = { picking = true; onChange(it) }, noFuture = true)
     }
 }

@@ -80,6 +80,8 @@ internal fun ProblemsSection() {
         // OVERRIDES §120-13: سطر تنبيه ثابت (الافتراضي زي ما هو لحد المتجر) — بيقول إنها شغالة من الأول وإزاي تتقفل
         if (available) BasicText(t(UiKey.PLOG_CRASH_NOTICE), Modifier.padding(horizontal = 16.dp, vertical = 4.dp), style = Type.of(12).copy(color = Ink.muted))
         RowRule()
+        UsageSwitchRow()
+        RowRule()
         MenuRow(Lucide.FILE_TEXT, t(UiKey.PLOG_TITLE), t(UiKey.PLOG_OPEN_HINT), last = true, onClick = { nav.push(ProblemLogRoute) })
     }
 }
@@ -148,4 +150,22 @@ private fun ProblemRow(row: ProblemRowView, last: Boolean) {
         }
     }
     if (!last) RowRule()
+}
+
+/** OVERRIDES §121-17: «ابعت بيانات الاستخدام» — مفتاح لوحده، منفصل عن تقارير الأعطال (حالة الاستخدام `ManageUsageAnalytics`). */
+@Composable
+private fun UsageSwitchRow() {
+    val usage = LocalApp.current.problems?.usage
+    val available = usage?.available == true
+    var on by remember(usage) { mutableStateOf(usage?.isOn() == true) }
+    val desc = when {
+        !available -> app.masroufy.core.R06Key.C121_USAGE_NA
+        on -> app.masroufy.core.R06Key.C121_USAGE_ON
+        else -> app.masroufy.core.R06Key.C121_USAGE_OFF
+    }
+    SwitchHeader(Lucide.TRENDING_UP, t(app.masroufy.core.R06Key.C121_USAGE_TITLE), t(desc), on, enabled = available) {
+        val u = usage ?: return@SwitchHeader
+        u.setOn(!on)
+        on = u.isOn()
+    }
 }

@@ -14,3 +14,15 @@ interface AnalyticsPort {
 
     fun set(property: UsageProperty, value: UsageValue)
 }
+
+/**
+ * OVERRIDES §121-17: مفتاح «ابعت بيانات الاستخدام» **لوحده** (منفصل عن مفتاح تقارير الأعطال — `CrashReportsPort`). على مستوى الجهاز.
+ * [available] = false ⇒ النسخة دي مالهاش بيانات استخدام (المحاكي · الاختبارات · من غير فايربيز). الافتراضي زي تقارير الأعطال (مفتوح).
+ */
+interface UsageSwitchPort {
+    val available: Boolean
+
+    fun isOn(): Boolean
+
+    fun setOn(on: Boolean)
+}

@@ -14,7 +14,7 @@ import app.masroufy.seed.BundledSeeds
  * أنهي قاعدة جاهزة اتطبقت، والمعرّف بس (`rule-0001`) هو اللي بيطلع. `Usage.port` = null (الاختبارات) ⇒ ولا حاجة.
  */
 internal fun usageOfCategorySet(before: Transaction, categoryId: Id?) {
-    if (Usage.port == null) return
+    if (!Usage.active) return
     val was = when {
         before.categoryId == null -> UsageCategoryBefore.NONE
         before.categoryConfirmed -> UsageCategoryBefore.USER
@@ -31,7 +31,7 @@ internal fun usageOfCategorySet(before: Transaction, categoryId: Id?) {
  * البنوك (`UsageValue.sender` — غير كده «other»). ⚠️ لقطة مش عدّاد: نفس الرسالة بتتعد في كل تشغيلة لحد ما تخرج من الصندوق — النسبة هي المهمة.
  */
 internal fun usageOfSmsRun(state: WaitingState) {
-    if (Usage.port == null) return
+    if (!Usage.active) return
     val parsed = HashMap<String, IntArray>()
     val seen = HashSet<String>()
     for (view in state.views.values) for (item in view.items) {

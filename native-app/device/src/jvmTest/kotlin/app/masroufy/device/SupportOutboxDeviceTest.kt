@@ -67,4 +67,17 @@ class SupportOutboxDeviceTest {
         box.sent("id-a")
         assertEquals(listOf("id-b"), FileSupportOutbox(file).pending().map { it.id })
     }
+
+    /** OVERRIDES §121-14 «ابعتها تاني»: اللي وصلت للحد بس عدّادها بيرجع صفر — ويتحفظ في الملف. */
+    @Test
+    fun resetRefusalsRequeuesOnlyTheGivenUp() {
+        val box = FileSupportOutbox(file)
+        box.add(SupportMessage(SupportKind.PROBLEM, "أولى", "2026-11-17", "EG"), "id-a")
+        box.add(SupportMessage(SupportKind.IDEA, "تانية", "2026-11-17", "EG"), "id-b")
+        repeat(app.masroufy.port.SUPPORT_MAX_REFUSALS) { box.refused("id-a") }
+        box.refused("id-b")
+        assertEquals(1, box.resetRefusals())
+        assertEquals(listOf(0, 1), FileSupportOutbox(file).pending().map { it.refusals })
+        assertEquals(0, box.resetRefusals())
+    }
 }

@@ -62,6 +62,8 @@ internal class CategoryActions(
     val archive: (CategoryRow) -> Unit,
     val add: () -> Unit,
     val savingsPlan: () -> Unit,
+    /** §121-2: الضغطة الطويلة على حاجة ⇒ «بيع» · «امسح». null ⇒ القايمة القديمة (افتح · أرشف). */
+    val longItems: ((CategoryRow) -> List<app.masroufy.ui.overlay.MenuItem>)? = null,
 )
 
 /** محتوى صفحة النوع (النموذج `AssetCategory`) — عناصر للقايمة الطويلة. [quick] null ⇒ من غير ضغط طويل (الرسم في الاختبار). */
@@ -137,7 +139,7 @@ internal fun CategoryList(v: CategoryView, a: CategoryActions, quick: QuickMenu?
         FloatingCard(Modifier.fillMaxWidth(), shape = RoundedCornerShape(22.dp), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)) {
             for (row in v.ui.rows) {
                 if (quick == null) RowView(row, v.currency, null) { a.open(row) } else {
-                    QuickTarget(quick, row.name, { assetQuickItems(false, { a.open(row) }, { a.archive(row) }) }) { long ->
+                    QuickTarget(quick, row.name, { a.longItems?.invoke(row) ?: assetQuickItems(false, { a.open(row) }, { a.archive(row) }) }) { long ->
                         RowView(row, v.currency, long, quick.guardTap { a.open(row) })
                     }
                 }

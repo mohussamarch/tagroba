@@ -95,7 +95,7 @@ interface InvestmentDeps {
 }
 
 /** تفاصيل أصل (من «الاستثمار»). */
-data class AssetDetailRoute(val assetId: Id) : Route {
+data class AssetDetailRoute(val assetId: Id, val startSell: Boolean = false) : Route {
     override val name = "AssetDetail"
 }
 
@@ -113,7 +113,7 @@ object AdvisorRoute : Route {
 
 fun RouteRegistry.registerInvestment() {
     tabRoot(Tab.INVESTMENT) { InvestmentScreen() }
-    screen<AssetDetailRoute> { r -> AssetDetailScreen(r.assetId) }
+    screen<AssetDetailRoute> { r -> AssetDetailScreen(r.assetId, r.startSell) }
     screen<AssetProjectionRoute> { r -> AssetProjectionScreen(r.assetId) }
     screen<ZakatRoute> { ZakatScreen() }
     screen<ZakatPayRoute> { r -> ZakatPayScreen(r.yearId) }
