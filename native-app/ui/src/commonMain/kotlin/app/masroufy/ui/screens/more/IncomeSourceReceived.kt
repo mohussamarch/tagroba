@@ -57,15 +57,16 @@ internal fun ReceivedSection(sourceId: Id, today: String, refresh: Int) {
             val line = d.expectedMinor?.let { t(R06Key.C120_INC_THIS_MONTH, got, amountLabel(it, d.currency)) } ?: t(R06Key.C120_INC_THIS_MONTH_NA, got)
             BasicText(line, Modifier.padding(horizontal = 4.dp), style = Type.of(14, FontWeight.Bold).copy(color = Ink.primary))
         }
-        if (d.waitingCount > 0) {
-            BasicText(t(R06Key.C120_INC_WAITING, sentenceNumber(d.waitingCount)), Modifier.padding(horizontal = 4.dp), style = Type.caption().copy(color = Ink.muted))
-        }
         GroupCard(horizontal = 16.dp) {
             d.months.forEachIndexed { i, m ->
                 val (y, mo) = m.period.key.split('-').let { it[0].toInt() to it[1].toInt() }
                 val value = if (m.count == 0) t(R06Key.C120_INC_NONE) else amountLabel(m.receivedMinor, d.currency)
                 FactRow(monthYear(y, mo), value, last = i == d.months.lastIndex, muted = m.count == 0)
             }
+        }
+        // §121-9: اللي نوعها لسه ما اتحددش في سطر لوحده — مش مع اللي وصل
+        if (d.waitingCount > 0) GroupCard(horizontal = 16.dp) {
+            FactRow(t(R06Key.C120_INC_WAITING, sentenceNumber(d.waitingCount)), amountLabel(d.waitingMinor, d.currency), last = true, muted = true)
         }
     }
 }

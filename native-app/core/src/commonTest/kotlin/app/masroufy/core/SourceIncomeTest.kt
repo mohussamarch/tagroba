@@ -38,6 +38,23 @@ class SourceIncomeTest {
         assertEquals(1_150_000L, r.thisMonth!!.receivedMinor)
         assertEquals(1_200_000L, r.expectedMinor)
         assertEquals(1, r.waitingCount)
+        assertEquals(50_000L, r.waitingMinor)
+    }
+
+    @Test fun undecidedTransfersStayInTheirOwnRowNotInReceived() {
+        // §121-9: مقترح «مرتب» بس لسه ما اتأكدش ⇒ مش في اللي وصل، في سطر لوحده
+        val txns = listOf(
+            deposit("2026-10-28", 1_200_000),
+            deposit("2026-11-01", 1_200_000, confirmed = false),
+            deposit("2026-11-05", 70_000, EconomicKind.UNCLASSIFIED, confirmed = false),
+        )
+        val r = sourceIncome(job, listOf(job), txns, 28, "2026-11-15")
+        assertEquals(1_200_000L, r.thisMonth!!.receivedMinor)
+        assertEquals(1, r.thisMonth!!.count)
+        assertEquals(2, r.waitingCount)
+        assertEquals(1_270_000L, r.waitingMinor)
+        val none = sourceIncome(job, listOf(job), txns.take(1), 28, "2026-11-15")
+        assertEquals(0 to 0L, none.waitingCount to none.waitingMinor)
     }
 
     @Test fun noExpectedIsUnavailableAndEndedSourceHasNoThisMonth() {
