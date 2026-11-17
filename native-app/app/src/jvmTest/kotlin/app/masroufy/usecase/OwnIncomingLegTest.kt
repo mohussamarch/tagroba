@@ -124,4 +124,33 @@ class OwnIncomingLegTest {
         record(txns, effect, a, txn("t-out", a.id, Direction.OUT, "2026-10-07", EconomicKind.UNCLASSIFIED, false), plainOut, SmsKind.OTHER)
         assertEquals(2, all(txns).size, "مفيش رجلين")
     }
+
+    @Test fun outgoingToYourOtherAccountWithoutTheCreditMessageAddsTheIncomingLeg() = runBlocking<Unit> {
+        // §121-10: المراية — خارج من أ ورسالة الدخول على ب ما وصلتش ⇒ «ضيفها لحسابي التاني»
+        val cash = Wallet("w-cash", "كاش", Currency.SAR, "cash", 0, "2026-01-01")
+        val txns = MemoryTransactionRepository()
+        txns.saveMany(listOf(txn("t-out", a.id, Direction.OUT, "2026-10-07", EconomicKind.UNCLASSIFIED, false, plainOut)))
+        val use = AddOwnLeg(txns, MemoryWalletRepository(listOf(a, b, cash)), PassthroughUnitOfWork(), FixedClock("2026-10-08T00:00:00Z"))
+        assertEquals(listOf(b.id), use.choices("t-out").map { it.id }, "مش الكاش ولا نفس المحفظة")
+        assertEquals("t-out$OWN_LEG_SUFFIX", use.add("t-out", b.id))
+        val leg = all(txns).single { it.id == "t-out$OWN_LEG_SUFFIX" }
+        assertEquals(Triple(b.id, Direction.IN, 50_000L), Triple(leg.walletId, leg.observedDirection, leg.amountMinor))
+        assertEquals(EconomicKind.INTERNAL_TRANSFER to true, all(txns).single { it.id == "t-out" }.let { it.economicKind to it.economicKindConfirmed })
+        assertTrue(use.choices("t-out").isEmpty(), "اتعملت ⇒ الفعل بيختفي")
+        assertFailsWith<TransferZoneError> { use.add("t-out", b.id) }
+        // رسالة الدخول وصلت بعدين ⇒ بتندمج في الرِجل اليدوية
+        record(txns, OwnTransferLegEffect(MemoryWalletRepository(listOf(a, b)), txns), b, txn("t-late", b.id, Direction.IN, "2026-10-08", EconomicKind.UNCLASSIFIED, false), namedIn, SmsKind.TRANSFER_IN)
+        assertEquals(2, all(txns).size, "مفيش رجلين")
+    }
+
+    @Test fun outgoingWhoseCreditIsAlreadyOnTheOtherAccountHasNoAction() = runBlocking<Unit> {
+        val txns = MemoryTransactionRepository()
+        txns.saveMany(listOf(
+            txn("t-out", a.id, Direction.OUT, "2026-10-07", EconomicKind.INTERNAL_TRANSFER, true, plainOut),
+            txn("t-in", b.id, Direction.IN, "2026-10-07", EconomicKind.INTERNAL_TRANSFER, true, namedIn),
+        ))
+        val use = AddOwnLeg(txns, MemoryWalletRepository(listOf(a, b)), PassthroughUnitOfWork(), FixedClock("2026-10-08T00:00:00Z"))
+        assertTrue(use.choices("t-out").isEmpty())
+        assertFailsWith<TransferZoneError> { use.add("t-out", b.id) }
+    }
 }

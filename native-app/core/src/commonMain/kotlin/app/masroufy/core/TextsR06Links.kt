@@ -44,6 +44,9 @@ internal val MSA_R06_LINKS_TEXTS: Map<R06Key, String> = mapOf(
     R06Key.OWN_LEG_ACTION to "اخصمها من حسابي الآخر",
     R06Key.OWN_LEG_PICK_BODY to "من أي حساب خرج المبلغ؟",
     R06Key.OWN_LEG_DONE to "خُصمت من {0}",
+    R06Key.OWN_LEG_IN_ACTION to "أضفها إلى حسابي الآخر",
+    R06Key.OWN_LEG_IN_PICK_BODY to "إلى أي حساب دخل المبلغ؟",
+    R06Key.OWN_LEG_IN_DONE to "أُضيفت إلى {0}",
 )
 
 internal val EGYPTIAN_R06_LINKS_TEXTS: Map<R06Key, String> = mapOf(
@@ -86,6 +89,9 @@ internal val EGYPTIAN_R06_LINKS_TEXTS: Map<R06Key, String> = mapOf(
     R06Key.OWN_LEG_ACTION to "اخصمها من حسابي التاني",
     R06Key.OWN_LEG_PICK_BODY to "الفلوس خرجت من أنهي حساب؟",
     R06Key.OWN_LEG_DONE to "اتخصمت من {0}",
+    R06Key.OWN_LEG_IN_ACTION to "ضيفها لحسابي التاني",
+    R06Key.OWN_LEG_IN_PICK_BODY to "الفلوس دخلت أنهي حساب؟",
+    R06Key.OWN_LEG_IN_DONE to "اتضافت لـ{0}",
 )
 
 internal val ENGLISH_R06_LINKS_TEXTS: Map<R06Key, String> = mapOf(
@@ -128,4 +134,7 @@ internal val ENGLISH_R06_LINKS_TEXTS: Map<R06Key, String> = mapOf(
     R06Key.OWN_LEG_ACTION to "Take it from my other account",
     R06Key.OWN_LEG_PICK_BODY to "Which account did the money leave?",
     R06Key.OWN_LEG_DONE to "Taken from {0}",
+    R06Key.OWN_LEG_IN_ACTION to "Add it to my other account",
+    R06Key.OWN_LEG_IN_PICK_BODY to "Which account did the money reach?",
+    R06Key.OWN_LEG_IN_DONE to "Added to {0}",
 )
