@@ -53,7 +53,8 @@ class ManageSmsInbox(
      * [ids] (r041c) = الرسايل دي بس اللي بتتفهم وتبقى في [InboxView.items] — بنفس رقم سطرها في الصفحة؛ null = كلها.
      * [behind] = رسايل البلد دي اللي ورا الصفحة (null = مش محسوب ⇒ كل اللي ورا الصفحة).
      */
-    private fun prepare(state: SmsInboxState, ids: Set<String>? = null, behind: Int? = null): InboxView {
+    private fun prepare(raw: SmsInboxState, ids: Set<String>? = null, behind: Int? = null): InboxView {
+        val state = withSameSecondCopies(raw) // §121-12: نسخة نفس الثانية ⇒ نفس مرجع الأولى ⇒ مكررة
         if (elsewhere.isEmpty()) {
             return InboxView(state.enabled, state.permission, state.more, state.count, state.senders, state.messages, itemsOf(state, ids, emptySet()))
         }
