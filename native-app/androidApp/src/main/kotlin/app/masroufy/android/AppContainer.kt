@@ -154,7 +154,7 @@ class AppContainer(private val context: Context, private val problems: ProblemLo
         // r06-shared (رد المالك 2026-10-22): قاعدة التجار المشتركة — التغييرات من آخر مؤشر لما البرنامج يتفتح (برّه خيط الواجهة؛ الفشل بيتسجل)
         scope.launch { app.masroufy.wiring.syncSharedMerchantsOf(spacesOf(st), envFor(st.user.uid))?.run() }
         // بيانات الاستخدام (PLAN-0.6 §16 «الاستخدام»): المزايا المفعّلة · فئة عدد الحسابات · بلد ولا بلدين — خصائص، أعداد وأعلام بس
-        if (app.masroufy.problems.Usage.port != null) scope.launch {
+        if (app.masroufy.problems.Usage.active) scope.launch {
             val sources = spacesOf(st).map { (_, r) -> app.masroufy.usecase.UsageSpaceSource(r.wallets, r.installmentPlans, r.roscas, r.zakatYears, r.savingsGoals) }
             runCatching { app.masroufy.usecase.ReportUsageSnapshot(sources, app.masroufy.problems.Usage::set).run() }
         }

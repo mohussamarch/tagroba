@@ -14,8 +14,15 @@ import kotlin.concurrent.Volatile
 object Usage {
     @Volatile var port: AnalyticsPort? = null
 
+    /** OVERRIDES §121-17: مفتاح «بيانات الاستخدام» (منفصل عن الأعطال). مقفول ⇒ ولا حدث ولا خاصية بتتبعت. الافتراضي مفتوح (زي تقارير الأعطال). */
+    @Volatile var allowed: () -> Boolean = { true }
+
+    /** فيه تنفيذ والمفتاح مفتوح. */
+    val active: Boolean get() = port != null && runCatching { allowed() }.getOrDefault(false)
+
     fun log(event: UsageEvent) {
         val p = port ?: return
+        if (!active) return
         try {
             p.log(event)
         } catch (_: Throwable) {
@@ -25,6 +32,7 @@ object Usage {
 
     fun set(property: UsageProperty, value: UsageValue) {
         val p = port ?: return
+        if (!active) return
         try {
             p.set(property, value)
         } catch (_: Throwable) {

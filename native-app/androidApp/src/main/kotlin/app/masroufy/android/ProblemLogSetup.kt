@@ -19,7 +19,7 @@ import java.time.temporal.ChronoUnit
  * ملف خاص بالتطبيق (`filesDir/problems/problems.log` — `FileProblemLog`) · الوقت بوقت الجوال وفرقه · النسخة من البناء ·
  * البلد الشغالة من الجلسة ([session]). [install] بيوصّل `Problems` بالسجل وبتقارير الأعطال (الأخطاء الكبيرة بس، متنضفة).
  */
-class ProblemLogSetup(context: Context, private val crash: AndroidCrashReports) {
+class ProblemLogSetup(context: Context, private val crash: AndroidCrashReports, private val usageSwitch: AndroidUsageSwitch) {
     @Volatile private var country: String? = null
     private val log = FileProblemLog(File(context.filesDir, "problems/problems.log"))
     private val nowIso: () -> String = { OffsetDateTime.now().truncatedTo(ChronoUnit.SECONDS).toString() }
@@ -31,6 +31,7 @@ class ProblemLogSetup(context: Context, private val crash: AndroidCrashReports) 
         override val export = ExportProblems(log, nowIso, BuildConfig.VERSION_NAME)
         override val clear = ClearProblems(log)
         override val crashReports = ManageCrashReports(crash)
+        override val usage = app.masroufy.usecase.ManageUsageAnalytics(usageSwitch)
     }
 
     fun install() {

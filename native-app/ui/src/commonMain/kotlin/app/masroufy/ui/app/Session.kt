@@ -88,6 +88,9 @@ interface ProblemLogDeps {
     val export: ExportProblems
     val clear: ClearProblems
     val crashReports: ManageCrashReports
+
+    /** OVERRIDES §121-17: مفتاح «بيانات الاستخدام» لوحده. null ⇒ مش متوصل (المعاينة · الآيفون). */
+    val usage: app.masroufy.usecase.ManageUsageAnalytics? get() = null
 }
 
 val LocalApp = staticCompositionLocalOf<AppDeps> { error("AppDeps مش متقدّم") }
