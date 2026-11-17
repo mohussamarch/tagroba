@@ -3,6 +3,7 @@ package app.masroufy.device
 import app.masroufy.core.SupportKind
 import app.masroufy.core.SupportMessage
 import app.masroufy.port.PendingSupport
+import app.masroufy.port.SUPPORT_MAX_REFUSALS
 import app.masroufy.port.SupportOutboxPort
 import java.io.File
 
@@ -30,6 +31,13 @@ class FileSupportOutbox(private val file: File) : SupportOutboxPort {
     override fun pending(): List<PendingSupport> = synchronized(lock) { readPending() }
 
     override fun sent(id: String) = synchronized(lock) { writePending(readPending().filterNot { it.id == id }) }
+
+    override fun resetRefusals(): Int = synchronized(lock) {
+        val all = readPending()
+        val n = all.count { it.refusals >= SUPPORT_MAX_REFUSALS }
+        if (n > 0) writePending(all.map { if (it.refusals >= SUPPORT_MAX_REFUSALS) it.copy(refusals = 0) else it })
+        n
+    }
 
     override fun refused(id: String) = synchronized(lock) {
         writePending(readPending().map { if (it.id == id) it.copy(refusals = it.refusals + 1) else it })

@@ -32,6 +32,7 @@ import app.masroufy.ui.components.TextInput
 import app.masroufy.ui.icons.Lucide
 import app.masroufy.ui.icons.LucideIcon
 import app.masroufy.ui.text.BasicText
+import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
 import kotlinx.coroutines.launch
@@ -90,8 +91,30 @@ internal fun SupportForm(egypt: Boolean, prefill: String = "", modifier: Modifie
                 }
             }, Modifier.fillMaxWidth(), enabled = text.isNotBlank(), loading = sending) // smoke 0.5.4: مشغول بكلام على طول، مش رمادي فاضي
             BasicText(chrome.note, style = Type.caption().copy(color = Ink.muted))
-            val undelivered = remember(sender) { runCatching { sender.undelivered() }.getOrDefault(0) }
-            if (undelivered > 0) BasicText(chrome.undelivered(undelivered), style = Type.caption().copy(color = Ink.muted))
+            UndeliveredLine(sender, chrome)
         }
+    }
+}
+
+/** «رسايل ما وصلتش: N» + زرار «ابعتها تاني» جنبه (OVERRIDES §121-14 — `SendSupportMessage.resendUndelivered`). */
+@Composable
+private fun UndeliveredLine(sender: SendSupportMessage, chrome: SupportChrome) {
+    val toaster = app.masroufy.ui.shell.LocalToaster.current
+    val scope = rememberCoroutineScope()
+    var undelivered by remember(sender) { mutableStateOf(runCatching { sender.undelivered() }.getOrDefault(0)) }
+    var busy by remember { mutableStateOf(false) }
+    if (undelivered <= 0) return
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+        BasicText(chrome.undelivered(undelivered), Modifier.weight(1f), style = Type.caption().copy(color = Ink.muted))
+        app.masroufy.ui.components.TonalButton(t(app.masroufy.core.R06Key.C121_RESEND), {
+            if (busy) return@TonalButton
+            busy = true
+            scope.launch {
+                val sent = runCatching { sender.resendUndelivered() }.getOrDefault(0)
+                undelivered = runCatching { sender.undelivered() }.getOrDefault(0)
+                busy = false
+                toaster.show(if (sent > 0) t(app.masroufy.core.R06Key.C121_RESENT, "$sent") else t(app.masroufy.core.R06Key.C121_RESEND_FAILED))
+            }
+        }, height = 36.dp)
     }
 }

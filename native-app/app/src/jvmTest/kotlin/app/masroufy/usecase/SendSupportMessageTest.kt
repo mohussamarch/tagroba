@@ -71,6 +71,43 @@ class SendSupportMessageTest {
         assertTrue(inbox.written.isEmpty())
     }
 
+    /** OVERRIDES §121-14 «ابعتها تاني»: اللي بطّلنا نعيدها ترجع للمستنية وبتتبعت على طول لو السيرفر قبلها. */
+    @Test fun resendUndeliveredRequeuesAndSends() = runBlocking {
+        val outbox = MemorySupportOutbox()
+        val inbox = FakeInbox().apply { reject = true }
+        val use = SendSupportMessage(outbox, inbox, SequentialIdGenerator(), "v")
+        use.send(msg)
+        repeat(SUPPORT_MAX_REFUSALS) { use.flush() }
+        assertEquals(1, use.undelivered())
+        inbox.reject = false
+        assertEquals(1, use.resendUndelivered())
+        assertEquals(0, use.undelivered())
+        assertTrue(outbox.pending().isEmpty())
+        assertEquals(1, inbox.written.size)
+    }
+
+    /** «ابعتها تاني» والسيرفر لسه رافض ⇒ مش «اتبعت»، وبترجع مستنية بعدّاد جديد (مش «ما وصلتش» على طول). */
+    @Test fun resendStillRefusedStaysPendingWithFreshCount() = runBlocking {
+        val outbox = MemorySupportOutbox()
+        val inbox = FakeInbox().apply { reject = true }
+        val use = SendSupportMessage(outbox, inbox, SequentialIdGenerator(), "v")
+        use.send(msg)
+        repeat(SUPPORT_MAX_REFUSALS) { use.flush() }
+        assertEquals(0, use.resendUndelivered())
+        assertEquals(1, outbox.pending().single().refusals)
+        assertEquals(0, use.undelivered())
+    }
+
+    /** مفيش حاجة «ما وصلتش» ⇒ «ابعتها تاني» ما بتلمسش المستنية العادية. */
+    @Test fun resendWithNothingUndeliveredDoesNothing() = runBlocking {
+        val outbox = MemorySupportOutbox()
+        val inbox = FakeInbox().apply { reject = true }
+        val use = SendSupportMessage(outbox, inbox, SequentialIdGenerator(), "v")
+        use.send(msg)
+        assertEquals(0, use.resendUndelivered())
+        assertEquals(1, outbox.pending().single().refusals)
+    }
+
     @Test fun undeliveredLineInBothDialects() {
         assertEquals("رسايل ما وصلتش: 2", app.masroufy.core.SupportChrome(true).undelivered(2))
         assertEquals("رسائل لم تصل: 2", app.masroufy.core.SupportChrome(false).undelivered(2))

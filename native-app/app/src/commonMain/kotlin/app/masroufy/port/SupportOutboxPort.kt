@@ -26,6 +26,9 @@ interface SupportOutboxPort {
      * دورة الخلفية بتعيد لحد [SUPPORT_MAX_REFUSALS] وبعدها بتبطّل وتفضل ظاهرة «ما وصلتش».
      */
     fun refused(id: String)
+
+    /** OVERRIDES §121-14 «ابعتها تاني»: عدّاد الرفض يرجع صفر للي بطّلنا نعيدها ⇒ ترجع للمستنية. بيرجّع عددها. */
+    fun resetRefusals(): Int
 }
 
 /** [refusals] = كام مرة السيرفر رفضها (مش النت). */

@@ -63,6 +63,15 @@ class SendSupportMessage(
     /** رسايل السيرفر رفضها [SUPPORT_MAX_REFUSALS] مرة ⇒ بطّلنا نعيدها. محفوظة على الجهاز، والشاشة بتعرض عددها. */
     fun undelivered(): Int = outbox.pending().count { it.refusals >= SUPPORT_MAX_REFUSALS }
 
+    /**
+     * OVERRIDES §121-14 «ابعتها تاني» جنب «رسايل ما وصلتش»: اللي بطّلنا نعيدها ترجع للمستنية (عدّاد الرفض صفر) وبنحاول على طول ([flush]).
+     * بيرجّع كام واحدة اتبعتت؛ اللي ما اتبعتتش بتفضل مستنية لدورة الخلفية (ولو اترفضت تاني [SUPPORT_MAX_REFUSALS] مرة ترجع «ما وصلتش»).
+     */
+    suspend fun resendUndelivered(): Int {
+        if (outbox.resetRefusals() == 0) return 0
+        return flush()
+    }
+
     private suspend fun attempt(id: String, m: SupportMessage): Boolean {
         val box = inbox ?: return false
         return try {
