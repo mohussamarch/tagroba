@@ -56,16 +56,29 @@ fun salaryByPayerAllowed(t: Transaction, employer: IncomeSource, profilePayday: 
     return nearPayday(t.occurredAt, employer.expectedDayOfMonth ?: profilePayday)
 }
 
-/** §120-7: التحويل من حساب المالك علّم عليه «ده مرتب دايمًا من الحساب ده» (ولسه حساب الجهة). */
+/**
+ * §120-7: التحويل من حساب المالك علّم عليه «ده مرتب دايمًا من الحساب ده» (ولسه حساب الجهة). §121-8: بس لو التحويل اتسجل بعد
+ * وقت التشغيل ([alwaysSalarySinceOf]) — اللي كانت مستنية قبله تفضل مستنية.
+ */
 fun alwaysSalaryFrom(t: Transaction, employer: IncomeSource): Boolean {
     val key = transferPartyOf(t)?.key ?: return false
-    return key in employer.alwaysSalaryKeys && key in employer.payerKeys
+    if (key !in employer.alwaysSalaryKeys || key !in employer.payerKeys) return false
+    val since = alwaysSalarySinceOf(employer, key) ?: return true
+    return t.createdAt >= since
 }
 
-/** §120-7: الجهة بعد تشغيل/قفل «مرتب دايمًا» للحساب [partyKey] (لازم يكون من حساباتها). */
-fun withAlwaysSalary(source: IncomeSource, partyKey: String, on: Boolean): IncomeSource {
+/** §121-8: وقت تشغيل «مرتب دايمًا» للحساب [partyKey] (null = مش متسجل — اتشغل قبل §121 ⇒ على الكل). */
+fun alwaysSalarySinceOf(source: IncomeSource, partyKey: String): String? =
+    source.alwaysSalarySince.firstOrNull { it.substringBefore(PART_SEP) == partyKey }?.substringAfter(PART_SEP, "")?.ifBlank { null }
+
+/** §120-7: الجهة بعد تشغيل/قفل «مرتب دايمًا» للحساب [partyKey] (لازم يكون من حساباتها). §121-8: التشغيل بيحفظ وقته [nowIso]. */
+fun withAlwaysSalary(source: IncomeSource, partyKey: String, on: Boolean, nowIso: String? = null): IncomeSource {
     val kept = source.alwaysSalaryKeys - partyKey
-    return source.copy(alwaysSalaryKeys = if (on && partyKey in source.payerKeys) kept + partyKey else kept)
+    val keptSince = source.alwaysSalarySince.filterNot { it.substringBefore(PART_SEP) == partyKey }
+    if (!on || partyKey !in source.payerKeys) return source.copy(alwaysSalaryKeys = kept, alwaysSalarySince = keptSince)
+    if (partyKey in source.alwaysSalaryKeys) return source
+    val since = nowIso?.let { keptSince + "$partyKey$PART_SEP$it" } ?: keptSince
+    return source.copy(alwaysSalaryKeys = kept + partyKey, alwaysSalarySince = since)
 }
 
 private const val RULE_SEP = '='

@@ -30,5 +30,9 @@ class R052cFieldCodecTest {
         assertEquals(job, sources.decode(sources.encode(job)))
         val always = job.copy(alwaysSalaryKeys = listOf("#7788"))
         assertEquals(always, sources.decode(sources.encode(always)))
+        assertFalse("alwaysSalarySince" in sources.encode(always))
+        // §121-8: وقت التشغيل بيتحفظ ويرجع زي ما هو
+        val since = always.copy(alwaysSalarySince = listOf("#7788\t2026-11-17T08:00:00.000Z"))
+        assertEquals(since, sources.decode(sources.encode(since)))
     }
 }
