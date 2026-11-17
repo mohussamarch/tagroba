@@ -6,6 +6,8 @@ import app.masroufy.core.SmsKind
 import app.masroufy.core.SmsRow
 import app.masroufy.core.TextKey
 import app.masroufy.core.Wallet
+import app.masroufy.memory.MemoryWalletRepository
+import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -33,10 +35,26 @@ class UnknownAccountWaitTest {
         assertNull(waitReasonOf(purchase(null, card = "9999"), target))
         val notMine = targetOf(a.copy(notMineLast4 = listOf("3333")), listOf(a.copy(notMineLast4 = listOf("3333")), b), false)
         assertNull(waitReasonOf(purchase("3333"), notMine))
-        // محفظة المرسل من غير أرقام ⇒ زي الأول (ممكن الأرقام بتاعتها)
-        val bare = a.copy(accountLast4 = null)
-        assertNull(waitReasonOf(purchase("3333"), targetOf(bare, listOf(bare, b), false)))
         // أرقام محفظة تانية من محافظك ⇒ سببها القديم («حساب تاني»)
         assertEquals(TextKey.SMS_WAIT_OTHER_ACCOUNT, waitReasonOf(purchase("1111"), target))
+    }
+
+    @Test
+    fun walletWithoutDigitsAsksThenYesSavesThemAndNoKeepsTheOldWay() = runBlocking<Unit> {
+        // §121-11: محفظة المرسل من غير أرقام + رقم حساب في الرسالة ⇒ «الحساب ده بتاعك؟»
+        val bare = a.copy(accountLast4 = null)
+        assertEquals(TextKey.SMS_WAIT_UNKNOWN_ACCOUNT, waitReasonOf(purchase("3333"), targetOf(bare, listOf(bare, b), false)))
+        assertNull(waitReasonOf(purchase(null), targetOf(bare, listOf(bare, b), false)), "مفيش رقم حساب ⇒ زي الأول")
+        assertNull(waitReasonOf(purchase(null, card = "9999"), targetOf(bare, listOf(bare, b), false)), "رقم كارت بس ⇒ زي الأول")
+        // أيوه ⇒ الأرقام اتحفظت على المحفظة وما بيسألش تاني
+        val repo = MemoryWalletRepository(listOf(bare, b))
+        val saved = AnswerSmsAccount(repo).mine(bare.id, "3333")
+        assertEquals("3333", saved.accountLast4)
+        assertNull(waitReasonOf(purchase("3333"), targetOf(saved, repo.listAll(), false)))
+        // لأ ⇒ «مش بتاعي» على المحفظة ⇒ بيتسجل فيها زي الأول من غير سؤال
+        val repo2 = MemoryWalletRepository(listOf(bare, b))
+        val declined = AnswerSmsAccount(repo2).notMine(bare.id, "3333")
+        assertNull(declined.accountLast4)
+        assertNull(waitReasonOf(purchase("3333"), targetOf(declined, repo2.listAll(), false)))
     }
 }

@@ -69,10 +69,11 @@ internal fun waitReasonOf(row: SmsRow, target: SmsReviewTarget): TextKey? = when
  * OVERRIDES §120-9 (قرار المالك 2026-11-15): أرقام **حسابك** في الرسالة ([SmsRow.accountLast4] — سطر الحساب بس، مش الكارت) مش لأي محفظة
  * في البلد ولا اتقال عليها «مش بتاعي» ⇒ الرسالة بتستنى «الحساب ده بتاعك؟» بدل ما تتسجل لوحدها في محفظة المرسل (`routeSender` بيرجع
  * لمحفظة المرسل). الرد (`AnswerSmsAccount`) بيكتب الأرقام على محفظة أو بيحفظها «مش بتاعي» ⇒ الرسايل الجاية ما بتسألش تاني.
+ * OVERRIDES §121-11: محفظة المرسل **مالهاش** آخر 4 أرقام والرسالة فيها رقم حساب ⇒ نفس السؤال «الحساب ده بتاعك؟» (كان بيتسجل فيها
+ * لوحده). أيوه ⇒ الأرقام بتتكتب على المحفظة (`AnswerSmsAccount.mine`) فالرسايل الجاية بتطابق وما بتسألش · لأ ⇒ «مش بتاعي» على المحفظة
+ * ⇒ زي الأول (بتتسجل فيها من غير سؤال).
  */
 internal fun SmsReviewTarget.unknownAccount(row: SmsRow): Boolean {
     val digits = row.accountLast4 ?: return false
-    // محفظة المرسل مالهاش أرقام مكتوبة ⇒ ممكن تكون الأرقام دي بتاعتها — زي الأول (سؤال مفتوح للمالك في HANDOVER)
-    if (accountLast4 == null) return false
     return digits != accountLast4 && digits !in otherAccountsLast4 && digits !in notMineLast4
 }

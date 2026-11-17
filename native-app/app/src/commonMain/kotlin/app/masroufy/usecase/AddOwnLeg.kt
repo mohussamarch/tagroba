@@ -18,6 +18,8 @@ import app.masroufy.port.WalletRepository
  * الخارجة منه ما اتعملتش لوحدها (الرسالة مفيهاش أرقام أو الأرقام مش مكتوبة على المحفظة) ⇒ من تفاصيل العملية «اخصمها من حسابي التاني» ⇒
  * تختار المحفظة ⇒ رِجل خارجة منها بنفس المبلغ واليوم (معرّفها = معرّف الداخل + [OWN_LEG_SUFFIX] — نفس رِجل §112-3، فرسالة الخصم لو وصلت
  * بعدين بتندمج فيها: `OwnTransferLegEffect.mergeIncoming`)، والداخل نفسه بيبقى «تحويل داخلي» مؤكد.
+ * §121-10 — المراية: تحويل **خارج** لحسابك التاني ورسالة الدخول على الحساب التاني ما وصلتش ⇒ «ضيفها لحسابي التاني» ⇒ رِجل داخلة
+ * على المحفظة اللي تختارها (نفس [ownLegOn] — الاتجاه بيتقلب)، والخارج بيبقى «تحويل داخلي» مؤكد.
  * ما بتتعملش مرتين: الرِجل موجودة أو المحفظة فيها خارج بنفس المبلغ ±يوم ([ownLegAlreadyThere]) ⇒ [choices] فاضية و[add] بيرفض.
  */
 class AddOwnLeg(
@@ -26,7 +28,7 @@ class AddOwnLeg(
     private val uow: UnitOfWork,
     private val clock: Clock,
 ) {
-    /** المحافظ اللي ينفع الفلوس تكون جت منها (مش كاش · نفس العملة · غير محفظة العملية). فاضية ⇒ الفعل ما بيظهرش. */
+    /** المحافظ اللي ينفع الفلوس تكون جت منها/راحت ليها (مش كاش · نفس العملة · غير محفظة العملية). فاضية ⇒ الفعل ما بيظهرش. */
     suspend fun choices(transactionId: Id): List<Wallet> {
         val t = txns.findByIds(listOf(transactionId)).firstOrNull() ?: return emptyList()
         if (!eligible(t)) return emptyList()
@@ -38,7 +40,7 @@ class AddOwnLeg(
         return list
     }
 
-    /** الرِجل الخارجة من [walletId]. بيرجّع معرّفها. */
+    /** الرِجل التانية على [walletId] (خارجة منها لو العملية داخلة، وداخلة ليها لو العملية خارجة). بيرجّع معرّفها. */
     suspend fun add(transactionId: Id, walletId: Id): Id {
         val t = txns.findByIds(listOf(transactionId)).firstOrNull()?.takeIf(::eligible) ?: throw TransferZoneError(uiText(TextKey.NOT_AVAILABLE))
         val target = wallets.listAll().firstOrNull { it.id == walletId && it.id != t.walletId && it.currency == t.currency }
@@ -52,7 +54,7 @@ class AddOwnLeg(
     }
 
     private fun eligible(t: app.masroufy.core.Transaction): Boolean =
-        t.observedDirection == Direction.IN && t.walletId != null && t.transferToWalletId == null && !t.id.endsWith(OWN_LEG_SUFFIX)
+        (t.observedDirection == Direction.IN || t.observedDirection == Direction.OUT) && t.walletId != null && t.transferToWalletId == null && !t.id.endsWith(OWN_LEG_SUFFIX)
 
     private suspend fun around(t: app.masroufy.core.Transaction) =
         txns.listByDateRange(shiftDays(t.occurredAt.take(10), -1), shiftDays(t.occurredAt.take(10), 1))

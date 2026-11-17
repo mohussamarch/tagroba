@@ -103,7 +103,8 @@ class SmsCashWithdrawalTest {
 
     @Test fun cashDepositsAndPurchasesWithCashStillWait() = runBlocking<Unit> {
         val desk = S2Desk()
-        desk.receive("dep", "Deposit ATM\nAmount: SAR 2,000.00\nAccount: **1188\nOn: 2026-10-07 09:12", SENT_AT)
+        // §121-11: من غير رقم حساب (المحفظة مالهاش أرقام ⇒ الرقم كان هيسأل «الحساب ده بتاعك؟» قبل سبب الإيداع)
+        desk.receive("dep", "Deposit ATM\nAmount: SAR 2,000.00\nOn: 2026-10-07 09:12", SENT_AT)
         desk.receive("cb", "PoS Purchase & Cashback\nAmount: SAR 350.00\nAt: TEST HYPER\nOn: 2026-10-07 18:40", SENT_AT)
         val target = desk.target()
         assertEquals(CASH.id, target.cashWalletId, "فيه محفظة كاش واحدة")

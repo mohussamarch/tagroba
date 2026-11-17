@@ -157,7 +157,9 @@ fun OperationDetailScreen(transactionId: Id, openPerson: Boolean = false) {
                 else if (v.flow == LinkFlow.TRANSFER_IN && !s.locked && person.status?.link == null && deps.incomeAnswers != null) item(key = "income") { IncomeKindCard(v.id, onChanged = { reload++ }) }
                 // r05 (البند 9): «راتب من أي جهة؟» على الراتب الداخل
                 if (v.transaction.economicKind == app.masroufy.core.EconomicKind.SALARY && v.flow == LinkFlow.TRANSFER_IN) item(key = "salary-employer") { SalaryEmployerCard(v.id, reload) { reload++ } }
-                if (v.flow == LinkFlow.TRANSFER_IN && !s.locked && !v.unrecorded) item(key = "own-leg") { OwnLegDebitAction(v.id, reload) { reload++ } } // §120-5
+                if ((v.flow == LinkFlow.TRANSFER_IN || v.flow == LinkFlow.TRANSFER_OUT) && !s.locked && !v.unrecorded) item(key = "own-leg") {
+                    OwnLegDebitAction(v.id, reload, outgoing = v.flow == LinkFlow.TRANSFER_OUT) { reload++ } // §120-5 · §121-10
+                }
                 item(key = "fields") {
                     FieldsCard(v, s.tags, onPick = { picking = true }, onConfirm = { id ->
                         scope.launch {

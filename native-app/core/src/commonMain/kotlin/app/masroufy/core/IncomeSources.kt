@@ -92,6 +92,11 @@ data class IncomeSource(
      * القرار الأحدث ([salaryByPayerAllowed]). حقل اختياري جديد (ما بيتكتبش لو فاضي).
      */
     val alwaysSalaryKeys: List<String> = emptyList(),
+    /**
+     * §121-8: وقت تشغيل «مرتب دايمًا» لكل مفتاح («المفتاح⇥الوقت»). العلامة بتأثر على الإيداعات اللي اتسجلت **بعده** بس
+     * ([Transaction.createdAt])؛ اللي كانت مستنية قبله تفضل مستنية. مفتاح من غير وقت (اتشغل قبل §121) = على الكل زي ما كان.
+     */
+    val alwaysSalarySince: List<String> = emptyList(),
 ) {
     val archived: Boolean get() = archivedAt != null
 }

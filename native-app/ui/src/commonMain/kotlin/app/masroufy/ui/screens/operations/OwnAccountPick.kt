@@ -50,10 +50,11 @@ internal fun OwnAccountPickSheet(wallets: List<Wallet>?, body: String, error: St
 
 /**
  * OVERRIDES §120-5: فلوس داخلة مالهاش رِجل خارجة من حسابك التاني ⇒ «اخصمها من حسابي التاني» ⇒ اختيار المحفظة ⇒ `AddOwnLeg.add`.
+ * §121-10: [outgoing] = تحويل خارج لحسابك التاني ⇒ «ضيفها لحسابي التاني» (رِجل داخلة على المحفظة المختارة).
  * الفعل بيظهر بس لو `AddOwnLeg.choices` مش فاضية (الرِجل مش موجودة والعملية داخلة).
  */
 @Composable
-internal fun OwnLegDebitAction(transactionId: Id, reload: Int, onChanged: () -> Unit) {
+internal fun OwnLegDebitAction(transactionId: Id, reload: Int, outgoing: Boolean = false, onChanged: () -> Unit) {
     val use = LocalSpace.current.operations.ownLeg ?: return
     val scope = rememberCoroutineScope()
     val toaster = LocalToaster.current
@@ -62,14 +63,15 @@ internal fun OwnLegDebitAction(transactionId: Id, reload: Int, onChanged: () -> 
     var error by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(transactionId, reload) { choices = runCatching { use.choices(transactionId) }.getOrDefault(emptyList()) }
     if (choices.isEmpty()) return
-    TonalButton(t(app.masroufy.core.R06Key.OWN_LEG_ACTION), { error = null; open = true }, Modifier.fillMaxWidth())
-    OwnAccountPickSheet(if (open) choices else null, t(app.masroufy.core.R06Key.OWN_LEG_PICK_BODY), error, onDismiss = { open = false }) { w ->
+    // §121-10: الخارج ⇒ «ضيفها لحسابي التاني» (رِجل داخلة)
+    TonalButton(t(if (outgoing) app.masroufy.core.R06Key.OWN_LEG_IN_ACTION else app.masroufy.core.R06Key.OWN_LEG_ACTION), { error = null; open = true }, Modifier.fillMaxWidth())
+    OwnAccountPickSheet(if (open) choices else null, t(if (outgoing) app.masroufy.core.R06Key.OWN_LEG_IN_PICK_BODY else app.masroufy.core.R06Key.OWN_LEG_PICK_BODY), error, onDismiss = { open = false }) { w ->
         scope.launch {
             val err = failureOf { use.add(transactionId, w.id) }
             error = err
             if (err == null) {
                 open = false
-                toaster.show(t(app.masroufy.core.R06Key.OWN_LEG_DONE, w.name))
+                toaster.show(t(if (outgoing) app.masroufy.core.R06Key.OWN_LEG_IN_DONE else app.masroufy.core.R06Key.OWN_LEG_DONE, w.name))
                 onChanged()
             }
         }

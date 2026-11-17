@@ -59,7 +59,10 @@ class SmsAsksReviewTest {
         val w = SmsWorld(listOf(space)).enable()
         w.auto().chooseWallet("sa", "TESTBANK", BANK.id)
         w.receive(sms("t1", "حوالة داخلية صادرة\nمن:1111\nإلى:SAMPLE PERSON\nإلى:2222\nبـSR 500\n26/10/07 09:35"))
-        assertEquals(1, w.auto().run().recorded)
+        // §121-11: المحفظة من غير أرقام والرسالة فيها رقم حساب ⇒ «الحساب ده بتاعك؟» الأول؛ «لأ» ⇒ زي الأول
+        val first = w.auto().run()
+        assertEquals(0 to listOf("t1"), first.recorded to first.waiting)
+        assertEquals(1, AnswerSmsAccount(space.wallets).answerAndRecord(w.auto(), BANK.id, "1111", mine = false, messageId = "t1").recorded)
         val sent = space.all().single()
         assertEquals(BANK.id to false, sent.walletId to sent.economicKindConfirmed)
         assertEquals(listOf(PendingAsk(AskKind.OWN_ACCOUNT_CHECK, "sa", transactionId = sent.id, date = "2026-10-07")), asks(space).pending("2026-10-01", "2026-10-31"))

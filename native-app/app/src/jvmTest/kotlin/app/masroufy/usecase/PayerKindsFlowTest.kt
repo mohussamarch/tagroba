@@ -92,22 +92,32 @@ class PayerKindsFlowTest {
         val e = employers.save(null, EmployerInput("جهة الندى", "2025-01-01"))
         val key = transferPartyOf(deposit("2026-09-27", 1))!!.key
         employers.attach(e.id, transferPartyOf(deposit("2026-09-27", 1))!!)
-        val waiting = deposit("2026-10-05", 915_000)
+        // §121-8: المستنية من قبل التشغيل (اتسجلت قبل وقت الساعة) تفضل مستنية — والتشغيل ما بيكتبش عمليات
+        val waiting = deposit("2026-10-05", 915_000).copy(createdAt = "2026-10-06T09:00:00.000Z")
         txns.saveMany(listOf(waiting))
         assertTrue(asksPayerKind(waiting, sources.listAll(), 28), "من غيره: القرار الأحدث (مبلغ وميعاد) ⇒ بيتسأل")
-        assertEquals(1, employers.setAlwaysSalary(e.id, key, on = true), "المستني من الحساب اتسجل مرتب")
-        assertEquals(EconomicKind.SALARY to true, txns.findByIds(listOf(waiting.id)).single().let { it.economicKind to it.economicKindConfirmed })
-        val any = deposit("2026-11-13", 33_000)
+        assertTrue(employers.setAlwaysSalary(e.id, key, on = true))
+        assertEquals(listOf(clock.nowIso()), sources.listAll().single().alwaysSalarySince.mapNotNull { app.masroufy.core.alwaysSalarySinceOf(sources.listAll().single(), key) })
+        assertEquals(waiting, txns.findByIds(listOf(waiting.id)).single(), "§121-8: المستنية ما اتلمستش")
+        assertTrue(asksPayerKind(waiting, sources.listAll(), 28), "§121-8: لسه بتتسأل")
+        assertEquals(waiting, applyKnownPayerSalary(waiting, sources.listAll(), "now"), "§121-8: «طبّق» ما بيسجلهاش مرتب")
+        // الجاية بعد التشغيل ⇒ مرتب
+        val any = deposit("2026-11-13", 33_000).copy(createdAt = "2026-11-13T10:00:00.000Z")
         assertEquals(EconomicKind.SALARY, applyKnownPayerSalary(any, sources.listAll(), "now").economicKind)
         assertFalse(asksPayerKind(any, sources.listAll(), 28))
+        assertFalse(employers.setAlwaysSalary(e.id, key, on = true), "تشغيل تاني ما بيغيرش الوقت")
         employers.setAlwaysSalary(e.id, key, on = false)
         assertEquals(any, applyKnownPayerSalary(any, sources.listAll(), "now"), "القفل ⇒ يرجع للقرار الأحدث")
-        assertEquals(EconomicKind.SALARY, txns.findByIds(listOf(waiting.id)).single().economicKind, "اللي اتسجل ما بيرجعش")
-        // حساب مش من حسابات الجهة ⇒ مرفوض · شيل الحساب بيشيل العلامة
+        assertEquals(emptyList(), sources.listAll().single().alwaysSalarySince)
+        // مفتاح قديم من غير وقت (اتشغل قبل §121) ⇒ على الكل زي ما كان
+        val legacy = sources.listAll().single().copy(alwaysSalaryKeys = listOf(key))
+        assertEquals(EconomicKind.SALARY, applyKnownPayerSalary(waiting, listOf(legacy), "now").economicKind)
+        // حساب مش من حسابات الجهة ⇒ مرفوض · شيل الحساب بيشيل العلامة ووقتها
         kotlin.test.assertFailsWith<app.masroufy.core.IncomeSourceError> { employers.setAlwaysSalary(e.id, "#9999", on = true) }
         employers.setAlwaysSalary(e.id, key, on = true)
         employers.detach(e.id, key)
         assertEquals(emptyList(), sources.listAll().single().alwaysSalaryKeys)
+        assertEquals(emptyList(), sources.listAll().single().alwaysSalarySince)
     }
 
     @Test fun samePayerOtherAmountAsksAndTheAnswerIsRememberedThenUndone() = runBlocking<Unit> {
