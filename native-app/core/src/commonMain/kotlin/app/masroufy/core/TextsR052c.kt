@@ -31,6 +31,8 @@ internal val MSA_R052C_TEXTS: Map<R06Key, String> = mapOf(
     R06Key.C120_INC_THIS_MONTH_NA to "وصل {0} هذا الشهر — المتوقع غير مسجل",
     R06Key.C120_INC_NONE to "لم يصل شيء",
     R06Key.C120_INC_WAITING to "{0} بانتظار تحديد نوعها",
+    R06Key.C121_HAWL_ASK to "هل مرّت عليها سنة هجرية كاملة؟",
+    R06Key.C121_HAWL_MISSING to "تنقصه واقعة: هل مرّت عليها سنة هجرية؟",
 )
 
 internal val EGYPTIAN_R052C_TEXTS: Map<R06Key, String> = mapOf(
@@ -57,6 +59,8 @@ internal val EGYPTIAN_R052C_TEXTS: Map<R06Key, String> = mapOf(
     R06Key.C120_INC_THIS_MONTH_NA to "وصل {0} الشهر ده — المتوقع مش مكتوب",
     R06Key.C120_INC_NONE to "ما وصلش",
     R06Key.C120_INC_WAITING to "{0} مستنية تحدد نوعها",
+    R06Key.C121_HAWL_ASK to "عدّى عليها سنة هجرية؟",
+    R06Key.C121_HAWL_MISSING to "ناقصة واقعة: عدّى عليها سنة هجرية؟",
 )
 
 internal val ENGLISH_R052C_TEXTS: Map<R06Key, String> = mapOf(
@@ -83,4 +87,6 @@ internal val ENGLISH_R052C_TEXTS: Map<R06Key, String> = mapOf(
     R06Key.C120_INC_THIS_MONTH_NA to "{0} arrived this month — no expected amount",
     R06Key.C120_INC_NONE to "Nothing arrived",
     R06Key.C120_INC_WAITING to "{0} waiting for their type",
+    R06Key.C121_HAWL_ASK to "Has a full hijri year passed on it?",
+    R06Key.C121_HAWL_MISSING to "A fact is missing: has a hijri year passed?",
 )

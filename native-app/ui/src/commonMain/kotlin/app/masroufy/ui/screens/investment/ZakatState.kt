@@ -178,7 +178,7 @@ private fun outs(a: ZakatAssessment, d: ZakatData): List<ZakatOutUi> = a.items
 private val OUT_STATUSES = setOf(ZakatItemStatus.EXEMPT, ZakatItemStatus.NOT_DEDUCTED, ZakatItemStatus.NO_RULING, ZakatItemStatus.NOT_COVERED)
 
 /** نص الواقعة الناقصة (أو السعر الناقص) للسطر. */
-fun missingText(item: ZakatItem): String = uiText(
+fun missingText(item: ZakatItem): String = if (item.missingFact == app.masroufy.core.ZAKAT_FACT_HAWL) uiText(app.masroufy.core.R06Key.C121_HAWL_MISSING) else uiText(
     when (item.missingFact) {
         "purpose" -> UiKey.ZAKAT_SCREEN_MISSING_PURPOSE
         "holding" -> UiKey.ZAKAT_SCREEN_MISSING_HOLDING

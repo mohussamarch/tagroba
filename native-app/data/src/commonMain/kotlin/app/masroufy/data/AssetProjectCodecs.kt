@@ -35,7 +35,7 @@ object AssetProjectCodecs {
                 opt(SILVER_MARKER_FIELD, silver.takeIf { it })
                 // «حاجاتي» (r05 §3.1) — بتتكتب لو موجودة بس
                 opt("holdingType", a.holdingType); opt("purpose", a.purpose); opt("origin", a.origin); opt("costKnown", a.costKnown)
-                opt("place", a.place); opt("sharePercentBp", a.sharePercentBp)
+                opt("place", a.place); opt("sharePercentBp", a.sharePercentBp); opt("ownedSinceAsked", a.ownedSinceAsked?.takeIf { it })
             }
         },
         { r ->
@@ -58,6 +58,7 @@ object AssetProjectCodecs {
                 costKnown = r.boolOrNull("costKnown"),
                 place = r.strOrNull("place"),
                 sharePercentBp = r.intOrNull("sharePercentBp"),
+                ownedSinceAsked = r.boolOrNull("ownedSinceAsked"),
             )
         },
     )

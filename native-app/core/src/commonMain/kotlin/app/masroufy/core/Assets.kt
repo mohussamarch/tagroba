@@ -45,6 +45,11 @@ data class Asset(
     val costKnown: Boolean? = null,
     val place: String? = null,
     val sharePercentBp: Int? = null,
+    /**
+     * §121-6: true = الحاجة اتضافت بعد خانة «امتلكتها إمتى؟» (أول دفعة بتاريخها الصح). غير كده (حاجة قديمة من «حاجاتي») ⇒ أول دفعة
+     * بتتقري «من زمان» ([withLegacyOwnedLongAgo]). بتتكتب لو true بس.
+     */
+    val ownedSinceAsked: Boolean? = null,
 )
 
 /**

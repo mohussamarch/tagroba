@@ -55,7 +55,7 @@ export function useAppData(container:Container,uid:string,activeTab:AppTab){
   if(!bootstrap.current){
    bootstrap.current=(async()=>{
     // تنظيف الاستيراد المعلّق لا يمنع فتح الشاشات أبدًا — فشله كان يوقف التطبيق كله
-    const [,walletSeed,outcomes,profile]=await Promise.all([user.seedUserReferences(),user.seedWallets(false),user.resumeStagedBatch.cleanupAll().catch(()=>null),user.manageProfile.load().catch(()=>null)])
+    const [,walletSeed,outcomes,profile]=await Promise.all([user.seedUserReferences(),user.seedWallets(),user.resumeStagedBatch.cleanupAll().catch(()=>null),user.manageProfile.load().catch(()=>null)])
     // قاعدة التجار المشتركة (OVERRIDES §25): في الخلفية بعد زرع المراجع — من غير نت أو قبل نشر القواعد ما بتوقفش حاجة
     void user.sharedMerchants.sync().catch(()=>null)
     if(profile)applyPayday(profile.payday)

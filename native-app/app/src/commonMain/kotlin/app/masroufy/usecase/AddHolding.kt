@@ -77,6 +77,7 @@ class AddHolding(private val deps: AddHoldingDeps) {
             costKnown = if (costGiven) null else false,
             place = h.place?.let(::jsTrim)?.takeIf { it.isNotEmpty() },
             sharePercentBp = h.sharePercentBp,
+            ownedSinceAsked = true, // §121-6: أول دفعة بتاريخ «امتلكتها إمتى؟» (أو «من زمان» صريح)
         )
         deps.assetRepo.save(asset)
 

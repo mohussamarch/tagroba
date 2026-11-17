@@ -2,6 +2,7 @@ package app.masroufy.android
 
 import app.masroufy.firestore.FirestoreContainer
 import app.masroufy.usecase.AssistantStores
+import app.masroufy.usecase.LegacyHoldingLots
 import app.masroufy.wiring.SpaceRepositories
 
 /** مستودعات فايربيز لبلد (`FirestoreContainer` — بذاكرتها `LocalMirror`) ⇒ واجهات بس للتجميع. سطر بسطر بنفس الأسماء. */
@@ -26,7 +27,7 @@ fun FirestoreContainer.toRepositories() = SpaceRepositories(
     recurring = recurring,
     notificationReceipts = notificationReceipts,
     assets = assets,
-    assetLots = assetLots,
+    assetLots = LegacyHoldingLots(assetLots, assets), // §121-6: الحاجات القديمة «من زمان»
     assetSales = assetSales,
     assetPrices = assetPrices,
     projects = projects,

@@ -169,6 +169,7 @@ internal fun checkAssetGrowthRow(row: Map<String, Any?>): String? {
     row["purpose"]?.let { v -> if (HoldingPurpose.fromWire(v as? String) == null) return "purpose" }
     row["origin"]?.let { v -> if (HoldingOrigin.fromWire(v as? String) == null) return "origin" }
     row["costKnown"]?.let { if (it !is Boolean) return "costKnown" }
+    row["ownedSinceAsked"]?.let { if (it !is Boolean) return "ownedSinceAsked" }
     row["place"]?.let { if (it !is String || it.length > MAX_HOLDING_PLACE) return "place" }
     row["sharePercentBp"]?.let { if (!isSafeInteger(it) || numberOf(it)!! !in 0.0..10_000.0) return "sharePercentBp" }
     return null

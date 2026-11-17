@@ -3,6 +3,8 @@ package app.masroufy.ui.screens.investment
 import app.masroufy.core.UiKey
 import app.masroufy.core.Currency
 import app.masroufy.core.Id
+import app.masroufy.core.R06Key
+import app.masroufy.core.ZAKAT_FACT_HAWL
 import app.masroufy.core.TextKey
 import app.masroufy.core.ZakatAssessment
 import app.masroufy.core.ZakatCollectability
@@ -25,6 +27,8 @@ sealed interface FactAnswer {
     data class Collect(val value: ZakatCollectability) : FactAnswer
     data class Karat(val value: Int) : FactAnswer
     data class Fineness(val value: Int) : FactAnswer
+    /** §121-7 «عدّى عليها سنة هجرية؟» للحاجة «من زمان». */
+    data class Hawl(val value: Boolean) : FactAnswer
 }
 
 data class FactOption(val label: String, val selected: Boolean, val answer: FactAnswer)
@@ -96,6 +100,10 @@ fun factQuestions(a: ZakatAssessment?, currency: Currency): List<FactQuestion> {
             }
             else -> Unit
         }
+        val h = item.holding
+        if (h is ZakatHolding.LongAgo && h.ownedLongAgo && (item.missingFact == ZAKAT_FACT_HAWL || h.hawlPassed != null)) {
+            out += hawlQuestion(item.holding.id!!, item.holding.name.orEmpty(), h.hawlPassed, item.missingFact == ZAKAT_FACT_HAWL)
+        }
     }
     return out.distinctBy { it.subjectId + "|" + it.ask }
 }
@@ -117,3 +125,13 @@ fun factsSummary(questions: List<FactQuestion>): FactsSummary {
         else -> FactsSummary(uiText(UiKey.ZAKAT_SCREEN_FACTS_DONE, sentenceNumber(questions.size)), false)
     }
 }
+
+/** §121-7: «عدّى عليها سنة هجرية؟» — أيوه / لأ، والإجابة بتتحفظ على الأصل. */
+private fun hawlQuestion(id: Id, name: String, current: Boolean?, missing: Boolean) = FactQuestion(
+    id, name, uiText(R06Key.C121_HAWL_ASK),
+    listOf(
+        FactOption(uiText(UiKey.ZAKAT_FACTS_YES), current == true, FactAnswer.Hawl(true)),
+        FactOption(uiText(UiKey.ZAKAT_FACTS_NO), current == false, FactAnswer.Hawl(false)),
+    ),
+    missing,
+)

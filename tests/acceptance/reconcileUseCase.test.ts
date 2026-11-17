@@ -36,7 +36,10 @@ const CSV_PATH = resolve(__dirname, '../../files/transactions_full.csv')
 async function makeSystem() {
   const txns = new MemoryTransactionRepository()
   const wallets = new MemoryWalletRepository()
-  await makeSeedWallets({ wallets })(true) // أرصدة المالك المعتمدة
+  // §121-5: الرصيد الافتتاحي ما بقاش في كود التطبيق — الاختبار بيكتبه بنفسه زي ما المستخدم بيكتبه من الإعدادات
+  await makeSeedWallets({ wallets })()
+  const seeded = (await wallets.findById(BANK_WALLET_ID))!
+  await wallets.save({ ...seeded, openingBalanceMinor: parseMoney('4837.83'), openingAt: '2025-01-01' })
 
   const deps = {
     txns,
@@ -58,31 +61,17 @@ async function makeSystem() {
   }
 }
 
-describe('زرع المحافظ — OVERRIDES §6', () => {
-  it('الأرصدة المعتمدة للمالك', async () => {
+describe('زرع المحافظ — OVERRIDES §121-5', () => {
+  it('**كل مستخدم يبدأ بصفر** (§121-5: مفيش رصيد افتتاحي في الكود) — لا يرث أحد رصيد أحد', async () => {
     const wallets = new MemoryWalletRepository()
-    const outcome = await makeSeedWallets({ wallets })(true)
-
-    expect(outcome.seeded).toBe(true)
-    const bank = outcome.wallets.find((w) => w.id === BANK_WALLET_ID)!
-    expect(formatAmount(bank.openingBalanceMinor)).toBe('4,837.83')
-    expect(bank.openingAt).toBe('2025-01-01')
-
-    const cash = outcome.wallets.find((w) => w.kind === 'cash')!
-    expect(formatAmount(cash.openingBalanceMinor)).toBe('1,000.00')
-    expect(cash.openingAt).toBe('2026-09-06')
-  })
-
-  it('**مستخدم آخر يبدأ بصفر** — لا يرث أحد رصيد أحد', async () => {
-    const wallets = new MemoryWalletRepository()
-    const outcome = await makeSeedWallets({ wallets })(false)
+    const outcome = await makeSeedWallets({ wallets })()
     for (const w of outcome.wallets) expect(w.openingBalanceMinor).toBe(0)
   })
 
   it('الزرع مرة واحدة — لا يكتب فوق تعديلات المستخدم', async () => {
     const wallets = new MemoryWalletRepository()
     const seed = makeSeedWallets({ wallets })
-    await seed(true)
+    await seed()
 
     await wallets.save({
       id: BANK_WALLET_ID,
@@ -93,7 +82,7 @@ describe('زرع المحافظ — OVERRIDES §6', () => {
       openingAt: '2025-01-01',
     })
 
-    const second = await seed(true)
+    const second = await seed()
     expect(second.seeded).toBe(false)
     const bank = (await wallets.findById(BANK_WALLET_ID))!
     expect(formatAmount(bank.openingBalanceMinor)).toBe('9,999.00') // تعديله باقٍ

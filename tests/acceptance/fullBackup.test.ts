@@ -114,7 +114,7 @@ describe('نسخة شاملة',()=>{
   it('exports and restores the same live repositories used by demo screens',async()=>{
     const {createDemoContainer}=await import('../../src/app/demoContainer')
     const user=createDemoContainer().forUser('demo')
-    await user.seedWallets(false)
+    await user.seedWallets()
     const file=await user.fullBackup.create(now)
     expect(file.data.wallets.length).toBeGreaterThan(0)
     expect(file.data.categories.length).toBeGreaterThan(0)

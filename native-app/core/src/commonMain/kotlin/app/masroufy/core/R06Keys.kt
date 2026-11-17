@@ -114,4 +114,6 @@ enum class R06Key : TextRef {
     C121_HOLD_SELL, C121_HOLD_DELETE, C121_SURE,
     C121_RESEND, C121_RESENT, C121_RESEND_FAILED,
     C121_USAGE_TITLE, C121_USAGE_ON, C121_USAGE_OFF, C121_USAGE_NA,
+    /** r053-c (OVERRIDES §121-7) — سؤال الحول للحاجة «من زمان». نصوصها في `TextsR052c.kt`. */
+    C121_HAWL_ASK, C121_HAWL_MISSING,
 }

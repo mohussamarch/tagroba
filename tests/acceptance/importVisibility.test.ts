@@ -27,7 +27,7 @@ describe('الاستيراد ثم ظهور العمليات', () => {
 
   it('العمليات المستوردة تظهر في شاشة العمليات والرئيسية لفترة آخر الكشف', async () => {
     const user = createDemoContainer().forUser('visibility')
-    await user.seedWallets(false)
+    await user.seedWallets()
     const request = { fileName: 'statement.csv', content: readFileSync(CSV_PATH, 'utf8'),
       accountIdentity: 'wallet-bank', walletId: 'wallet-bank', sourceType: 'csv_legacy' as const }
     const preview = await user.importStatement.preview(request)

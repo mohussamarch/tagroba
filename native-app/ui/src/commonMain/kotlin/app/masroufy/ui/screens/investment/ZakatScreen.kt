@@ -121,6 +121,7 @@ fun ZakatScreen() {
                 is FactAnswer.Saudi -> deps.zakat.setAssetFacts(subject, saudiCompany = answer.value)
                 is FactAnswer.Karat -> deps.zakat.setAssetFacts(subject, karat = answer.value)
                 is FactAnswer.Fineness -> deps.zakat.setAssetFacts(subject, fineness = answer.value)
+                is FactAnswer.Hawl -> deps.zakat.setAssetFacts(subject, hawlPassed = answer.value)
                 is FactAnswer.Collect -> deps.setReceivableFact(subject, answer.value)
             }
             null

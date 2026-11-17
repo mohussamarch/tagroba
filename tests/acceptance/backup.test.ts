@@ -46,7 +46,7 @@ async function makeSystem() {
   const merchants = new MemoryMerchantRepository([])
   const budgets = new MemoryBudgetRepository()
 
-  await makeSeedWallets({ wallets })(true)
+  await makeSeedWallets({ wallets })()
 
   const importer = makeImportStatement({
     txns, sources, batches, merchants, categories, rules,

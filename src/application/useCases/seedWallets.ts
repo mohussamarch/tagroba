@@ -1,23 +1,14 @@
-import { parseMoney } from '../../domain/money'
 import type { Wallet } from '../../domain/entities/types'
 import type { WalletRepository } from '../ports/repositories'
 
 /**
- * SeedWallets — المحفظتان المعتمدتان في `OVERRIDES §6`.
+ * SeedWallets — محفظتان فاضيتان (بنك وكاش) لأول تشغيل.
  *
- * | المحفظة | الرصيد الافتتاحي | التاريخ |
- * |---|---|---|
- * | البنك ([P:bank]) | [P:opening] ر.س | 2025-01-01 |
- * | الكاش | [P:cash] ر.س | 2026-09-06 |
- *
- * الرصيد البنكي مشتق من الكشف نفسه: أول عملية مدين والرصيد
- * بعدها يدّوا الافتتاحي [P:opening] (PRIVATE-FIGURES.md) — وهو نقطة بداية سلسلة المطابقة.
+ * OVERRIDES §121-5: الرصيد الافتتاحي **ما بقاش مكتوب في الكود** — كل مستخدم (المالك نفسه كمان) بيبدأ برصيد صفر
+ * من النهارده ويكتب رصيده الافتتاحي وتاريخه بنفسه من الإعدادات. لا يجوز أن يرث أحد رصيد أحد.
  *
  * ⚠️ **الزرع مرة واحدة فقط.** لو وُجدت محافظ فالمستخدم عدّلها أو أضاف
  * غيرها، ولا يجوز إعادة الكتابة فوقها.
- *
- * ⚠️ هذه أرقام **المالك**. أي مستخدم آخر للتطبيق يبدأ بأرصدة صفرية —
- * لا يجوز أن يرث أحد رصيد أحد.
  */
 
 /** معرّفات ثابتة: مطلوبة لربط العمليات بالمحفظة عبر الجلسات. */
@@ -30,12 +21,8 @@ export interface SeedWalletsOutcome {
   reason: string
 }
 
-/**
- * @param ownerDefaults أرصدة المالك المعتمدة. `false` لأي مستخدم آخر،
- *   فيبدأ بمحافظ رصيدها صفر ويعدّلها بنفسه.
- */
 export function makeSeedWallets(deps: { wallets: WalletRepository }) {
-  return async function seed(ownerDefaults: boolean): Promise<SeedWalletsOutcome> {
+  return async function seed(): Promise<SeedWalletsOutcome> {
     const existing = await deps.wallets.listAll()
     if (existing.length > 0) {
       return {
@@ -45,23 +32,9 @@ export function makeSeedWallets(deps: { wallets: WalletRepository }) {
       }
     }
 
-    const bank: Wallet = {
-      id: BANK_WALLET_ID,
-      name: 'الراجحي',
-      currency: 'SAR',
-      kind: 'bank',
-      openingBalanceMinor: ownerDefaults ? parseMoney('4837.83') : 0,
-      openingAt: ownerDefaults ? '2025-01-01' : new Date().toISOString().slice(0, 10),
-    }
-
-    const cash: Wallet = {
-      id: CASH_WALLET_ID,
-      name: 'كاش',
-      currency: 'SAR',
-      kind: 'cash',
-      openingBalanceMinor: ownerDefaults ? parseMoney('1000.00') : 0,
-      openingAt: ownerDefaults ? '2026-09-06' : new Date().toISOString().slice(0, 10),
-    }
+    const today = new Date().toISOString().slice(0, 10)
+    const bank: Wallet = { id: BANK_WALLET_ID, name: 'الراجحي', currency: 'SAR', kind: 'bank', openingBalanceMinor: 0, openingAt: today }
+    const cash: Wallet = { id: CASH_WALLET_ID, name: 'كاش', currency: 'SAR', kind: 'cash', openingBalanceMinor: 0, openingAt: today }
 
     await deps.wallets.save(bank)
     await deps.wallets.save(cash)
@@ -69,9 +42,7 @@ export function makeSeedWallets(deps: { wallets: WalletRepository }) {
     return {
       seeded: true,
       wallets: [bank, cash],
-      reason: ownerDefaults
-        ? 'اتزرعت محفظتان بالأرصدة المعتمدة في OVERRIDES §6.'
-        : 'اتزرعت محفظتان برصيد صفر — عدّل الرصيد الافتتاحي من الإعدادات.',
+      reason: 'اتزرعت محفظتان برصيد صفر — عدّل الرصيد الافتتاحي من الإعدادات.',
     }
   }
 }

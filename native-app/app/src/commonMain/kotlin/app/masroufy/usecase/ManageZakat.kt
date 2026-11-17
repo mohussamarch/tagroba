@@ -104,23 +104,25 @@ class ManageZakat(private val deps: ManageZakatDeps) {
 
     /**
      * وقائع أصل: الغرض والعيار للدهب والفضة · مضاربة ولا طويل، و«الشركة سعودية؟» ([saudiCompany]) للسهم والصندوق.
+     * §121-7: [hawlPassed] «عدّى عليها سنة هجرية؟» للحاجة «من زمان» (دهب · فضة · سهم · صندوق).
      * `null` = ما يتغيرش.
      */
     suspend fun setAssetFacts(
         assetId: Id, purpose: ZakatPurpose? = null, holding: ZakatShareHolding? = null, karat: Int? = null, fineness: Int? = null,
-        saudiCompany: Boolean? = null,
+        saudiCompany: Boolean? = null, hawlPassed: Boolean? = null,
     ): ZakatFact {
         val asset = deps.assets.listAll().firstOrNull { it.id == assetId } ?: throw ZakatError(uiText(TextKey.ZAKAT_ASSET_NOT_FOUND))
         val metal = asset.kind == "gold" || asset.kind == "silver"
         val share = asset.kind == "stock" || asset.kind == "fund"
         if ((purpose != null && !metal) || ((holding != null || saudiCompany != null) && !share)) throw ZakatError(uiText(TextKey.ZAKAT_FACT_WRONG_KIND))
+        if (hawlPassed != null && !metal && !share) throw ZakatError(uiText(TextKey.ZAKAT_FACT_WRONG_KIND))
         if ((karat != null && asset.kind != "gold") || (fineness != null && asset.kind != "silver")) throw ZakatError(uiText(TextKey.ZAKAT_FACT_WRONG_KIND))
         if (karat != null && karat !in 1..24) throw ZakatError(uiText(TextKey.ZAKAT_KARAT_RANGE))
         if (fineness != null && fineness !in 1..1000) throw ZakatError(uiText(TextKey.ZAKAT_FINENESS_RANGE))
         val old = deps.facts.listAll().firstOrNull { it.subjectId == assetId }
         val fact = ZakatFact(
             assetId, ZakatSubject.ASSET, purpose ?: old?.purpose, holding ?: old?.holding, null,
-            karat ?: old?.karat, fineness ?: old?.fineness, deps.clock.nowIso(), saudiCompany ?: old?.saudiCompany,
+            karat ?: old?.karat, fineness ?: old?.fineness, deps.clock.nowIso(), saudiCompany ?: old?.saudiCompany, hawlPassed ?: old?.hawlPassed,
         )
         deps.facts.save(fact)
         return fact
