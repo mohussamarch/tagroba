@@ -52,6 +52,8 @@ fun parseMoney(raw: String, currency: Currency = Currency.SAR): Halalas {
     var s = JsText.trim(normalizeDigits(raw))
     if (s.isEmpty()) throw MoneyError(uiText(TextKey.MONEY_EMPTY), raw)
 
+    // §121-15: مسافة بين رقمين = فاصل آلاف («1 234») ⇒ الفاصلة بعدها ما تبقاش عشرية
+    val spaceGrouped = s.indices.any { i -> JsText.isWhitespace(s[i]) && hasDigitAround(s, i) }
     // المسافات بأنواعها. الفاصلة بتتشال تحت **بعد** التأكد إنها فاصل آلاف فعلًا ([groupedInt])
     s = s.filterNot { JsText.isWhitespace(it) }
 
@@ -72,7 +74,7 @@ fun parseMoney(raw: String, currency: Currency = Currency.SAR): Halalas {
         s = s.dropLast(1)
     }
 
-    s = decimalComma(s) ?: throw MoneyError(uiText(TextKey.MONEY_BAD_FORMAT), raw)
+    s = decimalComma(s, spaceGrouped) ?: throw MoneyError(uiText(TextKey.MONEY_BAD_FORMAT), raw)
     val dot = s.indexOf('.')
     val intRaw = groupedInt(if (dot < 0) s else s.substring(0, dot)) ?: throw MoneyError(uiText(TextKey.MONEY_BAD_FORMAT), raw)
     val fracRaw = if (dot < 0) "" else s.substring(dot + 1)
@@ -106,16 +108,26 @@ private fun groupedInt(int: String): String? {
     return if (ok) groups.joinToString("") else null
 }
 
+/** مسافة في [i] بين رقم قبلها ورقم بعدها (بعد تخطي المسافات اللي جنبها). */
+private fun hasDigitAround(s: String, i: Int): Boolean {
+    var a = i - 1
+    while (a >= 0 && JsText.isWhitespace(s[a])) a--
+    var b = i + 1
+    while (b < s.length && JsText.isWhitespace(s[b])) b++
+    return a >= 0 && b < s.length && JsText.isAsciiDigit(s[a]) && JsText.isAsciiDigit(s[b])
+}
+
 /**
- * OVERRIDES §120-3: من غير نقطة، الفاصلة الأخيرة اللي بعدها رقم أو رقمين **بس** في الآخر = علامة عشرية
- * («12,50» = 12.50 · «12,5» = 12.50). «1,234» تفضل فاصل آلاف. لو قبلها فاصلة تانية («1,234,50») ⇒ null (ملتبس، يترفض).
+ * OVERRIDES §120-3 + §121-15: من غير نقطة، الفاصلة الأخيرة اللي بعدها رقم أو رقمين **بس** في الآخر = علامة عشرية
+ * («12,50» = 12.50 · «12,5» = 12.50). «1,234» تفضل فاصل آلاف. الفاصلة العشرية مقبولة **بس** في رقم من غير فواصل آلاف:
+ * فاصلة تانية قبلها («1,234,50») أو مسافة آلاف («1 234,00») ⇒ null (يترفض ويطلب يكتبها صح).
  */
-private fun decimalComma(s: String): String? {
+private fun decimalComma(s: String, spaceGrouped: Boolean): String? {
     if ('.' in s) return s
     val c = s.lastIndexOf(',')
     if (c < 0 || (s.length - c - 1) !in 1..2) return s
     val head = s.substring(0, c)
-    if (',' in head) return null
+    if (',' in head || spaceGrouped) return null
     return head + "." + s.substring(c + 1)
 }
 
