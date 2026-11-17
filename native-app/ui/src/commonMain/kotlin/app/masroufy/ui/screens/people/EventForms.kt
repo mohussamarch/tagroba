@@ -165,13 +165,16 @@ private fun EventForm(existing: LifeEvent?, defaultDate: IsoDate?, data: EventSc
 
 /** خانة التاريخ: النص («18 أكتوبر 2026») والضغط بيفتح شبكة الشهر (`CalendarGrid` — السبت أول الأسبوع). */
 @Composable
-internal fun DateField(date: IsoDate?, today: IsoDate, onPick: (IsoDate) -> Unit, modifier: Modifier = Modifier) {
+internal fun DateField(date: IsoDate?, today: IsoDate, onPick: (IsoDate) -> Unit, modifier: Modifier = Modifier, noFuture: Boolean = false) {
     var open by remember { mutableStateOf(false) }
+    // §121-1: الضغط على «الشهر والسنة» فوق الشبكة ⇒ لوحة الشهور ([MonthYearSheet])؛ [noFuture] ⇒ الشهور اللي لسه ما جتش مقفولة
+    var monthSheet by remember { mutableStateOf(false) }
+    val limit = if (noFuture) app.masroufy.ui.shell.MonthLimit.of(today) else null
     val base = parseIsoDate(date ?: today)
     var year by remember(date) { mutableStateOf(base.year) }
     var month by remember(date) { mutableStateOf(base.month) }
     // الشبكة مفتوحة ⇒ الضغط برّاها (والزرار) أو الرجوع بيقفلها والتاريخ زي ما هو، والشهر يرجع لشهر التاريخ (HANDOVER §6.5 بند 11)
-    val choice = app.masroufy.ui.overlay.rememberChoice(open, onClose = { open = false; year = base.year; month = base.month })
+    val choice = app.masroufy.ui.overlay.rememberChoice(open && !monthSheet, onClose = { open = false; year = base.year; month = base.month })
     Column(modifier.fillMaxWidth().choiceArea(choice), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         SecondaryButton(date?.let { dayMonthYear(it) } ?: t(UiKey.PPL_PICK_DATE), onClick = { open = !open }, leading = app.masroufy.ui.icons.Lucide.CALENDAR, modifier = Modifier.fillMaxWidth())
         if (open) {
@@ -188,7 +191,14 @@ internal fun DateField(date: IsoDate?, today: IsoDate, onPick: (IsoDate) -> Unit
                     }
                 },
                 onToday = { parseIsoDate(today).let { year = it.year; month = it.month } },
+                noNext = limit != null && (year > limit.year || (year == limit.year && month >= limit.month)),
+                onTitle = { monthSheet = true },
             )
         }
+    }
+    app.masroufy.ui.shell.MonthYearSheet(monthSheet, year, month, limit, onDismiss = { monthSheet = false }) { y, m ->
+        year = y
+        month = m
+        monthSheet = false
     }
 }

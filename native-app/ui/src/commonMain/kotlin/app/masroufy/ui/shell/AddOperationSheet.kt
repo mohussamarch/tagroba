@@ -180,7 +180,7 @@ fun AddOperationSheet(visible: Boolean, onClose: () -> Unit, onVoice: () -> Unit
         // r06-links: التاريخ — افتراضيه النهارده، ونفس خانة التاريخ اللي في باقي البرنامج (`DateField`)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             FieldLabel(t(app.masroufy.core.R06Key.ADD_DATE))
-            app.masroufy.ui.screens.people.DateField(date ?: shell.today(), shell.today(), { date = it; error = null }, Modifier.weight(1f))
+            app.masroufy.ui.screens.people.DateField(date ?: shell.today(), shell.today(), { date = it; error = null }, Modifier.weight(1f), noFuture = true)
         }
         PrimaryButton(
             if (saving) t(UiKey.ADD_SAVING) else t(UiKey.ADD_SAVE),

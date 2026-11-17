@@ -95,6 +95,8 @@ fun CalendarGrid(
     noPrev: Boolean = false,
     noNext: Boolean = false,
     onLongPick: ((day: Int, anchor: Anchor) -> Unit)? = null,
+    /** §121-1: الضغط على «الشهر والسنة» بيفتح لوحة اختيار الشهر ([MonthYearSheet]). null ⇒ عنوان بس. */
+    onTitle: (() -> Unit)? = null,
 ) {
     val first = formatIsoDate(DateParts(year, month, 1))
     val lead = saturdayColumnOf(first)
@@ -105,7 +107,8 @@ fun CalendarGrid(
             Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                 Arrow(Lucide.CHEVRON_RIGHT, t(UiKey.CAL_PREV), noPrev) { onMonth(-1) }
                 Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally), verticalAlignment = Alignment.CenterVertically) {
-                    BasicText(monthYear(year, month), style = Type.of(17, FontWeight.Bold))
+                    if (onTitle == null) BasicText(monthYear(year, month), style = Type.of(17, FontWeight.Bold))
+                    else MonthTitle(monthYear(year, month), onTitle)
                     if (showToday) TodayChip(onToday)
                 }
                 Arrow(Lucide.CHEVRON_LEFT, t(UiKey.CAL_NEXT), noNext) { onMonth(1) }
@@ -187,6 +190,20 @@ private fun Arrow(icon: Lucide, label: String, off: Boolean, onClick: () -> Unit
             .tap(press, enabled = !off, label = label, onClick = onClick).semantics { contentDescription = label },
         contentAlignment = Alignment.Center,
     ) { LucideIcon(icon, size = 20.dp, modifier = Modifier.mirrorInLtr()) }
+}
+
+/** §121-1: «نوفمبر 2026 ▾» — بيفتح لوحة اختيار الشهر والسنة. */
+@Composable
+private fun MonthTitle(label: String, onClick: () -> Unit) {
+    val press = rememberPress()
+    val hint = t(app.masroufy.core.R06Key.C121_MY_OPEN)
+    Row(
+        Modifier.height(40.dp).pressScale(press).clip(RoundedCornerShape(12.dp)).tap(press, label = hint, onClick = onClick).padding(horizontal = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically,
+    ) {
+        BasicText(label, style = Type.of(17, FontWeight.Bold))
+        LucideIcon(Lucide.CHEVRON_DOWN, size = 16.dp, tint = Ink.muted)
+    }
 }
 
 @Composable
