@@ -157,3 +157,20 @@ fun isOwnedLongAgo(date: IsoDate?): Boolean = date != null && date.take(10) == O
 
 /** تاريخ أول دفعة للحاجة: اللي اتكتب (مش بعد [today]) أو [OWNED_LONG_AGO]. */
 fun openingLotDate(ownedSince: IsoDate?, today: IsoDate): IsoDate = ownedSince?.take(10)?.takeIf { it <= today } ?: OWNED_LONG_AGO
+
+/** §121-6: حاجة من «حاجاتي» اتضافت قبل خانة «امتلكتها إمتى؟» (أول دفعة اتسجلت بيوم الإضافة مش بيوم الامتلاك). */
+val Asset.isLegacyHolding: Boolean get() = holdingType != null && ownedSinceAsked != true
+
+/**
+ * §121-6 (قرار المالك: «تتعلّم كلها من زمان») — قراية من غير ما نكتب في المستند: أول دفعة (الأقدم) للحاجة القديمة لو مش مربوطة
+ * بعملية بتتقري [OWNED_LONG_AGO] ⇒ أي تاريخ بيع بيتقبل. الدفعات اللي بعدها والأصول اللي مش من «حاجاتي» زي ما هي.
+ */
+fun withLegacyOwnedLongAgo(assets: List<Asset>, lots: List<AssetLot>): List<AssetLot> {
+    val legacy = assets.filter { it.isLegacyHolding }.map { it.id }.toSet()
+    if (legacy.isEmpty()) return lots
+    val opening = lots.filter { it.assetId in legacy }.groupBy { it.assetId }
+        .mapNotNull { (_, mine) -> mine.minByOrNull { it.purchasedAt }?.takeIf { it.transactionId == null && !isOwnedLongAgo(it.purchasedAt) }?.id }
+        .toSet()
+    if (opening.isEmpty()) return lots
+    return lots.map { if (it.id in opening) it.copy(purchasedAt = OWNED_LONG_AGO) else it }
+}

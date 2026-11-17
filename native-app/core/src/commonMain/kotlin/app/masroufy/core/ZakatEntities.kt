@@ -58,6 +58,8 @@ data class ZakatFact(
     val fineness: Int? = null,
     val updatedAt: String,
     val saudiCompany: Boolean? = null,
+    /** §121-7: حاجة «من زمان» — عدّى عليها سنة هجرية؟ (null = لسه ما اتسألش ⇒ السطر مستني إجابة، مش محسوب). */
+    val hawlPassed: Boolean? = null,
 )
 
 /** سطور الدفع — بالترتيب ده بتتعرض وبيتوزع عليها المدفوع. */

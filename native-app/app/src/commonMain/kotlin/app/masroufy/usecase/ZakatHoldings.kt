@@ -45,16 +45,19 @@ internal class ZakatHoldingsReader(private val deps: ManageZakatDeps) {
             val mine = lots[a.id].orEmpty()
             val position = computePosition(a.id, mine, sales[a.id].orEmpty(), prices[a.id], asOf)
             if (position.heldQuantity <= 0) continue
-            val since = mine.minOfOrNull { it.purchasedAt }
+            val first = mine.minOfOrNull { it.purchasedAt }
             val fact = facts[a.id]
+            // §121-7: «من زمان» بيتسأل «عدّى عليها سنة هجرية؟» (الإجابة واقعة على الأصل)
+            val longAgo = app.masroufy.core.isOwnedLongAgo(first)
+            val since = app.masroufy.core.longAgoHeldSince(first, fact?.hawlPassed, asOf)
             out += when (a.kind) {
                 "gold", "silver" -> ZakatHolding.Metal(
                     a.id, a.name, if (a.kind == "gold") ZakatMetal.GOLD else ZakatMetal.SILVER, position.heldQuantity,
-                    fact?.karat, fact?.fineness, fact?.purpose, prices[a.id]?.pricePerUnitMinor, since,
+                    fact?.karat, fact?.fineness, fact?.purpose, prices[a.id]?.pricePerUnitMinor, since, longAgo, fact?.hawlPassed,
                 )
                 "stock", "fund" -> ZakatHolding.Security(
                     a.id, a.name, if (a.kind == "stock") ZakatLineKind.STOCKS else ZakatLineKind.FUNDS, position.marketValueMinor, fact?.holding, since,
-                    fact?.saudiCompany,
+                    fact?.saudiCompany, longAgo, fact?.hawlPassed,
                 )
                 "digital" -> ZakatHolding.Digital(a.id, a.name, position.marketValueMinor)
                 // العقار (`isRealEstate` — §69.7، النوع المتخزن "other") بيفضل هنا زي ما كان ⇒ «مش داخل في حساب الزكاة — راجعه بنفسك»

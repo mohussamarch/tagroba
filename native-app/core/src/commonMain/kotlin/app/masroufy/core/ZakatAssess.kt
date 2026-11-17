@@ -14,19 +14,24 @@ sealed interface ZakatHolding {
     val name: String?
     val heldSince: IsoDate?
 
+    /** §121-7: أصل «من زمان» بيتسأل «عدّى عليها سنة هجرية؟» ([hawlPassed] null = لسه) قبل ما يتحسب. */
+    interface LongAgo { val ownedLongAgo: Boolean; val hawlPassed: Boolean? }
+
     /** رصيد محفظة يوم الزكاة — null = المحفظة ما كانتش اتفتحت في التطبيق لسه (مش صفر). */
     data class Cash(override val id: Id?, override val name: String?, val balanceMinor: Halalas?, override val heldSince: IsoDate? = null) : ZakatHolding
 
     data class Metal(
         override val id: Id, override val name: String, val metal: ZakatMetal, val grams: Quantity,
         val karat: Int?, val fineness: Int?, val purpose: ZakatPurpose?, val ownUnitPriceMinor: Halalas?, override val heldSince: IsoDate? = null,
-    ) : ZakatHolding
+        override val ownedLongAgo: Boolean = false, override val hawlPassed: Boolean? = null,
+    ) : ZakatHolding, ZakatHolding.LongAgo
 
     /** [saudiCompany] الشركة (أو الصندوق) سعودية؟ — واقعة بتتسأل بس في البلد اللي قاعدتها بتفرّق (السعودية، للطويل الأجل). */
     data class Security(
         override val id: Id, override val name: String, val line: ZakatLineKind, val valueMinor: Halalas?,
         val holding: ZakatShareHolding?, override val heldSince: IsoDate? = null, val saudiCompany: Boolean? = null,
-    ) : ZakatHolding
+        override val ownedLongAgo: Boolean = false, override val hawlPassed: Boolean? = null,
+    ) : ZakatHolding, ZakatHolding.LongAgo
 
     /** عملات رقمية — مالهاش فتوى من الجهتين ⇒ ما بتتحسبش. */
     data class Digital(override val id: Id, override val name: String, val valueMinor: Halalas?) : ZakatHolding { override val heldSince: IsoDate? get() = null }
@@ -157,7 +162,7 @@ private fun receivableTopic(country: ZakatCountry, collectability: ZakatCollecta
 /**
  * القاعدة على كل واقعة لوحدها. الدين اللي اتحصّل وكان بيتحسب كل سنة (السعودية — هيرجع) **ما بيطلعش سطر** (اتزكّى في سنينه).
  */
-fun zakatItems(country: ZakatCountry, holdings: List<ZakatHolding>, prices: ZakatPrices): List<ZakatItem> = holdings.mapNotNull { h ->
+internal fun rawZakatItems(country: ZakatCountry, holdings: List<ZakatHolding>, prices: ZakatPrices): List<ZakatItem> = holdings.mapNotNull { h ->
     when (h) {
         is ZakatHolding.Cash -> item(h, ZakatLineKind.CASH, ZakatTopic.CASH, country, h.balanceMinor)
         is ZakatHolding.Metal -> {
